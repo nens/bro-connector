@@ -12,14 +12,8 @@ import datetime
 import logging
 
 from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
-from gld_aanlevering.models import GroundwaterMonitoringWells, GroundwaterMonitoringTubes, gld_registration_log, aanleverinfo_filters
+from gld_aanlevering.models import GroundwaterMonitoringWells, GroundwaterMonitoringTubes, gld_registration_log, aanleverinfo_filters, GroundwaterLevelDossier
 
-
-#%% Functions
-
-# =============================================================================
-# 2. BRO
-# =============================================================================
 
 def validate_request(payload,env,acces_token_bro_portal):
     
@@ -41,7 +35,17 @@ def validate_request(payload,env,acces_token_bro_portal):
     
     return(validation_info)
 
-def gld_start_registration(qualityregime, deliveryaccountableparty,broidgmw, filtrnr, failed_dir, acces_token_bro_portal,organisation,env, locationcode,date_modified, monitoringnetworks=None):
+def gld_start_registration(qualityregime, 
+                           deliveryaccountableparty,
+                           broidgmw, 
+                           filtrnr, 
+                           failed_dir, 
+                           acces_token_bro_portal,
+                           organisation,
+                           env, 
+                           locationcode,
+                           date_modified, 
+                           monitoringnetworks=None):
 
     """
     Start a GLD registration
@@ -78,7 +82,12 @@ def gld_start_registration(qualityregime, deliveryaccountableparty,broidgmw, fil
                 'monitoringPoints':monitoringpoints,        
                 } 
             
-        reg = gwm.gld_registration_request(srcdoc='GLD_StartRegistration', requestReference = 'GLD_StartRegistration_{}_tube_{}'.format(broidgmw,str(filtrnr)), deliveryAccountableParty = deliveryaccountableparty, qualityRegime = qualityregime, srcdocdata=srcdocdata)
+        reg = gwm.gld_registration_request(srcdoc='GLD_StartRegistration', 
+                                           requestReference = 'GLD_StartRegistration_{}_tube_{}'.format(broidgmw,str(filtrnr)), 
+                                           deliveryAccountableParty = deliveryaccountableparty, 
+                                           qualityRegime = qualityregime, 
+                                           srcdocdata=srcdocdata)
+        
         reg.generate()
         payload = reg.request
         
@@ -112,25 +121,23 @@ def gld_start_registration(qualityregime, deliveryaccountableparty,broidgmw, fil
                 demo = False
     
             upload_info = gwm.upload_sourcedocs_from_dict(req, acces_token_bro_portal, demo=demo)
-                    
+            
+                                
             record, created = \
                 gld_registration_log.objects.update_or_create(
-                    location=locationcode,
+                    gwm_bro_id=broidgmw,
+                    filter_id=filtrnr,
                     date_modified = date_modified,
                     defaults=dict(
-                        validation_status = upload_info.json()['validatiestatus'],
+                        validation_status=validation_info['status'],
                         levering_id = upload_info.json()['identifier'],
-                        levering_status = validation_info['status'],
+                        levering_status = upload_info.json()['status'],
                         comments = 'Valideren registratierequest geslaagd'
                     )
                 )
+                
 
             return
-            #location_metadata_bro_gld['levering_id']=upload_info.json()['identifier']
-
-            # Als het goed gaat, geen update nodig
-            #TODO location metadata naar database
-            #return(location_metadata_bro_gld)    
 
         except:
         
@@ -146,8 +153,6 @@ def gld_start_registration(qualityregime, deliveryaccountableparty,broidgmw, fil
                         comments = 'Leveren startregistratierequest mislukt'
                     )
                 )
-            # Todo location metadata naar database
-            #return(location_metadata_bro_gld)    
     
     else:
     
@@ -167,14 +172,62 @@ def gld_start_registration(qualityregime, deliveryaccountableparty,broidgmw, fil
                     comments = 'Startregistratierequest niet valide'
                 )
             )
-         
-        #TODO metadata naar database
-        #return(location_metadata_bro_gld)  
-        
-        
-        
+                 
 
-def run_gld_reg_init(acces_token_bro_portal,
+def check_delivery_status_levering(gld_registration):
+
+    if GLD_AANLEVERING_SETTINGS['env'] == 'demo':
+        demo=True
+    else:
+        demo=False
+        
+    upload_info = gwm.check_delivery_status(gld_registration.levering_id, 
+                                            GLD_AANLEVERING_SETTINGS['acces_token_bro_portal'], 
+                                            demo)       
+    try:
+    
+        if upload_info.json()['status']=='DOORGELEVERD' and upload_info.json()['brondocuments'][0]['status']=='OPGENOMEN_LVBRO':
+            
+            record, created = \
+                gld_registration_log.objects.update_or_create(
+                    id=gld_registration.id,
+                    defaults=dict(
+                        gld_bro_id=upload_info.json()['brondocuments'][0]['broId'],
+                        levering_status = upload_info.json()['brondocuments'][0]['status'],
+                        last_changed = upload_info.json()['lastChanged'],
+                        comments = 'Startregistratierequest succesvol doorgeleverd'
+                    )
+                )
+                
+            # If validation is succesfull, also start GLD registration in GLD schema
+            record, created = GroundwaterLevelDossier.objects.create(
+                id=gld_registration.id,
+                gmw_bro_id=gld_registration.gwn_bro_id,
+                tube_number=gld_registration.filter_id,
+                gld_bro_id=gld_registration.gld_bro_id)
+            
+        else:
+        
+            record, created = \
+                gld_registration_log.objects.update_or_create(
+                    id=gld_registration.id,
+                    defaults=dict(
+                        levering_status = upload_info.json()['status'],
+                        last_changed = upload_info.json()['lastChanged'],
+                        comments = 'Startregistratierequest nog niet doorgeleverd'
+                    )
+                )
+    except Exception as e:    
+        record, created = \
+                gld_registration_log.objects.update_or_create(
+                    id=gld_registration.id,
+                    defaults=dict(
+                        comments = 'Fout bij ophalen status levering: {}'.format(e)
+                    )
+                )                   
+
+
+def run_gld_initial_registration(acces_token_bro_portal,
                      organisation,
                      env,
                      monitoringnetworks, 
@@ -182,21 +235,23 @@ def run_gld_reg_init(acces_token_bro_portal,
                      expiration_log_messages):
     
     """
-    Run GLD registration for all monitoring wells in the database    
+    Run GLD registration for all monitoring wells in the database   
+    Registrations are validated first
     """
     
     gmw_tubes = GroundwaterMonitoringTubes.objects.all()
     gmw_tubes_df = pd.DataFrame(list(gmw_tubes.values()))            
-    date_modified = datetime.datetime.now().date()
+    date_modified = datetime.datetime.now()
         
-    # 1) GLD STARTREGISTRATION CREATION
+    # Register the monitoring wells
+    # Loop over all GMW objects in the database
     for i, tube in gmw_tubes_df.iterrows():
-        
+                
         # Get corresponding well ID 
         registration_object_id = tube['registration_object_id']
         gmw_well = GroundwaterMonitoringWells.objects.get(registration_object_id=registration_object_id)
         
-        # Check if well/tube already has a registration
+        # Check if well/tube already has a registration from this day?
         location_metadata_bro_gld = gld_start_registration(gmw_well.quality_regime, 
                                                            str(gmw_well.delivery_accountable_party), 
                                                            gmw_well.bro_id, 
@@ -208,86 +263,32 @@ def run_gld_reg_init(acces_token_bro_portal,
                                                            gmw_well.nitg_code, 
                                                            date_modified, 
                                                            monitoringnetworks)
+        
+        break
+        
             
                     
         
-        
-    # 2) GLD STARTREGISTRATION DELIVERY CHECK
+def check_delivery_status_initial_gld_registrations():
     
-    for i, tube in gmw_tubes_df.iterrows():
+    """
+    Check the delivery status of all currently deliverd gld registrations
+    Update the registration if the status has changed
+    """
+    # 2) GLD STARTREGISTRATION DELIVERY CHECK
+    # Loop over all gld registrations
+    gld_registrations = gld_registration_log.objects.all()
+    
+    for gld_registration in gld_registrations:
         
-        registration_object_id = tube['registration_object_id']
-        gmw_well = GroundwaterMonitoringWells.objects.get(registration_object_id=registration_object_id)
+        gld_bro_id = gld_registration.gld_bro_id
+        validation_status = gld_registration.validation_status
+        levering_id = gld_registration.levering_id
         
-        # Get the registration logging
-        gld_registration = gld_registration_log.get(gwm_bro_id=gmw_well.bro_id, filter_id=tube['tube_number'], date_modified=date_modified)
+        if gld_bro_id is None and validation_status == 'VALIDE' and levering_id is not None:
+            check_delivery_status_levering(gld_registration)
         
-        if gld_registration.gld_bro_id is None and gld_registration.validation_status == 'VALIDE' and gld_registration.levering_id is None:
-            
-                print('Checking delivery status of gld registration {}'.format(gmw_well.bro_id))
-
-                if env == 'demo':
-                    demo = True
-                else:
-                    demo = False
                 
-                identifier = gld_registration.levering_id
-                upload_info = gwm.check_delivery_status(identifier, acces_token_bro_portal, demo=demo)   
-                
-                
-                try:
-                
-                    if upload_info.json()['status']=='DOORGELEVERD' and upload_info.json()['brondocuments'][0]['status']=='OPGENOMEN_LVBRO':
-                        
-                        record, created = \
-                            gld_registration_log.objects.update_or_create(
-                                gwm_bro_id=gmw_well.bro_id,
-                                filter_id=tube['tube_number'],
-                                date_modified = date_modified,
-                                defaults=dict(
-                                    gld_bro_id=upload_info.json()['brondocuments'][0]['broId'],
-                                    levering_status = upload_info.json()['brondocuments'][0]['status'],
-                                    comments = 'Startregistratierequest niet valide'
-                                )
-                            )
-                            
-                        
-                                                
-                        # Geen registratie, proces is goedgegaan, broid geregistreerd
-
-                    else:
-                    
-                        location_metadata_bro_gld['opnamestatus']= upload_info.json()['brondocuments'][0]['status']
-
-                        record, created = \
-                            gld_registration_log.objects.update_or_create(
-                                gwm_bro_id=gmw_well.bro_id,
-                                filter_id=tube['tube_number'],
-                                date_modified = date_modified,
-                                defaults=dict(
-                                    validation_status = 'VALIDE',
-                                    levering_id = identifier,
-                                    levering_status = upload_info.json()['status'],
-                                    comments = 'Foutieve levering startregistratierequest'
-                                )
-                            )
-                except:
-                
-                    record, created = \
-                            gld_registration_log.objects.update_or_create(
-                                gwm_bro_id=gmw_well.bro_id,
-                                filter_id=tube['tube_number'],
-                                date_modified = date_modified,
-                                defaults=dict(
-                                    validation_status = 'VALIDE',
-                                    levering_id = identifier,
-                                    levering_status = None,
-                                    comments = 'Fout bij ophalen status levering'
-                                )
-                            )                   
-
-
-        
     
 class Command(BaseCommand):
     help = """Custom command for import of GIS data."""
@@ -301,9 +302,13 @@ class Command(BaseCommand):
         failed_dir = GLD_AANLEVERING_SETTINGS['failed_dir_gld_registration']
         expiration_log_messages = GLD_AANLEVERING_SETTINGS['expiration_log_messages']
            
-        run_gld_reg_init(acces_token_bro_portal,
-                         organisation,
-                         env,
-                         monitoringnetworks,
-                         failed_dir, 
-                         expiration_log_messages)
+        # Run the initial registration of all GMW objects in the database
+        run_gld_initial_registration(acces_token_bro_portal,
+                          organisation,
+                          env,
+                          monitoringnetworks,
+                          failed_dir, 
+                          expiration_log_messages)
+        
+        # Check the status of deliveries
+        check_delivery_status_initial_gld_registrations()

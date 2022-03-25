@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 
-#%%
 
 import pandas as pd
 import LizardTools as lt
@@ -29,23 +28,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-#%%
-
 # cd C:\Users\karl.schutt\Documents\Projecten\Brabant_BRO_koppeling\dev_herzien\gld_aanlevering
 
 
-#%%
-
-from bro_converter.settings import NENS_DEMO_SETTINGS
-from _nens_demo.models import gld_addition_log_voorlopig, gld_addition_log_controle, gld_addition_log_volledig, aanleverinfo_filters
+from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
+from gld_aanlevering.models import GroundwaterMonitoringWells, GroundwaterMonitoringTubes, gld_registration_log, aanleverinfo_filters, gld_addition_log_voorlopig, gld_addition_log_controle, gld_addition_log_volledig
 
 model_translation = {'WNS9040':gld_addition_log_voorlopig,'WNS9040.hand':gld_addition_log_controle, 'WNS9040.val':gld_addition_log_volledig}
 
-#%% Functions
-
-# =============================================================================
-# 1. Queries
-# =============================================================================
 
 def get_broid_gmw(extra_metadata,env,organisation):
     try: 
@@ -285,15 +275,7 @@ def generate_gld_addition_with_procedure_initialization(model, param, parameters
     
     sourcedocdata['metadata']['dateStamp']=str(max(tsdata['time']).split('T')[0])
     sourcedocdata['result'] = tsdata_dict
-        
-
-        # Hier kan niks gedocumenteerd worden in de db. Als het hier fout gaat, heeft de tijdreeks geen events
-        #payload = 'SKIP'
-        #filename = 'SKIP'
-        #tsdata = 'SKIP'
-        #record_info = 'SKIP'
-        #return(payload,filename,tsdata,record_info)
-    
+            
     start = min(tsdata.index).strftime('%Y-%m-%dT%H:%M:%SZ')
     end = max(tsdata.index).strftime('%Y-%m-%dT%H:%M:%SZ')       
     record_info = {'model':model,'location':location,'start':start,'end':end,'broid':broid}
@@ -316,82 +298,6 @@ def generate_gld_addition_with_procedure_initialization(model, param, parameters
         tsdata = 'SKIP'
         record_info = 'SKIP'
         return(payload, filename, tsdata, record_info)
-
-# =============================================================================
-# Lizard api
-# =============================================================================
-def get_timeseries_extraparameters(timeseries,timeseries_id,environment,organisation):
-    for item in timeseries['extra_metadata'][timeseries_id]['bro'][environment]:
-        if item['organisation']==organisation:
-            metadata_parameters = item['metadata']
-            procedure_parameters = item['procedure']['parameters']
-    return(metadata_parameters, procedure_parameters)
-
-@transaction.atomic
-def get_selected_locations_lizard(lizard_headers):
-    
-    url = 'https://brabant.lizard.net/api/v4/locations/?organisation__uuid=c152eb2647d74444956c15da0dcf5464'
-    download = lt.lizard_api_downloader(url = url, headers = lizard_headers, page_size = 50)
-    download.execute(10)
-    locations = download.results
-        
-    # Select locations with gmw bro-id in Lizard:
-    locations['broid-gmw'] = locations['extra_metadata'].apply(lambda x: get_broid_gmw(x,'demo','nens'))
-    locations['broid-gld'] = locations['extra_metadata'].apply(lambda x: get_broid_gld(x,'demo','nens'))
-    locations['qualityregime'] = locations['extra_metadata'].apply(lambda x: get_qualityregime_gld(x,'demo','nens'))
-    locations['deliveryaccountableparty'] = locations['extra_metadata'].apply(lambda x: get_deliveryaccountableparty_gld(x,'demo','nens'))
-    
-    return(locations)
-
-@transaction.atomic
-def get_selected_timeseries_lizard(param,locations,organisation,environment, lizard_headers):
-    url = 'https://brabant.lizard.net/api/v4/timeseries/?location__organisation__uuid=c152eb2647d74444956c15da0dcf5464&observation_type__code={}'.format(param)
-    download = lt.lizard_api_downloader(url = url, headers = lizard_headers, page_size = 50)
-    download.execute(10)
-    timeseries = download.results
-    timeseries = format_timeseries_metadata(timeseries, locations, organisation, environment)
-
-    # Alleen voor tijdreeksen met een BRO GLD ID kan aanlevering plaatsvinden    
-    timeseries = timeseries[timeseries['gld_registration_broid'].isnull()==False]
-
-    timeseries.index = range(len(timeseries))
-    return(timeseries)
-
-def patch_timeseries_extra_metadata_lizard(procedure_id,timeseries,timeseries_id,environment,organisation,lizard_headers):
-            
-    for item in  timeseries['extra_metadata'][timeseries_id]['bro'][environment]:
-        if item['organisation']==organisation:
-
-            item['procedure']['id'] = procedure_id
-
-            req = requests.patch(url = 'https://brabant.lizard.net/api/v4/timeseries/{}/'.format(timeseries['uuid'][timeseries_id]),data=json.dumps({'extra_metadata':
-                                    timeseries['extra_metadata'][timeseries_id]}), headers = lizard_headers) 
-
-            req.json()
-            return(timeseries)
-
-def get_new_timeseriesdata(model, filtercode, timeseries, timeseries_id, environment, organisation, lizard_headers):
-    
-    startdate = None
-    enddates = []
-    for item in model.objects.filter(location=filtercode):
-        enddates.append(getattr(item,'end'))
-    if len(enddates) > 0:
-        startdate=max(enddates)     
-    
-    ts_uuid = timeseries['uuid'][timeseries_id]
-    
-    if startdate == None:
-         lt.lizard_timeseries_downloader(ts_uuid, lizard_headers)
-         download = lt.lizard_timeseries_downloader(ts_uuid, lizard_headers)
-         download.execute(10)
-    else:
- 
-         real_startdate = datetime.datetime.strftime(datetime.datetime.strptime(startdate,'%Y-%m-%dT%H:%M:%SZ')+datetime.timedelta(0, 1),'%Y-%m-%dT%H:%M:%SZ')
-         download = lt.lizard_timeseries_downloader(ts_uuid, lizard_headers, startdate=real_startdate)
-         download.execute(10)    
-     
-    return(download.results)
 
 # =============================================================================
 # Bronhouderportaal api exchange
@@ -554,7 +460,9 @@ def retrieve_procedure(timeseries,timeseries_id, param,parameters,sourcedoc_inpu
         print('Procedure retrieved: {}'.format(procedure_id))
         return(timeseries, procedure_id, skip)
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
 def deliver_sourcedoc_addition(model, tsdata_chunk, timeseries, timeseries_id, location, param,parameters,deliveryAccountableParty,qualityRegime, broid,sourcedocdata ,tempdir, acces_token_bro_portal, lizard_headers, procedure, environment, organisation):
     
     start = min(tsdata_chunk.index).strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -789,53 +697,67 @@ def upload_new_timeseries_data(timeseries, environment, organisation, lizard_hea
     return(timeseries, logging)
 
 
-#%%
+def get_timeseries_for_location():
+    pass
 
-def run_gld_add_rec(organisation, environment, tempdir,validation_mapping_table, lizard_headers, acces_token_bro_portal):
-
-#%%
+def get_gld_registration_locations():
     
-    # Timezone standards
-    timezone_lizard = pytz.timezone("UTC")
-    timezone_bro = pytz.timezone("Europe/Amsterdam")
-        
-    # Get selected locations from Lizard
-    print('Download location metadata from Lizard ...')
-    locations = get_selected_locations_lizard(lizard_headers)
-    print(locations['broid-gld'].unique())
+    gld_registrations = gld_registration_log.Objects.all()
 
-    # Define parameters
-    parameters = {'WNS9040':{'status':'voorlopig','observationtype':'reguliereMeting'},'WNS9040.hand':{'status':None,'observationtype':'controlemeting'}}
 
-    #%% Itterate over parameters:
-       
-    for param in parameters.keys():
-                
-        purge(tempdir)
+def run_gld_add_rec(organisation, environment, tempdir, acces_token_bro_portal):
+    
+    
+    bro_gld_id = 'GLD000000045471'
+    
+    timezone_bro = pytz.timezone("Europe/Amsterdam")    
+    # Parameters voorlopig & volledig beoordeeld:
+    metadata_parameters_1= {'principalInvestigator':{'europeanCompanyRegistrationNumber':'DEB8537.HRB66039'}, # kvk principalinvestigator
+                'observationType':'reguliereMeting'
+                 }
+    
+    procedure_parameters_1 = {'airPressureCompensationType':'KNMImeting',
+                            'evaluationProcedure':'oordeelDeskundige',
+                            'measurementInstrumentType':'akoestischeSensor'   
+                            }
+    
+    # Timeseriesdata (Eenheid is verplicht meter tov NAP):
+    results_voorlopig = [{'time':'2018-01-07T08:14:38+01:00','value':-4.345,'metadata':{'StatusQualityControl':'goedgekeurd','interpolationType':'Discontinuous'}},#'censoredReason':}}
+                        {'time':'2018-01-21T10:01:52+01:00','value':'None','metadata':{'StatusQualityControl':'afgekeurd','interpolationType':'Discontinuous','censoringLimitvalue':0,'censoredReason':'BelowDetectionRange'}} ,                      
+                        {'time':'2018-01-28T16:58:07+01:00','value':-4.788,'metadata':{'StatusQualityControl':'goedgekeurd','interpolationType':'Discontinuous'}},#'censoredReason':}}                        
+                        ]
+    
         
-        #%% Get model
-        model = model_translation[param]
-        print(model)
-        
-        #%% Get all timeseries for organisation and selected parameter
-        print('Download timeseries metadata from Lizard (parameter = {}) ...'.format(param))
-        timeseries = get_selected_timeseries_lizard(param,locations,organisation,environment, lizard_headers)
-        print(timeseries)
-        #%% Nieuwe tijdreeksdata in Lizard naar BRO verzenden, statusrequest ophalen
-        
-        upload_new_timeseries_data(timeseries, environment, organisation, lizard_headers, timezone_lizard, timezone_bro, param, 
-                                         validation_mapping_table, tempdir, parameters, 
-                                         acces_token_bro_portal,model)        
-        
-        
-        
-        # timeseries, logging = upload_new_timeseries_data(timeseries, environment, organisation, lizard_headers, timezone_lizard, timezone_bro, param, 
-        #                                 validation_mapping_table, tempdir, parameters, 
-        #                                 acces_token_bro_portal)
-        
+    # Input arguments sourcedocs additions (voorlopig, volledigBeoordeeld & controlemeting)  
+    arglist_voorlopig =  {'metadata':{'status':'voorlopig','parameters':metadata_parameters_1},
+                            'procedure':{'parameters':procedure_parameters_1}, 
+                            'result':results_voorlopig, 
+                            }    
 
+    
+    # We collect timeseries data based on either a gld registration object
+    # Or a stop and start time with gmw ids
+    
+    # Retreive procedure
+    
+    
+    
+    # Remove all failed XML's from the temporary failed dir
+    purge(tempdir)
         
-        #%% Status controleren van aangeleverde data
+    model = model_translation[param]
+    print(model)
+    
+    print('Download timeseries metadata from Lizard (parameter = {}) ...'.format(param))
+    print(timeseries)
+    
+    upload_new_timeseries_data(timeseries, environment, organisation, lizard_headers, timezone_lizard, timezone_bro, param, 
+                                     validation_mapping_table, tempdir, parameters, 
+                                     acces_token_bro_portal,model)        
+    
+        
+     
+
         
 
 class Command(BaseCommand):       
@@ -843,15 +765,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         #print(NENS_DEMO_SETTINGS)
         
-        organisation = NENS_DEMO_SETTINGS['organisation']
-        environment = NENS_DEMO_SETTINGS['env']
-        tempdir = NENS_DEMO_SETTINGS['failed_dir_gld_addition']
-        lizard_headers = NENS_DEMO_SETTINGS['lizard_headers']
-        acces_token_bro_portal = NENS_DEMO_SETTINGS['acces_token_bro_portal']
-        validation_mapping_table = NENS_DEMO_SETTINGS['validation_mapping_table']
+        organisation = GLD_AANLEVERING_SETTINGS['organisation']
+        environment = GLD_AANLEVERING_SETTINGS['env']
+        tempdir = GLD_AANLEVERING_SETTINGS['failed_dir_gld_addition']
+        acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal']
         
         #try:
-        run_gld_add_rec(organisation, environment, tempdir, validation_mapping_table, lizard_headers, acces_token_bro_portal)
+        run_gld_add_rec(organisation, environment, tempdir, acces_token_bro_portal)
         #except:
         #    sys.exit('FAILED')
         

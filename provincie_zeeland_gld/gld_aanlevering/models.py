@@ -13,11 +13,13 @@ from django.db import models
 class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_id = models.IntegerField(blank=True, null=True)
+    gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
+    gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = db_table = 'gld\".\"groundwater_level_dossier'
         verbose_name = 'Groundwaterlevel dossier'
         verbose_name_plural = 'Groundwater level dossier'
@@ -39,9 +41,10 @@ class MeasurementPointMetadata(models.Model):
 
 class MeasurementTimeSeries(models.Model):
     measurement_time_series_id = models.AutoField(primary_key=True)
-
+    gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
+    filter_nr = models.CharField(max_length=255, blank=True, null=True)
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"measurement_time_series'
         verbose_name = 'Measurement timeseries'
         verbose_name_plural = 'Measurement timeseries'
@@ -72,9 +75,10 @@ class MeasurementTvp(models.Model):
     corrected_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     correction_time = models.DateTimeField(blank=True, null=True)
     correction_reason = models.CharField(max_length=255, blank=True, null=True)
+    measurement_metadata_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"measurement_tvp'
         verbose_name = 'Measurement tvp'
         verbose_name_plural = 'Measurement tvp'
@@ -342,6 +346,8 @@ class gld_registration_log(models.Model):
     levering_status = models.CharField(max_length=254, null=True, blank=True)
     gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=254, null=True, blank=True)
+    last_changed=models.CharField(max_length=254, null=True, blank=True)
+
 
     class Meta:
         db_table='aanlevering\".\"gld_registration_log'
