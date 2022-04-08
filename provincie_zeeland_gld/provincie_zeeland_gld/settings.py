@@ -42,8 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'gld_aanlevering',
-    'django_admin_generator'
-]
+    'django_admin_generator']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -82,7 +81,7 @@ WSGI_APPLICATION = 'provincie_zeeland_gld.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gld_zeeland',                      
+        'NAME': 'gld_zeeland_productie',                      
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': 'localhost',
@@ -169,6 +168,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #     } 
 # )
 
+# Mail configuration
+DEFAULT_FROM_EMAIL = 'emile.debadts1@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'emile.debadts1@gmail.com'
+EMAIL_HOST_PASSWORD = '77LYiBTQQF8vwxe799pa'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
@@ -181,6 +188,9 @@ GLD_AANLEVERING_SETTINGS = {
     'monitoringnetworks':None,
     'failed_dir_gld_registration':os.path.join(BASE_DIR,'failed/gld_aanlevering/gld_startregistration'),
     'failed_dir_gld_addition':os.path.join(BASE_DIR,'failed/_nens_demo/gld_addition'),
+    'additions_dir':os.path.join(BASE_DIR, 'gld_aanlevering/additions'),
+    'delivery_retry_attempts': 3,
+    'warning_mail_recipient': 'emile.debadts@nelen-schuurmans.nl',
     'validation_mapping_table':{'WNS9040.val':{'2':'goedgekeurd','5':'onbeslist','8':'afgekeurd','9':'goedgekeurd'},'WNS9040':{'9':'nogNietBeoordeeld'}, 'WNS9040.hand':{'9':'goedgekeurd'}},
     'expiration_log_messages':1000
 }

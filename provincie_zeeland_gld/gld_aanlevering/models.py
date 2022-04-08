@@ -3,7 +3,7 @@
 #   * Rearrange models' order
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
@@ -14,9 +14,9 @@ class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_id = models.IntegerField(blank=True, null=True)
     gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
+    gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
-    gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -29,11 +29,12 @@ class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
     qualifier_by_category = models.IntegerField(blank=True, null=True)
     censored_reason = models.IntegerField(blank=True, null=True)
-    qualifier_by_quantity = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    qualifier_by_quantity = models.DecimalField(max_digits=100, decimal_places=10, blank=True, null=True)
     interpolation_code = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
+        app_label = 'gld_aanlevering'
         db_table = 'gld\".\"measurement_point_metadata'
         verbose_name = 'Measurement point metadata'
         verbose_name_plural = 'Measurement point metadata'
@@ -41,8 +42,7 @@ class MeasurementPointMetadata(models.Model):
 
 class MeasurementTimeSeries(models.Model):
     measurement_time_series_id = models.AutoField(primary_key=True)
-    gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
-    filter_nr = models.CharField(max_length=255, blank=True, null=True)
+    observation_id = models.IntegerField(blank=True, null=True)
     class Meta:
         managed = True
         db_table = 'gld\".\"measurement_time_series'
@@ -50,6 +50,7 @@ class MeasurementTimeSeries(models.Model):
         verbose_name_plural = 'Measurement timeseries'
 
 
+# We don't use this 
 class MeasurementTimeseriesTvpObservation(models.Model):
     measurement_timeseries_tvp_observation_id = models.AutoField(primary_key=True)
     groundwater_level_dossier_id = models.IntegerField(blank=True, null=True)
@@ -59,20 +60,19 @@ class MeasurementTimeseriesTvpObservation(models.Model):
     metadata_observation_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"measurement_timeseries_tvp_observation'
         verbose_name = 'Measurement timeseries tvp observation'
         verbose_name_plural = 'Measurement timeseries tvp observation'
-
-
 
 class MeasurementTvp(models.Model):
     measurement_tvp_id = models.AutoField(primary_key=True)
     measurement_time_series_id = models.IntegerField(blank=True, null=True)
     measurement_time = models.DateTimeField(blank=True, null=True)
-    field_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    calculated_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    corrected_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    field_value = models.DecimalField(max_digits=100, decimal_places=10, blank=True, null=True)
+    field_value_unit = models.CharField(max_length=255, blank=True, null=True)
+    calculated_value = models.DecimalField(max_digits=100, decimal_places=10, blank=True, null=True)
+    corrected_value = models.DecimalField(max_digits=100, decimal_places=10, blank=True, null=True)
     correction_time = models.DateTimeField(blank=True, null=True)
     correction_reason = models.CharField(max_length=255, blank=True, null=True)
     measurement_metadata_id = models.IntegerField(blank=True, null=True)
@@ -84,6 +84,24 @@ class MeasurementTvp(models.Model):
         verbose_name_plural = 'Measurement tvp'
 
 
+class Observation(models.Model):
+    observation_id = models.AutoField(primary_key=True)
+    observationperiod = models.DurationField(blank=True, null=True)
+    observation_starttime = models.DateTimeField(blank=True, null=True)
+    result_time = models.DateTimeField(blank=True, null=True)
+    observation_endtime = models.DateTimeField(blank=True, null=True)
+    observation_metadata_id = models.IntegerField(blank=True, null=True)
+    observation_process_id = models.IntegerField(blank=True, null=True)
+    groundwater_level_dossier_id = models.IntegerField(blank=True, null=True)
+    status = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'gld\".\"observation'
+        verbose_name = 'Observation'
+        verbose_name_plural = 'Observation'
+
+
 class ObservationMetadata(models.Model):
     observation_metadata_id = models.AutoField(primary_key=True)
     date_stamp = models.DateField(blank=True, null=True)
@@ -92,7 +110,7 @@ class ObservationMetadata(models.Model):
     responsible_party_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"observation_metadata'
         verbose_name = 'Observation metadata'
         verbose_name_plural = 'Observation metadata'
@@ -106,7 +124,7 @@ class ObservationProcess(models.Model):
     parameter_evaluation_procedure = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"observation_process'
         verbose_name = 'Observation process'
         verbose_name_plural = 'Observation process'
@@ -118,7 +136,7 @@ class ResponsibleParty(models.Model):
     organisation_name = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"responsible_party'
         verbose_name = 'Responsible party'
         verbose_name_plural = 'Responsible party'
@@ -132,7 +150,7 @@ class TypeAirPressureCompensation(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_air_pressure_compensation'
 
 
@@ -144,7 +162,7 @@ class TypeCensoredReasonCode(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_censored_reason_code'
 
 
@@ -154,9 +172,9 @@ class TypeEvaluationProcedure(models.Model):
     definition_nl = models.CharField(max_length=255, blank=True, null=True)
     imbro = models.BooleanField(blank=True, null=True)
     imbro_a = models.BooleanField(blank=True, null=True)
-
+    
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_evaluation_procedure'
 
 
@@ -168,7 +186,7 @@ class TypeInterpolationCode(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_interpolation_code'
 
 
@@ -180,7 +198,7 @@ class TypeMeasementInstrumentType(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_measement_instrument_type'
 
 
@@ -192,7 +210,7 @@ class TypeObservationType(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_observation_type'
 
 
@@ -204,7 +222,7 @@ class TypeProcessReference(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_process_reference'
 
 
@@ -216,7 +234,7 @@ class TypeProcessType(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_process_type'
 
 
@@ -228,7 +246,7 @@ class TypeStatusCode(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_status_code'
 
 
@@ -240,7 +258,7 @@ class TypeStatusQualityControl(models.Model):
     imbro_a = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gld\".\"type_status_quality_control'
         
 #%% GMW Models
@@ -253,7 +271,7 @@ class DeliveredLocations(models.Model):
     horizontal_positioning_method = models.TextField(blank=True, null=True)  # This field type is a guess.
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gmw\".\"delivered_locations'
 
 
@@ -267,7 +285,7 @@ class DeliveredVerticalPositions(models.Model):
     ground_level_positioning_method = models.TextField(blank=True, null=True)  # This field type is a guess.
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gmw\".\"delivered_vertical_positions'
 
 
@@ -295,7 +313,7 @@ class GroundwaterMonitoringWells(models.Model):
     well_construction_date = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gmw\".\"groundwater_monitoring_wells'
 
 class GroundwaterMonitoringTubes(models.Model):
@@ -320,7 +338,7 @@ class GroundwaterMonitoringTubes(models.Model):
     sediment_sump_length = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gmw\".\"groundwater_monitoring_tubes'
 
 
@@ -328,7 +346,7 @@ class GroundwaterMonitoringTubes(models.Model):
 
 class aanleverinfo_filters(models.Model):
     meetpunt = models.CharField(max_length=254, null=True, blank=True)
-    #filter_id = models.CharField(max_length=254, null=True, blank=True)
+    filter_id = models.CharField(max_length=254, null=True, blank=True)
     aanleveren = models.CharField(max_length=254, null=True, blank=True)
     
     class Meta:
@@ -348,7 +366,6 @@ class gld_registration_log(models.Model):
     comments = models.CharField(max_length=254, null=True, blank=True)
     last_changed=models.CharField(max_length=254, null=True, blank=True)
 
-
     class Meta:
         db_table='aanlevering\".\"gld_registration_log'
         verbose_name = "GLD registration register"
@@ -357,7 +374,7 @@ class gld_registration_log(models.Model):
 
 class gld_addition_log_controle(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
-    location = models.CharField(max_length=254, null=True, blank=True)
+    observation_id = models.CharField(max_length=254, null=True, blank=True)
     start = models.CharField(max_length=254, null=True, blank=True)
     end = models.CharField(max_length=254, null=True, blank=True)
     broid_registration = models.CharField(max_length=254, null=True, blank=True)
@@ -376,7 +393,7 @@ class gld_addition_log_controle(models.Model):
 
 class gld_addition_log_voorlopig(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
-    location = models.CharField(max_length=254, null=True, blank=True)
+    observation_id = models.CharField(max_length=254, null=True, blank=True)
     start = models.CharField(max_length=254, null=True, blank=True)
     end = models.CharField(max_length=254, null=True, blank=True)
     broid_registration = models.CharField(max_length=254, null=True, blank=True)
@@ -385,7 +402,8 @@ class gld_addition_log_voorlopig(models.Model):
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
-    comments = models.CharField(max_length=254, null=True, blank=True)
+    comments = models.CharField(max_length=1000, null=True, blank=True)
+    file=models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
         db_table='aanlevering\".\"gld_addition_log_voorlopig'
@@ -395,7 +413,7 @@ class gld_addition_log_voorlopig(models.Model):
 
 class gld_addition_log_volledig(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
-    location = models.CharField(max_length=254, null=True, blank=True)
+    observation_id = models.CharField(max_length=254, null=True, blank=True)
     start = models.CharField(max_length=254, null=True, blank=True)
     end = models.CharField(max_length=254, null=True, blank=True)
     broid_registration = models.CharField(max_length=254, null=True, blank=True)

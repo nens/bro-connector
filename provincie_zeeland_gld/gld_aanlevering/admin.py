@@ -393,7 +393,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
 class gld_addition_log_controleAdmin(admin.ModelAdmin):
     list_display = ('date_modified',
-                    'location',
+                    'observation_id',
                     'start',
                     'end',
                     'validation_status',
@@ -405,7 +405,7 @@ class gld_addition_log_controleAdmin(admin.ModelAdmin):
 
 class gld_addition_log_voorlopigAdmin(admin.ModelAdmin):
     list_display = ('date_modified',
-                    'location',
+                    'observation_id',
                     'start',
                     'end',
                     'validation_status',
@@ -417,7 +417,7 @@ class gld_addition_log_voorlopigAdmin(admin.ModelAdmin):
 
 class gld_addition_log_volledigAdmin(admin.ModelAdmin):
     list_display = ('date_modified',
-                    'location',
+                    'observation_id',
                     'start',
                     'end',
                     'validation_status',

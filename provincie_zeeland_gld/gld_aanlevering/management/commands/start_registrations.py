@@ -199,13 +199,6 @@ def check_delivery_status_levering(gld_registration):
                     )
                 )
                 
-            # If validation is succesfull, also start GLD registration in GLD schema
-            record, created = GroundwaterLevelDossier.objects.create(
-                id=gld_registration.id,
-                gmw_bro_id=gld_registration.gwn_bro_id,
-                tube_number=gld_registration.filter_id,
-                gld_bro_id=gld_registration.gld_bro_id)
-            
         else:
         
             record, created = \
@@ -217,6 +210,7 @@ def check_delivery_status_levering(gld_registration):
                         comments = 'Startregistratierequest nog niet doorgeleverd'
                     )
                 )
+
     except Exception as e:    
         record, created = \
                 gld_registration_log.objects.update_or_create(
@@ -228,11 +222,11 @@ def check_delivery_status_levering(gld_registration):
 
 
 def run_gld_initial_registration(acces_token_bro_portal,
-                     organisation,
-                     env,
-                     monitoringnetworks, 
-                     failed_dir, 
-                     expiration_log_messages):
+                                 organisation,
+                                 env,
+                                 monitoringnetworks, 
+                                 failed_dir, 
+                                 expiration_log_messages):
     
     """
     Run GLD registration for all monitoring wells in the database   
@@ -284,11 +278,25 @@ def check_delivery_status_initial_gld_registrations():
         gld_bro_id = gld_registration.gld_bro_id
         validation_status = gld_registration.validation_status
         levering_id = gld_registration.levering_id
-        
-        if gld_bro_id is None and validation_status == 'VALIDE' and levering_id is not None:
-            check_delivery_status_levering(gld_registration)
-        
                 
+        if gld_bro_id is None and validation_status == 'VALIDE' and levering_id is not None:
+            print(f'Checking levering with ID: {gld_registration.levering_id}')
+            check_delivery_status_levering(gld_registration)
+        elif gld_bro_id is not None and gld_registration.levering_status == 'OPGENOMEN_LVBRO':
+            
+            print(f'Checking if GLD research is added to database: {gld_bro_id}')
+            # Check if the GLD id is in the GLD schema database            
+            if GroundwaterLevelDossier.objects.filter(gld_bro_id=gld_bro_id).count() == 0:
+                
+                # If validation is succesfull and GLD id not present in database yet, also start GLD registration in GLD schema
+                research_start_date = datetime.datetime.now().date()
+                            
+                record = GroundwaterLevelDossier.objects.create(
+                    gmw_bro_id=gld_registration.gwm_bro_id,
+                    groundwater_monitoring_tube_id=gld_registration.filter_id,
+                    gld_bro_id=gld_bro_id,
+                    research_start_date=research_start_date.isoformat())  
+            
     
 class Command(BaseCommand):
     help = """Custom command for import of GIS data."""
@@ -303,12 +311,12 @@ class Command(BaseCommand):
         expiration_log_messages = GLD_AANLEVERING_SETTINGS['expiration_log_messages']
            
         # Run the initial registration of all GMW objects in the database
-        run_gld_initial_registration(acces_token_bro_portal,
-                          organisation,
-                          env,
-                          monitoringnetworks,
-                          failed_dir, 
-                          expiration_log_messages)
+        # run_gld_initial_registration(acces_token_bro_portal,
+        #                   organisation,
+        #                   env,
+        #                   monitoringnetworks,
+        #                   failed_dir, 
+        #                   expiration_log_messages)
         
         # Check the status of deliveries
         check_delivery_status_initial_gld_registrations()
