@@ -83,6 +83,7 @@ def get_timeseries_tvp_for_measurement_time_series_id(measurement_time_series_id
         metadata = get_measurement_point_metadata_for_measurement(measurement_point_metadata_id)
         
         # If the measurement value is None, this value must have been censored
+        # TODO calculated value should be delivered
         if measurement.field_value is None:
             
             if metadata['censoredReason'] is None:                
@@ -208,6 +209,7 @@ def get_gld_registration_data_for_observation(observation):
     gmw_bro_id = gld_data.gmw_bro_id
     
     # Get the quality regime for the well
+    # TODO quality regime changes, new well in database?
     gmw_well = models.GroundwaterMonitoringWells.objects.get(bro_id=gmw_bro_id)
     quality_regime = gmw_well.quality_regime
     
@@ -232,6 +234,8 @@ def generate_gld_addition_sourcedoc_data(observation,
     measurements_length = len(measurement_timeseries_tvp)
     
     # TODO if there is no GLD registration for this observation, log
+    # can be that measurements are loaded into database before registration is made
+    # measurements should be delivered later 
     gld_bro_id, quality_regime = get_gld_registration_data_for_observation(observation)
 
     # Create a new directory for the observation additions 
@@ -320,13 +324,13 @@ def gld_addition(organisation, environment, tempdir, additions_dir, acces_token_
             
         
         if observation.status == 'source_document_validation_failed':
-            continue
+            pass
             # TODO try to regenerate source documents if something is changed about the observation
         
                 
         elif observation.status == 'source_document_delivery_failed':
             # This will 
-            continue
+            pass
     
         elif observation.status == 'observation_status_changed':
             # Comes from validation module
@@ -336,7 +340,7 @@ def gld_addition(organisation, environment, tempdir, additions_dir, acces_token_
             pass
         
         elif observation.status == 'flagged_for_deletion':
-            continue
+            pass
                         
         # payload_as_dict = xmltodict.parse(payload)
         # procedure_id = payload_as_dict['registrationRequest']['sourceDocument']['GLD_Addition']['observation']['om:OM_Observation']['om:procedure']['wml2:ObservationProcess']['@gml:id']        

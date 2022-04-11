@@ -365,6 +365,11 @@ class gld_registration_log(models.Model):
     gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=254, null=True, blank=True)
     last_changed=models.CharField(max_length=254, null=True, blank=True)
+    corrections_applied = models.BooleanField(blank=True, null=True)
+    timestamp_end_registration=models.DateTimeField(blank=True, null=True)
+    quality_regime=models.CharField(max_length=254, null=True, blank=True)
+    file=models.CharField(max_length=254, null=True, blank=True)
+    process_status=models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
         db_table='aanlevering\".\"gld_registration_log'
