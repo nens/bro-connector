@@ -15,12 +15,6 @@ from gld_aanlevering import models
 
 failed_update_strings = ['failed_once', 'failed_twice', 'failed_thrice']
 
-def send_warning_mail(message, recipient):
-    subject = 'GLD Module - aanlevering gegevens gefaald'
-    send_mail(subject, 
-              message,
-              settings.DEFAULT_FROM_EMAIL, [recipient])
-
 def validate_gld_addition_source_document(observation_id, filename, acces_token_bro_portal):
     
     """
@@ -28,7 +22,7 @@ def validate_gld_addition_source_document(observation_id, filename, acces_token_
     """
     source_doc_file = os.path.join(GLD_AANLEVERING_SETTINGS['additions_dir'], filename)
     payload = open(source_doc_file)
-
+    
     try:    
         validation_info = gwm.validate_sourcedoc(payload, acces_token_bro_portal, demo=True)
         validation_status = validation_info['status']
@@ -45,10 +39,10 @@ def validate_gld_addition_source_document(observation_id, filename, acces_token_
         else:
             comments = 'Succesfully validated sourcedocument, no errors'
         
-        models.gld_addition_log_voorlopig.objects.update_or_create(
+        models.gld_addition_log.objects.update_or_create(
                 observation_id=observation_id,
                 defaults={'date_modified': datetime.datetime.now(),
-                          'comments': comments,
+                          'comments': comments[0:20000],
                           'validation_status': validation_status})
 
         record, created = \
@@ -57,8 +51,8 @@ def validate_gld_addition_source_document(observation_id, filename, acces_token_
                 defaults={'status':'source_document_validation_succeeded'})
 
 
-    except Exception as e:        
-        models.gld_addition_log_voorlopig.objects.update_or_create(
+    except Exception as e:    
+        models.gld_addition_log.objects.update_or_create(
                 observation_id=observation_id,
                 defaults={'date_modified': datetime.datetime.now(),
                           'comments': 'Failed to validate source document: {}'.format(e)})
@@ -77,7 +71,7 @@ def deliver_gld_addition_source_document(observation_id, filename, acces_token_b
     Deliver GLD addition sourcedocument to the BRO
     """
 
-    gld_addition = models.gld_addition_log_voorlopig.objects.get(observation_id=observation_id)
+    gld_addition = models.gld_addition_log.objects.get(observation_id=observation_id)
     source_doc_file = os.path.join(GLD_AANLEVERING_SETTINGS['additions_dir'], filename)
     payload = open(source_doc_file)
     request = {filename: payload}
@@ -97,7 +91,7 @@ def deliver_gld_addition_source_document(observation_id, filename, acces_token_b
             
             comments = 'Error occured during delivery of sourcedocument'
             
-            models.gld_addition_log_voorlopig.objects.update_or_create(
+            models.gld_addition_log.objects.update_or_create(
                     observation_id=observation_id,
                     defaults={'date_modified': datetime.datetime.now(),
                               'comments': comments,
@@ -108,7 +102,7 @@ def deliver_gld_addition_source_document(observation_id, filename, acces_token_b
             lastchanged = upload_info.json()['lastChanged']
             comments = 'Succesfully delivered sourcedocument'
             
-            models.gld_addition_log_voorlopig.objects.update_or_create(
+            models.gld_addition_log.objects.update_or_create(
                     observation_id=observation_id,
                     defaults={'date_modified': datetime.datetime.now(),
                               'comments': comments,
@@ -126,7 +120,7 @@ def deliver_gld_addition_source_document(observation_id, filename, acces_token_b
         
         comments = 'Error occured in attempting to deliver sourcedocument, {}'.format(e)
         
-        models.gld_addition_log_voorlopig.objects.update_or_create(
+        models.gld_addition_log.objects.update_or_create(
                 observation_id=observation_id,
                 defaults={'date_modified': datetime.datetime.now(),
                           'comments': comments,
@@ -146,20 +140,21 @@ def check_status_gld_addition(observation_id, levering_id, acces_token_bro_porta
         if delivery_status == 'DOORGELEVERD':
 
             comments = 'GLD addition is approved'
-            models.gld_addition_log_voorlopig.objects.update_or_create(
+            models.gld_addition_log.objects.update_or_create(
                 observation_id=observation_id,
                 defaults={'date_modified': datetime.datetime.now(),
                           'comments': comments,
                           'levering_status':delivery_status})
             
+            # Update the observation status to approved
             record, created = \
                 models.Observation.objects.update_or_create(
                     observation_id=observation_id,
                     defaults={'status':'delivery_approved'})
-        
+                        
         else:
             comments = 'Status check succesful, not yet approved'
-            models.gld_addition_log_voorlopig.objects.update_or_create(
+            models.gld_addition_log.objects.update_or_create(
                 observation_id=observation_id,
                 defaults={'date_modified': datetime.datetime.now(),
                           'comments': comments,
@@ -167,7 +162,7 @@ def check_status_gld_addition(observation_id, levering_id, acces_token_bro_porta
 
     except Exception as e:
         comments = 'Status check failed, {}'.format(e)
-        models.gld_addition_log_voorlopig.objects.update_or_create(
+        models.gld_addition_log.objects.update_or_create(
             observation_id=observation_id,
             defaults={'date_modified': datetime.datetime.now(),
                       'comments': comments,
@@ -182,14 +177,12 @@ def validate_addition(observation, acces_token_bro_portal):
     """
     
     # Get the GLD addition for this observation 
-    gld_addition = models.gld_addition_log_voorlopig.objects.get(observation_id=observation.observation_id)
+    gld_addition = models.gld_addition_log.objects.get(observation_id=observation.observation_id)
     filename = gld_addition.file
     validation_status = gld_addition.validation_status
     
     # Validate the sourcedocument for this observation
-    # Sourcedocuments are only validated once
-    if validation_status is None:
-        validation_status = validate_gld_addition_source_document(observation.observation_id, filename, acces_token_bro_portal)
+    validation_status = validate_gld_addition_source_document(observation.observation_id, filename, acces_token_bro_portal)
       
     return validation_status
         
@@ -202,7 +195,7 @@ def deliver_addition(observation, access_token_bro_portal):
     """
 
     # Get the GLD addition for this observation 
-    gld_addition = models.gld_addition_log_voorlopig.objects.get(observation_id=observation.observation_id)
+    gld_addition = models.gld_addition_log.objects.get(observation_id=observation.observation_id)
     validation_status = gld_addition.validation_status
     filename = gld_addition.file
     
@@ -216,11 +209,6 @@ def deliver_addition(observation, access_token_bro_portal):
                     observation_id=observation.observation_id,
                     defaults={'status':'source_document_delivery_failed'})
                 
-            # Send an email reporting the failure
-            recipient = GLD_AANLEVERING_SETTINGS['warning_mail_recipient']
-            message = 'Source document delivery failed thrice for observation {}'.format(observation.observation_id)
-            mail_send = send_warning_mail(message=message, 
-                                          recipient=recipient)
             
             # Remove the source document that failed
             sourcedoc_filepath = os.path.join(GLD_AANLEVERING_SETTINGS['additions_dir'], filename) 
@@ -234,7 +222,7 @@ def check_status_addition(observation, acces_token_bro_portal):
     """
     
     # Get the GLD addition for this observation 
-    gld_addition = models.gld_addition_log_voorlopig.objects.get(observation_id=observation.observation_id)
+    gld_addition = models.gld_addition_log.objects.get(observation_id=observation.observation_id)
     file_name = gld_addition.file
     levering_id = gld_addition.levering_id      
     delivery_status = gld_addition.levering_status
@@ -242,14 +230,14 @@ def check_status_addition(observation, acces_token_bro_portal):
     if delivery_status != 'OPGENOMEN_LVBRO':
         new_delivery_status = check_status_gld_addition(observation.observation_id, levering_id, acces_token_bro_portal)
     
-    if new_delivery_status != 'OPGENOMEN_LVBRO':
+    if new_delivery_status == 'OPGENOMEN_LVBRO':
         sourcedoc_filepath = os.path.join(GLD_AANLEVERING_SETTINGS['additions_dir'], file_name) 
         os.remove(sourcedoc_filepath)
     
     return new_delivery_status
 
 
-def gld_validate_and_deliver(organisation, environment, tempdir,additions_dir, acces_token_bro_portal):
+def gld_validate_and_deliver(additions_dir, acces_token_bro_portal):
     
     """
     Main algorithm that check the observations and performs actions based on the status
@@ -282,12 +270,8 @@ def gld_validate_and_deliver(organisation, environment, tempdir,additions_dir, a
         elif observation.status == 'source_document_delivered':
            delivery_status = check_status_addition(observation, acces_token_bro_portal)
 
-        elif observation.status == 'invalid_observation':
-            # When is the observation invalid? When validation fails?
-            continue
-                
         elif observation.status == 'approval_status_changed':
-            # This will come from the 
+            # This will come from the QC protocol
             # Deliver the corrections
             # Can get the original delivery back with gwmpy.get_sourcedocument
             continue
@@ -317,11 +301,7 @@ class Command(BaseCommand):
      
     def handle(self, *args, **options):
         #print(NENS_DEMO_SETTINGS)
-        
-        organisation = GLD_AANLEVERING_SETTINGS['organisation']
-        environment = GLD_AANLEVERING_SETTINGS['env']
-        tempdir = GLD_AANLEVERING_SETTINGS['failed_dir_gld_addition']
         acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal']
         additions_dir = GLD_AANLEVERING_SETTINGS['additions_dir']
         
-        gld_validate_and_deliver(organisation, environment, tempdir,additions_dir, acces_token_bro_portal)
+        gld_validate_and_deliver(additions_dir, acces_token_bro_portal)

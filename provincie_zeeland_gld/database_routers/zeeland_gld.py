@@ -1,20 +1,45 @@
+from gld_aanlevering.models import (GroundwaterLevelDossier, MeasurementPointMetadata, MeasurementTimeSeries,
+                                    MeasurementTimeseriesTvpObservation, MeasurementTvp, Observation,
+                                    ObservationMetadata, ObservationProcess, ResponsibleParty,
+                                    TypeAirPressureCompensation, TypeCensoredReasonCode, TypeEvaluationProcedure,
+                                    TypeInterpolationCode, TypeMeasurementInstrumentType, TypeObservationType,
+                                    TypeProcessReference, TypeProcessType, TypeStatusCode, TypeStatusQualityControl,
+                                    DeliveredLocations, DeliveredVerticalPositions, GroundwaterMonitoringWells,
+                                    GroundwaterMonitoringTubes, gld_registration_log, gld_addition_log)
+
+GLD_MODELS = [GroundwaterLevelDossier, MeasurementPointMetadata, MeasurementTimeSeries,
+                                    MeasurementTimeseriesTvpObservation, MeasurementTvp, Observation,
+                                    ObservationMetadata, ObservationProcess, ResponsibleParty,
+                                    TypeAirPressureCompensation, TypeCensoredReasonCode, TypeEvaluationProcedure,
+                                    TypeInterpolationCode, TypeMeasurementInstrumentType, TypeObservationType,
+                                    TypeProcessReference, TypeProcessType, TypeStatusCode, TypeStatusQualityControl]
+
+GWM_MODELS = [DeliveredLocations, DeliveredVerticalPositions, GroundwaterMonitoringWells, GroundwaterMonitoringTubes]
+
+AANLEVERING_MODELS = [gld_registration_log, gld_addition_log]
+
 class PostgresRouter:
     def db_for_read(self, model, **hints):
-        return model._meta.schema
+        if model in GLD_MODELS:
+            return 'gld'
+        elif model in GWM_MODELS:
+            return 'gmw'
+        elif model in AANLEVERING_MODELS:
+            return 'aanlevering'
+        else:
+            return None
 
     def db_for_write(self, model, **hints):
-        return model._meta.schema
-
-    def allow_relation(self, obj1, obj2, **hints):
-        return None
-    
-    def allow_syncdb(self, db, model):
-        if db == 'postgres' or model._meta.app_label == "zeeland_gld":
-            return False  # we're not using syncdb on our legacy database
-        else:  # but all other models/databases are fine
-            return True
-
-    def allow_migrate(self, db, app_label, model_name=None, **hints):
-        if app_label == 'zeeland_gld':
+        if model in GLD_MODELS:
+            return 'gld'
+        elif model in GWM_MODELS:
+            return 'gmw'
+        elif model in AANLEVERING_MODELS:
+            return 'aanlevering'
+        else:
             return None
-        return None
+        
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
+        return True
+
+

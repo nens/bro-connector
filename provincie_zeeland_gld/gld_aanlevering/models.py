@@ -17,12 +17,13 @@ class GroundwaterLevelDossier(models.Model):
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
+    research_last_correction = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = True
-        db_table = db_table = 'gld\".\"groundwater_level_dossier'
+        db_table = db_table = 'gld"."groundwater_level_dossier'
         verbose_name = 'Groundwaterlevel dossier'
-        verbose_name_plural = 'Groundwater level dossier'
+        verbose_name_plural = 'Groundwaterlevel dossier'
 
 
 class MeasurementPointMetadata(models.Model):
@@ -35,7 +36,7 @@ class MeasurementPointMetadata(models.Model):
     class Meta:
         managed = True
         app_label = 'gld_aanlevering'
-        db_table = 'gld\".\"measurement_point_metadata'
+        db_table = 'gld"."measurement_point_metadata'
         verbose_name = 'Measurement point metadata'
         verbose_name_plural = 'Measurement point metadata'
 
@@ -45,25 +46,25 @@ class MeasurementTimeSeries(models.Model):
     observation_id = models.IntegerField(blank=True, null=True)
     class Meta:
         managed = True
-        db_table = 'gld\".\"measurement_time_series'
+        db_table = 'gld"."measurement_time_series'
         verbose_name = 'Measurement timeseries'
         verbose_name_plural = 'Measurement timeseries'
 
 
 # We don't use this 
-class MeasurementTimeseriesTvpObservation(models.Model):
-    measurement_timeseries_tvp_observation_id = models.AutoField(primary_key=True)
-    groundwater_level_dossier_id = models.IntegerField(blank=True, null=True)
-    observation_starttime = models.DateTimeField(blank=True, null=True)
-    observation_endtime = models.DateTimeField(blank=True, null=True)
-    result_time = models.DateTimeField(blank=True, null=True)
-    metadata_observation_id = models.IntegerField(blank=True, null=True)
+# class MeasurementTimeseriesTvpObservation(models.Model):
+#     measurement_timeseries_tvp_observation_id = models.AutoField(primary_key=True)
+#     groundwater_level_dossier_id = models.IntegerField(blank=True, null=True)
+#     observation_starttime = models.DateTimeField(blank=True, null=True)
+#     observation_endtime = models.DateTimeField(blank=True, null=True)
+#     result_time = models.DateTimeField(blank=True, null=True)
+#     metadata_observation_id = models.IntegerField(blank=True, null=True)
 
-    class Meta:
-        managed = True
-        db_table = 'gld\".\"measurement_timeseries_tvp_observation'
-        verbose_name = 'Measurement timeseries tvp observation'
-        verbose_name_plural = 'Measurement timeseries tvp observation'
+#     class Meta:
+#         managed = True
+#         db_table = 'gld"."measurement_timeseries_tvp_observation'
+#         verbose_name = 'Measurement timeseries tvp observation'
+#         verbose_name_plural = 'Measurement timeseries tvp observation'
 
 class MeasurementTvp(models.Model):
     measurement_tvp_id = models.AutoField(primary_key=True)
@@ -79,9 +80,9 @@ class MeasurementTvp(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"measurement_tvp'
-        verbose_name = 'Measurement tvp'
-        verbose_name_plural = 'Measurement tvp'
+        db_table = 'gld"."measurement_tvp'
+        verbose_name = 'Measurement time-value pairs'
+        verbose_name_plural = 'Measurement time-value pairs'
 
 
 class Observation(models.Model):
@@ -97,9 +98,9 @@ class Observation(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"observation'
+        db_table = 'gld"."observation'
         verbose_name = 'Observation'
-        verbose_name_plural = 'Observation'
+        verbose_name_plural = 'Observations'
 
 
 class ObservationMetadata(models.Model):
@@ -111,7 +112,7 @@ class ObservationMetadata(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"observation_metadata'
+        db_table = 'gld"."observation_metadata'
         verbose_name = 'Observation metadata'
         verbose_name_plural = 'Observation metadata'
 
@@ -125,7 +126,7 @@ class ObservationProcess(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"observation_process'
+        db_table = 'gld"."observation_process'
         verbose_name = 'Observation process'
         verbose_name_plural = 'Observation process'
 
@@ -137,7 +138,7 @@ class ResponsibleParty(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"responsible_party'
+        db_table = 'gld"."responsible_party'
         verbose_name = 'Responsible party'
         verbose_name_plural = 'Responsible party'
 
@@ -151,7 +152,8 @@ class TypeAirPressureCompensation(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_air_pressure_compensation'
+        db_table = 'gld"."type_air_pressure_compensation'
+        verbose_name_plural = 'Air pressure compensation'
 
 
 class TypeCensoredReasonCode(models.Model):
@@ -163,7 +165,8 @@ class TypeCensoredReasonCode(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_censored_reason_code'
+        db_table = 'gld"."type_censored_reason_code'
+        verbose_name_plural = 'Censor reasons'
 
 
 class TypeEvaluationProcedure(models.Model):
@@ -175,7 +178,8 @@ class TypeEvaluationProcedure(models.Model):
     
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_evaluation_procedure'
+        db_table = 'gld"."type_evaluation_procedure'
+        verbose_name_plural = 'Evaluation procedures'
 
 
 class TypeInterpolationCode(models.Model):
@@ -187,10 +191,11 @@ class TypeInterpolationCode(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_interpolation_code'
+        db_table = 'gld"."type_interpolation_code'
+        verbose_name_plural = 'Interpolation codes'
 
 
-class TypeMeasementInstrumentType(models.Model):
+class TypeMeasurementInstrumentType(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
     value = models.CharField(max_length=255, blank=True, null=True)
     definition_nl = models.CharField(max_length=255, blank=True, null=True)
@@ -199,7 +204,8 @@ class TypeMeasementInstrumentType(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_measement_instrument_type'
+        db_table = 'gld"."type_measurement_instrument_type'
+        verbose_name_plural = 'Measurement instrument types'
 
 
 class TypeObservationType(models.Model):
@@ -211,7 +217,8 @@ class TypeObservationType(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_observation_type'
+        db_table = 'gld"."type_observation_type'
+        verbose_name_plural = 'Observation types'
 
 
 class TypeProcessReference(models.Model):
@@ -223,7 +230,8 @@ class TypeProcessReference(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_process_reference'
+        db_table = 'gld"."type_process_reference'
+        verbose_name_plural = 'Process references'
 
 
 class TypeProcessType(models.Model):
@@ -235,7 +243,8 @@ class TypeProcessType(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_process_type'
+        db_table = 'gld"."type_process_type'
+        verbose_name_plural = 'Process types'
 
 
 class TypeStatusCode(models.Model):
@@ -247,7 +256,8 @@ class TypeStatusCode(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_status_code'
+        db_table = 'gld"."type_status_code'
+        verbose_name_plural = 'Status codes'
 
 
 class TypeStatusQualityControl(models.Model):
@@ -259,7 +269,8 @@ class TypeStatusQualityControl(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gld\".\"type_status_quality_control'
+        db_table = 'gld"."type_status_quality_control'
+        verbose_name_plural = 'Quality control types'
         
 #%% GMW Models
 
@@ -272,7 +283,8 @@ class DeliveredLocations(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw\".\"delivered_locations'
+        db_table = 'gmw"."delivered_locations'
+        verbose_name_plural = 'Delivered locations'
 
 
 class DeliveredVerticalPositions(models.Model):
@@ -286,7 +298,8 @@ class DeliveredVerticalPositions(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw\".\"delivered_vertical_positions'
+        db_table = 'gmw"."delivered_vertical_positions'
+        verbose_name_plural  = 'Delivered vertical positions'
 
 
 class GroundwaterMonitoringWells(models.Model):
@@ -314,7 +327,8 @@ class GroundwaterMonitoringWells(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw\".\"groundwater_monitoring_wells'
+        db_table = 'gmw"."groundwater_monitoring_wells'
+        verbose_name_plural = 'Groundwater monitoring wells'
 
 class GroundwaterMonitoringTubes(models.Model):
     groundwater_monitoring_tube_id = models.AutoField(primary_key=True)
@@ -339,21 +353,12 @@ class GroundwaterMonitoringTubes(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw\".\"groundwater_monitoring_tubes'
+        db_table = 'gmw"."groundwater_monitoring_tubes'
+        verbose_name_plural = 'Groundwater monitoring tubes'
 
 
 #%% Aanlevering models
 
-class aanleverinfo_filters(models.Model):
-    meetpunt = models.CharField(max_length=254, null=True, blank=True)
-    filter_id = models.CharField(max_length=254, null=True, blank=True)
-    aanleveren = models.CharField(max_length=254, null=True, blank=True)
-    
-    class Meta:
-        db_table='aanlevering\".\"aanleverinfo_filters'
-        verbose_name = "Aanleverinfo filters"
-        verbose_name_plural = "Aanleverinfo filters"
-        _admin_name = "Aanleverinfo filters"
 
 class gld_registration_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
@@ -363,7 +368,7 @@ class gld_registration_log(models.Model):
     levering_id = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
     gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
-    comments = models.CharField(max_length=254, null=True, blank=True)
+    comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed=models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
     timestamp_end_registration=models.DateTimeField(blank=True, null=True)
@@ -372,12 +377,11 @@ class gld_registration_log(models.Model):
     process_status=models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
-        db_table='aanlevering\".\"gld_registration_log'
-        verbose_name = "GLD registration register"
-        verbose_name_plural = "GLD registration register"
-        _admin_name = "GLD registration register" 
+        db_table='aanlevering"."gld_registration_log'
+        verbose_name = "GLD registration logging"
+        verbose_name_plural = "GLD registration logging"
 
-class gld_addition_log_controle(models.Model):
+class gld_addition_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     observation_id = models.CharField(max_length=254, null=True, blank=True)
     start = models.CharField(max_length=254, null=True, blank=True)
@@ -388,50 +392,12 @@ class gld_addition_log_controle(models.Model):
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
-    comments = models.CharField(max_length=254, null=True, blank=True)
-
-    class Meta:
-        db_table='aanlevering\".\"gld_addition_log_controle'
-        verbose_name = "GLD addition register controlemetingen"
-        verbose_name_plural = "GLD addition register controlemetingen"
-        _admin_name = "GLD addition register controlemetingen" 
-
-class gld_addition_log_voorlopig(models.Model):
-    date_modified = models.CharField(max_length=254, null=True, blank=True)
-    observation_id = models.CharField(max_length=254, null=True, blank=True)
-    start = models.CharField(max_length=254, null=True, blank=True)
-    end = models.CharField(max_length=254, null=True, blank=True)
-    broid_registration = models.CharField(max_length=254, null=True, blank=True)
-    procedure_uuid = models.CharField(max_length=254, null=True, blank=True)
-    procedure_initialized = models.CharField(max_length=254, null=True, blank=True)
-    validation_status = models.CharField(max_length=254, null=True, blank=True)
-    levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(max_length=254, null=True, blank=True)
-    comments = models.CharField(max_length=1000, null=True, blank=True)
+    comments = models.CharField(max_length=50000, null=True, blank=True)
     file=models.CharField(max_length=254, null=True, blank=True)
+    addition_type=models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
-        db_table='aanlevering\".\"gld_addition_log_voorlopig'
-        verbose_name = "GLD addition register voorlopige metingen"
-        verbose_name_plural = "GLD addition register voorlopige metingen"
-        _admin_name = "GLD addition register voorlopige metingen" 
-
-class gld_addition_log_volledig(models.Model):
-    date_modified = models.CharField(max_length=254, null=True, blank=True)
-    observation_id = models.CharField(max_length=254, null=True, blank=True)
-    start = models.CharField(max_length=254, null=True, blank=True)
-    end = models.CharField(max_length=254, null=True, blank=True)
-    broid_registration = models.CharField(max_length=254, null=True, blank=True)
-    procedure_uuid = models.CharField(max_length=254, null=True, blank=True)
-    procedure_initialized = models.CharField(max_length=254, null=True, blank=True)
-    validation_status = models.CharField(max_length=254, null=True, blank=True)
-    levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(max_length=254, null=True, blank=True)
-    comments = models.CharField(max_length=254, null=True, blank=True)
-
-    class Meta:
-        db_table='aanlevering\".\"gld_addition_log_volledig'
-        verbose_name = "GLD addition register volledig beoordeelde metingen"
-        verbose_name_plural = "GLD addition register volledig beoordeelde metingen"
-        _admin_name = "GLD addition register volledig beoordeelde metingen" 
+        db_table='aanlevering"."gld_addition_log'
+        verbose_name = "GLD addition logging"
+        verbose_name_plural = "GLD addition logging"
 

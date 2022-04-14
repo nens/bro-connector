@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,10 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'gld_aanlevering',
-    'django_admin_generator']
+    'django_admin_generator',
+    'admin_reorder']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+     'admin_reorder.middleware.ModelAdminReorder',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,6 +81,8 @@ WSGI_APPLICATION = 'provincie_zeeland_gld.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+#DATABASE_ROUTERS = ['database_routers.zeeland_gld.PostgresRouter']
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -87,10 +92,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5433',
         'OPTIONS':{'options': '-c search_path=public'}
-    }
-}
-
-#DATABASE_ROUTERS = ['database_routers.zeeland_gld.PostgresRouter']
+}}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -134,48 +136,38 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# ADMIN_REORDER = (
-#     # First group
-#     {'app': '_nens_demo', 'label': 'GLD Registratie',
-#      'models': ('_nens_demo.aanleverinfo_filters',
-#                 '_nens_demo.gld_registration_log',
-#                 '_nens_demo.gld_addition_log_controle',
-#                 '_nens_demo.gld_addition_log_voorlopig',
-#                 '_nens_demo.gld_addition_log_volledig')
-#     },
-#     # Second group: same app, but different label
-#     {'app': 'zeeland_gld', 'label': 'Provincie Zeeland GLD - Data',
-#      'models': ('zeeland_gld.GroundwaterLevelDossier',
-#                 'zeeland_gld.MeasurementPointMetadata',
-#                 'zeeland_gld.MeasurementTimeSeries',
-#                 'zeeland_gld.MeasurementTimeseriesTvpObservation',
-#                 'zeeland_gld.MeasurementTvp',
-#                 'zeeland_gld.ObservationMetadata',
-#                 'zeeland_gld.ObservationProcess',
-#                 'zeeland_gld.ResponsibleParty')
-#     },
-#     {'app': 'zeeland_gld', 'label': 'Provincie Zeeland GLD - Types',
-#      'models': ('zeeland_gld.TypeAirPressureCompensation',
-#                 'zeeland_gld.TypeCensoredReasonCode',
-#                 'zeeland_gld.TypeEvaluationProcedure',
-#                 'zeeland_gld.TypeInterpolationCode',
-#                 'zeeland_gld.TypeMeasementInstrumentType',
-#                 'zeeland_gld.TypeObservationType',
-#                 'zeeland_gld.TypeProcessReference',
-#                 'zeeland_gld.TypeProcessType',
-#                 'zeeland_gld.TypeStatusCode',
-#                 'zeeland_gld.TypeStatusQualityControl')
-#     } 
-# )
+ADMIN_REORDER = (
+    # First group
+    {'app': 'gld_aanlevering', 'label': 'GLD Registratie',
+      'models': ('gld_aanlevering.gld_registration_log',
+                 'gld_aanlevering.gld_addition_log')
+    },
+    # Second group: same app, but different label
+    {'app': 'gld_aanlevering', 'label': 'Provincie Zeeland GLD - Data',
+      'models': ('gld_aanlevering.Observation',
+                 'gld_aanlevering.GroundwaterLevelDossier',
+                'gld_aanlevering.MeasurementPointMetadata',
+                'gld_aanlevering.MeasurementTimeSeries',
+                'gld_aanlevering.MeasurementTimeseriesTvpObservation',
+                'gld_aanlevering.MeasurementTvp',
+                'gld_aanlevering.ObservationMetadata',
+                'gld_aanlevering.ObservationProcess',
+                'gld_aanlevering.ResponsibleParty')
+    },
+    {'app': 'gld_aanlevering', 'label': 'Provincie Zeeland GLD - Types',
+      'models': ('gld_aanlevering.TypeAirPressureCompensation',
+                'gld_aanlevering.TypeCensoredReasonCode',
+                'gld_aanlevering.TypeEvaluationProcedure',
+                'gld_aanlevering.TypeInterpolationCode',
+                'gld_aanlevering.TypeMeasurementInstrumentType',
+                'gld_aanlevering.TypeObservationType',
+                'gld_aanlevering.TypeProcessReference',
+                'gld_aanlevering.TypeProcessType',
+                'gld_aanlevering.TypeStatusCode',
+                'gld_aanlevering.TypeStatusQualityControl')
+    } 
+)
 
-# Mail configuration
-DEFAULT_FROM_EMAIL = 'emile.debadts1@gmail.com'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'emile.debadts1@gmail.com'
-EMAIL_HOST_PASSWORD = ''
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
 
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
@@ -183,16 +175,149 @@ GLD_AANLEVERING_SETTINGS = {
         'user':'2f382895e91a|27376655|630',
         'pass':'84d0049b0bb9eb0924fa88f4472e3222eed1c56b0111c9b927c81d2c77df67c9'
     },
-    'organisation':'nens',
-    'env':'demo',
     'monitoringnetworks':None,
-    'failed_dir_gld_registration':os.path.join(BASE_DIR,'failed/gld_aanlevering/gld_startregistration'),
-    'failed_dir_gld_addition':os.path.join(BASE_DIR,'failed/_nens_demo/gld_addition'),
+    'demo':True,
     'additions_dir':os.path.join(BASE_DIR, 'gld_aanlevering/additions'),
     'startregistrations_dir':os.path.join(BASE_DIR, 'gld_aanlevering/startregistrations'),
-    'delivery_retry_attempts': 3,
-    'warning_mail_recipient': 'emile.debadts@nelen-schuurmans.nl',
-    'validation_mapping_table':{'WNS9040.val':{'2':'goedgekeurd','5':'onbeslist','8':'afgekeurd','9':'goedgekeurd'},'WNS9040':{'9':'nogNietBeoordeeld'}, 'WNS9040.hand':{'9':'goedgekeurd'}},
-    'expiration_log_messages':1000
 }
 
+# Quick Scan SETTINGS
+QUICK_SCAN_SETTINGS = {
+ 'max_groundwater_level':10,
+ 'max_change_two_measurements':1,
+ 'liveliness_maximum_flatline_duration':100
+}
+
+
+
+# JAZZMIN_SETTINGS = {
+#     # title of the window (Will default to current_admin_site.site_title if absent or None)
+#     "site_title": "Library Admin",
+
+#     # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+#     "site_header": "Library",
+
+#     # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+#     "site_brand": "Library",
+
+#     # Logo to use for your site, must be present in static files, used for brand on top left
+#     "site_logo": "books/img/logo.png",
+
+#     # CSS classes that are applied to the logo above
+#     "site_logo_classes": "img-circle",
+
+#     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
+#     "site_icon": None,
+
+#     # Welcome text on the login screen
+#     "welcome_sign": "Welcome to the library",
+
+#     # Copyright on the footer
+#     "copyright": "Acme Library Ltd",
+
+#     # The model admin to search from the search bar, search bar omitted if excluded
+#     "search_model": "auth.User",
+
+#     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
+#     "user_avatar": None,
+
+#     ############
+#     # Top Menu #
+#     ############
+
+#     # Links to put along the top menu
+#     "topmenu_links": [
+
+#         # Url that gets reversed (Permissions can be added)
+#         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+
+#         # external url that opens in a new window (Permissions can be added)
+#         {"name": "Support", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
+
+#         # model admin to link to (Permissions checked against model)
+#         {"model": "auth.User"},
+
+#         # App with dropdown menu to all its models pages (Permissions checked against models)
+#         {"app": "books"},
+#     ],
+
+#     #############
+#     # User Menu #
+#     #############
+
+#     # Additional links to include in the user menu on the top right ("app" url type is not allowed)
+#     "usermenu_links": [
+#         {"name": "Support", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
+#         {"model": "auth.user"}
+#     ],
+
+#     #############
+#     # Side Menu #
+#     #############
+
+#     # Whether to display the side menu
+#     "show_sidebar": True,
+
+#     # Whether to aut expand the menu
+#     "navigation_expanded": True,
+
+#     # Hide these apps when generating side menu e.g (auth)
+#     "hide_apps": [],
+
+#     # Hide these models when generating side menu (e.g auth.user)
+#     "hide_models": [],
+
+#     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
+#     "order_with_respect_to": ["auth", "books", "books.author", "books.book"],
+
+#     # Custom links to append to app groups, keyed on app name
+#     "custom_links": {
+#         "books": [{
+#             "name": "Make Messages", 
+#             "url": "make_messages", 
+#             "icon": "fas fa-comments",
+#             "permissions": ["books.view_book"]
+#         }]
+#     },
+
+#     # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
+#     # for the full list of 5.13.0 free icon classes
+#     "icons": {
+#         "auth": "fas fa-users-cog",
+#         "auth.user": "fas fa-user",
+#         "auth.Group": "fas fa-users",
+#     },
+#     # Icons that are used when one is not manually specified
+#     "default_icon_parents": "fas fa-chevron-circle-right",
+#     "default_icon_children": "fas fa-circle",
+
+#     #################
+#     # Related Modal #
+#     #################
+#     # Use modals instead of popups
+#     "related_modal_active": False,
+
+#     #############
+#     # UI Tweaks #
+#     #############
+#     # Relative paths to custom CSS/JS scripts (must be present in static files)
+#     "custom_css": None,
+#     "custom_js": None,
+#     # Whether to show the UI customizer on the sidebar
+#     "show_ui_builder": False,
+
+#     ###############
+#     # Change view #
+#     ###############
+#     # Render out the change view as a single form, or in tabs, current options are
+#     # - single
+#     # - horizontal_tabs (default)
+#     # - vertical_tabs
+#     # - collapsible
+#     # - carousel
+#     "changeform_format": "horizontal_tabs",
+#     # override change forms on a per modeladmin basis
+#     "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
+#     # Add a language dropdown into the admin
+#     "language_chooser": True,
+# }

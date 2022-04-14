@@ -30,24 +30,7 @@ def create_start_registration_sourcedocs(quality_regime,
     Try to create startregistration sourcedocuments for a well/tube/quality regime
     Startregistration requests are saved to .xml file in startregistrations folder
     """
-    
-    if quality_regime==None or deliveryaccountableparty==None:
-        record, created = \
-            models.gld_registration_log.objects.update_or_create(
-                gwm_bro_id=broidgmw,
-                filter_id=filtrnr,
-                quality_regime=quality_regime,
-                defaults=dict(
-                    validation_status = None,
-                    levering_id = None,
-                    process_status = 'failed_to_generate_source_documents',
-                    comments = "Can't generate startregistration sourcedocuments without 'qualityRegime' and 'deliveryAccountableParty'",
-                    date_modified = datetime.datetime.now(),
-                )
-            )
-            
-        return
-            
+                
     try:
         monitoringpoints = [{'broId':broidgmw,
                        'tubeNumber':filtrnr}]
@@ -74,7 +57,7 @@ def create_start_registration_sourcedocs(quality_regime,
         gld_startregistration_request.generate()
         gld_startregistration_request.write_xml(output_dir=startregistrations_dir, filename=filename)
         
-        
+        process_status = 'succesfully_generated_startregistration_request'
         record, created = \
             models.gld_registration_log.objects.update_or_create(
                 gwm_bro_id=broidgmw,
@@ -83,13 +66,14 @@ def create_start_registration_sourcedocs(quality_regime,
                 defaults=dict(
                     comments = 'Succesfully generated startregistration request',
                     date_modified = datetime.datetime.now(),
-                    process_status = 'succesfully_generated_startregistration_request',
+                    process_status = process_status,
                     file=filename
                 )
             )
 
     except Exception as e:
     
+        process_status = 'failed_to_generate_source_documents'
         record, created = \
             models.gld_registration_log.objects.update_or_create(
                 gwm_bro_id=broidgmw,
@@ -98,22 +82,24 @@ def create_start_registration_sourcedocs(quality_regime,
                 defaults=dict(
                     comments = 'Failed to create startregistration source document: {}'.format(e),
                     date_modified = datetime.datetime.now(),
-                    process_status = 'failed_to_generate_source_documents'
+                    process_status =process_status
                 )
             )
             
 
-
-def validate_gld_startregistration_request(start_registration_id, file, startregistrations_dir, acces_token_bro_portal):
+def validate_gld_startregistration_request(start_registration_id, startregistrations_dir, acces_token_bro_portal):
     
     """
     Validate generated startregistration sourcedocuments
     """
     
-    source_doc_file = os.path.join(startregistrations_dir, file)
-    payload = open(source_doc_file)
-    
+        
     try: 
+        gld_registration = models.gld_registration_log.objects.get(id=start_registration_id)
+        file = gld_registration.file
+        source_doc_file = os.path.join(startregistrations_dir, file)
+        payload = open(source_doc_file)
+
         validation_info = gwm.validate_sourcedoc(payload, acces_token_bro_portal, demo=True)
         validation_status = validation_info['status']
                 
@@ -157,15 +143,11 @@ def validate_gld_startregistration_request(start_registration_id, file, startreg
                 
         
         
-def deliver_startregistration_sourcedocuments(start_registration_id, file, startregistrations_dir, acces_token_bro_portal, demo=True):
+def deliver_startregistration_sourcedocuments(start_registration_id, startregistrations_dir, acces_token_bro_portal, demo=True):
     
     """
     Deliver generated startregistration sourcedoc to the BRO
     """
-
-    source_doc_file = os.path.join(startregistrations_dir, file)
-    payload = open(source_doc_file)
-    request = {file: payload}
     
     # Get the registration
     gld_registration = models.gld_registration_log.objects.get(id=start_registration_id)
@@ -179,16 +161,21 @@ def deliver_startregistration_sourcedocuments(start_registration_id, file, start
         delivery_status_update = failed_update_strings[position+1]
 
     try:
-                
+        file = gld_registration.file
+        source_doc_file = os.path.join(startregistrations_dir, file)
+        payload = open(source_doc_file)
+        request = {file: payload}
+                    
         upload_info = gwm.upload_sourcedocs_from_dict(request, acces_token_bro_portal, demo)
-        
+    
         if upload_info == 'Error':
             comments = 'Error occured during delivery of sourcedocument'
             models.gld_registration_log.objects.update_or_create(
                     id=start_registration_id,
                     defaults={'date_modified': datetime.datetime.now(),
                               'comments': comments,
-                              'process_status': delivery_status_update})
+                              'levering_status': delivery_status_update,
+                               'process_status': 'failed_to_deliver_sourcedocuments'})
         else:            
             levering_id = upload_info.json()['identifier']
             delivery_status = upload_info.json()['status']
@@ -205,19 +192,41 @@ def deliver_startregistration_sourcedocuments(start_registration_id, file, start
                               'process_status':'succesfully_delivered_sourcedocuments'})
             
     except Exception as e:
-        comments = 'Exception occured during delivery of startregistration sourcedocument: {}'.format(e)
-        
+        comments = 'Exception occured during delivery of startregistration sourcedocument: {}'.format(e)   
         models.gld_registration_log.objects.update_or_create(
                 id=start_registration_id,
                 defaults={'date_modified': datetime.datetime.now(),
                           'comments': comments,
-                          'process_status':delivery_status_update})
+                          'levering_status':delivery_status_update,
+                          'process_status':'failed_to_deliver_sourcedocuments'})
     
                  
 def check_delivery_status_levering(registration_id, 
+                                    startregistrations_dir,
                                     acces_token_bro_portal,
                                     demo=True):
-        
+    
+    """
+    Check the status of a startregistration delivery
+    Logs the status of the delivery in the database
+    If delivery is approved, GroundwaterLevelDossier object is created
+
+    Parameters
+    ----------
+    registration_id : int
+        unique id of the gld registration in the database.
+    acces_token_bro_portal : str
+        access token for BRO bronhouderportaal: https://demo.bronhouderportaal-bro.nl/ .
+    startregistrations_dir : str
+        directory where startregistration sourcedocument xml's are stored
+    demo : bool, optional.
+
+    Returns
+    -------
+    None.
+
+    """    
+       
     registration = models.gld_registration_log.objects.get(id=registration_id)
     levering_id = registration.levering_id
 
@@ -239,6 +248,21 @@ def check_delivery_status_levering(registration_id,
                         process_status = 'delivery_approved'
                     )
                 )
+                
+            # Create new GroundWaterLevelDossier
+            start_date_research = datetime.datetime.now().date().isoformat()
+            record, created = \
+                models.GroundwaterLevelDossier.objects.update_or_create(
+                    groundwater_monitoring_tube_id = registration.filter_id,
+                    gmw_bro_id=registration.gwm_bro_id,
+                    research_start_date=start_date_research,
+                    gld_bro_id = upload_info.json()['brondocuments'][0]['broId']
+            )
+
+            # Remove the registration if delivery is approved            
+            file = registration.file
+            source_doc_file = os.path.join(startregistrations_dir, file)
+            os.remove(source_doc_file)
                 
         else:
         
@@ -262,87 +286,145 @@ def check_delivery_status_levering(registration_id,
                 )                   
 
 
+def get_registration_process_status(registration_id):
+    registration = models.gld_registration_log.objects.get(id=registration_id)
+    process_status = registration.process_status
+    return process_status
+
+def get_registration_validation_status(registration_id):
+    registration = models.gld_registration_log.objects.get(id=registration_id)
+    validation_status = registration.validation_status
+    return validation_status
+
 def gld_start_registration_main(acces_token_bro_portal,
-                                organisation,
                                 monitoringnetworks, 
-                                startregistrations_dir, 
-                                expiration_log_messages):
-    
+                                startregistrations_dir):
     """
-    Run GLD registration for all monitoring wells in the database 
+    Run GLD start registrations for all monitoring wells in the database 
+    Start registrations has to be run multiple times to get all tubes registered
+    This will not interfere with additions, as a check will be done on registration availibility
+
     For new wells a startregistration request is attempted
     Previous startregistrations are validated and delivered
     Status of previous deliveries are checked 
     If a well changes in quality regime, a new registration is started 
+
+
+    Parameters
+    ----------
+    acces_token_bro_portal : str
+        DESCRIPTION.
+    organisation : TYPE
+        DESCRIPTION.
+    monitoringnetworks : TYPE
+        DESCRIPTION.
+    startregistrations_dir : TYPE
+        DESCRIPTION.
+    expiration_log_messages : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    
+    """
     """
     
     gwm_wells = models.GroundwaterMonitoringWells.objects.all()
     
     # Loop over all GMW objects in the database
     for well in gwm_wells:
+        
+        # Get some well properties
         registration_object_id_well = well.registration_object_id
         quality_regime = well.quality_regime
         gwm_bro_id = well.bro_id
+        
+        # Get all filters that are installed in this well
         gmw_tubes_well = models.GroundwaterMonitoringTubes.objects.filter(registration_object_id=registration_object_id_well)
 
-        # Loop over all tubes within the well
+        # Loop over all filters within the well
         for tube in gmw_tubes_well:
             tube_id = tube.tube_number
-            if models.gld_registration_log.objects.filter(gwm_bro_id=gwm_bro_id, 
+            if not models.gld_registration_log.objects.filter(gwm_bro_id=gwm_bro_id, 
                                                           filter_id=tube_id, 
                                                           quality_regime=quality_regime).exists():
-                # A registration already exists for this well/tube/quality regime
-                # We check the status of the registration and either validate/deliver/check status/do nothing
-                registration = models.gld_registration_log.objects.get(gwm_bro_id=gwm_bro_id, filter_nr=tube_id, quality_regime=quality_regime)
                 
-                if registration.levering_status != 'OPGENOMEN_LVRO' and registration.levering_id is not None:
-                    # The registration has been delivered, but not yet approved
-                    levering_id = registration.levering_id
-                    status = check_delivery_status_levering(registration.id, acces_token_bro_portal)
-                elif registration.levering_status == 'failed_to_generate_source_documents':
-                    # Failed to register source documents for this well/tube/quality_regime
-                    # TODO report back if this fails? 
-                    continue
-                elif registration.levering_status == 'succesfully_generated_startregistration_request':
-                    registration_sourcedoc_file = registration.file
-                    validation_status = validate_gld_startregistration_request(registration.id, 
-                                                                             registration_sourcedoc_file,
-                                                                             startregistrations_dir,
-                                                                             acces_token_bro_portal)
-                elif registration.validation_satus    
-                
-                    
-            else:        
-                #TODO database delivery accoutnable party moet string zijn!
+                # There is not a GLD registration object with this configuration
+                # Create a new configuration by creating startregistration sourcedocs
+                # By creating the sourcedocs (or failng to do so), a registration is made in the database
+                # This registration is used to track the progress of the delivery in further steps
+        
+                #TODO database delivery accountable party moet string zijn!
                 delivery_accountable_party = str(well.delivery_accountable_party)
                 well_bro_id = well.bro_id
                 location_code_internal = well.nitg_code
-                location_metadata_bro_gld = create_start_registration_sourcedocs(quality_regime, 
-                                                                   delivery_accountable_party, 
-                                                                   well_bro_id, 
-                                                                   tube_id, 
-                                                                   acces_token_bro_portal,
-                                                                   location_code_internal, 
-                                                                   monitoringnetworks)
-        
-        break
-        
-            
+                startregistration = create_start_registration_sourcedocs(quality_regime, 
+                                                                         delivery_accountable_party,
+                                                                         well_bro_id, 
+                                                                         tube_id, 
+                                                                         acces_token_bro_portal,
+                                                                         location_code_internal,
+                                                                         startregistrations_dir)
 
-    
+            # We check the status of the registration and either validate/deliver/check status/do nothing
+            registration = models.gld_registration_log.objects.get(gwm_bro_id=gwm_bro_id, 
+                                                                   filter_id=tube_id, 
+                                                                   quality_regime=quality_regime)
+            
+            registration_id = registration.id
+            
+            # Succesfully generated a startregistration sourcedoc in the previous step
+            if get_registration_process_status(registration_id) == 'succesfully_generated_startregistration_request':
+                validation_status = validate_gld_startregistration_request(registration_id, 
+                                                                           startregistrations_dir,
+                                                                           acces_token_bro_portal)        
+
+            # If an error occured during validation, try again
+            if get_registration_process_status(registration_id) == 'failed_to_validate_source_documents':
+                # If we failed to validate the sourcedocument, try again
+                # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
+                validation_status = validate_gld_startregistration_request(registration_id, 
+                                                                           startregistrations_dir,
+                                                                           acces_token_bro_portal)        
+
+            # If validation is succesful and the document is valid, try a delivery           
+            if get_registration_process_status(registration_id) == 'source_document_validation_succesful' and get_registration_validation_status(registration_id) == 'VALIDE':
+                delivery_status = deliver_startregistration_sourcedocuments(registration_id, 
+                                                                            startregistrations_dir, 
+                                                                            acces_token_bro_portal)
+
+            # If delivery is succesful, check the status of the delivery
+            if get_registration_process_status(registration_id) == 'succesfully_delivered_sourcedocuments' and registration.levering_status != 'OPGENOMEN_LVRO' and registration.levering_id is not None:
+                # The registration has been delivered, but not yet approved
+                status = check_delivery_status_levering(registration_id,                                                          
+                                                        startregistrations_dir,
+                                                        acces_token_bro_portal)
+                
+            # If the delivery failed previously, we can retry
+            if get_registration_process_status(registration_id) == 'failed_to_deliver_sourcedocuments':
+                
+                # This will not be the case on the first try
+                if registration.levering_status == 'failed_thrice':
+                    # TODO report with mail?
+                    continue
+                else:                    
+                    delivery_status = deliver_startregistration_sourcedocuments(registration.id, 
+                                                                                startregistrations_dir, 
+                                                                                acces_token_bro_portal)
+
 class Command(BaseCommand):
     help = """Custom command for import of GIS data."""
             
     def handle(self, *args, **options): 
        
         acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal']
-        organisation = GLD_AANLEVERING_SETTINGS['organisation']
         monitoringnetworks = GLD_AANLEVERING_SETTINGS['monitoringnetworks']
         startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']
-        expiration_log_messages = GLD_AANLEVERING_SETTINGS['expiration_log_messages']
-           
-        _ = gld_start_registration_main(acces_token_bro_portal,
-                                        organisation,
-                                        monitoringnetworks, 
-                                        startregistrations_dir, 
-                                        expiration_log_messages)
+                   
+        registration = gld_start_registration_main(acces_token_bro_portal,
+                                                    monitoringnetworks, 
+                                                    startregistrations_dir)
