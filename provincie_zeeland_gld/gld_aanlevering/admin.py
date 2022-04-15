@@ -7,6 +7,14 @@ import os
 from . import models
 
 from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
+
+
+from gld_aanlevering.management.commands.start_registrations import (create_start_registration_sourcedocs,
+                                                                     validate_gld_startregistration_request,
+                                                                     deliver_startregistration_sourcedocuments,
+                                                                     check_delivery_status_levering)
+
+
 from gld_aanlevering.management.commands.create_addition_sourcedocs import (get_observation_gld_source_document_data, 
                                                                             generate_gld_addition_sourcedoc_data)
 
@@ -410,19 +418,134 @@ class GroundwaterMonitoringWellsAdmin(admin.ModelAdmin):
 class gld_registration_logAdmin(admin.ModelAdmin):
     
     # Retry generate startregistration
-    # Retry validate startregistration
-    # Retry deliver startregistration
-    # 
-    
+    actions = ['regenerate_start_registration_sourcedocument',
+               'validate_startregistration_sourcedocument', 
+               'deliver_startregistration_sourcedocument', 
+               'check_status_startregistration']
+
+    @admin.action(description='Regenerate startregistration sourcedocument')
+    def regenerate_start_registration_sourcedocument(self, request, queryset):
+                
+        for registration_log in queryset:
+            
+            bro_id_well = registration_log.gwm_bro_id
+            well = models.GroundwaterMonitoringWells.objects.get(bro_id=bro_id_well)
+            location_code = well.nitg_code
+            delivery_accountable_party = well.delivery_accountable_party
+            
+            startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']
+            monitoringnetworks = GLD_AANLEVERING_SETTINGS['monitoringnetworks']
+
+            if registration_log.levering_id is not None:
+                self.message_user(request, "Can't generate startregistration sourcedocuments for an existing registration" ,messages.ERROR)    
+            else:
+                startregistration = create_start_registration_sourcedocs(registration_log.quality_regime, 
+                                                                         delivery_accountable_party,
+                                                                         bro_id_well, 
+                                                                         registration_log.filter_id,
+                                                                         location_code,
+                                                                         startregistrations_dir,
+                                                                         monitoringnetworks)
+                self.message_user(request, "Attempted startregistration sourcedocument regeneration" ,messages.INFO)
+
+            
+    @admin.action(description='Validate startregistration sourcedocument')
+    def validate_startregistration_sourcedocument(self, request, queryset):
+
+        demo =  GLD_AANLEVERING_SETTINGS['demo']
+        if demo:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
+        else:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+
+        startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']
+        
+        for registration_log in queryset:             
+            sourcedoc_file = os.path.join(startregistrations_dir, registration_log.file)
+        
+            if registration_log.process_status == 'failed_to_generate_source_documents':
+                self.message_user(request, "Can't validate a startregistration that failed to generate" ,messages.ERROR)               
+            elif registration_log.file is None or not os.path.exists(sourcedoc_file):
+                self.message_user(request, "There is no sourcedocument file for this startregistration" ,messages.ERROR)    
+            elif registration_log.levering_id is not None:
+                self.message_user(request, "Can't validate a document that has already been delivered" ,messages.ERROR)    
+            else:            
+                validation_status = validate_gld_startregistration_request(registration_log.id, 
+                                                                           startregistrations_dir,
+                                                                           acces_token_bro_portal,
+                                                                           demo)        
+                self.message_user(request, "Succesfully validated startregistration sourcedocument" ,messages.INFO)
+
+
+    @admin.action(description='Deliver startregistration sourcedocument')
+    def deliver_startregistration_sourcedocument(self, request, queryset): 
+        
+        demo =  GLD_AANLEVERING_SETTINGS['demo']
+        if demo:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
+        else:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+
+        startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']
+
+        for registration_log in queryset: 
+            
+            if registration_log.levering_id is not None:
+                self.message_user(request, "Can't deliver a registration that has already been delivered" ,messages.ERROR)    
+            elif registration_log.validation_status == 'NIET_VALIDE':
+                self.message_user(request, "Can't deliver an invalid document or not yet validated document" ,messages.ERROR)
+            elif registration_log.levering_status is not None:
+                self.message_user(request, "Can't deliver a document that has been already been delivered" ,messages.ERROR)
+            else:
+                delivery_status = deliver_startregistration_sourcedocuments(registration_log.id, 
+                                                                startregistrations_dir, 
+                                                                acces_token_bro_portal,
+                                                                demo)
+                
+                self.message_user(request, "Attempted registration sourcedocument delivery" ,messages.INFO)
+
+
+    @admin.action(description='Check status of startregistration')
+    def check_status_startregistration(self, request, queryset):
+        
+        demo =  GLD_AANLEVERING_SETTINGS['demo']
+        if demo:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
+        else:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+
+        startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']        
+        
+        for registration_log in queryset: 
+            
+            levering_id = registration_log.levering_id
+            if levering_id is None:
+                self.message_user(request, "Can't check status of a delivery with no 'levering_id'" ,messages.ERROR)
+            else:            
+                status = check_delivery_status_levering(registration_log.id,                                                          
+                                            startregistrations_dir,
+                                            acces_token_bro_portal,
+                                            demo)
+                self.message_user(request, "Attempted registration status check" ,messages.INFO)
+
+            
     list_display = ('date_modified',
+                    'gld_bro_id',
                     'gwm_bro_id',
                     'filter_id',
+                    'quality_regime',
                     'validation_status',
                     'levering_id',
                     'levering_status',
+                    'process_status',
                     'comments',
+                    'last_changed',
+                    'corrections_applied',
+                    'timestamp_end_registration',
+                    'file'
                     )
-    list_filter = ('validation_status',
+    list_filter = ( 'date_modified',
+                    'validation_status',
                     'levering_status',)
 
 class gld_addition_log_Admin(admin.ModelAdmin):
@@ -449,14 +572,25 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                                                      additions_dir,
                                                      addition_type)
 
+                self.message_user(request, "Succesfully sourcedocument regeneration" ,messages.INFO)
+
+
     # Retry validate sourcedocuments (only if file is present)
     @admin.action(description='Validate sourcedocuments')
     def validate_sourcedocuments(self, request, queryset):
+        
+        
+        demo =  GLD_AANLEVERING_SETTINGS['demo']
+        if demo:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
+        else:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+        
         for addition_log in queryset:
             observation_id = addition_log.observation_id
             observation = models.Observation.objects.get(observation_id = observation_id)
             additions_dir = GLD_AANLEVERING_SETTINGS['additions_dir']
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal']
+            
             filename = addition_log.file
             addition_file_path = os.path.join(additions_dir, filename)
             if addition_log.levering_id is not None:
@@ -465,36 +599,50 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 self.message_user(request, "Source document file does not exists in the file system" ,messages.ERROR)
                 # Validate the sourcedocument for this observation
             else:
-                validation_status = validate_gld_addition_source_document(observation_id, filename, acces_token_bro_portal)
+                validation_status = validate_gld_addition_source_document(observation_id, filename, acces_token_bro_portal, demo)
+                self.message_user(request, "Succesfully attemped document validation" ,messages.INFO)
 
                 
     # Retry deliver sourcedocuments
     @admin.action(description='Deliver sourcedocuments')
     def deliver_sourcedocuments(self, request, queryset):
+        demo =  GLD_AANLEVERING_SETTINGS['demo']
+        if demo:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
+        else:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+                
         for addition_log in queryset:
             observation_id = addition_log.observation_id
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal']
             filename = addition_log.file
-            
+                        
             if addition_log.validation_status == 'NIET_VALIDE' or addition_log.validation_status is None:
                 self.message_user(request, "Can't deliver an invalid document or not yet validated document" ,messages.ERROR)
             elif addition_log.levering_status is not None:
                 self.message_user(request, "Can't deliver a document that has been already been delivered" ,messages.ERROR)
             else:
-                delivery_status = deliver_gld_addition_source_document(observation_id, filename, acces_token_bro_portal)
-                self.message_user(request, "Succesfully delivered document" ,messages.INFO)
+                delivery_status = deliver_gld_addition_source_document(observation_id, filename, acces_token_bro_portal, demo)
+                self.message_user(request, "Succesfully attemped document delivery" ,messages.INFO)
 
     # Check status of a delivery
     @admin.action(description='Check status delivery')
     def check_status_delivery(self, request, queryset):
+        demo =  GLD_AANLEVERING_SETTINGS['demo']
+        if demo:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
+        else:
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+
         for addition_log in queryset:
+               
             observation_id = addition_log.observation_id
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal']
             levering_id = addition_log.levering_id
             if levering_id is None:
                 self.message_user(request, "Can't check status of a delivery with no 'levering_id'" ,messages.ERROR)
             else:
-                check_status_gld_addition(observation_id, levering_id, acces_token_bro_portal)
+                check_status_gld_addition(observation_id, levering_id, acces_token_bro_portal, demo)               
+                self.message_user(request, "Succesfully attemped status check" ,messages.INFO)
+
                
                 
     # Custom delete method

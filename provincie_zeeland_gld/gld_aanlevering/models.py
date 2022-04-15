@@ -331,7 +331,7 @@ class GroundwaterMonitoringWells(models.Model):
         verbose_name_plural = 'Groundwater monitoring wells'
 
 class GroundwaterMonitoringTubes(models.Model):
-    groundwater_monitoring_tube_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_tube_id = models.IntegerField(primary_key=True)
     registration_object_id = models.IntegerField(blank=True, null=True)
     tube_number = models.IntegerField(blank=True, null=True)
     tube_type = models.TextField(blank=True, null=True)  # This field type is a guess.
@@ -361,6 +361,7 @@ class GroundwaterMonitoringTubes(models.Model):
 
 
 class gld_registration_log(models.Model):
+    id = models.AutoField(primary_key=True)
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     gwm_bro_id = models.CharField(max_length=254, null=True, blank=True)
     filter_id = models.CharField(max_length=254, null=True, blank=True)
