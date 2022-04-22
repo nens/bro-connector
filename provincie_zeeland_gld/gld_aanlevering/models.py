@@ -21,7 +21,7 @@ class GroundwaterLevelDossier(models.Model):
 
     class Meta:
         managed = True
-        db_table = db_table = 'gld"."groundwater_level_dossier'
+        db_table = 'gld"."groundwater_level_dossier'
         verbose_name = 'Groundwaterlevel dossier'
         verbose_name_plural = 'Groundwaterlevel dossier'
 

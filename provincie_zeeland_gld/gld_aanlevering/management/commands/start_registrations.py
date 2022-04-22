@@ -261,7 +261,6 @@ def check_delivery_status_levering(
         upload_info = gwm.check_delivery_status(
             levering_id, acces_token_bro_portal, demo
         )
-
         if (
             upload_info.json()["status"] == "DOORGELEVERD"
             and upload_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO"

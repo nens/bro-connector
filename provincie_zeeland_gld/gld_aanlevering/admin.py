@@ -431,7 +431,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             bro_id_well = registration_log.gwm_bro_id
             well = models.GroundwaterMonitoringWells.objects.get(bro_id=bro_id_well)
             location_code = well.nitg_code
-            delivery_accountable_party = well.delivery_accountable_party
+            delivery_accountable_party = str(well.delivery_accountable_party)
             
             startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']
             monitoringnetworks = GLD_AANLEVERING_SETTINGS['monitoringnetworks']
@@ -572,7 +572,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                                                      additions_dir,
                                                      addition_type)
 
-                self.message_user(request, "Succesfully sourcedocument regeneration" ,messages.INFO)
+                self.message_user(request, "Succesfully attempted sourcedocument regeneration" ,messages.INFO)
 
 
     # Retry validate sourcedocuments (only if file is present)

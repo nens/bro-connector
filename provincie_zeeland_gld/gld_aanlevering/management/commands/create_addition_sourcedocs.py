@@ -305,6 +305,7 @@ def get_observation_gld_source_document_data(observation):
 
 def get_gld_registration_data_for_observation(observation):
 
+
     """
     Each observation has a GLD id and GWM id
     When delivering the observations we get the GLD id from the observation
@@ -333,7 +334,6 @@ def generate_gld_addition_sourcedoc_data(
     measurement_time_series_id,
     additions_dir,
     addition_type,
-    chunk_size=100,
 ):
 
     """
@@ -347,7 +347,6 @@ def generate_gld_addition_sourcedoc_data(
     measurement_timeseries_tvp = get_timeseries_tvp_for_measurement_time_series_id(
         measurement_time_series_id
     )
-    measurements_length = len(measurement_timeseries_tvp)
 
     # TODO if there is no GLD registration for this observation, log
     # can be that measurements are loaded into database before registration is made
@@ -435,6 +434,14 @@ def create_addition_sourcedocuments_for_observations(
 
     for observation in observation_set:
 
+        # If there is not a GLD registration present in the database we can't create sourcedocs        
+        gld_id_database = observation.groundwater_level_dossier_id
+        if not models.GroundwaterLevelDossier.objects.filter(
+            groundwater_level_dossier_id=gld_id_database
+            ).exists():
+            print('No GLD registration found in the database for this observation: {}'.format(observation.observation_id))
+            continue
+            
         # Get the observation metadata
         observation_metadata_id = observation.observation_metadata_id
         observation_metadata = models.ObservationMetadata.objects.get(

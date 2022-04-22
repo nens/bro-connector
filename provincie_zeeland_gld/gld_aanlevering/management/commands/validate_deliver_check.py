@@ -158,7 +158,7 @@ def check_status_gld_addition(
     Check the status of a delivery and log to the database what the status is
     """
 
-    gld_addition = models.objects.gld_addition_log.objects.get(
+    gld_addition = models.gld_addition_log.objects.get(
         observation_id=observation_id
     )
     try:
@@ -186,11 +186,11 @@ def check_status_gld_addition(
             )
 
             # Update the GLD Registration to show the last time an observation was delivered
-            record, created = models.gld_registrations_log(
-                gld_bro_id=gld_addition.bro_id_registration,
+            record, created = models.gld_registration_log.objects.update_or_create(
+                gld_bro_id=gld_addition.broid_registration,
                 defaults=dict(last_changed=upload_info.json()["lastChanged"]),
             )
-
+            
         else:
             comments = "Status check succesful, not yet approved"
             models.gld_addition_log.objects.update_or_create(
@@ -304,31 +304,32 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
     for observation in observation_set:
 
         # For all the observations in the database, check the status and continue with the BRO delivery process
-
         if observation.status == "source_document_created":
             # TODO check if procedure is same as other observations, use the same procedure uuid (or don't hehe)
             validation_status = validate_addition(
                 observation, acces_token_bro_portal, demo
             )
 
-            # If the validation succeeded, try an initial delivery
-            if validation_status == "VALIDE":
+        elif observation.status == "source_document_validation_succeeded":
+            # This observation source document has been validated before
+            # If result was NIET_VALIDE try again, otherwise try delivery
+            
+            gld_addition = models.gld_addition_log.objects.get(observation_id=observation.observation_id)
+            validation_status = gld_addition.validation_status
+            
+            if validation_status == 'VALIDE':            
+                # If a source document has been validated succesfully but failed to deliver, try to deliver again
+                # after three tries no more attempts will be made
                 delivery_status = deliver_addition(
                     observation, acces_token_bro_portal, demo
                 )
-
-        elif observation.status == "source_document_validation_succeeded":
-            # If a source document has been validated succesfully but failed to deliver, try to deliver again
-            # after three tries no more attempts will be made
-            delivery_status = deliver_addition(
+ 
+                    
+        elif observation.status == 'source_document_validation_failed':
+            # Something went wrong during document validation, try again 
+            validation_status = validate_addition(
                 observation, acces_token_bro_portal, demo
             )
-
-            # If the delivery is succesful on first try, try to check status
-            if delivery_status == " AANGELEVERD":
-                delivery_status = check_status_addition(
-                    observation, acces_token_bro_portal, demo
-                )
 
         elif observation.status == "source_document_delivered":
             delivery_status = check_status_addition(

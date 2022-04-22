@@ -82,6 +82,8 @@ select * from gld.type_censored_reason_code tcrc;
 
 -- insert the metadata, and update the measurements to refer to this metadata
 insert into gld.measurement_point_metadata values (2, 3, null,null ,1); -- this metadata indicates 'NogNietBeoordeeld' quality, 'Discontinu' interpolation
+insert into gld.measurement_point_metadata values (3, 1, null,null ,1); -- this metadata indicates 'NogNietBeoordeeld' quality, 'Discontinu' interpolation
+
 update gld.measurement_tvp set measurement_metadata_id = 2 where measurement_time_series_id > 6;
 
 -- Create a new measurement time series id from the timeseries data

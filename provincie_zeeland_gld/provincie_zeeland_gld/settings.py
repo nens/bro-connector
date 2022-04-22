@@ -165,7 +165,13 @@ ADMIN_REORDER = (
                 'gld_aanlevering.TypeProcessType',
                 'gld_aanlevering.TypeStatusCode',
                 'gld_aanlevering.TypeStatusQualityControl')
-    } 
+    },
+    {'app': 'gld_aanlevering', 'label': 'Provincie Zeeland GWM - Data',
+      'models': ('gld_aanlevering.GroundwaterMonitoringWells',
+                 'gld_aanlevering.GroundwaterMonitoringTubes',
+                 'gld_aanlevering.DeliveredLocations',
+                 'gld_aanlevering.DeliveredVerticalPositions')
+    },
 )
 
 
