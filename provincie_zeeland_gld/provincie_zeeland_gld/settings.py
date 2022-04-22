@@ -91,7 +91,7 @@ DATABASES = {
         'PASSWORD': 'postgres',
         'HOST': 'localhost',
         'PORT': '5433',
-        'OPTIONS':{'options': '-c search_path=public'}
+        'OPTIONS':{'options': '-c search_path=django_admin'}
 }}
 
 # Password validation

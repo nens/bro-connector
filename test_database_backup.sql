@@ -16,32 +16,104 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE ONLY gmw.groundwater_monitoring_wells DROP CONSTRAINT groundwater_monitoring_wells_pkey;
+ALTER TABLE ONLY gmw.groundwater_monitoring_tubes DROP CONSTRAINT groundwater_monitoring_tubes_pkey;
+ALTER TABLE ONLY gmw.delivered_vertical_positions DROP CONSTRAINT delivered_vertical_positions_pkey;
+ALTER TABLE ONLY gmw.delivered_locations DROP CONSTRAINT delivered_locations_pkey;
+ALTER TABLE ONLY gld.type_status_quality_control DROP CONSTRAINT type_status_quality_control_pkey;
+ALTER TABLE ONLY gld.type_status_code DROP CONSTRAINT type_status_code_pkey;
+ALTER TABLE ONLY gld.type_process_type DROP CONSTRAINT type_process_type_pkey;
+ALTER TABLE ONLY gld.type_process_reference DROP CONSTRAINT type_process_reference_pkey;
+ALTER TABLE ONLY gld.type_observation_type DROP CONSTRAINT type_observation_type_pkey;
+ALTER TABLE ONLY gld.type_measurement_instrument_type DROP CONSTRAINT type_measement_instrument_type_pkey;
+ALTER TABLE ONLY gld.type_interpolation_code DROP CONSTRAINT type_interpolation_code_pkey;
+ALTER TABLE ONLY gld.type_evaluation_procedure DROP CONSTRAINT type_evaluation_procedure_pkey;
+ALTER TABLE ONLY gld.type_censored_reason_code DROP CONSTRAINT type_censored_reason_code_pkey;
+ALTER TABLE ONLY gld.type_air_pressure_compensation DROP CONSTRAINT type_air_pressure_compensation_pkey;
+ALTER TABLE ONLY gld.responsible_party DROP CONSTRAINT responsible_party_pkey;
+ALTER TABLE ONLY gld.observation_process DROP CONSTRAINT observation_process_pkey;
+ALTER TABLE ONLY gld.observation DROP CONSTRAINT observation_pkey;
+ALTER TABLE ONLY gld.observation_metadata DROP CONSTRAINT observation_metadata_pkey;
+ALTER TABLE ONLY gld.measurement_tvp DROP CONSTRAINT measurement_tvp_pkey;
+ALTER TABLE ONLY gld.measurement_time_series DROP CONSTRAINT measurement_time_series_pkey;
+ALTER TABLE ONLY gld.measurement_point_metadata DROP CONSTRAINT measurement_point_metadata_pkey;
+ALTER TABLE ONLY gld.groundwater_level_dossier DROP CONSTRAINT groundwater_level_dossier_pkey;
+ALTER TABLE ONLY aanlevering.gld_registration_log DROP CONSTRAINT gld_registration_log_pkey;
+ALTER TABLE ONLY aanlevering.gld_addition_log DROP CONSTRAINT gld_addition_log_voorlopig_pkey;
+ALTER TABLE gmw.groundwater_monitoring_wells ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE gmw.groundwater_monitoring_tubes ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE gmw.delivered_vertical_positions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE gld.responsible_party ALTER COLUMN responsible_party_id DROP DEFAULT;
+ALTER TABLE gld.observation_process ALTER COLUMN observation_process_id DROP DEFAULT;
+ALTER TABLE gld.observation_metadata ALTER COLUMN observation_metadata_id DROP DEFAULT;
+ALTER TABLE gld.observation ALTER COLUMN observation_id DROP DEFAULT;
+ALTER TABLE gld.measurement_tvp ALTER COLUMN measurement_tvp_id DROP DEFAULT;
+ALTER TABLE gld.measurement_time_series ALTER COLUMN measurement_time_series_id DROP DEFAULT;
+ALTER TABLE gld.measurement_point_metadata ALTER COLUMN measurement_point_metadata_id DROP DEFAULT;
+ALTER TABLE gld.groundwater_level_dossier ALTER COLUMN groundwater_level_dossier_id DROP DEFAULT;
+ALTER TABLE aanlevering.gld_registration_log ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE aanlevering.gld_addition_log ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE gmw.groundwater_monitoring_wells_id_seq;
+DROP TABLE gmw.groundwater_monitoring_wells;
+DROP SEQUENCE gmw.groundwater_monitoring_tubes_id_seq;
+DROP TABLE gmw.groundwater_monitoring_tubes;
+DROP SEQUENCE gmw.delivered_vertical_positions_id_seq;
+DROP TABLE gmw.delivered_vertical_positions;
+DROP TABLE gmw.delivered_locations;
+DROP TABLE gld.type_status_quality_control;
+DROP TABLE gld.type_status_code;
+DROP TABLE gld.type_process_type;
+DROP TABLE gld.type_process_reference;
+DROP TABLE gld.type_observation_type;
+DROP TABLE gld.type_measurement_instrument_type;
+DROP TABLE gld.type_interpolation_code;
+DROP TABLE gld.type_evaluation_procedure;
+DROP TABLE gld.type_censored_reason_code;
+DROP TABLE gld.type_air_pressure_compensation;
+DROP SEQUENCE gld.responsible_party_responsible_party_id_seq;
+DROP TABLE gld.responsible_party;
+DROP SEQUENCE gld.observation_process_observation_process_id_seq;
+DROP TABLE gld.observation_process;
+DROP SEQUENCE gld.observation_observation_id_seq;
+DROP SEQUENCE gld.observation_metadata_observation_metadata_id_seq;
+DROP TABLE gld.observation_metadata;
+DROP TABLE gld.observation;
+DROP SEQUENCE gld.measurement_tvp_measurement_tvp_id_seq;
+DROP TABLE gld.measurement_tvp;
+DROP SEQUENCE gld.measurement_time_series_measurement_time_series_id_seq;
+DROP TABLE gld.measurement_time_series;
+DROP SEQUENCE gld.measurement_point_metadata_measurement_point_metadata_id_seq;
+DROP TABLE gld.measurement_point_metadata;
+DROP SEQUENCE gld.groundwater_level_dossier_groundwater_level_dossier_id_seq;
+DROP TABLE gld.groundwater_level_dossier;
+DROP SEQUENCE aanlevering.gld_registration_log_id_seq;
+DROP TABLE aanlevering.gld_registration_log;
+DROP SEQUENCE aanlevering.gld_addition_log_voorlopig_id_seq;
+DROP TABLE aanlevering.gld_addition_log;
+DROP EXTENSION postgis;
+DROP SCHEMA gmw;
+DROP SCHEMA gld;
+DROP SCHEMA aanlevering;
 --
--- Name: aanlevering; Type: SCHEMA; Schema: -; Owner: postgres
+-- Name: aanlevering; Type: SCHEMA; Schema: -; Owner: -
 --
 
 CREATE SCHEMA aanlevering;
 
 
-ALTER SCHEMA aanlevering OWNER TO postgres;
-
 --
--- Name: gld; Type: SCHEMA; Schema: -; Owner: postgres
+-- Name: gld; Type: SCHEMA; Schema: -; Owner: -
 --
 
 CREATE SCHEMA gld;
 
 
-ALTER SCHEMA gld OWNER TO postgres;
-
 --
--- Name: gmw; Type: SCHEMA; Schema: -; Owner: postgres
+-- Name: gmw; Type: SCHEMA; Schema: -; Owner: -
 --
 
 CREATE SCHEMA gmw;
 
-
-ALTER SCHEMA gmw OWNER TO postgres;
 
 --
 -- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
@@ -51,7 +123,7 @@ CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
@@ -62,7 +134,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: gld_addition_log; Type: TABLE; Schema: aanlevering; Owner: postgres
+-- Name: gld_addition_log; Type: TABLE; Schema: aanlevering; Owner: -
 --
 
 CREATE TABLE aanlevering.gld_addition_log (
@@ -83,10 +155,8 @@ CREATE TABLE aanlevering.gld_addition_log (
 );
 
 
-ALTER TABLE aanlevering.gld_addition_log OWNER TO postgres;
-
 --
--- Name: gld_addition_log_voorlopig_id_seq; Type: SEQUENCE; Schema: aanlevering; Owner: postgres
+-- Name: gld_addition_log_voorlopig_id_seq; Type: SEQUENCE; Schema: aanlevering; Owner: -
 --
 
 CREATE SEQUENCE aanlevering.gld_addition_log_voorlopig_id_seq
@@ -97,17 +167,15 @@ CREATE SEQUENCE aanlevering.gld_addition_log_voorlopig_id_seq
     CACHE 1;
 
 
-ALTER TABLE aanlevering.gld_addition_log_voorlopig_id_seq OWNER TO postgres;
-
 --
--- Name: gld_addition_log_voorlopig_id_seq; Type: SEQUENCE OWNED BY; Schema: aanlevering; Owner: postgres
+-- Name: gld_addition_log_voorlopig_id_seq; Type: SEQUENCE OWNED BY; Schema: aanlevering; Owner: -
 --
 
 ALTER SEQUENCE aanlevering.gld_addition_log_voorlopig_id_seq OWNED BY aanlevering.gld_addition_log.id;
 
 
 --
--- Name: gld_registration_log; Type: TABLE; Schema: aanlevering; Owner: postgres
+-- Name: gld_registration_log; Type: TABLE; Schema: aanlevering; Owner: -
 --
 
 CREATE TABLE aanlevering.gld_registration_log (
@@ -129,10 +197,8 @@ CREATE TABLE aanlevering.gld_registration_log (
 );
 
 
-ALTER TABLE aanlevering.gld_registration_log OWNER TO postgres;
-
 --
--- Name: gld_registration_log_id_seq; Type: SEQUENCE; Schema: aanlevering; Owner: postgres
+-- Name: gld_registration_log_id_seq; Type: SEQUENCE; Schema: aanlevering; Owner: -
 --
 
 CREATE SEQUENCE aanlevering.gld_registration_log_id_seq
@@ -143,17 +209,15 @@ CREATE SEQUENCE aanlevering.gld_registration_log_id_seq
     CACHE 1;
 
 
-ALTER TABLE aanlevering.gld_registration_log_id_seq OWNER TO postgres;
-
 --
--- Name: gld_registration_log_id_seq; Type: SEQUENCE OWNED BY; Schema: aanlevering; Owner: postgres
+-- Name: gld_registration_log_id_seq; Type: SEQUENCE OWNED BY; Schema: aanlevering; Owner: -
 --
 
 ALTER SEQUENCE aanlevering.gld_registration_log_id_seq OWNED BY aanlevering.gld_registration_log.id;
 
 
 --
--- Name: groundwater_level_dossier; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: groundwater_level_dossier; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.groundwater_level_dossier (
@@ -167,10 +231,8 @@ CREATE TABLE gld.groundwater_level_dossier (
 );
 
 
-ALTER TABLE gld.groundwater_level_dossier OWNER TO postgres;
-
 --
--- Name: groundwater_level_dossier_groundwater_level_dossier_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: groundwater_level_dossier_groundwater_level_dossier_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.groundwater_level_dossier_groundwater_level_dossier_id_seq
@@ -182,17 +244,15 @@ CREATE SEQUENCE gld.groundwater_level_dossier_groundwater_level_dossier_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.groundwater_level_dossier_groundwater_level_dossier_id_seq OWNER TO postgres;
-
 --
--- Name: groundwater_level_dossier_groundwater_level_dossier_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: groundwater_level_dossier_groundwater_level_dossier_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.groundwater_level_dossier_groundwater_level_dossier_id_seq OWNED BY gld.groundwater_level_dossier.groundwater_level_dossier_id;
 
 
 --
--- Name: measurement_point_metadata; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: measurement_point_metadata; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.measurement_point_metadata (
@@ -204,10 +264,8 @@ CREATE TABLE gld.measurement_point_metadata (
 );
 
 
-ALTER TABLE gld.measurement_point_metadata OWNER TO postgres;
-
 --
--- Name: measurement_point_metadata_measurement_point_metadata_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: measurement_point_metadata_measurement_point_metadata_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.measurement_point_metadata_measurement_point_metadata_id_seq
@@ -219,17 +277,15 @@ CREATE SEQUENCE gld.measurement_point_metadata_measurement_point_metadata_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.measurement_point_metadata_measurement_point_metadata_id_seq OWNER TO postgres;
-
 --
--- Name: measurement_point_metadata_measurement_point_metadata_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: measurement_point_metadata_measurement_point_metadata_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.measurement_point_metadata_measurement_point_metadata_id_seq OWNED BY gld.measurement_point_metadata.measurement_point_metadata_id;
 
 
 --
--- Name: measurement_time_series; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: measurement_time_series; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.measurement_time_series (
@@ -238,10 +294,8 @@ CREATE TABLE gld.measurement_time_series (
 );
 
 
-ALTER TABLE gld.measurement_time_series OWNER TO postgres;
-
 --
--- Name: measurement_time_series_measurement_time_series_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: measurement_time_series_measurement_time_series_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.measurement_time_series_measurement_time_series_id_seq
@@ -253,17 +307,15 @@ CREATE SEQUENCE gld.measurement_time_series_measurement_time_series_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.measurement_time_series_measurement_time_series_id_seq OWNER TO postgres;
-
 --
--- Name: measurement_time_series_measurement_time_series_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: measurement_time_series_measurement_time_series_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.measurement_time_series_measurement_time_series_id_seq OWNED BY gld.measurement_time_series.measurement_time_series_id;
 
 
 --
--- Name: measurement_tvp; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: measurement_tvp; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.measurement_tvp (
@@ -280,10 +332,8 @@ CREATE TABLE gld.measurement_tvp (
 );
 
 
-ALTER TABLE gld.measurement_tvp OWNER TO postgres;
-
 --
--- Name: measurement_tvp_measurement_tvp_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: measurement_tvp_measurement_tvp_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.measurement_tvp_measurement_tvp_id_seq
@@ -295,17 +345,15 @@ CREATE SEQUENCE gld.measurement_tvp_measurement_tvp_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.measurement_tvp_measurement_tvp_id_seq OWNER TO postgres;
-
 --
--- Name: measurement_tvp_measurement_tvp_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: measurement_tvp_measurement_tvp_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.measurement_tvp_measurement_tvp_id_seq OWNED BY gld.measurement_tvp.measurement_tvp_id;
 
 
 --
--- Name: observation; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: observation; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.observation (
@@ -321,10 +369,8 @@ CREATE TABLE gld.observation (
 );
 
 
-ALTER TABLE gld.observation OWNER TO postgres;
-
 --
--- Name: observation_metadata; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: observation_metadata; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.observation_metadata (
@@ -336,10 +382,8 @@ CREATE TABLE gld.observation_metadata (
 );
 
 
-ALTER TABLE gld.observation_metadata OWNER TO postgres;
-
 --
--- Name: observation_metadata_observation_metadata_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: observation_metadata_observation_metadata_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.observation_metadata_observation_metadata_id_seq
@@ -351,17 +395,15 @@ CREATE SEQUENCE gld.observation_metadata_observation_metadata_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.observation_metadata_observation_metadata_id_seq OWNER TO postgres;
-
 --
--- Name: observation_metadata_observation_metadata_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: observation_metadata_observation_metadata_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.observation_metadata_observation_metadata_id_seq OWNED BY gld.observation_metadata.observation_metadata_id;
 
 
 --
--- Name: observation_observation_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: observation_observation_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.observation_observation_id_seq
@@ -373,17 +415,15 @@ CREATE SEQUENCE gld.observation_observation_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.observation_observation_id_seq OWNER TO postgres;
-
 --
--- Name: observation_observation_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: observation_observation_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.observation_observation_id_seq OWNED BY gld.observation.observation_id;
 
 
 --
--- Name: observation_process; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: observation_process; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.observation_process (
@@ -396,10 +436,8 @@ CREATE TABLE gld.observation_process (
 );
 
 
-ALTER TABLE gld.observation_process OWNER TO postgres;
-
 --
--- Name: observation_process_observation_process_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: observation_process_observation_process_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.observation_process_observation_process_id_seq
@@ -411,17 +449,15 @@ CREATE SEQUENCE gld.observation_process_observation_process_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.observation_process_observation_process_id_seq OWNER TO postgres;
-
 --
--- Name: observation_process_observation_process_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: observation_process_observation_process_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.observation_process_observation_process_id_seq OWNED BY gld.observation_process.observation_process_id;
 
 
 --
--- Name: responsible_party; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: responsible_party; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.responsible_party (
@@ -431,10 +467,8 @@ CREATE TABLE gld.responsible_party (
 );
 
 
-ALTER TABLE gld.responsible_party OWNER TO postgres;
-
 --
--- Name: responsible_party_responsible_party_id_seq; Type: SEQUENCE; Schema: gld; Owner: postgres
+-- Name: responsible_party_responsible_party_id_seq; Type: SEQUENCE; Schema: gld; Owner: -
 --
 
 CREATE SEQUENCE gld.responsible_party_responsible_party_id_seq
@@ -446,17 +480,15 @@ CREATE SEQUENCE gld.responsible_party_responsible_party_id_seq
     CACHE 1;
 
 
-ALTER TABLE gld.responsible_party_responsible_party_id_seq OWNER TO postgres;
-
 --
--- Name: responsible_party_responsible_party_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: postgres
+-- Name: responsible_party_responsible_party_id_seq; Type: SEQUENCE OWNED BY; Schema: gld; Owner: -
 --
 
 ALTER SEQUENCE gld.responsible_party_responsible_party_id_seq OWNED BY gld.responsible_party.responsible_party_id;
 
 
 --
--- Name: type_air_pressure_compensation; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_air_pressure_compensation; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_air_pressure_compensation (
@@ -468,10 +500,8 @@ CREATE TABLE gld.type_air_pressure_compensation (
 );
 
 
-ALTER TABLE gld.type_air_pressure_compensation OWNER TO postgres;
-
 --
--- Name: type_censored_reason_code; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_censored_reason_code; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_censored_reason_code (
@@ -483,10 +513,8 @@ CREATE TABLE gld.type_censored_reason_code (
 );
 
 
-ALTER TABLE gld.type_censored_reason_code OWNER TO postgres;
-
 --
--- Name: type_evaluation_procedure; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_evaluation_procedure; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_evaluation_procedure (
@@ -498,10 +526,8 @@ CREATE TABLE gld.type_evaluation_procedure (
 );
 
 
-ALTER TABLE gld.type_evaluation_procedure OWNER TO postgres;
-
 --
--- Name: type_interpolation_code; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_interpolation_code; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_interpolation_code (
@@ -513,10 +539,8 @@ CREATE TABLE gld.type_interpolation_code (
 );
 
 
-ALTER TABLE gld.type_interpolation_code OWNER TO postgres;
-
 --
--- Name: type_measurement_instrument_type; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_measurement_instrument_type; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_measurement_instrument_type (
@@ -528,10 +552,8 @@ CREATE TABLE gld.type_measurement_instrument_type (
 );
 
 
-ALTER TABLE gld.type_measurement_instrument_type OWNER TO postgres;
-
 --
--- Name: type_observation_type; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_observation_type; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_observation_type (
@@ -543,10 +565,8 @@ CREATE TABLE gld.type_observation_type (
 );
 
 
-ALTER TABLE gld.type_observation_type OWNER TO postgres;
-
 --
--- Name: type_process_reference; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_process_reference; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_process_reference (
@@ -558,10 +578,8 @@ CREATE TABLE gld.type_process_reference (
 );
 
 
-ALTER TABLE gld.type_process_reference OWNER TO postgres;
-
 --
--- Name: type_process_type; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_process_type; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_process_type (
@@ -573,10 +591,8 @@ CREATE TABLE gld.type_process_type (
 );
 
 
-ALTER TABLE gld.type_process_type OWNER TO postgres;
-
 --
--- Name: type_status_code; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_status_code; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_status_code (
@@ -588,10 +604,8 @@ CREATE TABLE gld.type_status_code (
 );
 
 
-ALTER TABLE gld.type_status_code OWNER TO postgres;
-
 --
--- Name: type_status_quality_control; Type: TABLE; Schema: gld; Owner: postgres
+-- Name: type_status_quality_control; Type: TABLE; Schema: gld; Owner: -
 --
 
 CREATE TABLE gld.type_status_quality_control (
@@ -603,10 +617,8 @@ CREATE TABLE gld.type_status_quality_control (
 );
 
 
-ALTER TABLE gld.type_status_quality_control OWNER TO postgres;
-
 --
--- Name: delivered_locations; Type: TABLE; Schema: gmw; Owner: postgres
+-- Name: delivered_locations; Type: TABLE; Schema: gmw; Owner: -
 --
 
 CREATE TABLE gmw.delivered_locations (
@@ -617,10 +629,8 @@ CREATE TABLE gmw.delivered_locations (
 );
 
 
-ALTER TABLE gmw.delivered_locations OWNER TO postgres;
-
 --
--- Name: delivered_vertical_positions; Type: TABLE; Schema: gmw; Owner: postgres
+-- Name: delivered_vertical_positions; Type: TABLE; Schema: gmw; Owner: -
 --
 
 CREATE TABLE gmw.delivered_vertical_positions (
@@ -635,10 +645,8 @@ CREATE TABLE gmw.delivered_vertical_positions (
 );
 
 
-ALTER TABLE gmw.delivered_vertical_positions OWNER TO postgres;
-
 --
--- Name: delivered_vertical_positions_id_seq; Type: SEQUENCE; Schema: gmw; Owner: postgres
+-- Name: delivered_vertical_positions_id_seq; Type: SEQUENCE; Schema: gmw; Owner: -
 --
 
 CREATE SEQUENCE gmw.delivered_vertical_positions_id_seq
@@ -650,17 +658,15 @@ CREATE SEQUENCE gmw.delivered_vertical_positions_id_seq
     CACHE 1;
 
 
-ALTER TABLE gmw.delivered_vertical_positions_id_seq OWNER TO postgres;
-
 --
--- Name: delivered_vertical_positions_id_seq; Type: SEQUENCE OWNED BY; Schema: gmw; Owner: postgres
+-- Name: delivered_vertical_positions_id_seq; Type: SEQUENCE OWNED BY; Schema: gmw; Owner: -
 --
 
 ALTER SEQUENCE gmw.delivered_vertical_positions_id_seq OWNED BY gmw.delivered_vertical_positions.id;
 
 
 --
--- Name: groundwater_monitoring_tubes; Type: TABLE; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_tubes; Type: TABLE; Schema: gmw; Owner: -
 --
 
 CREATE TABLE gmw.groundwater_monitoring_tubes (
@@ -688,10 +694,8 @@ CREATE TABLE gmw.groundwater_monitoring_tubes (
 );
 
 
-ALTER TABLE gmw.groundwater_monitoring_tubes OWNER TO postgres;
-
 --
--- Name: groundwater_monitoring_tubes_id_seq; Type: SEQUENCE; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_tubes_id_seq; Type: SEQUENCE; Schema: gmw; Owner: -
 --
 
 CREATE SEQUENCE gmw.groundwater_monitoring_tubes_id_seq
@@ -703,17 +707,15 @@ CREATE SEQUENCE gmw.groundwater_monitoring_tubes_id_seq
     CACHE 1;
 
 
-ALTER TABLE gmw.groundwater_monitoring_tubes_id_seq OWNER TO postgres;
-
 --
--- Name: groundwater_monitoring_tubes_id_seq; Type: SEQUENCE OWNED BY; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_tubes_id_seq; Type: SEQUENCE OWNED BY; Schema: gmw; Owner: -
 --
 
 ALTER SEQUENCE gmw.groundwater_monitoring_tubes_id_seq OWNED BY gmw.groundwater_monitoring_tubes.id;
 
 
 --
--- Name: groundwater_monitoring_wells; Type: TABLE; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_wells; Type: TABLE; Schema: gmw; Owner: -
 --
 
 CREATE TABLE gmw.groundwater_monitoring_wells (
@@ -742,10 +744,8 @@ CREATE TABLE gmw.groundwater_monitoring_wells (
 );
 
 
-ALTER TABLE gmw.groundwater_monitoring_wells OWNER TO postgres;
-
 --
--- Name: groundwater_monitoring_wells_id_seq; Type: SEQUENCE; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_wells_id_seq; Type: SEQUENCE; Schema: gmw; Owner: -
 --
 
 CREATE SEQUENCE gmw.groundwater_monitoring_wells_id_seq
@@ -757,510 +757,106 @@ CREATE SEQUENCE gmw.groundwater_monitoring_wells_id_seq
     CACHE 1;
 
 
-ALTER TABLE gmw.groundwater_monitoring_wells_id_seq OWNER TO postgres;
-
 --
--- Name: groundwater_monitoring_wells_id_seq; Type: SEQUENCE OWNED BY; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_wells_id_seq; Type: SEQUENCE OWNED BY; Schema: gmw; Owner: -
 --
 
 ALTER SEQUENCE gmw.groundwater_monitoring_wells_id_seq OWNED BY gmw.groundwater_monitoring_wells.id;
 
 
 --
--- Name: auth_group; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.auth_group (
-    id integer NOT NULL,
-    name character varying(150) NOT NULL
-);
-
-
-ALTER TABLE public.auth_group OWNER TO postgres;
-
---
--- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.auth_group_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.auth_group_id_seq OWNER TO postgres;
-
---
--- Name: auth_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.auth_group_id_seq OWNED BY public.auth_group.id;
-
-
---
--- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.auth_group_permissions (
-    id bigint NOT NULL,
-    group_id integer NOT NULL,
-    permission_id integer NOT NULL
-);
-
-
-ALTER TABLE public.auth_group_permissions OWNER TO postgres;
-
---
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.auth_group_permissions_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.auth_group_permissions_id_seq OWNER TO postgres;
-
---
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.auth_group_permissions_id_seq OWNED BY public.auth_group_permissions.id;
-
-
---
--- Name: auth_permission; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.auth_permission (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    content_type_id integer NOT NULL,
-    codename character varying(100) NOT NULL
-);
-
-
-ALTER TABLE public.auth_permission OWNER TO postgres;
-
---
--- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.auth_permission_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.auth_permission_id_seq OWNER TO postgres;
-
---
--- Name: auth_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.auth_permission_id_seq OWNED BY public.auth_permission.id;
-
-
---
--- Name: auth_user; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.auth_user (
-    id integer NOT NULL,
-    password character varying(128) NOT NULL,
-    last_login timestamp with time zone,
-    is_superuser boolean NOT NULL,
-    username character varying(150) NOT NULL,
-    first_name character varying(150) NOT NULL,
-    last_name character varying(150) NOT NULL,
-    email character varying(254) NOT NULL,
-    is_staff boolean NOT NULL,
-    is_active boolean NOT NULL,
-    date_joined timestamp with time zone NOT NULL
-);
-
-
-ALTER TABLE public.auth_user OWNER TO postgres;
-
---
--- Name: auth_user_groups; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.auth_user_groups (
-    id bigint NOT NULL,
-    user_id integer NOT NULL,
-    group_id integer NOT NULL
-);
-
-
-ALTER TABLE public.auth_user_groups OWNER TO postgres;
-
---
--- Name: auth_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.auth_user_groups_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.auth_user_groups_id_seq OWNER TO postgres;
-
---
--- Name: auth_user_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.auth_user_groups_id_seq OWNED BY public.auth_user_groups.id;
-
-
---
--- Name: auth_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.auth_user_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.auth_user_id_seq OWNER TO postgres;
-
---
--- Name: auth_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.auth_user_id_seq OWNED BY public.auth_user.id;
-
-
---
--- Name: auth_user_user_permissions; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.auth_user_user_permissions (
-    id bigint NOT NULL,
-    user_id integer NOT NULL,
-    permission_id integer NOT NULL
-);
-
-
-ALTER TABLE public.auth_user_user_permissions OWNER TO postgres;
-
---
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.auth_user_user_permissions_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.auth_user_user_permissions_id_seq OWNER TO postgres;
-
---
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.auth_user_user_permissions_id_seq OWNED BY public.auth_user_user_permissions.id;
-
-
---
--- Name: django_admin_log; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.django_admin_log (
-    id integer NOT NULL,
-    action_time timestamp with time zone NOT NULL,
-    object_id text,
-    object_repr character varying(200) NOT NULL,
-    action_flag smallint NOT NULL,
-    change_message text NOT NULL,
-    content_type_id integer,
-    user_id integer NOT NULL,
-    CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
-);
-
-
-ALTER TABLE public.django_admin_log OWNER TO postgres;
-
---
--- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.django_admin_log_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.django_admin_log_id_seq OWNER TO postgres;
-
---
--- Name: django_admin_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.django_admin_log_id_seq OWNED BY public.django_admin_log.id;
-
-
---
--- Name: django_content_type; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.django_content_type (
-    id integer NOT NULL,
-    app_label character varying(100) NOT NULL,
-    model character varying(100) NOT NULL
-);
-
-
-ALTER TABLE public.django_content_type OWNER TO postgres;
-
---
--- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.django_content_type_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.django_content_type_id_seq OWNER TO postgres;
-
---
--- Name: django_content_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.django_content_type_id_seq OWNED BY public.django_content_type.id;
-
-
---
--- Name: django_migrations; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.django_migrations (
-    id bigint NOT NULL,
-    app character varying(255) NOT NULL,
-    name character varying(255) NOT NULL,
-    applied timestamp with time zone NOT NULL
-);
-
-
-ALTER TABLE public.django_migrations OWNER TO postgres;
-
---
--- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.django_migrations_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.django_migrations_id_seq OWNER TO postgres;
-
---
--- Name: django_migrations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.django_migrations_id_seq OWNED BY public.django_migrations.id;
-
-
---
--- Name: django_session; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.django_session (
-    session_key character varying(40) NOT NULL,
-    session_data text NOT NULL,
-    expire_date timestamp with time zone NOT NULL
-);
-
-
-ALTER TABLE public.django_session OWNER TO postgres;
-
---
--- Name: gld_addition_log id; Type: DEFAULT; Schema: aanlevering; Owner: postgres
+-- Name: gld_addition_log id; Type: DEFAULT; Schema: aanlevering; Owner: -
 --
 
 ALTER TABLE ONLY aanlevering.gld_addition_log ALTER COLUMN id SET DEFAULT nextval('aanlevering.gld_addition_log_voorlopig_id_seq'::regclass);
 
 
 --
--- Name: gld_registration_log id; Type: DEFAULT; Schema: aanlevering; Owner: postgres
+-- Name: gld_registration_log id; Type: DEFAULT; Schema: aanlevering; Owner: -
 --
 
 ALTER TABLE ONLY aanlevering.gld_registration_log ALTER COLUMN id SET DEFAULT nextval('aanlevering.gld_registration_log_id_seq'::regclass);
 
 
 --
--- Name: groundwater_level_dossier groundwater_level_dossier_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: groundwater_level_dossier groundwater_level_dossier_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.groundwater_level_dossier ALTER COLUMN groundwater_level_dossier_id SET DEFAULT nextval('gld.groundwater_level_dossier_groundwater_level_dossier_id_seq'::regclass);
 
 
 --
--- Name: measurement_point_metadata measurement_point_metadata_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: measurement_point_metadata measurement_point_metadata_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.measurement_point_metadata ALTER COLUMN measurement_point_metadata_id SET DEFAULT nextval('gld.measurement_point_metadata_measurement_point_metadata_id_seq'::regclass);
 
 
 --
--- Name: measurement_time_series measurement_time_series_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: measurement_time_series measurement_time_series_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.measurement_time_series ALTER COLUMN measurement_time_series_id SET DEFAULT nextval('gld.measurement_time_series_measurement_time_series_id_seq'::regclass);
 
 
 --
--- Name: measurement_tvp measurement_tvp_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: measurement_tvp measurement_tvp_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.measurement_tvp ALTER COLUMN measurement_tvp_id SET DEFAULT nextval('gld.measurement_tvp_measurement_tvp_id_seq'::regclass);
 
 
 --
--- Name: observation observation_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: observation observation_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.observation ALTER COLUMN observation_id SET DEFAULT nextval('gld.observation_observation_id_seq'::regclass);
 
 
 --
--- Name: observation_metadata observation_metadata_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: observation_metadata observation_metadata_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.observation_metadata ALTER COLUMN observation_metadata_id SET DEFAULT nextval('gld.observation_metadata_observation_metadata_id_seq'::regclass);
 
 
 --
--- Name: observation_process observation_process_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: observation_process observation_process_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.observation_process ALTER COLUMN observation_process_id SET DEFAULT nextval('gld.observation_process_observation_process_id_seq'::regclass);
 
 
 --
--- Name: responsible_party responsible_party_id; Type: DEFAULT; Schema: gld; Owner: postgres
+-- Name: responsible_party responsible_party_id; Type: DEFAULT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.responsible_party ALTER COLUMN responsible_party_id SET DEFAULT nextval('gld.responsible_party_responsible_party_id_seq'::regclass);
 
 
 --
--- Name: delivered_vertical_positions id; Type: DEFAULT; Schema: gmw; Owner: postgres
+-- Name: delivered_vertical_positions id; Type: DEFAULT; Schema: gmw; Owner: -
 --
 
 ALTER TABLE ONLY gmw.delivered_vertical_positions ALTER COLUMN id SET DEFAULT nextval('gmw.delivered_vertical_positions_id_seq'::regclass);
 
 
 --
--- Name: groundwater_monitoring_tubes id; Type: DEFAULT; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_tubes id; Type: DEFAULT; Schema: gmw; Owner: -
 --
 
 ALTER TABLE ONLY gmw.groundwater_monitoring_tubes ALTER COLUMN id SET DEFAULT nextval('gmw.groundwater_monitoring_tubes_id_seq'::regclass);
 
 
 --
--- Name: groundwater_monitoring_wells id; Type: DEFAULT; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_wells id; Type: DEFAULT; Schema: gmw; Owner: -
 --
 
 ALTER TABLE ONLY gmw.groundwater_monitoring_wells ALTER COLUMN id SET DEFAULT nextval('gmw.groundwater_monitoring_wells_id_seq'::regclass);
 
 
 --
--- Name: auth_group id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group ALTER COLUMN id SET DEFAULT nextval('public.auth_group_id_seq'::regclass);
-
-
---
--- Name: auth_group_permissions id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group_permissions ALTER COLUMN id SET DEFAULT nextval('public.auth_group_permissions_id_seq'::regclass);
-
-
---
--- Name: auth_permission id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_permission ALTER COLUMN id SET DEFAULT nextval('public.auth_permission_id_seq'::regclass);
-
-
---
--- Name: auth_user id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user ALTER COLUMN id SET DEFAULT nextval('public.auth_user_id_seq'::regclass);
-
-
---
--- Name: auth_user_groups id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_groups ALTER COLUMN id SET DEFAULT nextval('public.auth_user_groups_id_seq'::regclass);
-
-
---
--- Name: auth_user_user_permissions id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_user_permissions ALTER COLUMN id SET DEFAULT nextval('public.auth_user_user_permissions_id_seq'::regclass);
-
-
---
--- Name: django_admin_log id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_admin_log ALTER COLUMN id SET DEFAULT nextval('public.django_admin_log_id_seq'::regclass);
-
-
---
--- Name: django_content_type id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_content_type ALTER COLUMN id SET DEFAULT nextval('public.django_content_type_id_seq'::regclass);
-
-
---
--- Name: django_migrations id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_migrations ALTER COLUMN id SET DEFAULT nextval('public.django_migrations_id_seq'::regclass);
-
-
---
--- Data for Name: gld_addition_log; Type: TABLE DATA; Schema: aanlevering; Owner: postgres
+-- Data for Name: gld_addition_log; Type: TABLE DATA; Schema: aanlevering; Owner: -
 --
 
 COPY aanlevering.gld_addition_log (id, date_modified, observation_id, start, "end", broid_registration, procedure_uuid, procedure_initialized, validation_status, levering_id, levering_status, comments, file, addition_type) FROM stdin;
@@ -1268,7 +864,7 @@ COPY aanlevering.gld_addition_log (id, date_modified, observation_id, start, "en
 
 
 --
--- Data for Name: gld_registration_log; Type: TABLE DATA; Schema: aanlevering; Owner: postgres
+-- Data for Name: gld_registration_log; Type: TABLE DATA; Schema: aanlevering; Owner: -
 --
 
 COPY aanlevering.gld_registration_log (id, date_modified, gwm_bro_id, filter_id, validation_status, levering_id, levering_status, gld_bro_id, comments, last_changed, corrections_applied, file, quality_regime, timestamp_end_registration, process_status) FROM stdin;
@@ -1276,7 +872,7 @@ COPY aanlevering.gld_registration_log (id, date_modified, gwm_bro_id, filter_id,
 
 
 --
--- Data for Name: groundwater_level_dossier; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: groundwater_level_dossier; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.groundwater_level_dossier (groundwater_level_dossier_id, groundwater_monitoring_tube_id, gmw_bro_id, gld_bro_id, research_start_date, research_last_date, research_last_correction) FROM stdin;
@@ -1289,7 +885,7 @@ COPY gld.groundwater_level_dossier (groundwater_level_dossier_id, groundwater_mo
 
 
 --
--- Data for Name: measurement_point_metadata; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: measurement_point_metadata; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.measurement_point_metadata (measurement_point_metadata_id, qualifier_by_category, censored_reason, qualifier_by_quantity, interpolation_code) FROM stdin;
@@ -1300,7 +896,7 @@ COPY gld.measurement_point_metadata (measurement_point_metadata_id, qualifier_by
 
 
 --
--- Data for Name: measurement_time_series; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: measurement_time_series; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.measurement_time_series (measurement_time_series_id, observation_id) FROM stdin;
@@ -1319,7 +915,7 @@ COPY gld.measurement_time_series (measurement_time_series_id, observation_id) FR
 
 
 --
--- Data for Name: measurement_tvp; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: measurement_tvp; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.measurement_tvp (measurement_tvp_id, measurement_time_series_id, measurement_time, field_value, calculated_value, corrected_value, correction_time, correction_reason, measurement_metadata_id, field_value_unit) FROM stdin;
@@ -16244,7 +15840,7 @@ COPY gld.measurement_tvp (measurement_tvp_id, measurement_time_series_id, measur
 
 
 --
--- Data for Name: observation; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: observation; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.observation (observation_id, observationperiod, observation_starttime, observation_endtime, observation_metadata_id, observation_process_id, groundwater_level_dossier_id, result_time, status) FROM stdin;
@@ -16263,7 +15859,7 @@ COPY gld.observation (observation_id, observationperiod, observation_starttime, 
 
 
 --
--- Data for Name: observation_metadata; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: observation_metadata; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.observation_metadata (observation_metadata_id, date_stamp, parameter_measurement_serie_type, status, responsible_party_id) FROM stdin;
@@ -16273,7 +15869,7 @@ COPY gld.observation_metadata (observation_metadata_id, date_stamp, parameter_me
 
 
 --
--- Data for Name: observation_process; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: observation_process; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.observation_process (observation_process_id, process_reference, parameter_measurement_instrument_type, parameter_air_pressure_compensation_type, process_type, parameter_evaluation_procedure) FROM stdin;
@@ -16284,7 +15880,7 @@ COPY gld.observation_process (observation_process_id, process_reference, paramet
 
 
 --
--- Data for Name: responsible_party; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: responsible_party; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.responsible_party (responsible_party_id, identification, organisation_name) FROM stdin;
@@ -16293,7 +15889,7 @@ COPY gld.responsible_party (responsible_party_id, identification, organisation_n
 
 
 --
--- Data for Name: type_air_pressure_compensation; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_air_pressure_compensation; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_air_pressure_compensation (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16307,7 +15903,7 @@ COPY gld.type_air_pressure_compensation (id, value, definition_nl, imbro, imbro_
 
 
 --
--- Data for Name: type_censored_reason_code; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_censored_reason_code; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_censored_reason_code (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16318,7 +15914,7 @@ COPY gld.type_censored_reason_code (id, value, definition_nl, imbro, imbro_a) FR
 
 
 --
--- Data for Name: type_evaluation_procedure; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_evaluation_procedure; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_evaluation_procedure (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16333,7 +15929,7 @@ COPY gld.type_evaluation_procedure (id, value, definition_nl, imbro, imbro_a) FR
 
 
 --
--- Data for Name: type_interpolation_code; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_interpolation_code; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_interpolation_code (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16342,7 +15938,7 @@ COPY gld.type_interpolation_code (id, value, definition_nl, imbro, imbro_a) FROM
 
 
 --
--- Data for Name: type_measurement_instrument_type; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_measurement_instrument_type; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_measurement_instrument_type (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16360,7 +15956,7 @@ COPY gld.type_measurement_instrument_type (id, value, definition_nl, imbro, imbr
 
 
 --
--- Data for Name: type_observation_type; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_observation_type; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_observation_type (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16370,7 +15966,7 @@ COPY gld.type_observation_type (id, value, definition_nl, imbro, imbro_a) FROM s
 
 
 --
--- Data for Name: type_process_reference; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_process_reference; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_process_reference (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16385,7 +15981,7 @@ COPY gld.type_process_reference (id, value, definition_nl, imbro, imbro_a) FROM 
 
 
 --
--- Data for Name: type_process_type; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_process_type; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_process_type (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16394,7 +15990,7 @@ COPY gld.type_process_type (id, value, definition_nl, imbro, imbro_a) FROM stdin
 
 
 --
--- Data for Name: type_status_code; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_status_code; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_status_code (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16405,7 +16001,7 @@ COPY gld.type_status_code (id, value, definition_nl, imbro, imbro_a) FROM stdin;
 
 
 --
--- Data for Name: type_status_quality_control; Type: TABLE DATA; Schema: gld; Owner: postgres
+-- Data for Name: type_status_quality_control; Type: TABLE DATA; Schema: gld; Owner: -
 --
 
 COPY gld.type_status_quality_control (id, value, definition_nl, imbro, imbro_a) FROM stdin;
@@ -16418,7 +16014,7 @@ COPY gld.type_status_quality_control (id, value, definition_nl, imbro, imbro_a) 
 
 
 --
--- Data for Name: delivered_locations; Type: TABLE DATA; Schema: gmw; Owner: postgres
+-- Data for Name: delivered_locations; Type: TABLE DATA; Schema: gmw; Owner: -
 --
 
 COPY gmw.delivered_locations (location_id, registration_object_id, referencesystem, horizontal_positioning_method) FROM stdin;
@@ -16473,7 +16069,7 @@ COPY gmw.delivered_locations (location_id, registration_object_id, referencesyst
 
 
 --
--- Data for Name: delivered_vertical_positions; Type: TABLE DATA; Schema: gmw; Owner: postgres
+-- Data for Name: delivered_vertical_positions; Type: TABLE DATA; Schema: gmw; Owner: -
 --
 
 COPY gmw.delivered_vertical_positions (id, delivered_vertical_positions_id, registration_object_id, local_vertical_reference_point, "offset", vertical_datum, ground_level_position, ground_level_positioning_method) FROM stdin;
@@ -16528,7 +16124,7 @@ COPY gmw.delivered_vertical_positions (id, delivered_vertical_positions_id, regi
 
 
 --
--- Data for Name: groundwater_monitoring_tubes; Type: TABLE DATA; Schema: gmw; Owner: postgres
+-- Data for Name: groundwater_monitoring_tubes; Type: TABLE DATA; Schema: gmw; Owner: -
 --
 
 COPY gmw.groundwater_monitoring_tubes (id, groundwater_monitoring_tube_id, registration_object_id, tube_number, tube_type, artesian_well_cap_present, sediment_sump_present, number_of_geo_ohm_cables, tube_top_diameter, variable_diameter, tube_status, tube_top_position, tube_top_positioning_method, tube_packing_material, tube_material, glue, screen_length, sock_material, plain_tube_part_length, sediment_sump_length, deliver_to_bro) FROM stdin;
@@ -16628,7 +16224,7 @@ COPY gmw.groundwater_monitoring_tubes (id, groundwater_monitoring_tube_id, regis
 
 
 --
--- Data for Name: groundwater_monitoring_wells; Type: TABLE DATA; Schema: gmw; Owner: postgres
+-- Data for Name: groundwater_monitoring_wells; Type: TABLE DATA; Schema: gmw; Owner: -
 --
 
 COPY gmw.groundwater_monitoring_wells (id, registration_object_id, registration_object_type, bro_id, request_reference, delivery_accountable_party, delivery_responsible_party, quality_regime, under_privilege, delivery_context, construction_standard, initial_function, number_of_standpipes, ground_level_stable, well_stability, nitg_code, olga_code, well_code, owner, maintenance_responsible_party, well_head_protector, well_construction_date) FROM stdin;
@@ -16683,465 +16279,98 @@ COPY gmw.groundwater_monitoring_wells (id, registration_object_id, registration_
 
 
 --
--- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.auth_group (id, name) FROM stdin;
-\.
-
-
---
--- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.auth_group_permissions (id, group_id, permission_id) FROM stdin;
-\.
-
-
---
--- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
-1	Can add log entry	1	add_logentry
-2	Can change log entry	1	change_logentry
-3	Can delete log entry	1	delete_logentry
-4	Can view log entry	1	view_logentry
-5	Can add permission	2	add_permission
-6	Can change permission	2	change_permission
-7	Can delete permission	2	delete_permission
-8	Can view permission	2	view_permission
-9	Can add group	3	add_group
-10	Can change group	3	change_group
-11	Can delete group	3	delete_group
-12	Can view group	3	view_group
-13	Can add user	4	add_user
-14	Can change user	4	change_user
-15	Can delete user	4	delete_user
-16	Can view user	4	view_user
-17	Can add content type	5	add_contenttype
-18	Can change content type	5	change_contenttype
-19	Can delete content type	5	delete_contenttype
-20	Can view content type	5	view_contenttype
-21	Can add session	6	add_session
-22	Can change session	6	change_session
-23	Can delete session	6	delete_session
-24	Can view session	6	view_session
-25	Can add Aanleverinfo filters	7	add_aanleverinfo_filters
-26	Can change Aanleverinfo filters	7	change_aanleverinfo_filters
-27	Can delete Aanleverinfo filters	7	delete_aanleverinfo_filters
-28	Can view Aanleverinfo filters	7	view_aanleverinfo_filters
-29	Can add delivered locations	8	add_deliveredlocations
-30	Can change delivered locations	8	change_deliveredlocations
-31	Can delete delivered locations	8	delete_deliveredlocations
-32	Can view delivered locations	8	view_deliveredlocations
-33	Can add delivered vertical positions	9	add_deliveredverticalpositions
-34	Can change delivered vertical positions	9	change_deliveredverticalpositions
-35	Can delete delivered vertical positions	9	delete_deliveredverticalpositions
-36	Can view delivered vertical positions	9	view_deliveredverticalpositions
-37	Can add GLD addition register controlemetingen	10	add_gld_addition_log_controle
-38	Can change GLD addition register controlemetingen	10	change_gld_addition_log_controle
-39	Can delete GLD addition register controlemetingen	10	delete_gld_addition_log_controle
-40	Can view GLD addition register controlemetingen	10	view_gld_addition_log_controle
-41	Can add GLD addition register volledig beoordeelde metingen	11	add_gld_addition_log_volledig
-42	Can change GLD addition register volledig beoordeelde metingen	11	change_gld_addition_log_volledig
-43	Can delete GLD addition register volledig beoordeelde metingen	11	delete_gld_addition_log_volledig
-44	Can view GLD addition register volledig beoordeelde metingen	11	view_gld_addition_log_volledig
-45	Can add GLD addition register voorlopige metingen	12	add_gld_addition_log_voorlopig
-46	Can change GLD addition register voorlopige metingen	12	change_gld_addition_log_voorlopig
-47	Can delete GLD addition register voorlopige metingen	12	delete_gld_addition_log_voorlopig
-48	Can view GLD addition register voorlopige metingen	12	view_gld_addition_log_voorlopig
-49	Can add GLD registration register	13	add_gld_registration_log
-50	Can change GLD registration register	13	change_gld_registration_log
-51	Can delete GLD registration register	13	delete_gld_registration_log
-52	Can view GLD registration register	13	view_gld_registration_log
-53	Can add Groundwaterlevel dossier	14	add_groundwaterleveldossier
-54	Can change Groundwaterlevel dossier	14	change_groundwaterleveldossier
-55	Can delete Groundwaterlevel dossier	14	delete_groundwaterleveldossier
-56	Can view Groundwaterlevel dossier	14	view_groundwaterleveldossier
-57	Can add groundwater monitoring tubes	15	add_groundwatermonitoringtubes
-58	Can change groundwater monitoring tubes	15	change_groundwatermonitoringtubes
-59	Can delete groundwater monitoring tubes	15	delete_groundwatermonitoringtubes
-60	Can view groundwater monitoring tubes	15	view_groundwatermonitoringtubes
-61	Can add groundwater monitoring wells	16	add_groundwatermonitoringwells
-62	Can change groundwater monitoring wells	16	change_groundwatermonitoringwells
-63	Can delete groundwater monitoring wells	16	delete_groundwatermonitoringwells
-64	Can view groundwater monitoring wells	16	view_groundwatermonitoringwells
-65	Can add Measurement point metadata	17	add_measurementpointmetadata
-66	Can change Measurement point metadata	17	change_measurementpointmetadata
-67	Can delete Measurement point metadata	17	delete_measurementpointmetadata
-68	Can view Measurement point metadata	17	view_measurementpointmetadata
-69	Can add Measurement timeseries	18	add_measurementtimeseries
-70	Can change Measurement timeseries	18	change_measurementtimeseries
-71	Can delete Measurement timeseries	18	delete_measurementtimeseries
-72	Can view Measurement timeseries	18	view_measurementtimeseries
-73	Can add Measurement timeseries tvp observation	19	add_measurementtimeseriestvpobservation
-74	Can change Measurement timeseries tvp observation	19	change_measurementtimeseriestvpobservation
-75	Can delete Measurement timeseries tvp observation	19	delete_measurementtimeseriestvpobservation
-76	Can view Measurement timeseries tvp observation	19	view_measurementtimeseriestvpobservation
-77	Can add Measurement tvp	20	add_measurementtvp
-78	Can change Measurement tvp	20	change_measurementtvp
-79	Can delete Measurement tvp	20	delete_measurementtvp
-80	Can view Measurement tvp	20	view_measurementtvp
-81	Can add Observation	21	add_observation
-82	Can change Observation	21	change_observation
-83	Can delete Observation	21	delete_observation
-84	Can view Observation	21	view_observation
-85	Can add Observation metadata	22	add_observationmetadata
-86	Can change Observation metadata	22	change_observationmetadata
-87	Can delete Observation metadata	22	delete_observationmetadata
-88	Can view Observation metadata	22	view_observationmetadata
-89	Can add Observation process	23	add_observationprocess
-90	Can change Observation process	23	change_observationprocess
-91	Can delete Observation process	23	delete_observationprocess
-92	Can view Observation process	23	view_observationprocess
-93	Can add Responsible party	24	add_responsibleparty
-94	Can change Responsible party	24	change_responsibleparty
-95	Can delete Responsible party	24	delete_responsibleparty
-96	Can view Responsible party	24	view_responsibleparty
-97	Can add type air pressure compensation	25	add_typeairpressurecompensation
-98	Can change type air pressure compensation	25	change_typeairpressurecompensation
-99	Can delete type air pressure compensation	25	delete_typeairpressurecompensation
-100	Can view type air pressure compensation	25	view_typeairpressurecompensation
-101	Can add type censored reason code	26	add_typecensoredreasoncode
-102	Can change type censored reason code	26	change_typecensoredreasoncode
-103	Can delete type censored reason code	26	delete_typecensoredreasoncode
-104	Can view type censored reason code	26	view_typecensoredreasoncode
-105	Can add type evaluation procedure	27	add_typeevaluationprocedure
-106	Can change type evaluation procedure	27	change_typeevaluationprocedure
-107	Can delete type evaluation procedure	27	delete_typeevaluationprocedure
-108	Can view type evaluation procedure	27	view_typeevaluationprocedure
-109	Can add type interpolation code	28	add_typeinterpolationcode
-110	Can change type interpolation code	28	change_typeinterpolationcode
-111	Can delete type interpolation code	28	delete_typeinterpolationcode
-112	Can view type interpolation code	28	view_typeinterpolationcode
-113	Can add type measement instrument type	29	add_typemeasementinstrumenttype
-114	Can change type measement instrument type	29	change_typemeasementinstrumenttype
-115	Can delete type measement instrument type	29	delete_typemeasementinstrumenttype
-116	Can view type measement instrument type	29	view_typemeasementinstrumenttype
-117	Can add type observation type	30	add_typeobservationtype
-118	Can change type observation type	30	change_typeobservationtype
-119	Can delete type observation type	30	delete_typeobservationtype
-120	Can view type observation type	30	view_typeobservationtype
-121	Can add type process reference	31	add_typeprocessreference
-122	Can change type process reference	31	change_typeprocessreference
-123	Can delete type process reference	31	delete_typeprocessreference
-124	Can view type process reference	31	view_typeprocessreference
-125	Can add type process type	32	add_typeprocesstype
-126	Can change type process type	32	change_typeprocesstype
-127	Can delete type process type	32	delete_typeprocesstype
-128	Can view type process type	32	view_typeprocesstype
-129	Can add type status code	33	add_typestatuscode
-130	Can change type status code	33	change_typestatuscode
-131	Can delete type status code	33	delete_typestatuscode
-132	Can view type status code	33	view_typestatuscode
-133	Can add type status quality control	34	add_typestatusqualitycontrol
-134	Can change type status quality control	34	change_typestatusqualitycontrol
-135	Can delete type status quality control	34	delete_typestatusqualitycontrol
-136	Can view type status quality control	34	view_typestatusqualitycontrol
-137	Can add type measurement instrument type	29	add_typemeasurementinstrumenttype
-138	Can change type measurement instrument type	29	change_typemeasurementinstrumenttype
-139	Can delete type measurement instrument type	29	delete_typemeasurementinstrumenttype
-140	Can view type measurement instrument type	29	view_typemeasurementinstrumenttype
-141	Can add GLD addition register voorlopige metingen	12	add_gld_addition_log
-142	Can change GLD addition register voorlopige metingen	12	change_gld_addition_log
-143	Can delete GLD addition register voorlopige metingen	12	delete_gld_addition_log
-144	Can view GLD addition register voorlopige metingen	12	view_gld_addition_log
-\.
-
-
---
--- Data for Name: auth_user; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.auth_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined) FROM stdin;
-1	pbkdf2_sha256$320000$vcYKbqywskMPtuJGjCAM9q$eiiL4bIZjwzMcmXZay2PDD0CpxhbXc3c3FBrnqlVTek=	2022-04-12 09:26:26.701749+02	t	admin			admin@admin.nl	t	t	2022-04-12 09:26:10.559797+02
-\.
-
-
---
--- Data for Name: auth_user_groups; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.auth_user_groups (id, user_id, group_id) FROM stdin;
-\.
-
-
---
--- Data for Name: auth_user_user_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.auth_user_user_permissions (id, user_id, permission_id) FROM stdin;
-\.
-
-
---
--- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
-1	2022-04-13 11:32:37.550657+02	124	gld_addition_log object (124)	3		12	1
-2	2022-04-13 11:32:37.580651+02	123	gld_addition_log object (123)	3		12	1
-3	2022-04-13 11:32:37.581651+02	122	gld_addition_log object (122)	3		12	1
-4	2022-04-13 15:18:11.819859+02	128	gld_addition_log object (128)	3		12	1
-\.
-
-
---
--- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.django_content_type (id, app_label, model) FROM stdin;
-1	admin	logentry
-2	auth	permission
-3	auth	group
-4	auth	user
-5	contenttypes	contenttype
-6	sessions	session
-7	gld_aanlevering	aanleverinfo_filters
-8	gld_aanlevering	deliveredlocations
-9	gld_aanlevering	deliveredverticalpositions
-10	gld_aanlevering	gld_addition_log_controle
-11	gld_aanlevering	gld_addition_log_volledig
-13	gld_aanlevering	gld_registration_log
-14	gld_aanlevering	groundwaterleveldossier
-15	gld_aanlevering	groundwatermonitoringtubes
-16	gld_aanlevering	groundwatermonitoringwells
-17	gld_aanlevering	measurementpointmetadata
-18	gld_aanlevering	measurementtimeseries
-19	gld_aanlevering	measurementtimeseriestvpobservation
-20	gld_aanlevering	measurementtvp
-21	gld_aanlevering	observation
-22	gld_aanlevering	observationmetadata
-23	gld_aanlevering	observationprocess
-24	gld_aanlevering	responsibleparty
-25	gld_aanlevering	typeairpressurecompensation
-26	gld_aanlevering	typecensoredreasoncode
-27	gld_aanlevering	typeevaluationprocedure
-28	gld_aanlevering	typeinterpolationcode
-30	gld_aanlevering	typeobservationtype
-31	gld_aanlevering	typeprocessreference
-32	gld_aanlevering	typeprocesstype
-33	gld_aanlevering	typestatuscode
-34	gld_aanlevering	typestatusqualitycontrol
-12	gld_aanlevering	gld_addition_log
-29	gld_aanlevering	typemeasurementinstrumenttype
-\.
-
-
---
--- Data for Name: django_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.django_migrations (id, app, name, applied) FROM stdin;
-39	contenttypes	0001_initial	2022-04-12 11:27:29.808714+02
-40	auth	0001_initial	2022-04-12 11:27:29.826717+02
-41	admin	0001_initial	2022-04-12 11:27:29.829775+02
-42	admin	0002_logentry_remove_auto_add	2022-04-12 11:27:29.831714+02
-43	admin	0003_logentry_add_action_flag_choices	2022-04-12 11:27:29.834725+02
-44	contenttypes	0002_remove_content_type_name	2022-04-12 11:27:29.837751+02
-45	auth	0002_alter_permission_name_max_length	2022-04-12 11:27:29.839756+02
-46	auth	0003_alter_user_email_max_length	2022-04-12 11:27:29.841756+02
-47	auth	0004_alter_user_username_opts	2022-04-12 11:27:29.843714+02
-48	auth	0005_alter_user_last_login_null	2022-04-12 11:27:29.850717+02
-49	auth	0006_require_contenttypes_0002	2022-04-12 11:27:29.85376+02
-50	auth	0007_alter_validators_add_error_messages	2022-04-12 11:27:29.855716+02
-51	auth	0008_alter_user_username_max_length	2022-04-12 11:27:29.85972+02
-52	auth	0009_alter_user_last_name_max_length	2022-04-12 11:27:29.863764+02
-53	auth	0010_alter_group_name_max_length	2022-04-12 11:27:29.868741+02
-54	auth	0011_update_proxy_permissions	2022-04-12 11:27:29.873728+02
-55	auth	0012_alter_user_first_name_max_length	2022-04-12 11:27:29.879732+02
-56	gld_aanlevering	0001_initial	2022-04-12 11:27:29.888764+02
-57	sessions	0001_initial	2022-04-12 11:27:29.89073+02
-58	gld_aanlevering	0002_alter_gld_addition_log_table	2022-04-12 11:40:46.98732+02
-59	gld_aanlevering	0003_gld_addition_log_addition_type	2022-04-12 11:41:34.781191+02
-60	gld_aanlevering	0004_remove_gld_addition_log_addition_type	2022-04-12 11:41:51.790274+02
-61	gld_aanlevering	0005_alter_deliveredlocations_table_and_more	2022-04-12 11:47:50.998372+02
-62	gld_aanlevering	0006_typemeasurementinstrumenttype_test	2022-04-12 11:48:20.260896+02
-63	gld_aanlevering	0007_remove_typemeasurementinstrumenttype_test	2022-04-12 11:48:40.612913+02
-64	gld_aanlevering	0008_delete_measurementtimeseriestvpobservation_and_more	2022-04-12 16:10:41.971032+02
-65	gld_aanlevering	0009_alter_deliveredlocations_options_and_more	2022-04-12 16:34:57.936893+02
-66	gld_aanlevering	0010_alter_gld_addition_log_comments	2022-04-13 11:22:50.478546+02
-67	gld_aanlevering	0011_alter_gld_addition_log_comments	2022-04-13 11:36:05.734998+02
-68	gld_aanlevering	0012_alter_gld_registration_log_id_and_more	2022-04-15 11:29:46.292348+02
-69	gld_aanlevering	0013_alter_gld_registration_log_id	2022-04-15 11:56:32.063515+02
-70	gld_aanlevering	0014_groundwatermonitoringtubes_deliver_to_bro	2022-04-22 10:58:10.014808+02
-\.
-
-
---
--- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
-rz0qz4nvm1l1sxfrzxsr60nz9upu30cq	.eJxVjEEOwiAQRe_C2pChA4W6dO8ZyAwDUjVtUtqV8e7apAvd_vfef6lI21rj1vISR1FnZdTpd2NKjzztQO403Wad5mldRta7og_a9HWW_Lwc7t9BpVa_9WBZcg-9DBCYKBFCgELWebCusDhMzFkwmE5oSAKIbEwHFpxH9EW9P_XKN98:1neAuw:XPumrEF4t8pfUV_vtt7GmFPJ_p1XnYqnxw4iOQTZCpM	2022-04-26 09:26:26.717754+02
-\.
-
-
---
--- Data for Name: spatial_ref_sys; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.spatial_ref_sys (srid, auth_name, auth_srid, srtext, proj4text) FROM stdin;
-\.
-
-
---
--- Name: gld_addition_log_voorlopig_id_seq; Type: SEQUENCE SET; Schema: aanlevering; Owner: postgres
+-- Name: gld_addition_log_voorlopig_id_seq; Type: SEQUENCE SET; Schema: aanlevering; Owner: -
 --
 
 SELECT pg_catalog.setval('aanlevering.gld_addition_log_voorlopig_id_seq', 145, true);
 
 
 --
--- Name: gld_registration_log_id_seq; Type: SEQUENCE SET; Schema: aanlevering; Owner: postgres
+-- Name: gld_registration_log_id_seq; Type: SEQUENCE SET; Schema: aanlevering; Owner: -
 --
 
 SELECT pg_catalog.setval('aanlevering.gld_registration_log_id_seq', 92, true);
 
 
 --
--- Name: groundwater_level_dossier_groundwater_level_dossier_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: groundwater_level_dossier_groundwater_level_dossier_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.groundwater_level_dossier_groundwater_level_dossier_id_seq', 86, true);
 
 
 --
--- Name: measurement_point_metadata_measurement_point_metadata_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: measurement_point_metadata_measurement_point_metadata_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.measurement_point_metadata_measurement_point_metadata_id_seq', 1, false);
 
 
 --
--- Name: measurement_time_series_measurement_time_series_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: measurement_time_series_measurement_time_series_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.measurement_time_series_measurement_time_series_id_seq', 1, false);
 
 
 --
--- Name: measurement_tvp_measurement_tvp_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: measurement_tvp_measurement_tvp_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.measurement_tvp_measurement_tvp_id_seq', 1, false);
 
 
 --
--- Name: observation_metadata_observation_metadata_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: observation_metadata_observation_metadata_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.observation_metadata_observation_metadata_id_seq', 1, false);
 
 
 --
--- Name: observation_observation_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: observation_observation_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.observation_observation_id_seq', 1, false);
 
 
 --
--- Name: observation_process_observation_process_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: observation_process_observation_process_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.observation_process_observation_process_id_seq', 1, false);
 
 
 --
--- Name: responsible_party_responsible_party_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: postgres
+-- Name: responsible_party_responsible_party_id_seq; Type: SEQUENCE SET; Schema: gld; Owner: -
 --
 
 SELECT pg_catalog.setval('gld.responsible_party_responsible_party_id_seq', 1, false);
 
 
 --
--- Name: delivered_vertical_positions_id_seq; Type: SEQUENCE SET; Schema: gmw; Owner: postgres
+-- Name: delivered_vertical_positions_id_seq; Type: SEQUENCE SET; Schema: gmw; Owner: -
 --
 
 SELECT pg_catalog.setval('gmw.delivered_vertical_positions_id_seq', 47, true);
 
 
 --
--- Name: groundwater_monitoring_tubes_id_seq; Type: SEQUENCE SET; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_tubes_id_seq; Type: SEQUENCE SET; Schema: gmw; Owner: -
 --
 
 SELECT pg_catalog.setval('gmw.groundwater_monitoring_tubes_id_seq', 92, true);
 
 
 --
--- Name: groundwater_monitoring_wells_id_seq; Type: SEQUENCE SET; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_wells_id_seq; Type: SEQUENCE SET; Schema: gmw; Owner: -
 --
 
 SELECT pg_catalog.setval('gmw.groundwater_monitoring_wells_id_seq', 47, true);
 
 
 --
--- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.auth_group_id_seq', 1, false);
-
-
---
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
-
-
---
--- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.auth_permission_id_seq', 144, true);
-
-
---
--- Name: auth_user_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.auth_user_groups_id_seq', 1, false);
-
-
---
--- Name: auth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.auth_user_id_seq', 1, true);
-
-
---
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.auth_user_user_permissions_id_seq', 1, false);
-
-
---
--- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.django_admin_log_id_seq', 4, true);
-
-
---
--- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.django_content_type_id_seq', 34, true);
-
-
---
--- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 70, true);
-
-
---
--- Name: gld_addition_log gld_addition_log_voorlopig_pkey; Type: CONSTRAINT; Schema: aanlevering; Owner: postgres
+-- Name: gld_addition_log gld_addition_log_voorlopig_pkey; Type: CONSTRAINT; Schema: aanlevering; Owner: -
 --
 
 ALTER TABLE ONLY aanlevering.gld_addition_log
@@ -17149,7 +16378,7 @@ ALTER TABLE ONLY aanlevering.gld_addition_log
 
 
 --
--- Name: gld_registration_log gld_registration_log_pkey; Type: CONSTRAINT; Schema: aanlevering; Owner: postgres
+-- Name: gld_registration_log gld_registration_log_pkey; Type: CONSTRAINT; Schema: aanlevering; Owner: -
 --
 
 ALTER TABLE ONLY aanlevering.gld_registration_log
@@ -17157,7 +16386,7 @@ ALTER TABLE ONLY aanlevering.gld_registration_log
 
 
 --
--- Name: groundwater_level_dossier groundwater_level_dossier_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: groundwater_level_dossier groundwater_level_dossier_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.groundwater_level_dossier
@@ -17165,7 +16394,7 @@ ALTER TABLE ONLY gld.groundwater_level_dossier
 
 
 --
--- Name: measurement_point_metadata measurement_point_metadata_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: measurement_point_metadata measurement_point_metadata_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.measurement_point_metadata
@@ -17173,7 +16402,7 @@ ALTER TABLE ONLY gld.measurement_point_metadata
 
 
 --
--- Name: measurement_time_series measurement_time_series_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: measurement_time_series measurement_time_series_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.measurement_time_series
@@ -17181,7 +16410,7 @@ ALTER TABLE ONLY gld.measurement_time_series
 
 
 --
--- Name: measurement_tvp measurement_tvp_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: measurement_tvp measurement_tvp_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.measurement_tvp
@@ -17189,7 +16418,7 @@ ALTER TABLE ONLY gld.measurement_tvp
 
 
 --
--- Name: observation_metadata observation_metadata_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: observation_metadata observation_metadata_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.observation_metadata
@@ -17197,7 +16426,7 @@ ALTER TABLE ONLY gld.observation_metadata
 
 
 --
--- Name: observation observation_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: observation observation_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.observation
@@ -17205,7 +16434,7 @@ ALTER TABLE ONLY gld.observation
 
 
 --
--- Name: observation_process observation_process_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: observation_process observation_process_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.observation_process
@@ -17213,7 +16442,7 @@ ALTER TABLE ONLY gld.observation_process
 
 
 --
--- Name: responsible_party responsible_party_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: responsible_party responsible_party_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.responsible_party
@@ -17221,7 +16450,7 @@ ALTER TABLE ONLY gld.responsible_party
 
 
 --
--- Name: type_air_pressure_compensation type_air_pressure_compensation_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_air_pressure_compensation type_air_pressure_compensation_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_air_pressure_compensation
@@ -17229,7 +16458,7 @@ ALTER TABLE ONLY gld.type_air_pressure_compensation
 
 
 --
--- Name: type_censored_reason_code type_censored_reason_code_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_censored_reason_code type_censored_reason_code_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_censored_reason_code
@@ -17237,7 +16466,7 @@ ALTER TABLE ONLY gld.type_censored_reason_code
 
 
 --
--- Name: type_evaluation_procedure type_evaluation_procedure_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_evaluation_procedure type_evaluation_procedure_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_evaluation_procedure
@@ -17245,7 +16474,7 @@ ALTER TABLE ONLY gld.type_evaluation_procedure
 
 
 --
--- Name: type_interpolation_code type_interpolation_code_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_interpolation_code type_interpolation_code_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_interpolation_code
@@ -17253,7 +16482,7 @@ ALTER TABLE ONLY gld.type_interpolation_code
 
 
 --
--- Name: type_measurement_instrument_type type_measement_instrument_type_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_measurement_instrument_type type_measement_instrument_type_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_measurement_instrument_type
@@ -17261,7 +16490,7 @@ ALTER TABLE ONLY gld.type_measurement_instrument_type
 
 
 --
--- Name: type_observation_type type_observation_type_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_observation_type type_observation_type_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_observation_type
@@ -17269,7 +16498,7 @@ ALTER TABLE ONLY gld.type_observation_type
 
 
 --
--- Name: type_process_reference type_process_reference_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_process_reference type_process_reference_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_process_reference
@@ -17277,7 +16506,7 @@ ALTER TABLE ONLY gld.type_process_reference
 
 
 --
--- Name: type_process_type type_process_type_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_process_type type_process_type_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_process_type
@@ -17285,7 +16514,7 @@ ALTER TABLE ONLY gld.type_process_type
 
 
 --
--- Name: type_status_code type_status_code_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_status_code type_status_code_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_status_code
@@ -17293,7 +16522,7 @@ ALTER TABLE ONLY gld.type_status_code
 
 
 --
--- Name: type_status_quality_control type_status_quality_control_pkey; Type: CONSTRAINT; Schema: gld; Owner: postgres
+-- Name: type_status_quality_control type_status_quality_control_pkey; Type: CONSTRAINT; Schema: gld; Owner: -
 --
 
 ALTER TABLE ONLY gld.type_status_quality_control
@@ -17301,7 +16530,7 @@ ALTER TABLE ONLY gld.type_status_quality_control
 
 
 --
--- Name: delivered_locations delivered_locations_pkey; Type: CONSTRAINT; Schema: gmw; Owner: postgres
+-- Name: delivered_locations delivered_locations_pkey; Type: CONSTRAINT; Schema: gmw; Owner: -
 --
 
 ALTER TABLE ONLY gmw.delivered_locations
@@ -17309,7 +16538,7 @@ ALTER TABLE ONLY gmw.delivered_locations
 
 
 --
--- Name: delivered_vertical_positions delivered_vertical_positions_pkey; Type: CONSTRAINT; Schema: gmw; Owner: postgres
+-- Name: delivered_vertical_positions delivered_vertical_positions_pkey; Type: CONSTRAINT; Schema: gmw; Owner: -
 --
 
 ALTER TABLE ONLY gmw.delivered_vertical_positions
@@ -17317,7 +16546,7 @@ ALTER TABLE ONLY gmw.delivered_vertical_positions
 
 
 --
--- Name: groundwater_monitoring_tubes groundwater_monitoring_tubes_pkey; Type: CONSTRAINT; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_tubes groundwater_monitoring_tubes_pkey; Type: CONSTRAINT; Schema: gmw; Owner: -
 --
 
 ALTER TABLE ONLY gmw.groundwater_monitoring_tubes
@@ -17325,310 +16554,11 @@ ALTER TABLE ONLY gmw.groundwater_monitoring_tubes
 
 
 --
--- Name: groundwater_monitoring_wells groundwater_monitoring_wells_pkey; Type: CONSTRAINT; Schema: gmw; Owner: postgres
+-- Name: groundwater_monitoring_wells groundwater_monitoring_wells_pkey; Type: CONSTRAINT; Schema: gmw; Owner: -
 --
 
 ALTER TABLE ONLY gmw.groundwater_monitoring_wells
     ADD CONSTRAINT groundwater_monitoring_wells_pkey PRIMARY KEY (id);
-
-
---
--- Name: auth_group auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group
-    ADD CONSTRAINT auth_group_name_key UNIQUE (name);
-
-
---
--- Name: auth_group_permissions auth_group_permissions_group_id_permission_id_0cd325b0_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group_permissions
-    ADD CONSTRAINT auth_group_permissions_group_id_permission_id_0cd325b0_uniq UNIQUE (group_id, permission_id);
-
-
---
--- Name: auth_group_permissions auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group_permissions
-    ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
-
-
---
--- Name: auth_group auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group
-    ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
-
-
---
--- Name: auth_permission auth_permission_content_type_id_codename_01ab375a_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_permission
-    ADD CONSTRAINT auth_permission_content_type_id_codename_01ab375a_uniq UNIQUE (content_type_id, codename);
-
-
---
--- Name: auth_permission auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_permission
-    ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
-
-
---
--- Name: auth_user_groups auth_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_groups
-    ADD CONSTRAINT auth_user_groups_pkey PRIMARY KEY (id);
-
-
---
--- Name: auth_user_groups auth_user_groups_user_id_group_id_94350c0c_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_groups
-    ADD CONSTRAINT auth_user_groups_user_id_group_id_94350c0c_uniq UNIQUE (user_id, group_id);
-
-
---
--- Name: auth_user auth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user
-    ADD CONSTRAINT auth_user_pkey PRIMARY KEY (id);
-
-
---
--- Name: auth_user_user_permissions auth_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_user_permissions
-    ADD CONSTRAINT auth_user_user_permissions_pkey PRIMARY KEY (id);
-
-
---
--- Name: auth_user_user_permissions auth_user_user_permissions_user_id_permission_id_14a6b632_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_user_permissions
-    ADD CONSTRAINT auth_user_user_permissions_user_id_permission_id_14a6b632_uniq UNIQUE (user_id, permission_id);
-
-
---
--- Name: auth_user auth_user_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user
-    ADD CONSTRAINT auth_user_username_key UNIQUE (username);
-
-
---
--- Name: django_admin_log django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_admin_log
-    ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
-
-
---
--- Name: django_content_type django_content_type_app_label_model_76bd3d3b_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_content_type
-    ADD CONSTRAINT django_content_type_app_label_model_76bd3d3b_uniq UNIQUE (app_label, model);
-
-
---
--- Name: django_content_type django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_content_type
-    ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
-
-
---
--- Name: django_migrations django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_migrations
-    ADD CONSTRAINT django_migrations_pkey PRIMARY KEY (id);
-
-
---
--- Name: django_session django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_session
-    ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
-
-
---
--- Name: auth_group_name_a6ea08ec_like; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_group_name_a6ea08ec_like ON public.auth_group USING btree (name varchar_pattern_ops);
-
-
---
--- Name: auth_group_permissions_group_id_b120cbf9; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_group_permissions_group_id_b120cbf9 ON public.auth_group_permissions USING btree (group_id);
-
-
---
--- Name: auth_group_permissions_permission_id_84c5c92e; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_group_permissions_permission_id_84c5c92e ON public.auth_group_permissions USING btree (permission_id);
-
-
---
--- Name: auth_permission_content_type_id_2f476e4b; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_permission_content_type_id_2f476e4b ON public.auth_permission USING btree (content_type_id);
-
-
---
--- Name: auth_user_groups_group_id_97559544; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_user_groups_group_id_97559544 ON public.auth_user_groups USING btree (group_id);
-
-
---
--- Name: auth_user_groups_user_id_6a12ed8b; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_user_groups_user_id_6a12ed8b ON public.auth_user_groups USING btree (user_id);
-
-
---
--- Name: auth_user_user_permissions_permission_id_1fbb5f2c; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_user_user_permissions_permission_id_1fbb5f2c ON public.auth_user_user_permissions USING btree (permission_id);
-
-
---
--- Name: auth_user_user_permissions_user_id_a95ead1b; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_user_user_permissions_user_id_a95ead1b ON public.auth_user_user_permissions USING btree (user_id);
-
-
---
--- Name: auth_user_username_6821ab7c_like; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX auth_user_username_6821ab7c_like ON public.auth_user USING btree (username varchar_pattern_ops);
-
-
---
--- Name: django_admin_log_content_type_id_c4bce8eb; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX django_admin_log_content_type_id_c4bce8eb ON public.django_admin_log USING btree (content_type_id);
-
-
---
--- Name: django_admin_log_user_id_c564eba6; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX django_admin_log_user_id_c564eba6 ON public.django_admin_log USING btree (user_id);
-
-
---
--- Name: django_session_expire_date_a5c62663; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX django_session_expire_date_a5c62663 ON public.django_session USING btree (expire_date);
-
-
---
--- Name: django_session_session_key_c0390e0f_like; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX django_session_session_key_c0390e0f_like ON public.django_session USING btree (session_key varchar_pattern_ops);
-
-
---
--- Name: auth_group_permissions auth_group_permissio_permission_id_84c5c92e_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group_permissions
-    ADD CONSTRAINT auth_group_permissio_permission_id_84c5c92e_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: auth_group_permissions auth_group_permissions_group_id_b120cbf9_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_group_permissions
-    ADD CONSTRAINT auth_group_permissions_group_id_b120cbf9_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: auth_permission auth_permission_content_type_id_2f476e4b_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_permission
-    ADD CONSTRAINT auth_permission_content_type_id_2f476e4b_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: auth_user_groups auth_user_groups_group_id_97559544_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_groups
-    ADD CONSTRAINT auth_user_groups_group_id_97559544_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: auth_user_groups auth_user_groups_user_id_6a12ed8b_fk_auth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_groups
-    ADD CONSTRAINT auth_user_groups_user_id_6a12ed8b_fk_auth_user_id FOREIGN KEY (user_id) REFERENCES public.auth_user(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: auth_user_user_permissions auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_user_permissions
-    ADD CONSTRAINT auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: auth_user_user_permissions auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auth_user_user_permissions
-    ADD CONSTRAINT auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id FOREIGN KEY (user_id) REFERENCES public.auth_user(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: django_admin_log django_admin_log_content_type_id_c4bce8eb_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_admin_log
-    ADD CONSTRAINT django_admin_log_content_type_id_c4bce8eb_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: django_admin_log django_admin_log_user_id_c564eba6_fk_auth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.django_admin_log
-    ADD CONSTRAINT django_admin_log_user_id_c564eba6_fk_auth_user_id FOREIGN KEY (user_id) REFERENCES public.auth_user(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
