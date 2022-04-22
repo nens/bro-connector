@@ -131,6 +131,7 @@ class ObservationAdmin(admin.ModelAdmin):
                     'groundwater_level_dossier_id',
                     'result_time',
                     'status')
+    
     list_filter= ('observation_id', 
                     'observationperiod',
                     'observation_starttime',
