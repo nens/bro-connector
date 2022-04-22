@@ -5,5 +5,5 @@
 
 # Restoring the backup database
 Voorbeeld voor local databases
-pg_dump -p 5433 -h localhost -U postgres gld_zeeland_productie > C:\Users\Emile.deBadts\Downloads\backup.sql
-psql -p 5433 -h localhost -U postgres test_restore < C:\Users\Emile.deBadts\Downloads\backup.sql
+- "pg_dump -p 5433 -h localhost -U postgres gld_zeeland_productie > C:\Users\Emile.deBadts\Downloads\backup.sql"
+- "psql -p 5433 -h localhost -U postgres test_restore < C:\Users\Emile.deBadts\Downloads\backup.sql"
