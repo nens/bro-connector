@@ -332,6 +332,7 @@ class GroundwaterMonitoringWells(models.Model):
 
 class GroundwaterMonitoringTubes(models.Model):
     groundwater_monitoring_tube_id = models.IntegerField(primary_key=True)
+    deliver_to_bro = models.BooleanField(blank=True, null=True)
     registration_object_id = models.IntegerField(blank=True, null=True)
     tube_number = models.IntegerField(blank=True, null=True)
     tube_type = models.TextField(blank=True, null=True)  # This field type is a guess.
