@@ -4,6 +4,8 @@ certifi==2021.10.8
 charset-normalizer==2.0.12
 Django==4.0.3
 django-admin-generator==2.2.1
+django-jazzmin==2.5.0
+django-modeladmin-reorder==0.3.1
 django-utils2==2.12.1
 idna==3.3
 lxml==4.8.0
@@ -19,3 +21,4 @@ sqlparse==0.4.2
 tzdata==2021.5
 urllib3==1.26.8
 uuid==1.30
+xmltodict==0.12.0

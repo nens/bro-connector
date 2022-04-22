@@ -356,6 +356,8 @@ def gld_start_registration_wells(
             if not models.gld_registration_log.objects.filter(
                 gwm_bro_id=gwm_bro_id, filter_id=tube_id, quality_regime=quality_regime
             ).exists():
+                
+                #TODO check if the tube has to be deliverd with column 'deliver_to_bro'
 
                 # There is not a GLD registration object with this configuration
                 # Create a new configuration by creating startregistration sourcedocs
