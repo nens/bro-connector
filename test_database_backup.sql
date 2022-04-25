@@ -16,84 +16,10 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE ONLY gmw.groundwater_monitoring_wells DROP CONSTRAINT groundwater_monitoring_wells_pkey;
-ALTER TABLE ONLY gmw.groundwater_monitoring_tubes DROP CONSTRAINT groundwater_monitoring_tubes_pkey;
-ALTER TABLE ONLY gmw.delivered_vertical_positions DROP CONSTRAINT delivered_vertical_positions_pkey;
-ALTER TABLE ONLY gmw.delivered_locations DROP CONSTRAINT delivered_locations_pkey;
-ALTER TABLE ONLY gld.type_status_quality_control DROP CONSTRAINT type_status_quality_control_pkey;
-ALTER TABLE ONLY gld.type_status_code DROP CONSTRAINT type_status_code_pkey;
-ALTER TABLE ONLY gld.type_process_type DROP CONSTRAINT type_process_type_pkey;
-ALTER TABLE ONLY gld.type_process_reference DROP CONSTRAINT type_process_reference_pkey;
-ALTER TABLE ONLY gld.type_observation_type DROP CONSTRAINT type_observation_type_pkey;
-ALTER TABLE ONLY gld.type_measurement_instrument_type DROP CONSTRAINT type_measement_instrument_type_pkey;
-ALTER TABLE ONLY gld.type_interpolation_code DROP CONSTRAINT type_interpolation_code_pkey;
-ALTER TABLE ONLY gld.type_evaluation_procedure DROP CONSTRAINT type_evaluation_procedure_pkey;
-ALTER TABLE ONLY gld.type_censored_reason_code DROP CONSTRAINT type_censored_reason_code_pkey;
-ALTER TABLE ONLY gld.type_air_pressure_compensation DROP CONSTRAINT type_air_pressure_compensation_pkey;
-ALTER TABLE ONLY gld.responsible_party DROP CONSTRAINT responsible_party_pkey;
-ALTER TABLE ONLY gld.observation_process DROP CONSTRAINT observation_process_pkey;
-ALTER TABLE ONLY gld.observation DROP CONSTRAINT observation_pkey;
-ALTER TABLE ONLY gld.observation_metadata DROP CONSTRAINT observation_metadata_pkey;
-ALTER TABLE ONLY gld.measurement_tvp DROP CONSTRAINT measurement_tvp_pkey;
-ALTER TABLE ONLY gld.measurement_time_series DROP CONSTRAINT measurement_time_series_pkey;
-ALTER TABLE ONLY gld.measurement_point_metadata DROP CONSTRAINT measurement_point_metadata_pkey;
-ALTER TABLE ONLY gld.groundwater_level_dossier DROP CONSTRAINT groundwater_level_dossier_pkey;
-ALTER TABLE ONLY aanlevering.gld_registration_log DROP CONSTRAINT gld_registration_log_pkey;
-ALTER TABLE ONLY aanlevering.gld_addition_log DROP CONSTRAINT gld_addition_log_voorlopig_pkey;
-ALTER TABLE gmw.groundwater_monitoring_wells ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE gmw.groundwater_monitoring_tubes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE gmw.delivered_vertical_positions ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE gld.responsible_party ALTER COLUMN responsible_party_id DROP DEFAULT;
-ALTER TABLE gld.observation_process ALTER COLUMN observation_process_id DROP DEFAULT;
-ALTER TABLE gld.observation_metadata ALTER COLUMN observation_metadata_id DROP DEFAULT;
-ALTER TABLE gld.observation ALTER COLUMN observation_id DROP DEFAULT;
-ALTER TABLE gld.measurement_tvp ALTER COLUMN measurement_tvp_id DROP DEFAULT;
-ALTER TABLE gld.measurement_time_series ALTER COLUMN measurement_time_series_id DROP DEFAULT;
-ALTER TABLE gld.measurement_point_metadata ALTER COLUMN measurement_point_metadata_id DROP DEFAULT;
-ALTER TABLE gld.groundwater_level_dossier ALTER COLUMN groundwater_level_dossier_id DROP DEFAULT;
-ALTER TABLE aanlevering.gld_registration_log ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE aanlevering.gld_addition_log ALTER COLUMN id DROP DEFAULT;
-DROP SEQUENCE gmw.groundwater_monitoring_wells_id_seq;
-DROP TABLE gmw.groundwater_monitoring_wells;
-DROP SEQUENCE gmw.groundwater_monitoring_tubes_id_seq;
-DROP TABLE gmw.groundwater_monitoring_tubes;
-DROP SEQUENCE gmw.delivered_vertical_positions_id_seq;
-DROP TABLE gmw.delivered_vertical_positions;
-DROP TABLE gmw.delivered_locations;
-DROP TABLE gld.type_status_quality_control;
-DROP TABLE gld.type_status_code;
-DROP TABLE gld.type_process_type;
-DROP TABLE gld.type_process_reference;
-DROP TABLE gld.type_observation_type;
-DROP TABLE gld.type_measurement_instrument_type;
-DROP TABLE gld.type_interpolation_code;
-DROP TABLE gld.type_evaluation_procedure;
-DROP TABLE gld.type_censored_reason_code;
-DROP TABLE gld.type_air_pressure_compensation;
-DROP SEQUENCE gld.responsible_party_responsible_party_id_seq;
-DROP TABLE gld.responsible_party;
-DROP SEQUENCE gld.observation_process_observation_process_id_seq;
-DROP TABLE gld.observation_process;
-DROP SEQUENCE gld.observation_observation_id_seq;
-DROP SEQUENCE gld.observation_metadata_observation_metadata_id_seq;
-DROP TABLE gld.observation_metadata;
-DROP TABLE gld.observation;
-DROP SEQUENCE gld.measurement_tvp_measurement_tvp_id_seq;
-DROP TABLE gld.measurement_tvp;
-DROP SEQUENCE gld.measurement_time_series_measurement_time_series_id_seq;
-DROP TABLE gld.measurement_time_series;
-DROP SEQUENCE gld.measurement_point_metadata_measurement_point_metadata_id_seq;
-DROP TABLE gld.measurement_point_metadata;
-DROP SEQUENCE gld.groundwater_level_dossier_groundwater_level_dossier_id_seq;
-DROP TABLE gld.groundwater_level_dossier;
-DROP SEQUENCE aanlevering.gld_registration_log_id_seq;
-DROP TABLE aanlevering.gld_registration_log;
-DROP SEQUENCE aanlevering.gld_addition_log_voorlopig_id_seq;
-DROP TABLE aanlevering.gld_addition_log;
-DROP EXTENSION postgis;
-DROP SCHEMA gmw;
-DROP SCHEMA gld;
-DROP SCHEMA aanlevering;
+
+DROP SCHEMA gmw CASCADE;
+DROP SCHEMA gld CASCADE;
+DROP SCHEMA aanlevering CASCADE;
 --
 -- Name: aanlevering; Type: SCHEMA; Schema: -; Owner: -
 --
@@ -119,15 +45,9 @@ CREATE SCHEMA gmw;
 -- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
-
-
 --
 -- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
 --
-
-COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
-
 
 SET default_tablespace = '';
 
@@ -16564,4 +16484,3 @@ ALTER TABLE ONLY gmw.groundwater_monitoring_wells
 --
 -- PostgreSQL database dump complete
 --
-
