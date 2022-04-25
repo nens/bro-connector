@@ -437,7 +437,7 @@ def gld_check_existing_startregistrations(
 
         # If validation is succesful and the document is valid, try a delivery
         if (
-            get_registration_process_status(registration_id)
+            get_registration_process_status(registration_id)    
             == "source_document_validation_succesful"
             and get_registration_validation_status(registration_id) == "VALIDE"
         ):
