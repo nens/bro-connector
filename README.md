@@ -9,4 +9,4 @@ Voorbeeld voor local databases
 - psql -p 5433 -h localhost -U postgres your_db < test_database_backup.sql
 
 Nieuwe backup maken:
-- - pg_dump -p 5433 -h localhost -U postgres --no-owner --clean gld_zeeland_productie > test_database_backup.sql
+- pg_dump -p 5433 -h localhost -U postgres --no-owner --clean gld_zeeland_productie > test_database_backup.sql
