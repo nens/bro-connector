@@ -5,5 +5,8 @@
 
 ## Restoring the backup database
 Voorbeeld voor local databases
-- pg_dump -p 5433 -h localhost -U postgres --no-owner --clean gld_zeeland_productie > C:\Users\Emile.deBadts\Downloads\backup.sql
-- psql -p 5433 -h localhost -U postgres test_restore < C:\Users\Emile.deBadts\Downloads\backup.sql
+- Backup bestand heet 'test_database_backup.sq', deze bevat gld, gmw en aanlevering schema's + tabellen + data
+- psql -p 5433 -h localhost -U postgres your_db < test_database_backup.sql
+
+Nieuwe backup maken:
+- - pg_dump -p 5433 -h localhost -U postgres --no-owner --clean gld_zeeland_productie > test_database_backup.sql
