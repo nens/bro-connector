@@ -22,6 +22,6 @@
 - Initialiseer de admin tabellen voor django door 'python manage.py migrate' te draaien
 - De overige tabellen staan al in de database, maar moeten nog gesynchroniseerd worden met de django applicatie
 - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate --fake' 
-
+- Maak een superuser met 'python manage.py createsuperuser' 
 
 
