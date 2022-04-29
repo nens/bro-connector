@@ -364,6 +364,7 @@ class GroundwaterMonitoringTubesAdmin(admin.ModelAdmin):
 
     list_display = (
         'groundwater_monitoring_tube_id',
+        'deliver_to_bro',
         'registration_object_id',
         'tube_number',
         'tube_type',
