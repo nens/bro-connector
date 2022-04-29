@@ -15,6 +15,7 @@
 - (mocht het nodig zijn, maak een nieuwe backup: 'pg_dump -p 5433 -h localhost -U postgres --no-owner --clean gld_zeeland_productie > test_database_backup.sql')
 
 3. Initialiseer de django applicatie
+- Check settings.py en vul de juiste database gegevens in 
 - Zorg dat er een schema 'django_admin' in de postgres database staat, hierin komen de admin tabellen (deze zitten niet in de database backup)
 - Zorg dat het default search path voor de database in 'settings.py' op 'django_admin' staat (staat goed in de repo)
 - Initialiseer de admin tabellen voor django door 'python manage.py migrate' te draaien
