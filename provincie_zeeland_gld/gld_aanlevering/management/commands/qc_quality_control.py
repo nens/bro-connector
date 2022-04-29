@@ -44,7 +44,7 @@ status_quality_control_values = {1:'afgekeurd',
                                  2:'goedgekeurd',
                                  3:'nogNietBeoordeeld',
                                  4:'onbeslist',
-                                 9:'obekend'}
+                                 9:'onbekend'}
 
 
 def get_previous_valid_observation(observation):
