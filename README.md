@@ -6,7 +6,7 @@
 ## Installeren van Django applicatie op server
 
 1. Clone 'bro-provincie-zeeland' naar de server
-2. Installeer de python virtual environment op de server vanuit 'requirements.py' 
+2. Installeer de python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
 - Hierbij moet het pakketje 'gwmpy' nog los geinstalleerd worden in de environment! Instructies in de repo: https://github.com/nens/gwmpy/
 3. Restore een backup van de database op de server
 - Backup bestand heet 'test_database_backup.sq', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
