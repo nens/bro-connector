@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-NOTE: INITIALISES THE GLD REGISTER IN DE CSV DATABASE AND IN LIZARD
-"""
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
