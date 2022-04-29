@@ -338,8 +338,6 @@ def gld_start_registration_wells(
     # Loop over all GMW objects in the database
     for well in gwm_wells:
 
-        # TODO Add a flag in the database that indicates if a well should have a registration!
-
         # Get some well properties
         registration_object_id_well = well.registration_object_id
         quality_regime = well.quality_regime
@@ -357,26 +355,27 @@ def gld_start_registration_wells(
                 gwm_bro_id=gwm_bro_id, filter_id=tube_id, quality_regime=quality_regime
             ).exists():
                 
-                #TODO check if the tube has to be deliverd with column 'deliver_to_bro'
-
-                # There is not a GLD registration object with this configuration
-                # Create a new configuration by creating startregistration sourcedocs
-                # By creating the sourcedocs (or failng to do so), a registration is made in the database
-                # This registration is used to track the progress of the delivery in further steps
-
-                delivery_accountable_party = str(well.delivery_accountable_party)
-                well_bro_id = well.bro_id
-                location_code_internal = well.nitg_code
-                startregistration = create_start_registration_sourcedocs(
-                    quality_regime,
-                    delivery_accountable_party,
-                    well_bro_id,
-                    tube_id,
-                    location_code_internal,
-                    startregistrations_dir,
-                    monitoringnetworks,
-                )
-
+                if tube.deliver_to_bro:
+                    #check if the tube has to be deliverd with column 'deliver_to_bro'
+    
+                    # There is not a GLD registration object with this configuration
+                    # Create a new configuration by creating startregistration sourcedocs
+                    # By creating the sourcedocs (or failng to do so), a registration is made in the database
+                    # This registration is used to track the progress of the delivery in further steps
+    
+                    delivery_accountable_party = str(well.delivery_accountable_party)
+                    well_bro_id = well.bro_id
+                    location_code_internal = well.nitg_code
+                    startregistration = create_start_registration_sourcedocs(
+                        quality_regime,
+                        delivery_accountable_party,
+                        well_bro_id,
+                        tube_id,
+                        location_code_internal,
+                        startregistrations_dir,
+                        monitoringnetworks,
+                    )
+    
 
 def gld_check_existing_startregistrations(
     acces_token_bro_portal, startregistrations_dir, demo
