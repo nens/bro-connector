@@ -1,3 +1,6 @@
+
+<img src=provincie_zeeland_gld/static/img/bro_connector_logo.png width="140">
+
 # BRO GLD Module Provincie Zeeland
 
 - Django applicatie voor de aanlevering van GLD naar de BRO
