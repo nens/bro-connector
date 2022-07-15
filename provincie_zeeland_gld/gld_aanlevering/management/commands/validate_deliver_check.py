@@ -166,7 +166,6 @@ def check_status_gld_addition(
             levering_id, acces_token_bro_portal, demo=demo
         )
         delivery_status = upload_info.json()["status"]
-        print(upload_info.json())
 
         if delivery_status == "DOORGELEVERD":
 
@@ -264,7 +263,7 @@ def deliver_addition(observation, access_token_bro_portal, demo):
             )
 
 
-def check_status_addition(observation, acces_token_bro_portal):
+def check_status_addition(observation, acces_token_bro_portal, demo):
 
     """
     Check the status of a delivery
@@ -279,16 +278,17 @@ def check_status_addition(observation, acces_token_bro_portal):
     levering_id = gld_addition.levering_id
     delivery_status = gld_addition.levering_status
 
-    if delivery_status != "OPGENOMEN_LVBRO":
-        new_delivery_status = check_status_gld_addition(
-            observation.observation_id, levering_id, acces_token_bro_portal
-        )
-
-    if new_delivery_status == "OPGENOMEN_LVBRO":
-        sourcedoc_filepath = os.path.join(
-            GLD_AANLEVERING_SETTINGS["additions_dir"], file_name
-        )
-        os.remove(sourcedoc_filepath)
+    new_delivery_status = check_status_gld_addition(
+        observation.observation_id, levering_id, acces_token_bro_portal, demo
+    )
+    try: 
+        if new_delivery_status == 'DOORGELEVERD': #"OPGENOMEN_LVBRO":
+            sourcedoc_filepath = os.path.join(
+                GLD_AANLEVERING_SETTINGS["additions_dir"], file_name
+            )
+            os.remove(sourcedoc_filepath)
+    except: 
+        pass # no file to remove
 
     return new_delivery_status
 
@@ -302,10 +302,9 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
     observation_set = models.Observation.objects.all()
 
     for observation in observation_set:
-
         # For all the observations in the database, check the status and continue with the BRO delivery process
         if observation.status == "source_document_created":
-            # TODO check if procedure is same as other observations, use the same procedure uuid (or don't hehe)
+            # TODO check if procedure is same as other observations, use the same procedure uuid 
             validation_status = validate_addition(
                 observation, acces_token_bro_portal, demo
             )
@@ -335,6 +334,11 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
             delivery_status = check_status_addition(
                 observation, acces_token_bro_portal, demo
             )
+            
+        elif observation.status == 'delivery_approved':
+            delivery_status = check_status_addition(
+                observation, acces_token_bro_portal, demo
+            )
 
         elif observation.status == "flagged_for_deletion":
             # TODO Delete request
@@ -342,6 +346,7 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
 
         else:
             continue
+    
 
 
 class Command(BaseCommand):

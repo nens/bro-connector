@@ -276,7 +276,7 @@ class TypeStatusQualityControl(models.Model):
 
 class DeliveredLocations(models.Model):
     location_id = models.AutoField(primary_key=True)
-    registration_object_id = models.IntegerField(blank=True, null=True)
+    groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
     coordinates = models.TextField(blank=True, null=True)  # This field type is a guess.
     referencesystem = models.TextField(blank=True, null=True)  # This field type is a guess.
     horizontal_positioning_method = models.TextField(blank=True, null=True)  # This field type is a guess.
@@ -288,8 +288,8 @@ class DeliveredLocations(models.Model):
 
 
 class DeliveredVerticalPositions(models.Model):
-    delivered_vertical_positions_id = models.AutoField(primary_key=True)
-    registration_object_id = models.IntegerField(blank=True, null=True)
+    vertical_position_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
     local_vertical_reference_point = models.TextField(blank=True, null=True)  # This field type is a guess.
     offset = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
     vertical_datum = models.TextField(blank=True, null=True)  # This field type is a guess.
@@ -303,7 +303,7 @@ class DeliveredVerticalPositions(models.Model):
 
 
 class GroundwaterMonitoringWells(models.Model):
-    registration_object_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_well_id = models.AutoField(primary_key=True)
     registration_object_type = models.TextField(blank=True, null=True)  # This field type is a guess.
     bro_id = models.CharField(max_length=15, blank=True, null=True)
     request_reference = models.CharField(max_length=255, blank=True, null=True)
@@ -324,6 +324,9 @@ class GroundwaterMonitoringWells(models.Model):
     maintenance_responsible_party = models.IntegerField(blank=True, null=True)
     well_head_protector = models.TextField(blank=True, null=True)  # This field type is a guess.
     well_construction_date = models.DateField(blank=True, null=True)
+    well_removal_date = models.DateField(blank=True, null=True)
+    monitoring_pdok_id = models.IntegerField(blank=True, null=True)
+    delivered_to_bro = models.BooleanField(blank=False)
 
     class Meta:
         managed = True
@@ -332,8 +335,8 @@ class GroundwaterMonitoringWells(models.Model):
 
 class GroundwaterMonitoringTubes(models.Model):
     groundwater_monitoring_tube_id = models.IntegerField(primary_key=True)
+    groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
     deliver_to_bro = models.BooleanField(blank=True, null=True)
-    registration_object_id = models.IntegerField(blank=True, null=True)
     tube_number = models.IntegerField(blank=True, null=True)
     tube_type = models.TextField(blank=True, null=True)  # This field type is a guess.
     artesian_well_cap_present = models.TextField(blank=True, null=True)  # This field type is a guess.

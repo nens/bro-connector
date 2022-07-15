@@ -23,7 +23,7 @@ def create_start_registration_sourcedocs(
     deliveryaccountableparty,
     broidgmw,
     filtrnr,
-    locationcode,
+    locationcode, # nitg code
     startregistrations_dir,
     monitoringnetworks,
 ):
@@ -138,6 +138,7 @@ def validate_gld_startregistration_request(
             record, created = models.gld_registration_log.objects.update_or_create(
                 id=start_registration_id,
                 defaults=dict(
+                    # date_modified = datetime.datetime.now(),
                     comments=comments,
                     validation_status=validation_status,
                     process_status="source_document_validation_succesful",
@@ -334,48 +335,55 @@ def gld_start_registration_wells(
     """
 
     gwm_wells = models.GroundwaterMonitoringWells.objects.all()
-
     # Loop over all GMW objects in the database
     for well in gwm_wells:
 
+        # Ignore wells that are not (yet) delivered to BRO        
+        if well.delivered_to_bro == False:
+            # ignore wells that are not registrated on purpose
+            continue
+        
         # Get some well properties
-        registration_object_id_well = well.registration_object_id
+        registration_object_id_well = well.groundwater_monitoring_well_id
         quality_regime = well.quality_regime
         gwm_bro_id = well.bro_id
 
         # Get all filters that are installed in this well
         gmw_tubes_well = models.GroundwaterMonitoringTubes.objects.filter(
-            registration_object_id=registration_object_id_well
+            groundwater_monitoring_well_id=registration_object_id_well
         )
 
         # Loop over all filters within the well
         for tube in gmw_tubes_well:
             tube_id = tube.tube_number
+            
+            # Ignore filters that should not be delivered to BRO
+            if tube.deliver_to_bro == False:
+                continue
+            
+            # Check if there is already a registration for this tube
             if not models.gld_registration_log.objects.filter(
                 gwm_bro_id=gwm_bro_id, filter_id=tube_id, quality_regime=quality_regime
             ).exists():
-                
-                if tube.deliver_to_bro:
-                    #check if the tube has to be deliverd with column 'deliver_to_bro'
-    
-                    # There is not a GLD registration object with this configuration
-                    # Create a new configuration by creating startregistration sourcedocs
-                    # By creating the sourcedocs (or failng to do so), a registration is made in the database
-                    # This registration is used to track the progress of the delivery in further steps
-    
-                    delivery_accountable_party = str(well.delivery_accountable_party)
-                    well_bro_id = well.bro_id
-                    location_code_internal = well.nitg_code
-                    startregistration = create_start_registration_sourcedocs(
-                        quality_regime,
-                        delivery_accountable_party,
-                        well_bro_id,
-                        tube_id,
-                        location_code_internal,
-                        startregistrations_dir,
-                        monitoringnetworks,
-                    )
-    
+
+                # There is not a GLD registration object with this configuration
+                # Create a new configuration by creating startregistration sourcedocs
+                # By creating the sourcedocs (or failng to do so), a registration is made in the database
+                # This registration is used to track the progress of the delivery in further steps
+
+                delivery_accountable_party = str(well.delivery_accountable_party)
+                well_bro_id = well.bro_id
+                location_code_internal = well.nitg_code
+                startregistration = create_start_registration_sourcedocs(
+                    quality_regime,
+                    delivery_accountable_party,
+                    well_bro_id,
+                    tube_id,
+                    location_code_internal,
+                    startregistrations_dir,
+                    monitoringnetworks,
+                )
+
 
 def gld_check_existing_startregistrations(
     acces_token_bro_portal, startregistrations_dir, demo
@@ -404,75 +412,93 @@ def gld_check_existing_startregistrations(
     """
     # Get all the current registrations
     gld_registrations = models.gld_registration_log.objects.all()
-
+    
     for registration in gld_registrations:
 
         # We check the status of the registration and either validate/deliver/check status/do nothing
         registration_id = registration.id
-
-        # Succesfully generated a startregistration sourcedoc in the previous step
-        # Validate the created sourcedocument
-        if (
-            get_registration_process_status(registration_id)
-            == "succesfully_generated_startregistration_request"
-        ):
-            validation_status = validate_gld_startregistration_request(
-                registration_id, startregistrations_dir, acces_token_bro_portal, demo
-            )
-
-        # If an error occured during validation, try again
-        # Failed to validate sourcedocument doesn't mean the document is valid/invalid
-        # It means something went wrong during validation (e.g BRO server error)
-        # Even if a document is invalid, the validation process has succeeded and won't be reattempted
-        if (
-            get_registration_process_status(registration_id)
-            == "failed_to_validate_source_documents"
-        ):
-            # If we failed to validate the sourcedocument, try again
-            # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
-            validation_status = validate_gld_startregistration_request(
-                registration_id, startregistrations_dir, acces_token_bro_portal, demo
-            )
-
-        # If validation is succesful and the document is valid, try a delivery
-        if (
-            get_registration_process_status(registration_id)    
-            == "source_document_validation_succesful"
-            and get_registration_validation_status(registration_id) == "VALIDE"
-        ):
-            delivery_status = deliver_startregistration_sourcedocuments(
-                registration_id, startregistrations_dir, acces_token_bro_portal, demo
-            )
-
-        # If delivery is succesful, check the status of the delivery
+        
+        # Tijdelijk:
+        if demo == True and registration.gld_bro_id is None:
+            continue
+        # Tijdelijk tot hier     
+        
         if (
             get_registration_process_status(registration_id)
             == "succesfully_delivered_sourcedocuments"
-            and registration.levering_status != "OPGENOMEN_LVRO"
+            and registration.levering_status != "OPGENOMEN_LVBRO"
             and registration.levering_id is not None
-        ):
-            # The registration has been delivered, but not yet approved
-            status = check_delivery_status_levering(
-                registration_id, startregistrations_dir, acces_token_bro_portal, demo
-            )
-
-        # If the delivery failed previously, we can retry
-        if (
-            get_registration_process_status(registration_id)
-            == "failed_to_deliver_sourcedocuments"
-        ):
-
-            # This will not be the case on the first try
-            if registration.levering_status == "failed_thrice":
-                # TODO report with mail?
-                continue
-            else:
-                delivery_status = deliver_startregistration_sourcedocuments(
-                    registration.id,
-                    startregistrations_dir,
-                    acces_token_bro_portal,
-                    demo,
+         ):
+           # The registration has been delivered, but not yet approved
+           status = check_delivery_status_levering(
+               registration_id, startregistrations_dir, acces_token_bro_portal, demo
+           )
+           
+    
+        else: 
+            # Succesfully generated a startregistration sourcedoc in the previous step
+            # Validate the created sourcedocument
+            if (
+                get_registration_process_status(registration_id)
+                == "succesfully_generated_startregistration_request"
+            ):
+                validation_status = validate_gld_startregistration_request(
+                    registration_id, startregistrations_dir, acces_token_bro_portal, demo
                 )
+    
+            # If an error occured during validation, try again
+            # Failed to validate sourcedocument doesn't mean the document is valid/invalid
+            # It means something went wrong during validation (e.g BRO server error)
+            # Even if a document is invalid, the validation process has succeeded and won't be reattempted
+            if (
+                get_registration_process_status(registration_id)
+                == "failed_to_validate_source_documents"
+            ):
+                # If we failed to validate the sourcedocument, try again
+                # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
+                validation_status = validate_gld_startregistration_request(
+                    registration_id, startregistrations_dir, acces_token_bro_portal, demo
+                )
+    
+            # If validation is succesful and the document is valid, try a delivery
+            if (
+                get_registration_process_status(registration_id)
+                == "source_document_validation_succesful"
+                and get_registration_validation_status(registration_id) == "VALIDE"
+            ):
+                delivery_status = deliver_startregistration_sourcedocuments(
+                    registration_id, startregistrations_dir, acces_token_bro_portal, demo
+                )
+    
+            # If delivery is succesful, check the status of the delivery
+            if (
+                get_registration_process_status(registration_id)
+                == "succesfully_delivered_sourcedocuments"
+                and registration.levering_status != "OPGENOMEN_LVBRO"
+                and registration.levering_id is not None
+            ):
+                # The registration has been delivered, but not yet approved
+                status = check_delivery_status_levering(
+                    registration_id, startregistrations_dir, acces_token_bro_portal, demo
+                )
+    
+            # If the delivery failed previously, we can retry
+            if (
+                get_registration_process_status(registration_id)
+                == "failed_to_deliver_sourcedocuments"
+            ):
+    
+                # This will not be the case on the first try
+                if registration.levering_status == "failed_thrice":
+                    # TODO report with mail?
+                    continue
+                else:
+                    delivery_status = deliver_startregistration_sourcedocuments(
+                        registration.id,
+                        startregistrations_dir,
+                        acces_token_bro_portal,
+                        demo,
+                    )
 
 
 class Command(BaseCommand):

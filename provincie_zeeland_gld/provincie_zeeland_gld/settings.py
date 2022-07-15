@@ -62,7 +62,7 @@ ROOT_URLCONF = 'provincie_zeeland_gld.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,6 +130,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+   os.path.join(BASE_DIR, 'static'),
+   ]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
@@ -138,12 +142,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ADMIN_REORDER = (
     # First group
-    {'app': 'gld_aanlevering', 'label': 'GLD Registratie',
+    {'app': 'gld_aanlevering', 'label': 'Registratie aanlevering', #GLD Registratie
       'models': ('gld_aanlevering.gld_registration_log',
                  'gld_aanlevering.gld_addition_log')
     },
     # Second group: same app, but different label
-    {'app': 'gld_aanlevering', 'label': 'Provincie Zeeland GLD - Data',
+    {'app': 'gld_aanlevering', 'label': 'Grondwaterstandsonderzoek data', # Provincie Zeeland GLD - Data
       'models': ('gld_aanlevering.Observation',
                  'gld_aanlevering.GroundwaterLevelDossier',
                 'gld_aanlevering.MeasurementPointMetadata',
@@ -154,7 +158,7 @@ ADMIN_REORDER = (
                 'gld_aanlevering.ObservationProcess',
                 'gld_aanlevering.ResponsibleParty')
     },
-    {'app': 'gld_aanlevering', 'label': 'Provincie Zeeland GLD - Types',
+    {'app': 'gld_aanlevering', 'label': 'Grondwaterstandsonderzoek typeringen', #Provincie Zeeland GLD - Types
       'models': ('gld_aanlevering.TypeAirPressureCompensation',
                 'gld_aanlevering.TypeCensoredReasonCode',
                 'gld_aanlevering.TypeEvaluationProcedure',
@@ -166,7 +170,7 @@ ADMIN_REORDER = (
                 'gld_aanlevering.TypeStatusCode',
                 'gld_aanlevering.TypeStatusQualityControl')
     },
-    {'app': 'gld_aanlevering', 'label': 'Provincie Zeeland GWM - Data',
+    {'app': 'gld_aanlevering', 'label': 'Grondwatermonitoring data', # Provincie Zeeland GWM - Data
       'models': ('gld_aanlevering.GroundwaterMonitoringWells',
                  'gld_aanlevering.GroundwaterMonitoringTubes',
                  'gld_aanlevering.DeliveredLocations',
@@ -193,7 +197,56 @@ GLD_AANLEVERING_SETTINGS = {
 
 # Quick Scan SETTINGS
 QUICK_SCAN_SETTINGS = {
- 'max_groundwater_level':10,
- 'max_change_two_measurements':1,
- 'liveliness_maximum_flatline_duration':100
+ 'jump_slope_limit':1/(60*60), # m/s (1/3600 m/s = 1 m/h)
+ # 'max_change_two_measurements':1,
+ # 'liveliness_maximum_flatline_duration':100
 }
+JAZZMIN_SETTINGS = {
+ "site_logo": "img/bro_connector_logo.png",  
+ "order_with_respect_to":["auth","gld_aanlevering.gld_registration_log","gld_aanlevering.gld_addition_log",'gld_aanlevering.GroundwaterLevelDossier',
+                          'gld_aanlevering.Observation','gld_aanlevering.ObservationMetadata','gld_aanlevering.MeasurementTimeSeries',
+                          "gld_aanlevering.MeasurementTvp","gld_aanlevering.MeasurementPointMetadata"],  
+ # "hide_models":["gld_aanlevering.TypeAirPressureCompensation",'gld_aanlevering.TypeCensoredReasonCode',
+ # 'gld_aanlevering.TypeEvaluationProcedure',
+ # 'gld_aanlevering.TypeInterpolationCode',
+ # 'gld_aanlevering.TypeMeasurementInstrumentType',
+ # 'gld_aanlevering.TypeObservationType',
+ # 'gld_aanlevering.TypeProcessReference',
+ # 'gld_aanlevering.TypeProcessType',
+ # 'gld_aanlevering.TypeStatusCode',
+ # 'gld_aanlevering.TypeStatusQualityControl'],
+ "icons": {
+     "auth": "fas fa-users-cog",
+     "auth.user": "fas fa-user",
+     "auth.Group": "fas fa-users",
+     
+     "gld_aanlevering.gld_registration_log": "fas fa-solid fa-download",
+     "gld_aanlevering.gld_addition_log": "fas fa-solid fa-play",
+     
+      'gld_aanlevering.Observation': "fas fa-search",
+    'gld_aanlevering.GroundwaterLevelDossier': "fas fa-solid fa-folder",
+    'gld_aanlevering.MeasurementPointMetadata': "fas fa-solid fa-list-ul",
+    'gld_aanlevering.MeasurementTimeSeries': "fas fa-chart-bar",
+    # 'gld_aanlevering.MeasurementTimeseriesTvpObservation': "",
+    'gld_aanlevering.MeasurementTvp': "fas fa-times",
+    'gld_aanlevering.ObservationMetadata': "fas fa-solid fa-list-ul",
+    # 'gld_aanlevering.ObservationProcess': "",
+    'gld_aanlevering.ResponsibleParty': "fas fa-solid fa-building",
+    
+    'gld_aanlevering.TypeAirPressureCompensation': "fas fa-book-open",
+    'gld_aanlevering.TypeCensoredReasonCode': "fas fa-book-open",
+    'gld_aanlevering.TypeEvaluationProcedure': "fas fa-book-open",
+    'gld_aanlevering.TypeInterpolationCode': "fas fa-book-open",
+    'gld_aanlevering.TypeMeasurementInstrumentType': "fas fa-book-open",
+    'gld_aanlevering.TypeObservationType': "fas fa-book-open",
+    'gld_aanlevering.TypeProcessReference': "fas fa-book-open",
+    'gld_aanlevering.TypeProcessType': "fas fa-book-open",
+    'gld_aanlevering.TypeStatusCode': "fas fa-book-open",
+    'gld_aanlevering.TypeStatusQualityControl': "fas fa-book-open",
+    
+    'gld_aanlevering.GroundwaterMonitoringWells': 'fas fa-tint',
+    'gld_aanlevering.GroundwaterMonitoringTubes': "fas fa-prescription-bottle",
+    'gld_aanlevering.DeliveredLocations': 'fas fa-map-marker-alt',
+    'gld_aanlevering.DeliveredVerticalPositions': 'fas fa-ruler-vertical'
+     }
+}    

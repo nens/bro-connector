@@ -102,10 +102,12 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         'measurement_time_series_id',
         'measurement_time',
         'field_value',
+        'field_value_unit',
         'calculated_value',
         'corrected_value',
         'correction_time',
         'correction_reason',
+        'measurement_metadata_id',
     )
     list_filter = (
         'measurement_time',
@@ -114,10 +116,12 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         'measurement_time_series_id',
         'measurement_time',
         'field_value',
+        'field_value_unit',
         'calculated_value',
         'corrected_value',
         'correction_time',
         'correction_reason',
+        'measurement_metadata_id'
     )
 
 class ObservationAdmin(admin.ModelAdmin):
@@ -131,7 +135,6 @@ class ObservationAdmin(admin.ModelAdmin):
                     'groundwater_level_dossier_id',
                     'result_time',
                     'status')
-    
     list_filter= ('observation_id', 
                     'observationperiod',
                     'observation_starttime',
@@ -340,7 +343,7 @@ class DeliveredLocationsAdmin(admin.ModelAdmin):
 
     list_display = (
         'location_id',
-        'registration_object_id',
+        'groundwater_monitoring_well_id',
         'coordinates',
         'referencesystem',
         'horizontal_positioning_method',
@@ -350,8 +353,8 @@ class DeliveredLocationsAdmin(admin.ModelAdmin):
 class DeliveredVerticalPositionsAdmin(admin.ModelAdmin):
 
     list_display = (
-        'delivered_vertical_positions_id',
-        'registration_object_id',
+        'vertical_position_id',
+        'groundwater_monitoring_well_id',
         'local_vertical_reference_point',
         'offset',
         'vertical_datum',
@@ -364,8 +367,7 @@ class GroundwaterMonitoringTubesAdmin(admin.ModelAdmin):
 
     list_display = (
         'groundwater_monitoring_tube_id',
-        'deliver_to_bro',
-        'registration_object_id',
+        'groundwater_monitoring_well_id',
         'tube_number',
         'tube_type',
         'artesian_well_cap_present',
@@ -389,7 +391,7 @@ class GroundwaterMonitoringTubesAdmin(admin.ModelAdmin):
 class GroundwaterMonitoringWellsAdmin(admin.ModelAdmin):
 
     list_display = (
-        'registration_object_id',
+        'groundwater_monitoring_well_id',
         'registration_object_type',
         'bro_id',
         'request_reference',
@@ -410,6 +412,8 @@ class GroundwaterMonitoringWellsAdmin(admin.ModelAdmin):
         'maintenance_responsible_party',
         'well_head_protector',
         'well_construction_date',
+        'well_removal_date',
+        'monitoring_pdok_id'
     )
     list_filter = ('well_construction_date',)
 
@@ -429,7 +433,6 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     def regenerate_start_registration_sourcedocument(self, request, queryset):
                 
         for registration_log in queryset:
-            
             bro_id_well = registration_log.gwm_bro_id
             well = models.GroundwaterMonitoringWells.objects.get(bro_id=bro_id_well)
             location_code = well.nitg_code
@@ -481,7 +484,6 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
     @admin.action(description='Deliver startregistration sourcedocument')
     def deliver_startregistration_sourcedocument(self, request, queryset): 
-        
         demo =  GLD_AANLEVERING_SETTINGS['demo']
         if demo:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
@@ -702,3 +704,6 @@ _register(models.DeliveredVerticalPositions, DeliveredVerticalPositionsAdmin)
 _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
 _register(models.GroundwaterMonitoringWells, GroundwaterMonitoringWellsAdmin)
 
+admin.site.site_header = 'BRO connector'
+admin.site.site_title = 'Dashboard'
+admin.site.index_title = 'BRO connector'
