@@ -385,8 +385,9 @@ class GroundwaterMonitoringTubesAdmin(admin.ModelAdmin):
         'sock_material',
         'plain_tube_part_length',
         'sediment_sump_length',
+        'deliver_to_bro'
     )
-
+    list_filter = ('deliver_to_bro',)
 
 class GroundwaterMonitoringWellsAdmin(admin.ModelAdmin):
 
@@ -413,9 +414,10 @@ class GroundwaterMonitoringWellsAdmin(admin.ModelAdmin):
         'well_head_protector',
         'well_construction_date',
         'well_removal_date',
-        'monitoring_pdok_id'
+        'monitoring_pdok_id',
+        'delivered_to_bro'
     )
-    list_filter = ('well_construction_date',)
+    list_filter = ('well_construction_date','delivered_to_bro')
 
 
 

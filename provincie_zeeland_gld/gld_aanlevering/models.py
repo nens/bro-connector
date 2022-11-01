@@ -326,7 +326,7 @@ class GroundwaterMonitoringWells(models.Model):
     well_construction_date = models.DateField(blank=True, null=True)
     well_removal_date = models.DateField(blank=True, null=True)
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
-    delivered_to_bro = models.BooleanField(blank=False)
+    delivered_to_bro = models.BooleanField(blank=False, default=False)
 
     class Meta:
         managed = True
@@ -336,7 +336,7 @@ class GroundwaterMonitoringWells(models.Model):
 class GroundwaterMonitoringTubes(models.Model):
     groundwater_monitoring_tube_id = models.IntegerField(primary_key=True)
     groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
-    deliver_to_bro = models.BooleanField(blank=True, null=True)
+    deliver_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(blank=True, null=True)
     tube_type = models.TextField(blank=True, null=True)  # This field type is a guess.
     artesian_well_cap_present = models.TextField(blank=True, null=True)  # This field type is a guess.

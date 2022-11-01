@@ -86,12 +86,12 @@ WSGI_APPLICATION = 'provincie_zeeland_gld.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gld_zeeland_productie',                      
+        'NAME': 'BRO_aanlevering',                      
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': 'localhost',
-        'PORT': '5433',
-        'OPTIONS':{'options': '-c search_path=django_admin'}
+        'PORT': '5432',
+        'OPTIONS':{'options': '-c search_path=public'}
 }}
 
 # Password validation
@@ -178,16 +178,15 @@ ADMIN_REORDER = (
     },
 )
 
-
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
     'acces_token_bro_portal_demo': {
-        'user':'2f382895e91a|27376655|630',
-        'pass':'84d0049b0bb9eb0924fa88f4472e3222eed1c56b0111c9b927c81d2c77df67c9'
+        'user': '85ab0b6a0f21|27376655|630', #'2f382895e91a|27376655|630',
+        'pass': 'f7e461366c108e106b63a8f4402186ab396af91214226466ca434f6f44813e5e' #'84d0049b0bb9eb0924fa88f4472e3222eed1c56b0111c9b927c81d2c77df67c9'
     },
     'acces_token_bro_portal_provincie_zeeland': {
-        'user':'',
-        'pass':''
+        'user':'d2f38cd326b0|20168636|-11',
+        'pass':'0dea427d5ee92da7b73ebaaf70e0847de12ff6e745d93d79b5ffacb3fb004a39'
     },
     'monitoringnetworks':None,
     'demo':True,
@@ -201,8 +200,9 @@ QUICK_SCAN_SETTINGS = {
  # 'max_change_two_measurements':1,
  # 'liveliness_maximum_flatline_duration':100
 }
+
 JAZZMIN_SETTINGS = {
- "site_logo": "img/bro_connector_logo.png",  
+ "site_logo": "img/Logo BRO-connector-RGB.jpg",  
  "order_with_respect_to":["auth","gld_aanlevering.gld_registration_log","gld_aanlevering.gld_addition_log",'gld_aanlevering.GroundwaterLevelDossier',
                           'gld_aanlevering.Observation','gld_aanlevering.ObservationMetadata','gld_aanlevering.MeasurementTimeSeries',
                           "gld_aanlevering.MeasurementTvp","gld_aanlevering.MeasurementPointMetadata"],  
