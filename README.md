@@ -3,7 +3,7 @@
 
 # BRO-connector
 
-- Django applicatie voor de aanlevering van GLD naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland
+- Django applicatie voor de aanlevering van GLD gegevens naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland
 - Gebruik requirements.txt om de virtual environment aan te maken waarbinnen de applicatie kan draaien
 
 ## Installeren van Django applicatie op server
