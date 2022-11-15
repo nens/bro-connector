@@ -4,3 +4,4 @@
 **/localsecret.py
 *.docx
 *.sql
+**/*.dot
