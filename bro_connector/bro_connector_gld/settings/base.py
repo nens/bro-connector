@@ -89,10 +89,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'grondwatermeetnet',                      
-        'USER': 'bro',
-        'PASSWORD': '@BRO-2022x!',
-        'HOST': 'geoint.zeeland.nl',
-        'PORT': '5435',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
         'OPTIONS':{'options': '-c search_path=django_admin'}
 }}
 
