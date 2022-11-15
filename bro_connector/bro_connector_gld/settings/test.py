@@ -10,13 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 from bro_connector_gld.settings.base import *
 
 DEBUG = True
 ROOT_URLCONF = 'bro_connector_gld.urls'
 SECRET_KEY = 'django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!'
+
 
 DATABASES = {
     "default": {
