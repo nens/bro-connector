@@ -27,7 +27,7 @@
     - Zorg dat het default search path voor de database in 'base.py' op 'django_admin' staat (staat goed in de repo)
     - Initialiseer de admin tabellen voor django door 'python manage.py migrate' te draaien
     - De overige tabellen staan al in de database, maar moeten nog gesynchroniseerd worden met de django applicatie
-    - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate' (of python manag.py migrate --fake wanneer stap 3 is uitgevoerd)
+    - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate' (of python manage.py migrate --fake wanneer stap 3 is uitgevoerd)
     - Maak een superuser met 'python manage.py createsuperuser' 
 
 
