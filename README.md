@@ -10,7 +10,7 @@
 
 1. Clone 'bro-connecor' naar de server
 2. Installeer de python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
-#^- Voor het aanmaken en leveren van requests wordt het pakketje 'bro-exchange' gebruikt, voor instructies zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
+    - Voor het aanmaken en leveren van requests wordt het pakketje 'bro-exchange' gebruikt, voor instructies zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
 3. Optioneel: restore een backup van de database op de server
     - Backup bestand heet 'test_database_backup.sql', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
     - Zorg dat de user bro de juiste rechten heeft om schema's/tabellen te kunnen verwijderen en opnieuw aan te maken!
