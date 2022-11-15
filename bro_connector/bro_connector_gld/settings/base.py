@@ -14,11 +14,12 @@ from pathlib import Path
 import os
 
 import django.db.models.options as options
-options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('schema',)
+
+options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
 from bro_connector_gld.localsecret import *
 
-ENVIRONMENT = 'staging'
+ENVIRONMENT = "staging"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -28,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1b2-79o0!+@%9d6gt@7k5-8=8(r@&x-(15!o7+zo-zgwg4)gbv'
+SECRET_KEY = "django-insecure-1b2-79o0!+@%9d6gt@7k5-8=8(r@&x-(15!o7+zo-zgwg4)gbv"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,81 +39,83 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
-    'django_extensions',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'gld_aanlevering',
-    'django_admin_generator',
-    'admin_reorder']
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-     'admin_reorder.middleware.ModelAdminReorder',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "jazzmin",
+    "django_extensions",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "gld_aanlevering",
+    "django_admin_generator",
+    "admin_reorder",
 ]
 
-ROOT_URLCONF = 'bro_connector_gld.urls'
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "admin_reorder.middleware.ModelAdminReorder",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "bro_connector_gld.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'bro_connector_gld.wsgi.application'
+WSGI_APPLICATION = "bro_connector_gld.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-#DATABASE_ROUTERS = ['database_routers.zeeland_gld.PostgresRouter']
+# DATABASE_ROUTERS = ['database_routers.zeeland_gld.PostgresRouter']
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'grondwatermeetnet',                      
-        'USER': p_user,
-        'PASSWORD': p_password,
-        'HOST': p_host,
-        'PORT': p_port,
-        'OPTIONS':{'options': '-c search_path=django_admin'}
-}}
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "grondwatermeetnet",
+        "USER": p_user,
+        "PASSWORD": p_password,
+        "HOST": p_host,
+        "PORT": p_port,
+        "OPTIONS": {"options": "-c search_path=django_admin"},
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -120,9 +123,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -132,133 +135,155 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 STATICFILES_DIRS = [
-   os.path.join(BASE_DIR, 'static'),
-   ]
+    os.path.join(BASE_DIR, "static"),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 ADMIN_REORDER = (
     # First group
-    {'app': 'gld_aanlevering', 'label': 'Registratie aanlevering', #GLD Registratie
-      'models': ('gld_aanlevering.gld_registration_log',
-                 'gld_aanlevering.gld_addition_log')
+    {
+        "app": "gld_aanlevering",
+        "label": "Registratie aanlevering",  # GLD Registratie
+        "models": (
+            "gld_aanlevering.gld_registration_log",
+            "gld_aanlevering.gld_addition_log",
+        ),
     },
     # Second group: same app, but different label
-    {'app': 'gld_aanlevering', 'label': 'Grondwaterstandsonderzoek data', # Provincie Zeeland GLD - Data
-      'models': ('gld_aanlevering.Observation',
-                 'gld_aanlevering.GroundwaterLevelDossier',
-                'gld_aanlevering.MeasurementPointMetadata',
-                'gld_aanlevering.MeasurementTimeSeries',
-                'gld_aanlevering.MeasurementTimeseriesTvpObservation',
-                'gld_aanlevering.MeasurementTvp',
-                'gld_aanlevering.ObservationMetadata',
-                'gld_aanlevering.ObservationProcess',
-                'gld_aanlevering.ResponsibleParty')
+    {
+        "app": "gld_aanlevering",
+        "label": "Grondwaterstandsonderzoek data",  # Provincie Zeeland GLD - Data
+        "models": (
+            "gld_aanlevering.Observation",
+            "gld_aanlevering.GroundwaterLevelDossier",
+            "gld_aanlevering.MeasurementPointMetadata",
+            "gld_aanlevering.MeasurementTimeSeries",
+            "gld_aanlevering.MeasurementTimeseriesTvpObservation",
+            "gld_aanlevering.MeasurementTvp",
+            "gld_aanlevering.ObservationMetadata",
+            "gld_aanlevering.ObservationProcess",
+            "gld_aanlevering.ResponsibleParty",
+        ),
     },
-    {'app': 'gld_aanlevering', 'label': 'Grondwaterstandsonderzoek typeringen', #Provincie Zeeland GLD - Types
-      'models': ('gld_aanlevering.TypeAirPressureCompensation',
-                'gld_aanlevering.TypeCensoredReasonCode',
-                'gld_aanlevering.TypeEvaluationProcedure',
-                'gld_aanlevering.TypeInterpolationCode',
-                'gld_aanlevering.TypeMeasurementInstrumentType',
-                'gld_aanlevering.TypeObservationType',
-                'gld_aanlevering.TypeProcessReference',
-                'gld_aanlevering.TypeProcessType',
-                'gld_aanlevering.TypeStatusCode',
-                'gld_aanlevering.TypeStatusQualityControl')
+    {
+        "app": "gld_aanlevering",
+        "label": "Grondwaterstandsonderzoek typeringen",  # Provincie Zeeland GLD - Types
+        "models": (
+            "gld_aanlevering.TypeAirPressureCompensation",
+            "gld_aanlevering.TypeCensoredReasonCode",
+            "gld_aanlevering.TypeEvaluationProcedure",
+            "gld_aanlevering.TypeInterpolationCode",
+            "gld_aanlevering.TypeMeasurementInstrumentType",
+            "gld_aanlevering.TypeObservationType",
+            "gld_aanlevering.TypeProcessReference",
+            "gld_aanlevering.TypeProcessType",
+            "gld_aanlevering.TypeStatusCode",
+            "gld_aanlevering.TypeStatusQualityControl",
+        ),
     },
-    {'app': 'gld_aanlevering', 'label': 'Grondwatermonitoring data', # Provincie Zeeland GWM - Data
-      'models': ('gld_aanlevering.GroundwaterMonitoringWells',
-                 'gld_aanlevering.GroundwaterMonitoringTubes',
-                 'gld_aanlevering.DeliveredLocations',
-                 'gld_aanlevering.DeliveredVerticalPositions')
+    {
+        "app": "gld_aanlevering",
+        "label": "Grondwatermonitoring data",  # Provincie Zeeland GWM - Data
+        "models": (
+            "gld_aanlevering.GroundwaterMonitoringWells",
+            "gld_aanlevering.GroundwaterMonitoringTubes",
+            "gld_aanlevering.DeliveredLocations",
+            "gld_aanlevering.DeliveredVerticalPositions",
+        ),
     },
 )
 
-if ENVIRONMENT == 'production':
+if ENVIRONMENT == "production":
     demo = False
 else:
     demo = True
 
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
-    'acces_token_bro_portal_demo': {
-        'user': bro_demo_user, 
-        'pass': bro_demo_password, 
+    "acces_token_bro_portal_demo": {
+        "user": bro_demo_user,
+        "pass": bro_demo_password,
     },
-    'acces_token_bro_portal_bro_connector': {
-        'user': bro_production_user,
-        'pass': bro_production_password,
+    "acces_token_bro_portal_bro_connector": {
+        "user": bro_production_user,
+        "pass": bro_production_password,
     },
-    'monitoringnetworks':None,
-    'demo':demo,
-    'additions_dir':os.path.join(BASE_DIR, 'gld_aanlevering/additions'),
-    'startregistrations_dir':os.path.join(BASE_DIR, 'gld_aanlevering/startregistrations'),
+    "monitoringnetworks": None,
+    "demo": demo,
+    "additions_dir": os.path.join(BASE_DIR, "gld_aanlevering/additions"),
+    "startregistrations_dir": os.path.join(
+        BASE_DIR, "gld_aanlevering/startregistrations"
+    ),
 }
 
 # Quick Scan SETTINGS
 QUICK_SCAN_SETTINGS = {
- 'jump_slope_limit':1/(60*60), # m/s (1/3600 m/s = 1 m/h)
- # 'max_change_two_measurements':1,
- # 'liveliness_maximum_flatline_duration':100
+    "jump_slope_limit": 1 / (60 * 60),  # m/s (1/3600 m/s = 1 m/h)
+    # 'max_change_two_measurements':1,
+    # 'liveliness_maximum_flatline_duration':100
 }
 
 JAZZMIN_SETTINGS = {
- "site_logo": os.path.join(BASE_DIR, "static/img/broconnector.png"),  
- "order_with_respect_to":["auth","gld_aanlevering.gld_registration_log","gld_aanlevering.gld_addition_log",'gld_aanlevering.GroundwaterLevelDossier',
-                          'gld_aanlevering.Observation','gld_aanlevering.ObservationMetadata','gld_aanlevering.MeasurementTimeSeries',
-                          "gld_aanlevering.MeasurementTvp","gld_aanlevering.MeasurementPointMetadata"],  
- # "hide_models":["gld_aanlevering.TypeAirPressureCompensation",'gld_aanlevering.TypeCensoredReasonCode',
- # 'gld_aanlevering.TypeEvaluationProcedure',
- # 'gld_aanlevering.TypeInterpolationCode',
- # 'gld_aanlevering.TypeMeasurementInstrumentType',
- # 'gld_aanlevering.TypeObservationType',
- # 'gld_aanlevering.TypeProcessReference',
- # 'gld_aanlevering.TypeProcessType',
- # 'gld_aanlevering.TypeStatusCode',
- # 'gld_aanlevering.TypeStatusQualityControl'],
- "icons": {
-     "auth": "fas fa-users-cog",
-     "auth.user": "fas fa-user",
-     "auth.Group": "fas fa-users",
-     
-     "gld_aanlevering.gld_registration_log": "fas fa-solid fa-download",
-     "gld_aanlevering.gld_addition_log": "fas fa-solid fa-play",
-     
-      'gld_aanlevering.Observation': "fas fa-search",
-    'gld_aanlevering.GroundwaterLevelDossier': "fas fa-solid fa-folder",
-    'gld_aanlevering.MeasurementPointMetadata': "fas fa-solid fa-list-ul",
-    'gld_aanlevering.MeasurementTimeSeries': "fas fa-chart-bar",
-    # 'gld_aanlevering.MeasurementTimeseriesTvpObservation': "",
-    'gld_aanlevering.MeasurementTvp': "fas fa-times",
-    'gld_aanlevering.ObservationMetadata': "fas fa-solid fa-list-ul",
-    # 'gld_aanlevering.ObservationProcess': "",
-    'gld_aanlevering.ResponsibleParty': "fas fa-solid fa-building",
-    
-    'gld_aanlevering.TypeAirPressureCompensation': "fas fa-book-open",
-    'gld_aanlevering.TypeCensoredReasonCode': "fas fa-book-open",
-    'gld_aanlevering.TypeEvaluationProcedure': "fas fa-book-open",
-    'gld_aanlevering.TypeInterpolationCode': "fas fa-book-open",
-    'gld_aanlevering.TypeMeasurementInstrumentType': "fas fa-book-open",
-    'gld_aanlevering.TypeObservationType': "fas fa-book-open",
-    'gld_aanlevering.TypeProcessReference': "fas fa-book-open",
-    'gld_aanlevering.TypeProcessType': "fas fa-book-open",
-    'gld_aanlevering.TypeStatusCode': "fas fa-book-open",
-    'gld_aanlevering.TypeStatusQualityControl': "fas fa-book-open",
-    
-    'gld_aanlevering.GroundwaterMonitoringWells': 'fas fa-tint',
-    'gld_aanlevering.GroundwaterMonitoringTubes': "fas fa-prescription-bottle",
-    'gld_aanlevering.DeliveredLocations': 'fas fa-map-marker-alt',
-    'gld_aanlevering.DeliveredVerticalPositions': 'fas fa-ruler-vertical'
-     }
-}    
+    "site_logo": os.path.join(BASE_DIR, "static/img/broconnector.png"),
+    "order_with_respect_to": [
+        "auth",
+        "gld_aanlevering.gld_registration_log",
+        "gld_aanlevering.gld_addition_log",
+        "gld_aanlevering.GroundwaterLevelDossier",
+        "gld_aanlevering.Observation",
+        "gld_aanlevering.ObservationMetadata",
+        "gld_aanlevering.MeasurementTimeSeries",
+        "gld_aanlevering.MeasurementTvp",
+        "gld_aanlevering.MeasurementPointMetadata",
+    ],
+    # "hide_models":["gld_aanlevering.TypeAirPressureCompensation",'gld_aanlevering.TypeCensoredReasonCode',
+    # 'gld_aanlevering.TypeEvaluationProcedure',
+    # 'gld_aanlevering.TypeInterpolationCode',
+    # 'gld_aanlevering.TypeMeasurementInstrumentType',
+    # 'gld_aanlevering.TypeObservationType',
+    # 'gld_aanlevering.TypeProcessReference',
+    # 'gld_aanlevering.TypeProcessType',
+    # 'gld_aanlevering.TypeStatusCode',
+    # 'gld_aanlevering.TypeStatusQualityControl'],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "gld_aanlevering.gld_registration_log": "fas fa-solid fa-download",
+        "gld_aanlevering.gld_addition_log": "fas fa-solid fa-play",
+        "gld_aanlevering.Observation": "fas fa-search",
+        "gld_aanlevering.GroundwaterLevelDossier": "fas fa-solid fa-folder",
+        "gld_aanlevering.MeasurementPointMetadata": "fas fa-solid fa-list-ul",
+        "gld_aanlevering.MeasurementTimeSeries": "fas fa-chart-bar",
+        # 'gld_aanlevering.MeasurementTimeseriesTvpObservation': "",
+        "gld_aanlevering.MeasurementTvp": "fas fa-times",
+        "gld_aanlevering.ObservationMetadata": "fas fa-solid fa-list-ul",
+        # 'gld_aanlevering.ObservationProcess': "",
+        "gld_aanlevering.ResponsibleParty": "fas fa-solid fa-building",
+        "gld_aanlevering.TypeAirPressureCompensation": "fas fa-book-open",
+        "gld_aanlevering.TypeCensoredReasonCode": "fas fa-book-open",
+        "gld_aanlevering.TypeEvaluationProcedure": "fas fa-book-open",
+        "gld_aanlevering.TypeInterpolationCode": "fas fa-book-open",
+        "gld_aanlevering.TypeMeasurementInstrumentType": "fas fa-book-open",
+        "gld_aanlevering.TypeObservationType": "fas fa-book-open",
+        "gld_aanlevering.TypeProcessReference": "fas fa-book-open",
+        "gld_aanlevering.TypeProcessType": "fas fa-book-open",
+        "gld_aanlevering.TypeStatusCode": "fas fa-book-open",
+        "gld_aanlevering.TypeStatusQualityControl": "fas fa-book-open",
+        "gld_aanlevering.GroundwaterMonitoringWells": "fas fa-tint",
+        "gld_aanlevering.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
+        "gld_aanlevering.DeliveredLocations": "fas fa-map-marker-alt",
+        "gld_aanlevering.DeliveredVerticalPositions": "fas fa-ruler-vertical",
+    },
+}
 
 JAZZMIN_UI_TWEAKS = {
     "theme": "spacelab",
@@ -266,6 +291,6 @@ JAZZMIN_UI_TWEAKS = {
 }
 
 GRAPH_MODELS = {
-  'all_applications': True,
-  'group_models': True,
+    "all_applications": True,
+    "group_models": True,
 }

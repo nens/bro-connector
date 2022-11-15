@@ -13,19 +13,20 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 import os
 from bro_connector_gld.settings.base import *
-from bro_connector_gld.localsecret import p_user, p_password, p_host,  p_port
+from bro_connector_gld.localsecret import p_user, p_password, p_host, p_port
 
 DEBUG = True
-ROOT_URLCONF = 'bro_connector_gld.urls'
-SECRET_KEY = 'django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!'
+ROOT_URLCONF = "bro_connector_gld.urls"
+SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'grondwatermeetnet',                      
-        'USER': p_user,
-        'PASSWORD': p_password,
-        'HOST': p_host,
-        'PORT': p_port,
-        'OPTIONS':{'options': '-c search_path=django_admin'}
-}}
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "grondwatermeetnet",
+        "USER": p_user,
+        "PASSWORD": p_password,
+        "HOST": p_host,
+        "PORT": p_port,
+        "OPTIONS": {"options": "-c search_path=django_admin"},
+    }
+}

@@ -12,11 +12,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from gld_aanlevering import models
 
+
 def start_registrations(request):
-    call_command('start_registrations')
-    messages.add_message(
-        request, messages.SUCCESS, 'Start registratie voltooid.')
-    return redirect(request.META.get('HTTP_REFERER'))
-
-
-
+    call_command("start_registrations")
+    messages.add_message(request, messages.SUCCESS, "Start registratie voltooid.")
+    return redirect(request.META.get("HTTP_REFERER"))

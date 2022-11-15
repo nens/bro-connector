@@ -158,9 +158,7 @@ def check_status_gld_addition(
     Check the status of a delivery and log to the database what the status is
     """
 
-    gld_addition = models.gld_addition_log.objects.get(
-        observation_id=observation_id
-    )
+    gld_addition = models.gld_addition_log.objects.get(observation_id=observation_id)
     try:
         upload_info = brx.check_delivery_status(
             levering_id, acces_token_bro_portal, demo=demo
@@ -189,7 +187,7 @@ def check_status_gld_addition(
                 gld_bro_id=gld_addition.broid_registration,
                 defaults=dict(last_changed=upload_info.json()["lastChanged"]),
             )
-            
+
         else:
             comments = "Status check succesful, not yet approved"
             models.gld_addition_log.objects.update_or_create(
@@ -281,14 +279,14 @@ def check_status_addition(observation, acces_token_bro_portal, demo):
     new_delivery_status = check_status_gld_addition(
         observation.observation_id, levering_id, acces_token_bro_portal, demo
     )
-    try: 
-        if new_delivery_status == 'DOORGELEVERD': #"OPGENOMEN_LVBRO":
+    try:
+        if new_delivery_status == "DOORGELEVERD":  # "OPGENOMEN_LVBRO":
             sourcedoc_filepath = os.path.join(
                 GLD_AANLEVERING_SETTINGS["additions_dir"], file_name
             )
             os.remove(sourcedoc_filepath)
-    except: 
-        pass # no file to remove
+    except:
+        pass  # no file to remove
 
     return new_delivery_status
 
@@ -304,7 +302,7 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
     for observation in observation_set:
         # For all the observations in the database, check the status and continue with the BRO delivery process
         if observation.status == "source_document_created":
-            # TODO check if procedure is same as other observations, use the same procedure uuid 
+            # TODO check if procedure is same as other observations, use the same procedure uuid
             validation_status = validate_addition(
                 observation, acces_token_bro_portal, demo
             )
@@ -312,20 +310,21 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
         elif observation.status == "source_document_validation_succeeded":
             # This observation source document has been validated before
             # If result was NIET_VALIDE try again, otherwise try delivery
-            
-            gld_addition = models.gld_addition_log.objects.get(observation_id=observation.observation_id)
+
+            gld_addition = models.gld_addition_log.objects.get(
+                observation_id=observation.observation_id
+            )
             validation_status = gld_addition.validation_status
-            
-            if validation_status == 'VALIDE':            
+
+            if validation_status == "VALIDE":
                 # If a source document has been validated succesfully but failed to deliver, try to deliver again
                 # after three tries no more attempts will be made
                 delivery_status = deliver_addition(
                     observation, acces_token_bro_portal, demo
                 )
- 
-                    
-        elif observation.status == 'source_document_validation_failed':
-            # Something went wrong during document validation, try again 
+
+        elif observation.status == "source_document_validation_failed":
+            # Something went wrong during document validation, try again
             validation_status = validate_addition(
                 observation, acces_token_bro_portal, demo
             )
@@ -334,8 +333,8 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
             delivery_status = check_status_addition(
                 observation, acces_token_bro_portal, demo
             )
-            
-        elif observation.status == 'delivery_approved':
+
+        elif observation.status == "delivery_approved":
             delivery_status = check_status_addition(
                 observation, acces_token_bro_portal, demo
             )
@@ -346,7 +345,6 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
 
         else:
             continue
-    
 
 
 class Command(BaseCommand):

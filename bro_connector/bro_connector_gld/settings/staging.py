@@ -15,8 +15,8 @@ import os
 from bro_connector_gld.settings.base import *
 
 DEBUG = True
-ROOT_URLCONF = 'bro_connector_gld.urls'
-SECRET_KEY = 'django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!'
+ROOT_URLCONF = "bro_connector_gld.urls"
+SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
 
 DATABASES = {
     "default": {
@@ -26,9 +26,6 @@ DATABASES = {
         "PASSWORD": s_password,
         "HOST": s_host,
         "PORT": s_port,
-        'OPTIONS':{'options': '-c search_path=django_admin'}
-
+        "OPTIONS": {"options": "-c search_path=django_admin"},
     },
 }
-
-
