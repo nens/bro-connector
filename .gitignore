@@ -2,3 +2,5 @@
 **/*.xml
 **/*.zip
 **/localsecret.py
+**/*.docx
+**/*.sql
