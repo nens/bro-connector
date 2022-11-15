@@ -6,16 +6,16 @@
 # p_port = 
 
 # # Test db settings
-# p_user = 
-# p_password = 
-# p_host = 
-# p_port = 
+# t_user = 
+# t_password = 
+# t_host = 
+# t_port = 
 
 # # Staging db settings
-# p_user = 
-# p_password = 
-# p_host = 
-# p_port = 
+# s_user = 
+# s_password = 
+# s_host = 
+# s_port = 
 
 # # BRO tokens
 # bro_demo_user=

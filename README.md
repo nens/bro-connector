@@ -10,18 +10,21 @@
 
 1. Clone 'bro-connecor' naar de server
 2. Installeer de python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
-- Hierbij moet het pakketje 'bro-exchange' nog los geinstalleerd worden in de environment! Instructies in de repo: https://github.com/nens/bro-exchange/
-3. Restore een backup van de database op de server
-- Backup bestand heet 'test_database_backup.sq', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
+- Voor het aanmaken en leveren van requests wordt het pakketje 'bro-exchange' gebruikt, voor instructies zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
+3. Optioneel: restore een backup van de database op de server
+- Backup bestand heet 'test_database_backup.sql', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
 - Zorg dat de user bro de juiste rechten heeft om schema's/tabellen te kunnen verwijderen en opnieuw aan te maken!
-- Draai de command 'psql -p 5433 -h localhost -U postgres your_db < test_database_backup.sql' met de juist database als 'your_db'
+- Draai de command 'psql -p [port] -h localhost -U postgres [your_db] < test_database_backup.sql' met de juiste database en port als 'your_db' en 'port'
 - Zorg dat de nieuwe schema's ook de juiste rechten hebben voor de user bro, anders kan de django applicatie niet bij de data
-- (mocht het nodig zijn, maak een nieuwe backup: 'pg_dump -p 5433 -h localhost -U postgres --no-owner --clean gld_zeeland_productie > test_database_backup.sql')
+- (mocht het nodig zijn, maak een nieuwe backup: 'pg_dump -p [port] -h localhost -U postgres --no-owner --clean [your_db] > test_database_backup.sql')
 
 4. Initialiseer de django applicatie
-- Check settings.py en vul de juiste database gegevens in 
+- Specifieke instellingen zijn in te stellen in de settings (bro_connector_gld/settings). Daarin zijn er apparte settings voor een productieomgeving, testomgeving en stagingomgeving
+- Inloggegevens worden opgegeven in localsecret.py. Hiervoor is een template toegevoegd (bro_connector_gld/localsecret_template.py). Note: ga altijd zorgvuldig met inloggegevens om.
+- Geef de juiste database gegevens op in de settings
+- Stel in de base settings (bro_connector_gld/settings/base.py) de omgeving in onder 'ENVIRONMNENT' (production/test/staging). NOTE: wanneer de production environment wordt gekozen, is de applicatie aangesloten op de productieomgeving van de bronhouderportaal. Bij selectie van test / staging is de applicatie aangesloten op de demo omgeving van de bronhouderportaal
 - Zorg dat er een schema 'django_admin' in de postgres database staat, hierin komen de admin tabellen (deze zitten niet in de database backup)
-- Zorg dat het default search path voor de database in 'settings.py' op 'django_admin' staat (staat goed in de repo)
+- Zorg dat het default search path voor de database in 'base.py' op 'django_admin' staat (staat goed in de repo)
 - Initialiseer de admin tabellen voor django door 'python manage.py migrate' te draaien
 - De overige tabellen staan al in de database, maar moeten nog gesynchroniseerd worden met de django applicatie
 - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate --fake' 
