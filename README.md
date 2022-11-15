@@ -4,7 +4,7 @@
 # BRO-connector
 
 - Django applicatie voor de aanlevering van GLD naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland
-- Gebruik requirements.txt om de virtual environment aan te maken waarbinnen de applicatie kan draaien (bro-exchange moet handmatig nog geinstalleerd worden via pip)
+- Gebruik requirements.txt om de virtual environment aan te maken waarbinnen de applicatie kan draaien
 
 ## Installeren van Django applicatie op server
 
