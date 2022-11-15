@@ -22,10 +22,10 @@ DATABASES = {
     "default": {
         "NAME": "grondwatermeetnet",
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "USER": "postgres",
-        "PASSWORD": "pass",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "USER": t_user,
+        "PASSWORD": t_password,
+        "HOST": t_host,
+        "PORT": t_port,
         'OPTIONS':{'options': '-c search_path=django_admin'}
     },
 }

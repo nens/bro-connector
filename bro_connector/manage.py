@@ -15,9 +15,9 @@ def main():
         os.environ.setdefault(
             "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.staging"
         )    
-    elif ENVIRONMENT == "demo":
+    elif ENVIRONMENT == "test":
         os.environ.setdefault(
-            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.demo"
+            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.test"
         )
 		
     try:

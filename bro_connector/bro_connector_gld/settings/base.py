@@ -16,6 +16,8 @@ import os
 import django.db.models.options as options
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('schema',)
 
+from bro_connector_gld.localsecret import *
+
 ENVIRONMENT = 'staging'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -89,10 +91,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'grondwatermeetnet',                      
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'USER': p_user,
+        'PASSWORD': p_password,
+        'HOST': p_host,
+        'PORT': p_port,
         'OPTIONS':{'options': '-c search_path=django_admin'}
 }}
 
@@ -183,12 +185,12 @@ ADMIN_REORDER = (
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
     'acces_token_bro_portal_demo': {
-        'user': '85ab0b6a0f21|27376655|630', #'2f382895e91a|27376655|630',
-        'pass': 'f7e461366c108e106b63a8f4402186ab396af91214226466ca434f6f44813e5e' #'84d0049b0bb9eb0924fa88f4472e3222eed1c56b0111c9b927c81d2c77df67c9'
+        'user': bro_demo_user, 
+        'pass': bro_demo_password, 
     },
     'acces_token_bro_portal_bro_connector': {
-        'user': 'd2f38cd326b0|20168636|-11', #'fa9f8e67d8f4|20168636|-11',
-        'pass': '0dea427d5ee92da7b73ebaaf70e0847de12ff6e745d93d79b5ffacb3fb004a39' #'b527b200643876c4cc74ac0de56f289c642626fff8a59877961f40ba14c971d3'
+        'user': bro_production_user,
+        'pass': bro_production_password,
     },
     'monitoringnetworks':None,
     'demo':False,
