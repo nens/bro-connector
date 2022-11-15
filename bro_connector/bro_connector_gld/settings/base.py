@@ -182,6 +182,11 @@ ADMIN_REORDER = (
     },
 )
 
+if ENVIRONMENT == 'production':
+    demo = False
+else:
+    demo = True
+
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
     'acces_token_bro_portal_demo': {
@@ -193,7 +198,7 @@ GLD_AANLEVERING_SETTINGS = {
         'pass': bro_production_password,
     },
     'monitoringnetworks':None,
-    'demo':False,
+    'demo':demo,
     'additions_dir':os.path.join(BASE_DIR, 'gld_aanlevering/additions'),
     'startregistrations_dir':os.path.join(BASE_DIR, 'gld_aanlevering/startregistrations'),
 }
