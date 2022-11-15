@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-import gwmpy as gwm
+import bro_exchange as brx
 import os
 import datetime
 import bisect
@@ -9,8 +9,8 @@ from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
-from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
-from provincie_zeeland_gld import settings
+from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
+from bro_connector_gld import settings
 from gld_aanlevering import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
@@ -27,7 +27,7 @@ def validate_gld_addition_source_document(
     payload = open(source_doc_file)
 
     try:
-        validation_info = gwm.validate_sourcedoc(payload, acces_token_bro_portal, demo)
+        validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, demo)
         validation_status = validation_info["status"]
 
         if "errors" in validation_info:
@@ -97,7 +97,7 @@ def deliver_gld_addition_source_document(
         delivery_status_update = failed_update_strings[position + 1]
 
     try:
-        upload_info = gwm.upload_sourcedocs_from_dict(
+        upload_info = brx.upload_sourcedocs_from_dict(
             request, acces_token_bro_portal, demo=demo
         )
 
@@ -162,7 +162,7 @@ def check_status_gld_addition(
         observation_id=observation_id
     )
     try:
-        upload_info = gwm.check_delivery_status(
+        upload_info = brx.check_delivery_status(
             levering_id, acces_token_bro_portal, demo=demo
         )
         delivery_status = upload_info.json()["status"]
@@ -359,7 +359,7 @@ class Command(BaseCommand):
             ]
         else:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
-                "acces_token_bro_portal_provincie_zeeland"
+                "acces_token_bro_portal_bro_connector"
             ]
 
         additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]

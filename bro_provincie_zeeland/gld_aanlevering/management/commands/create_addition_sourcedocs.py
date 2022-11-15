@@ -7,7 +7,7 @@ from django.db import transaction
 
 import pandas as pd
 import requests
-import gwmpy as gwm
+import bro_exchange as brx
 import json
 import os
 import sys
@@ -24,7 +24,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
+from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
 from gld_aanlevering import models
 
 field_value_division_dict = {"cm": 100, "mm": 1000}
@@ -387,7 +387,7 @@ def generate_gld_addition_sourcedoc_data(
         )
 
         # Create addition source document
-        gld_addition_registration_request = gwm.gld_registration_request(
+        gld_addition_registration_request = brx.gld_registration_request(
             srcdoc="GLD_Addition",
             requestReference=filename,
             deliveryAccountableParty="20168636",  # investigator_identification
@@ -593,7 +593,7 @@ class Command(BaseCommand):
             ]
         else:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
-                "acces_token_bro_portal_provincie_zeeland"
+                "acces_token_bro_portal_bro_connector"
             ]
 
         additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]

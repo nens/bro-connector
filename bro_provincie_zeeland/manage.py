@@ -2,11 +2,24 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from bro_connector_gld.settings.base import ENVIRONMENT
 
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'provincie_zeeland_gld.settings')
+    if ENVIRONMENT == "production":
+        os.environ.setdefault(
+            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.production"
+        )
+    elif ENVIRONMENT == "staging":
+        os.environ.setdefault(
+            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.staging"
+        )    
+    elif ENVIRONMENT == "demo":
+        os.environ.setdefault(
+            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.demo"
+        )
+		
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

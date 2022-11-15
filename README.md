@@ -1,16 +1,16 @@
 
-<img src=provincie_zeeland_gld/static/img/bro_connector_logo.png width="140">
+<img src=bro_connector_gld/static/img/broconnector.png width="140">
 
-# BRO GLD Module Provincie Zeeland
+# BRO-connector
 
-- Django applicatie voor de aanlevering van GLD naar de BRO
-- Gebruik requirements.txt om de virtual environment aan te maken waarbinnen de applicatie kan draaien (gwmpy moet handmatig nog geinstalleerd worden via pip)
+- Django applicatie voor de aanlevering van GLD naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland
+- Gebruik requirements.txt om de virtual environment aan te maken waarbinnen de applicatie kan draaien (bro-exchange moet handmatig nog geinstalleerd worden via pip)
 
 ## Installeren van Django applicatie op server
 
-1. Clone 'bro-provincie-zeeland' naar de server
+1. Clone 'bro-connecor' naar de server
 2. Installeer de python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
-- Hierbij moet het pakketje 'gwmpy' nog los geinstalleerd worden in de environment! Instructies in de repo: https://github.com/nens/gwmpy/
+- Hierbij moet het pakketje 'bro-exchange' nog los geinstalleerd worden in de environment! Instructies in de repo: https://github.com/nens/bro-exchange/
 3. Restore een backup van de database op de server
 - Backup bestand heet 'test_database_backup.sq', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
 - Zorg dat de user bro de juiste rechten heeft om schema's/tabellen te kunnen verwijderen en opnieuw aan te maken!

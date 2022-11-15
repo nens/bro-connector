@@ -6,7 +6,7 @@ import os
 
 from . import models
 
-from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
+from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
 
 
 from gld_aanlevering.management.commands.start_registrations import (create_start_registration_sourcedocs,
@@ -463,7 +463,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         if demo:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_bro_connector']
 
         startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']
         
@@ -490,7 +490,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         if demo:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_bro_connector']
 
         startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']
 
@@ -518,7 +518,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         if demo:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_bro_connector']
 
         startregistrations_dir = GLD_AANLEVERING_SETTINGS['startregistrations_dir']        
         
@@ -590,7 +590,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         if demo:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_bro_connector']
         
         for addition_log in queryset:
             observation_id = addition_log.observation_id
@@ -616,7 +616,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         if demo:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_bro_connector']
                 
         for addition_log in queryset:
             observation_id = addition_log.observation_id
@@ -637,7 +637,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         if demo:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_demo']
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_provincie_zeeland']
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS['acces_token_bro_portal_bro_connector']
 
         for addition_log in queryset:
                

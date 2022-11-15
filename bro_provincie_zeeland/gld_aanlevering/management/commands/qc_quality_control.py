@@ -23,7 +23,7 @@
 
 from django.core.management.base import BaseCommand
 
-import gwmpy as gwm
+import bro_exchange as brx
 import os
 import datetime
 import bisect
@@ -33,8 +33,8 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
-from provincie_zeeland_gld import settings
+from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
+from bro_connector_gld import settings
 from gld_aanlevering import models
 from gld_aanlevering.management.commands.create_addition_sourcedocs import get_measurement_point_metadata_for_measurement, get_timeseries_tvp_for_measurement_time_series_id
 # from create_addition_sourcedocs import get_measurement_point_metadata_for_measurement, get_timeseries_tvp_for_measurement_time_series_id

@@ -3,7 +3,7 @@ from django.db import transaction
 
 import pandas as pd
 import requests
-import gwmpy as gwm
+import bro_exchange as brx
 import json
 import os
 import sys
@@ -12,7 +12,7 @@ import datetime
 import logging
 import bisect
 
-from provincie_zeeland_gld.settings import GLD_AANLEVERING_SETTINGS
+from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
 from gld_aanlevering import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
@@ -52,7 +52,7 @@ def create_start_registration_sourcedocs(
         request_reference = "GLD_StartRegistration_{}_tube_{}".format(
             broidgmw, str(filtrnr)
         )
-        gld_startregistration_request = gwm.gld_registration_request(
+        gld_startregistration_request = brx.gld_registration_request(
             srcdoc="GLD_StartRegistration",
             requestReference=request_reference,
             deliveryAccountableParty=deliveryaccountableparty,
@@ -113,7 +113,7 @@ def validate_gld_startregistration_request(
         source_doc_file = os.path.join(startregistrations_dir, file)
         payload = open(source_doc_file)
 
-        validation_info = gwm.validate_sourcedoc(payload, acces_token_bro_portal, demo)
+        validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, demo)
         validation_status = validation_info["status"]
 
         if "errors" in validation_info:
@@ -181,7 +181,7 @@ def deliver_startregistration_sourcedocuments(
         payload = open(source_doc_file)
         request = {file: payload}
 
-        upload_info = gwm.upload_sourcedocs_from_dict(
+        upload_info = brx.upload_sourcedocs_from_dict(
             request, acces_token_bro_portal, demo
         )
 
@@ -259,7 +259,7 @@ def check_delivery_status_levering(
     levering_id = registration.levering_id
 
     try:
-        upload_info = gwm.check_delivery_status(
+        upload_info = brx.check_delivery_status(
             levering_id, acces_token_bro_portal, demo
         )
         if (
@@ -513,7 +513,7 @@ class Command(BaseCommand):
             ]
         else:
             acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
-                "acces_token_bro_portal_provincie_zeeland"
+                "acces_token_bro_portal_bro_connector"
             ]
 
         monitoringnetworks = GLD_AANLEVERING_SETTINGS["monitoringnetworks"]
