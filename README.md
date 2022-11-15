@@ -10,7 +10,7 @@
 
 1. Clone 'bro-connecor' naar de server
 2. Installeer de python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
-    - Voor het aanmaken en leveren van requests wordt het pakketje 'bro-exchange' gebruikt, voor instructies zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
+    - Voor het aanmaken en leveren van requests wordt het pakketje 'bro-exchange' gebruikt, voor meer informatie zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
 3. Optioneel: restore een backup van de database op de server
     - Backup bestand heet 'test_database_backup.sql', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
     - Zorg dat de user bro de juiste rechten heeft om schema's/tabellen te kunnen verwijderen en opnieuw aan te maken!
@@ -27,7 +27,7 @@
     - Zorg dat het default search path voor de database in 'base.py' op 'django_admin' staat (staat goed in de repo)
     - Initialiseer de admin tabellen voor django door 'python manage.py migrate' te draaien
     - De overige tabellen staan al in de database, maar moeten nog gesynchroniseerd worden met de django applicatie
-    - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate --fake' 
+    - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate' (of python manag.py migrate --fake wanneer stap 3 is uitgevoerd)
     - Maak een superuser met 'python manage.py createsuperuser' 
 
 
