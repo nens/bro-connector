@@ -1,5 +1,5 @@
 
-<img src=bro_connector_gld/static/img/broconnector.png width="140">
+<img src=static/img/broconnector.png width="140">
 
 # BRO-connector
 
