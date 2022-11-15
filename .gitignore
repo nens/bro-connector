@@ -5,3 +5,4 @@
 *.docx
 *.sql
 **/*.dot
+**/*.cmd
