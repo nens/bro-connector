@@ -30,4 +30,8 @@
     - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate' (of python manage.py migrate --fake wanneer stap 3 is uitgevoerd)
     - Maak een superuser met 'python manage.py createsuperuser' 
 
+## Screenshots
 
+<img src=bro_connector/static/img/bro_connector_dashboard.png>
+
+<img src=bro_connector/static/img/bro_connector_gld_log.png>
