@@ -8,9 +8,11 @@
 
 ## Installeren van Django applicatie op server
 
-1. Clone 'bro-connecor' naar de server
-2. Installeer de python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
+1. Clone 'bro-connector' naar de server
+
+2. Installeer een python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
     - Voor het aanmaken en leveren van requests wordt het pakketje 'bro-exchange' gebruikt, voor meer informatie zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
+
 3. Optioneel: restore een backup van de database op de server
     - Backup bestand heet 'test_database_backup.sql', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
     - Zorg dat de user bro de juiste rechten heeft om schema's/tabellen te kunnen verwijderen en opnieuw aan te maken!
@@ -19,10 +21,10 @@
     - (mocht het nodig zijn, maak een nieuwe backup: 'pg_dump -p [port] -h localhost -U postgres --no-owner --clean [your_db] > test_database_backup.sql')
 
 4. Initialiseer de django applicatie
-    - Specifieke instellingen zijn in te stellen in de settings (bro_connector_gld/settings). Daarin zijn er apparte settings voor een productieomgeving, testomgeving en stagingomgeving
+    - Specifieke instellingen staand in de settings (bro_connector_gld/settings). Daarin staan settings voor een productieomgeving, testomgeving en stagingomgeving
     - Inloggegevens worden opgegeven in localsecret.py. Hiervoor is een template toegevoegd (bro_connector_gld/localsecret_template.py). Note: ga altijd zorgvuldig met inloggegevens om.
-    - Geef de juiste database gegevens op in de settings
-    - Stel in de base settings (bro_connector_gld/settings/base.py) de omgeving in onder 'ENVIRONMNENT' (production/test/staging). NOTE: wanneer de production environment wordt gekozen, is de applicatie aangesloten op de productieomgeving van de bronhouderportaal. Bij selectie van test / staging is de applicatie aangesloten op de demo omgeving van de bronhouderportaal
+    - Geef de juiste databasegegevens op in de settings
+    - Stel in de base settings (bro_connector_gld/settings/base.py) de omgeving in onder 'ENVIRONMNENT' (production/test/staging). NOTE: wanneer de production environment wordt gekozen, is de applicatie aangesloten op de productieomgeving van de bronhouderportaal. Bij selectie van test / staging is de applicatie aangesloten op de demo-omgeving van de bronhouderportaal
     - Zorg dat er een schema 'django_admin' in de postgres database staat, hierin komen de admin tabellen (deze zitten niet in de database backup)
     - Zorg dat het default search path voor de database in 'base.py' op 'django_admin' staat (staat goed in de repo)
     - Initialiseer de admin tabellen voor django door 'python manage.py migrate' te draaien
