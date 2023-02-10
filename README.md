@@ -34,6 +34,6 @@
 
 ## Screenshots
 
-<img src=bro_connector/static/img/bro_connector_dashboard.png>
+<img src=bro_connector/static/img/bro_connector_dashboard.PNG>
 
-<img src=bro_connector/static/img/bro_connector_gld_log.png>
+<img src=bro_connector/static/img/bro_connector_gld_log.PNG>
