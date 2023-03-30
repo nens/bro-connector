@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 Provincie Zeeland
+Copyright (c) 2022 Nelen & Schuurmans, Provincie Zeeland
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
