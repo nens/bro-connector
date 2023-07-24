@@ -4,7 +4,7 @@
 # BRO-connector
 
 - Django applicatie voor de aanlevering van grondwatergegevens naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland
-- De BRO-connector ondersteunt de ontsluiting van het registratieobject GLD (grondwaterstanden) en momenteel loopt een de uitbreiding met het berichtenverkeer voor GMW (meetput), GMN (meetnet) en FRD (formatieweerstandonderzoek).
+- De BRO-connector ondersteunt de ontsluiting van het registratieobject GLD (grondwaterstanden) en momenteel wordt gewerkt de uitbreiding met het berichtenverkeer voor GMW (meetput), GMN (meetnet) en FRD (formatieweerstandonderzoek). Deze komt na verwachting eind 2023 beschikbaar.
 - Gebruik requirements.txt om de virtual environment aan te maken waarbinnen de applicatie kan draaien
 
 ## Installeren van Django applicatie op server
