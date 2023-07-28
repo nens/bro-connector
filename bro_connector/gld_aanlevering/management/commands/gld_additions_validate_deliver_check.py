@@ -27,7 +27,7 @@ def validate_gld_addition_source_document(
     payload = open(source_doc_file)
 
     try:
-        validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, demo)
+        validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, demo = demo)
         validation_status = validation_info["status"]
 
         if "errors" in validation_info:
@@ -267,11 +267,13 @@ def check_status_addition(observation, acces_token_bro_portal, demo):
     Check the status of a delivery
     If the delivery has been approved, remove the source document
     """
-
     # Get the GLD addition for this observation
-    gld_addition = models.gld_addition_log.objects.get(
-        observation_id=observation.observation_id
-    )
+    try:
+        gld_addition = models.gld_addition_log.objects.get(
+            observation_id=observation.observation_id
+        )
+    except:
+        return(None)
     file_name = gld_addition.file
     levering_id = gld_addition.levering_id
     delivery_status = gld_addition.levering_status

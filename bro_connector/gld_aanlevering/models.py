@@ -6,6 +6,7 @@
 #   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.contrib.gis.db import models as geo_models
 
 
 #%% GLD Models
@@ -13,12 +14,16 @@ from django.db import models
 
 class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
+    #groundwater_monitoring_tube = models.ForeignKey('GroundwaterMonitoringTubes', on_delete = models.CASCADE,null = True, blank = True)
     groundwater_monitoring_tube_id = models.IntegerField(blank=True, null=True)
     gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
     research_last_correction = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return('{}'.format(str(self.gld_bro_id)))
 
     class Meta:
         managed = True
@@ -27,14 +32,18 @@ class GroundwaterLevelDossier(models.Model):
         verbose_name_plural = "Groundwaterlevel dossier"
 
 
+
 class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
-    qualifier_by_category = models.IntegerField(blank=True, null=True)
-    censored_reason = models.IntegerField(blank=True, null=True)
+    #qualifier_by_category = models.IntegerField(blank=True, null=True)
+    qualifier_by_category = models.ForeignKey('TypeStatusQualityControl', on_delete = models.CASCADE, null = True, blank = True)
+    #censored_reason = models.IntegerField(blank=True, null=True)
+    censored_reason = models.ForeignKey('TypeCensoredReasonCode', on_delete = models.CASCADE, null = True, blank = True)
     qualifier_by_quantity = models.DecimalField(
         max_digits=100, decimal_places=10, blank=True, null=True
     )
-    interpolation_code = models.IntegerField(blank=True, null=True)
+    #interpolation_code = models.IntegerField(blank=True, null=True)
+    interpolation_code = models.ForeignKey('TypeInterpolationCode', models.CASCADE, null = True, blank = True)    
 
     class Meta:
         managed = True
@@ -44,9 +53,35 @@ class MeasurementPointMetadata(models.Model):
         verbose_name_plural = "Measurement point metadata"
 
 
+
 class MeasurementTimeSeries(models.Model):
     measurement_time_series_id = models.AutoField(primary_key=True)
-    observation_id = models.IntegerField(blank=True, null=True)
+    observation = models.ForeignKey('Observation', on_delete = models.CASCADE, null = True, blank = True)
+    #observation_id = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+
+        try:
+            starttime = str(self.observation.observation_starttime.date())
+        except:
+            starttime = '?'
+
+        try:
+            endtime = str(self.observation.observation_endtime.date())
+        except:
+            endtime = '?'
+
+        try:
+            dossier = str(self.observation.groundwater_level_dossier.gld_bro_id)
+        except:
+            dossier = 'Registratie onbekend'
+
+        try:
+            status = str(self.observation.observation_metadata.status)
+        except:
+            status = 'Status onbekend'
+
+        return('{}, {}, {} - {}'.format(dossier, status, starttime, endtime))
 
     class Meta:
         managed = True
@@ -73,7 +108,8 @@ class MeasurementTimeSeries(models.Model):
 
 class MeasurementTvp(models.Model):
     measurement_tvp_id = models.AutoField(primary_key=True)
-    measurement_time_series_id = models.IntegerField(blank=True, null=True)
+    measurement_time_series = models.ForeignKey(MeasurementTimeSeries, on_delete=models.CASCADE, null = True, blank = True)
+    #measurement_time_series_id = models.IntegerField(blank=True, null=True)
     measurement_time = models.DateTimeField(blank=True, null=True)
     field_value = models.DecimalField(
         max_digits=100, decimal_places=10, blank=True, null=True
@@ -85,9 +121,10 @@ class MeasurementTvp(models.Model):
     corrected_value = models.DecimalField(
         max_digits=100, decimal_places=10, blank=True, null=True
     )
-    correction_time = models.DateTimeField(blank=True, null=True)
+    correction_time = models.DateTimeField(blank=True, null=True) 
     correction_reason = models.CharField(max_length=255, blank=True, null=True)
-    measurement_metadata_id = models.IntegerField(blank=True, null=True)
+    measurement_point_metadata = models.ForeignKey('MeasurementPointMetadata', on_delete = models.CASCADE, null = True, blank = True)
+    #measurement_point_metadata_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = True
@@ -102,10 +139,38 @@ class Observation(models.Model):
     observation_starttime = models.DateTimeField(blank=True, null=True)
     result_time = models.DateTimeField(blank=True, null=True)
     observation_endtime = models.DateTimeField(blank=True, null=True)
-    observation_metadata_id = models.IntegerField(blank=True, null=True)
-    observation_process_id = models.IntegerField(blank=True, null=True)
-    groundwater_level_dossier_id = models.IntegerField(blank=True, null=True)
+    observation_metadata = models.ForeignKey('ObservationMetadata' , on_delete = models.CASCADE, null = True, blank = True)
+    #observation_metadata_id = models.IntegerField(blank=True, null=True)
+    observation_process = models.ForeignKey('ObservationProcess', on_delete = models.CASCADE, null = True, blank = True)
+    #observation_process_id = models.IntegerField(blank=True, null=True)
+    groundwater_level_dossier = models.ForeignKey('GroundwaterLevelDossier', on_delete = models.CASCADE, null = True, blank = True)
+    #groundwater_level_dossier_id = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+
+        try:
+            starttime = str(self.observation_starttime.date())
+        except:
+            starttime = '?'
+
+        try:
+            endtime = str(self.observation_endtime.date())
+        except:
+            endtime = '?'
+
+        try:
+            dossier = str(self.groundwater_level_dossier.gld_bro_id)
+        except:
+            dossier = 'Registratie onbekend'
+
+        try:
+            status = str(self.observation_metadata.status)
+        except:
+            status = 'Status onbekend'
+
+        return('{}, {}, {} - {}'.format(dossier, status, starttime, endtime))
+
 
     class Meta:
         managed = True
@@ -117,9 +182,15 @@ class Observation(models.Model):
 class ObservationMetadata(models.Model):
     observation_metadata_id = models.AutoField(primary_key=True)
     date_stamp = models.DateField(blank=True, null=True)
-    parameter_measurement_serie_type = models.IntegerField(blank=True, null=True)
-    status = models.IntegerField(blank=True, null=True)
-    responsible_party_id = models.IntegerField(blank=True, null=True)
+    # parameter_measurement_serie_type = models.IntegerField(blank=True, null=True) 
+    parameter_measurement_serie_type = models.ForeignKey('TypeObservationType', blank=True,  null=True, on_delete = models.CASCADE) 
+    #status = models.IntegerField(blank=True, null=True) 
+    status = models.ForeignKey('TypeStatusCode', on_delete = models.CASCADE, null = True, blank = True) 
+    #responsible_party_id = models.IntegerField(blank=True, null=True)
+    responsible_party = models.ForeignKey('ResponsibleParty', on_delete = models.CASCADE, null = True, blank = True)
+
+    def __str__(self):
+        return('{}, {}, {}'.format(str(self.date_stamp),str(self.status.value),self.responsible_party.organisation_name))
 
     class Meta:
         managed = True
@@ -130,13 +201,21 @@ class ObservationMetadata(models.Model):
 
 class ObservationProcess(models.Model):
     observation_process_id = models.AutoField(primary_key=True)
-    process_reference = models.IntegerField(blank=True, null=True)
-    parameter_measurement_instrument_type = models.IntegerField(blank=True, null=True)
-    parameter_air_pressure_compensation_type = models.IntegerField(
-        blank=True, null=True
-    )
-    process_type = models.IntegerField(blank=True, null=True)
-    parameter_evaluation_procedure = models.IntegerField(blank=True, null=True)
+    #process_reference = models.IntegerField(blank=True, null=True)
+    process_reference = models.ForeignKey('TypeProcessReference', on_delete=models.CASCADE, blank = True, null = True)
+    #parameter_measurement_instrument_type = models.IntegerField(blank=True, null=True)
+    parameter_measurement_instrument_type = models.ForeignKey('TypeMeasurementInstrumentType', on_delete=models.CASCADE, null = True, blank = True)
+    # parameter_air_pressure_compensation_type = models.IntegerField(
+    #     blank=True, null=True
+    # )
+    parameter_air_pressure_compensation_type = models.ForeignKey('TypeAirPressureCompensation', on_delete=models.CASCADE, null = True, blank = True)
+    #process_type = models.IntegerField(blank=True, null=True)    
+    process_type = models.ForeignKey('TypeProcessType', on_delete=models.CASCADE, null = True, blank = True)
+    #parameter_evaluation_procedure = models.IntegerField(blank=True, null=True)
+    parameter_evaluation_procedure = models.ForeignKey('TypeEvaluationProcedure', on_delete=models.CASCADE, null = True, blank = True)
+
+    def __str__(self):
+        return(str(self.observation_process_id))
 
     class Meta:
         managed = True
@@ -147,7 +226,7 @@ class ObservationProcess(models.Model):
 
 class ResponsibleParty(models.Model):
     responsible_party_id = models.AutoField(primary_key=True)
-    identification = models.IntegerField(blank=True, null=True)
+    identification = models.IntegerField(blank=True, null=True) 
     organisation_name = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
@@ -156,6 +235,8 @@ class ResponsibleParty(models.Model):
         verbose_name = "Responsible party"
         verbose_name_plural = "Responsible party"
 
+    def __str__(self):
+        return "{}".format(self.organisation_name)
 
 class TypeAirPressureCompensation(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -169,6 +250,8 @@ class TypeAirPressureCompensation(models.Model):
         db_table = 'gld"."type_air_pressure_compensation'
         verbose_name_plural = "Air pressure compensation"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeCensoredReasonCode(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -182,6 +265,8 @@ class TypeCensoredReasonCode(models.Model):
         db_table = 'gld"."type_censored_reason_code'
         verbose_name_plural = "Censor reasons"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeEvaluationProcedure(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -195,6 +280,8 @@ class TypeEvaluationProcedure(models.Model):
         db_table = 'gld"."type_evaluation_procedure'
         verbose_name_plural = "Evaluation procedures"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeInterpolationCode(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -208,6 +295,8 @@ class TypeInterpolationCode(models.Model):
         db_table = 'gld"."type_interpolation_code'
         verbose_name_plural = "Interpolation codes"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeMeasurementInstrumentType(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -221,6 +310,8 @@ class TypeMeasurementInstrumentType(models.Model):
         db_table = 'gld"."type_measurement_instrument_type'
         verbose_name_plural = "Measurement instrument types"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeObservationType(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -234,6 +325,8 @@ class TypeObservationType(models.Model):
         db_table = 'gld"."type_observation_type'
         verbose_name_plural = "Observation types"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeProcessReference(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -247,6 +340,8 @@ class TypeProcessReference(models.Model):
         db_table = 'gld"."type_process_reference'
         verbose_name_plural = "Process references"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeProcessType(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -260,6 +355,8 @@ class TypeProcessType(models.Model):
         db_table = 'gld"."type_process_type'
         verbose_name_plural = "Process types"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeStatusCode(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -273,6 +370,8 @@ class TypeStatusCode(models.Model):
         db_table = 'gld"."type_status_code'
         verbose_name_plural = "Status codes"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 class TypeStatusQualityControl(models.Model):
     id = models.IntegerField(blank=True, primary_key=True)
@@ -286,20 +385,29 @@ class TypeStatusQualityControl(models.Model):
         db_table = 'gld"."type_status_quality_control'
         verbose_name_plural = "Quality control types"
 
+    def __str__(self):
+        return "{}".format(self.value)
 
 #%% GMW Models
 
 
 class DeliveredLocations(models.Model):
     location_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
-    coordinates = models.TextField(blank=True, null=True)  # This field type is a guess.
+    groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWells', on_delete = models.CASCADE, null = True, blank = True)
+    #groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
+    coordinates = geo_models.PointField(srid=28992, blank=True, null=True, editable=False)  # This field type is a guess.
     referencesystem = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
     horizontal_positioning_method = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
+
+    def x(self):
+        return self.coordinates.x
+
+    def y(self):
+        return self.coordinates.y
 
     class Meta:
         managed = True
@@ -309,7 +417,8 @@ class DeliveredLocations(models.Model):
 
 class DeliveredVerticalPositions(models.Model):
     vertical_position_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
+    groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWells', on_delete = models.CASCADE, null = True, blank = True)
+    #groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
     local_vertical_reference_point = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
@@ -374,6 +483,10 @@ class GroundwaterMonitoringWells(models.Model):
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     delivered_to_bro = models.BooleanField(blank=False, default=False)
 
+    def __str__(self):
+        return(self.bro_id)
+
+
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_wells'
@@ -382,7 +495,8 @@ class GroundwaterMonitoringWells(models.Model):
 
 class GroundwaterMonitoringTubes(models.Model):
     groundwater_monitoring_tube_id = models.IntegerField(primary_key=True)
-    groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
+    groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWells', on_delete = models.CASCADE, null = True, blank = True)
+    #groundwater_monitoring_well_id = models.IntegerField(blank=True, null=True)
     deliver_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(blank=True, null=True)
     tube_type = models.TextField(blank=True, null=True)  # This field type is a guess.
@@ -423,6 +537,15 @@ class GroundwaterMonitoringTubes(models.Model):
     sediment_sump_length = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
+
+    def __str__(self):
+
+        try:
+            well = str(self.groundwater_monitoring_well.bro_id)
+        except:
+            well = 'Onbekend'
+
+        return('{}, tube {}'.format(well , self.tube_number))
 
     class Meta:
         managed = True

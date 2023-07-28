@@ -33,9 +33,9 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
-from bro_connector_gld import settings
+from bro_connector_gld.settings import base as settings
 from gld_aanlevering import models
-from gld_aanlevering.management.commands.create_addition_sourcedocs import (
+from gld_aanlevering.management.commands.gld_additions_create import (
     get_measurement_point_metadata_for_measurement,
     get_timeseries_tvp_for_measurement_time_series_id,
 )
@@ -116,7 +116,7 @@ def QC_check_main(observation, qc_settings):
     # Create measurement list with all values of the timeseriesset
     measurements_list = []
     for tvp in timeseries_set:
-        measurement_point_metadata_id = tvp.measurement_metadata_id
+        measurement_point_metadata_id = tvp.measurement_point_metadata_id
         metadata = get_measurement_point_metadata_for_measurement(
             measurement_point_metadata_id
         )
@@ -125,7 +125,7 @@ def QC_check_main(observation, qc_settings):
             waterstand_waarde / field_value_division_dict[tvp.field_value_unit]
         )  # cm or mm to m
         measurement_data = {
-            "metadata_id": tvp.measurement_metadata_id,
+            "metadata_id": tvp.measurement_point_metadata_id,
             "time": tvp.measurement_time.isoformat(),
             "value": waterstand_waarde_converted,
             "metadata": metadata,
@@ -238,7 +238,7 @@ def QC_check_main(observation, qc_settings):
         record, created = models.MeasurementPointMetadata.objects.update_or_create(
             measurement_point_metadata_id=measurements_df.loc[rij, "metadata_id"],
             defaults={
-                "qualifier_by_category": StatusQualityControl,
+                "qualifier_by_category_id": StatusQualityControl,
             },
         )
 
@@ -286,7 +286,7 @@ class Command(BaseCommand):
                 observation_metadata_id=observation_metadata_id
             )
             observation_type = models.TypeObservationType.objects.get(
-                id=observation_metadata.parameter_measurement_serie_type
+                id=observation_metadata.parameter_measurement_serie_type_id
             ).value
 
             # Perform qc-check only on observations that are reguliere meting
@@ -311,7 +311,7 @@ class Command(BaseCommand):
             # after qc-check has happened, change observation metadata status
             record, created = models.ObservationMetadata.objects.update_or_create(
                 observation_metadata_id=observation_metadata_id,
-                defaults={"status": "2"},  # status is voorlopigBeoordeeld (2)
+                defaults={"status_id": "2"},  # status is voorlopigBeoordeeld (2)
             )
             # print('Voor observatie id', observation_id,'aantal afgekeurde meetparen =', afgekeurd_counter, 'en aantal goedgekeurd =', goedgekeurd_counter)
             # break

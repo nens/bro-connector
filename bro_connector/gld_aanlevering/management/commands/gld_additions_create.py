@@ -46,30 +46,30 @@ def get_measurement_point_metadata_for_measurement(measurement_point_metadata_id
     )
 
     if models.TypeStatusQualityControl.objects.filter(
-        id=measurement_point_metadata.qualifier_by_category
+        id=measurement_point_metadata.qualifier_by_category_id
     ).exists():
         status_qualitycontrol_data = models.TypeStatusQualityControl.objects.get(
-            id=measurement_point_metadata.qualifier_by_category
+            id=measurement_point_metadata.qualifier_by_category_id
         )
         status_qualitycontrol = status_qualitycontrol_data.value
     else:
         status_qualitycontrol = None
 
     if models.TypeInterpolationCode.objects.filter(
-        id=measurement_point_metadata.interpolation_code
+        id=measurement_point_metadata.interpolation_code_id
     ).exists():
         interpolation_type_data = models.TypeInterpolationCode.objects.get(
-            id=measurement_point_metadata.interpolation_code
+            id=measurement_point_metadata.interpolation_code_id
         )
         interpolation_type = interpolation_type_data.value
     else:
         interpolation_type = None
 
     if models.TypeCensoredReasonCode.objects.filter(
-        id=measurement_point_metadata.censored_reason
+        id=measurement_point_metadata.censored_reason_id
     ).exists():
         censored_reason_data = models.TypeCensoredReasonCode.objects.get(
-            id=measurement_point_metadata.censored_reason
+            id=measurement_point_metadata.censored_reason_id
         )
         censored_reason = censored_reason_data.value
     else:
@@ -120,7 +120,7 @@ def get_timeseries_tvp_for_measurement_time_series_id(measurement_time_series_id
     )
     measurements_list = []
     for measurement in measurement_tvp:
-        measurement_point_metadata_id = measurement.measurement_metadata_id
+        measurement_point_metadata_id = measurement.measurement_point_metadata_id
         metadata = get_measurement_point_metadata_for_measurement(
             measurement_point_metadata_id
         )
@@ -177,7 +177,7 @@ def get_observation_metadata(observation_metadata_id):
         principal_investigator_data.identification
     )  # kvk number
 
-    observation_type_id = observation_metadata.parameter_measurement_serie_type
+    observation_type_id = observation_metadata.parameter_measurement_serie_type_id
     observation_type_data = models.TypeObservationType.objects.get(
         id=observation_type_id
     )
@@ -185,12 +185,12 @@ def get_observation_metadata(observation_metadata_id):
         observation_type_data.value
     )  # value = reguliereMeting or controlemeting
 
-    type_status_data = models.TypeStatusCode.objects.get(id=observation_metadata.status)
+    type_status_data = models.TypeStatusCode.objects.get(id=observation_metadata.status_id)
     status = type_status_data.value  # value = onbekend, voorlopig or volledigBeoordeeld
 
     date_stamp = observation_metadata.date_stamp.isoformat()
 
-    observation_metadata = {"observationType": observation_type_value}
+    observation_metadata = {"observationType": observation_type_value, 'principalInvestigator':investigator_identification}
 
     return observation_metadata, status, date_stamp, investigator_identification
 
@@ -207,7 +207,7 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
     )
 
     parameter_air_pressure_compensation_type_id = (
-        observation_process_data.parameter_air_pressure_compensation_type
+        observation_process_data.parameter_air_pressure_compensation_type_id
     )
     air_pressure_compensation_data = models.TypeAirPressureCompensation.objects.get(
         id=parameter_air_pressure_compensation_type_id
@@ -215,7 +215,7 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
     air_pressure_compensation_type = air_pressure_compensation_data.value
 
     parameter_measurement_instrument_type_id = (
-        observation_process_data.parameter_measurement_instrument_type
+        observation_process_data.parameter_measurement_instrument_type_id
     )
     measurement_instrument_type_data = models.TypeMeasurementInstrumentType.objects.get(
         id=parameter_measurement_instrument_type_id
@@ -223,7 +223,7 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
     measurement_instrument_type = measurement_instrument_type_data.value
 
     parameter_evaluation_procedure_id = (
-        observation_process_data.parameter_evaluation_procedure
+        observation_process_data.parameter_evaluation_procedure_id
     )
     evaluation_procedure_data = models.TypeEvaluationProcedure.objects.get(
         id=parameter_evaluation_procedure_id
@@ -345,7 +345,7 @@ def get_gld_registration_data_for_observation(observation):
     # Get the quality regime for the well
     # TODO quality regime changes, new well in database?
     gmw_well = models.GroundwaterMonitoringWells.objects.get(bro_id=gmw_bro_id)
-    quality_regime = gmw_well.quality_regime
+    quality_regime = 'IMBRO' #gmw_well.quality_regime
 
     return gld_bro_id, quality_regime
 
@@ -392,7 +392,7 @@ def generate_gld_addition_sourcedoc_data(
         gld_addition_registration_request = brx.gld_registration_request(
             srcdoc="GLD_Addition",
             requestReference=filename,
-            deliveryAccountableParty="20168636",  # investigator_identification
+            deliveryAccountableParty="27376655",  # investigator_identification (NENS voor TEST)
             qualityRegime=quality_regime,
             broId=gld_bro_id,
             srcdocdata=gld_addition_sourcedocument,
@@ -400,7 +400,7 @@ def generate_gld_addition_sourcedoc_data(
 
         gld_addition_registration_request.generate()
 
-        gld_addition_registration_request.write_xml(
+        gld_addition_registration_request.write_request(
             output_dir=additions_dir, filename=filename
         )
 
@@ -521,6 +521,7 @@ def create_addition_sourcedocuments_for_observations(
         if not observation_tvps:  # if there are no tvps in the observation
             continue  # then do nothing
 
+        
         # observation contains tvps, check observation status and type
         # Get the observation metadata
         observation_metadata_id = observation.observation_metadata_id
@@ -528,7 +529,7 @@ def create_addition_sourcedocuments_for_observations(
             observation_metadata_id=observation_metadata_id
         )
         observation_type = models.TypeObservationType.objects.get(
-            id=observation_metadata.parameter_measurement_serie_type
+            id=observation_metadata.parameter_measurement_serie_type_id
         ).value
 
         if observation.status is None and observation_type == "controlemeting":

@@ -62,7 +62,7 @@ def create_start_registration_sourcedocs(
 
         filename = request_reference + ".xml"
         gld_startregistration_request.generate()
-        gld_startregistration_request.write_xml(
+        gld_startregistration_request.write_request(
             output_dir=startregistrations_dir, filename=filename
         )
 
@@ -113,7 +113,8 @@ def validate_gld_startregistration_request(
         source_doc_file = os.path.join(startregistrations_dir, file)
         payload = open(source_doc_file)
 
-        validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, demo)
+        validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, demo = demo)
+        #print(validation_info)
         validation_status = validation_info["status"]
 
         if "errors" in validation_info:
@@ -182,7 +183,7 @@ def deliver_startregistration_sourcedocuments(
         request = {file: payload}
 
         upload_info = brx.upload_sourcedocs_from_dict(
-            request, acces_token_bro_portal, demo
+            request, acces_token_bro_portal, demo = demo
         )
 
         if upload_info == "Error":
@@ -260,7 +261,7 @@ def check_delivery_status_levering(
 
     try:
         upload_info = brx.check_delivery_status(
-            levering_id, acces_token_bro_portal, demo
+            levering_id, acces_token_bro_portal, demo = demo
         )
         if (
             upload_info.json()["status"] == "DOORGELEVERD"
@@ -342,10 +343,15 @@ def gld_start_registration_wells(
         if well.delivered_to_bro == False:
             # ignore wells that are not registrated on purpose
             continue
+        
+        if demo == True:
+            #print(well.bro_id)
+            if well.bro_id != 'GMW000000042583':
+                continue
 
         # Get some well properties
         registration_object_id_well = well.groundwater_monitoring_well_id
-        quality_regime = well.quality_regime
+        quality_regime = 'IMBRO'
         gwm_bro_id = well.bro_id
 
         # Get all filters that are installed in this well
@@ -419,9 +425,11 @@ def gld_check_existing_startregistrations(
         registration_id = registration.id
 
         # Tijdelijk:
-        if demo == True and registration.gld_bro_id is None:
-            continue
+        # if demo == True and registration.gld_bro_id is None:
+        #     continue
         # Tijdelijk tot hier
+
+        
 
         if (
             get_registration_process_status(registration_id)
@@ -530,11 +538,13 @@ class Command(BaseCommand):
         monitoringnetworks = GLD_AANLEVERING_SETTINGS["monitoringnetworks"]
         startregistrations_dir = GLD_AANLEVERING_SETTINGS["startregistrations_dir"]
 
+        #print('start registrations')
         # Check the database for new wells/tubes and start a GLD registration for these objects if its it needed
         registration = gld_start_registration_wells(
             acces_token_bro_portal, monitoringnetworks, startregistrations_dir, demo
         )
 
+        #print('check status')
         # Check existing registrations
         check = gld_check_existing_startregistrations(
             acces_token_bro_portal, startregistrations_dir, demo

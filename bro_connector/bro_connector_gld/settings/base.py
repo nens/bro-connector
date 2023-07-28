@@ -48,9 +48,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "gld_aanlevering",
+    #"django.contrib.gis",
     "django_admin_generator",
     "admin_reorder",
 ]
+
+MAP_WIDGETS = {
+    "GooglePointFieldWidget": (
+        ("zoom", 15),
+        #("mapCenterLocationName", "london"),
+        ("GooglePlaceAutocompleteOptions", {'componentRestrictions': {'country': 'netherlands'}}),
+        ("markerFitZoom", 12),
+    ),
+    "GOOGLE_MAP_API_KEY": "<google-api-key>"
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -203,8 +214,10 @@ ADMIN_REORDER = (
 
 if ENVIRONMENT == "production":
     demo = False
+    welcome_sign = 'Inloggen'
 else:
     demo = True
+    welcome_sign = 'Inloggen (testomgeving)'
 
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
@@ -233,6 +246,7 @@ QUICK_SCAN_SETTINGS = {
 
 JAZZMIN_SETTINGS = {
     "site_logo": os.path.join(BASE_DIR, "static/img/broconnector.png"),
+    "welcome_sign": welcome_sign,
     "order_with_respect_to": [
         "auth",
         "gld_aanlevering.gld_registration_log",
@@ -283,12 +297,9 @@ JAZZMIN_SETTINGS = {
         "gld_aanlevering.DeliveredLocations": "fas fa-map-marker-alt",
         "gld_aanlevering.DeliveredVerticalPositions": "fas fa-ruler-vertical",
     },
+    "changeform_format_overrides": {"gld_aanlevering.DeliveredLocations": "single"}
 }
 
-JAZZMIN_UI_TWEAKS = {
-    "theme": "spacelab",
-    "dark_mode_theme": "darkly",
-}
 
 GRAPH_MODELS = {
     "all_applications": True,

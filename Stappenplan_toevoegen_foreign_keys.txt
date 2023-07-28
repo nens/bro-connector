@@ -1,0 +1,6 @@
+1. Voeg de nieuwe template toe
+2. fake de delete van de id velden (behalve measurement_metadata)
+
+3. Door het template toe te voegen worden de relaties tussen de typeringen omgedoopt tot foreign keys.
+ER van uitgaande dat er nog niet van dit soort informatie is ontsloten, kan deze conversie gedaan worden. 
+Anders zullen de typeringen nog eerst omgemapped moeten worden.

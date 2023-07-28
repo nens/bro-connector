@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib import messages
 from django.utils.translation import ngettext
 
+
 import os
 
 from . import models
@@ -9,7 +10,7 @@ from . import models
 from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
 
 
-from gld_aanlevering.management.commands.start_registrations import (
+from gld_aanlevering.management.commands.gld_registrations_create import (
     create_start_registration_sourcedocs,
     validate_gld_startregistration_request,
     deliver_startregistration_sourcedocuments,
@@ -17,12 +18,12 @@ from gld_aanlevering.management.commands.start_registrations import (
 )
 
 
-from gld_aanlevering.management.commands.create_addition_sourcedocs import (
+from gld_aanlevering.management.commands.gld_additions_create import (
     get_observation_gld_source_document_data,
     generate_gld_addition_sourcedoc_data,
 )
 
-from gld_aanlevering.management.commands.validate_deliver_check import (
+from gld_aanlevering.management.commands.gld_additions_validate_deliver_check import (
     validate_gld_addition_source_document,
     deliver_gld_addition_source_document,
     check_status_gld_addition,
@@ -76,8 +77,8 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
 
 class MeasurementTimeSeriesAdmin(admin.ModelAdmin):
 
-    list_display = ("measurement_time_series_id",)
-    list_filter = ("measurement_time_series_id",)
+    list_display = ("measurement_time_series_id","observation",)
+    list_filter = ("measurement_time_series_id","observation",)
 
 
 # class MeasurementTimeseriesTvpObservationAdmin(admin.ModelAdmin):
@@ -115,7 +116,8 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "corrected_value",
         "correction_time",
         "correction_reason",
-        "measurement_metadata_id",
+        #"measurement_point_metadata_id",
+        "measurement_point_metadata"
     )
     list_filter = (
         "measurement_time",
@@ -129,7 +131,8 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "corrected_value",
         "correction_time",
         "correction_reason",
-        "measurement_metadata_id",
+        #"measurement_point_metadata_id",
+        "measurement_point_metadata"
     )
 
 
@@ -141,7 +144,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_starttime",
         "observation_endtime",
         "observation_metadata_id",
-        "observation_process_id",
+        "observation_process",#
         "groundwater_level_dossier_id",
         "result_time",
         "status",
@@ -152,7 +155,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_starttime",
         "observation_endtime",
         "observation_metadata_id",
-        "observation_process_id",
+        "observation_process",#
         "groundwater_level_dossier_id",
         "result_time",
         "status",
@@ -353,9 +356,29 @@ class TypeStatusQualityControlAdmin(admin.ModelAdmin):
 
 
 #%% GMW model registration
+from django import forms
+from django.contrib.gis.geos import GEOSGeometry, LineString, Point
+
+class DeliveredLocationsForm(forms.ModelForm):
+    x = forms.CharField(required=True)
+    y = forms.CharField(required=True)
+
+    class Meta:
+        model = models.DeliveredLocations
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Wijs de waarde toe aan het initial attribuut van het veld
+        if self.instance.coordinates:
+            self.fields['x'].initial = self.instance.x
+            self.fields['y'].initial =  self.instance.y
 
 
 class DeliveredLocationsAdmin(admin.ModelAdmin):
+
+    form = DeliveredLocationsForm
 
     list_display = (
         "location_id",
@@ -364,6 +387,30 @@ class DeliveredLocationsAdmin(admin.ModelAdmin):
         "referencesystem",
         "horizontal_positioning_method",
     )
+
+
+    fieldsets = [
+        ('', {
+            'fields': ['groundwater_monitoring_well', 
+                       'referencesystem',
+                        'horizontal_positioning_method',               
+                       ],
+        }),
+        ('Coordinates', {
+            'fields': ['x', 'y'],
+        }),
+    ]
+
+    def save_model(self, request, obj, form, change):
+        # Haal de waarden van de afgeleide attributen op uit het formulier
+        x = form.cleaned_data['x']
+        y = form.cleaned_data['y']
+
+        # Werk de waarden van de afgeleide attributen bij in het model
+        obj.coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
+
+        # Sla het model op
+        obj.save()
 
 
 class DeliveredVerticalPositionsAdmin(admin.ModelAdmin):
