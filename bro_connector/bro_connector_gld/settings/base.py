@@ -40,6 +40,9 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "jazzmin",
+    "gld_aanlevering",
+    "gmw_aanlevering",
+    "admin_reorder",
     "django_extensions",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -47,10 +50,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "gld_aanlevering",
     "django.contrib.gis",
     "django_admin_generator",
-    "admin_reorder",
 ]
 
 MAP_WIDGETS = {
@@ -201,13 +202,13 @@ ADMIN_REORDER = (
         ),
     },
     {
-        "app": "gld_aanlevering",
+        "app": "gmw_aanlevering",
         "label": "Grondwatermonitoring data",  # Provincie Zeeland GWM - Data
         "models": (
-            "gld_aanlevering.GroundwaterMonitoringWells",
-            "gld_aanlevering.GroundwaterMonitoringTubes",
-            "gld_aanlevering.DeliveredLocations",
-            "gld_aanlevering.DeliveredVerticalPositions",
+            "gmw_aanlevering.GroundwaterMonitoringWells",
+            "gmw_aanlevering.GroundwaterMonitoringTubes",
+            "gmw_aanlevering.DeliveredLocations",
+            "gmw_aanlevering.DeliveredVerticalPositions",
         ),
     },
 )
