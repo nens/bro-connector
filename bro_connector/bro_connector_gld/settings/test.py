@@ -22,7 +22,7 @@ SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!
 DATABASES = {
     "default": {
         "NAME": "grondwatermeetnet",
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
         "USER": t_user,
         "PASSWORD": t_password,
         "HOST": t_host,

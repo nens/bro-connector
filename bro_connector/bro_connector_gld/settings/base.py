@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "gld_aanlevering",
-    #"django.contrib.gis",
+    "django.contrib.gis",
     "django_admin_generator",
     "admin_reorder",
 ]
@@ -102,7 +102,7 @@ WSGI_APPLICATION = "bro_connector_gld.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "grondwatermeetnet",
         "USER": p_user,
         "PASSWORD": p_password,
