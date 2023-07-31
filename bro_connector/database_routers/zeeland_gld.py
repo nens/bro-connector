@@ -18,12 +18,19 @@ from gld_aanlevering.models import (
     TypeProcessType,
     TypeStatusCode,
     TypeStatusQualityControl,
-    DeliveredLocations,
-    DeliveredVerticalPositions,
-    GroundwaterMonitoringWells,
-    GroundwaterMonitoringTubes,
     gld_registration_log,
     gld_addition_log,
+)
+
+from gmw_aanlevering.models import (
+    GroundwaterMonitoringWellStatic,
+    GroundwaterMonitoringWellDynamic,
+    GroundwaterMonitoringTubesStatic,
+    GroundwaterMonitoringTubesDynamic,
+    GeoOhmCable,
+    ElectrodeStatic,
+    ElectrodeDynamic,
+    ChangeLog,
 )
 
 GLD_MODELS = [
@@ -49,10 +56,14 @@ GLD_MODELS = [
 ]
 
 GWM_MODELS = [
-    DeliveredLocations,
-    DeliveredVerticalPositions,
-    GroundwaterMonitoringWells,
-    GroundwaterMonitoringTubes,
+    GroundwaterMonitoringWellStatic,
+    GroundwaterMonitoringWellDynamic,
+    GroundwaterMonitoringTubesStatic,
+    GroundwaterMonitoringTubesDynamic,
+    GeoOhmCable,
+    ElectrodeStatic,
+    ElectrodeDynamic,
+    ChangeLog, 
 ]
 
 AANLEVERING_MODELS = [gld_registration_log, gld_addition_log]

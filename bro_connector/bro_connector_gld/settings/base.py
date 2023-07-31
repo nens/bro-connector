@@ -203,12 +203,17 @@ ADMIN_REORDER = (
     },
     {
         "app": "gmw_aanlevering",
-        "label": "Grondwatermonitoring data",  # Provincie Zeeland GWM - Data
+        "label": "Grondwatermonitoring data - Statische Data",  # Provincie Zeeland GWM - Data
         "models": (
-            "gmw_aanlevering.GroundwaterMonitoringWells",
-            "gmw_aanlevering.GroundwaterMonitoringTubes",
-            "gmw_aanlevering.DeliveredLocations",
-            "gmw_aanlevering.DeliveredVerticalPositions",
+            "gmw_aanlevering.GroundwaterMonitoringWellStatic",
+            "gmw_aanlevering.GroundwaterMonitoringWellDynamic",
+            "gmw_aanlevering.GroundwaterMonitoringTubesStatic",
+            "gmw_aanlevering.GroundwaterMonitoringTubesDynamic",
+            "gmw_aanlevering.GeoOhmCable",
+            "gmw_aanlevering.ElectrodeStatic",
+            "gmw_aanlevering.ElectrodeDynamic",
+            "gmw_aanlevering.ChangeLog",
+
         ),
     },
 )
@@ -293,12 +298,17 @@ JAZZMIN_SETTINGS = {
         "gld_aanlevering.TypeProcessType": "fas fa-book-open",
         "gld_aanlevering.TypeStatusCode": "fas fa-book-open",
         "gld_aanlevering.TypeStatusQualityControl": "fas fa-book-open",
-        "gld_aanlevering.GroundwaterMonitoringWells": "fas fa-tint",
-        "gld_aanlevering.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
-        "gld_aanlevering.DeliveredLocations": "fas fa-map-marker-alt",
-        "gld_aanlevering.DeliveredVerticalPositions": "fas fa-ruler-vertical",
+        "gmw_aanlevering.GroundwaterMonitoringWellStatic": "fas fa-tint",
+        "gmw_aanlevering.GroundwaterMonitoringWellDynamic": "fas fa-tint",
+        "gmw_aanlevering.GroundwaterMonitoringTubesStatic": "fas fa-tint",
+        "gmw_aanlevering.GroundwaterMonitoringTubesDynamic": "fas fa-tint",
+        "gmw_aanlevering.GeoOhmCable": "fas fa-tint",
+        "gmw_aanlevering.ElectrodeStatic": "fas fa-tint",
+        "gmw_aanlevering.ElectrodeDynamic": "fas fa-tint",
+        "gmw_aanlevering.ChangeLog": "fas fa-book-open",
+        # "gmw_aanlevering.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
     },
-    "changeform_format_overrides": {"gld_aanlevering.DeliveredLocations": "single"}
+    "changeform_format_overrides": {"gmw_aanlevering.GroundwaterMonitoringWellStatic": "single"}
 }
 
 
