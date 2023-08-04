@@ -138,7 +138,7 @@ class GroundwaterMonitoringTubesStatic(models.Model):
 
 class GroundwaterMonitoringTubesDynamic(models.Model):
     groundwater_monitoring_tube_dynamic_id = models.IntegerField(primary_key=True)
-    groundwater_monitoring_tube_static_id = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
+    groundwater_monitoring_tube_static_id = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
     tube_top_diameter = models.IntegerField(blank=True, null=True)
     variable_diameter = models.TextField(
         blank=True, null=True
@@ -183,7 +183,7 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
 
 class GeoOhmCable(models.Model):
     geo_ohm_cable_id = models.IntegerField(primary_key=True)
-    groundwater_monitoring_tube_static_id = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
+    groundwater_monitoring_tube_static_id = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
     cable_number = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
