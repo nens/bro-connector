@@ -30,7 +30,7 @@ from gmw_aanlevering.models import (
     GeoOhmCable,
     ElectrodeStatic,
     ElectrodeDynamic,
-    ChangeLog,
+    Event,
 )
 
 GLD_MODELS = [
@@ -63,7 +63,7 @@ GWM_MODELS = [
     GeoOhmCable,
     ElectrodeStatic,
     ElectrodeDynamic,
-    ChangeLog, 
+    Event, 
 ]
 
 AANLEVERING_MODELS = [gld_registration_log, gld_addition_log]

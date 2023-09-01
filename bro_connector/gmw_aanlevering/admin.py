@@ -186,7 +186,7 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
     )
     list_filter = ("electrode_dynamic_id",)
 
-class ChangeLogAdmin(admin.ModelAdmin):
+class EventAdmin(admin.ModelAdmin):
 
     list_display = (
         "change_id",
@@ -208,4 +208,4 @@ _register(models.GroundwaterMonitoringTubesDynamic, GroundwaterMonitoringTubesDy
 _register(models.GeoOhmCable, GeoOhmCableAdmin)
 _register(models.ElectrodeStatic, ElectrodeStaticAdmin)
 _register(models.ElectrodeDynamic, ElectrodeDynamicAdmin)
-_register(models.ChangeLog, ChangeLogAdmin)
+_register(models.Event, EventAdmin)

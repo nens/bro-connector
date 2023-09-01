@@ -212,7 +212,7 @@ ADMIN_REORDER = (
             "gmw_aanlevering.GeoOhmCable",
             "gmw_aanlevering.ElectrodeStatic",
             "gmw_aanlevering.ElectrodeDynamic",
-            "gmw_aanlevering.ChangeLog",
+            "gmw_aanlevering.Event",
 
         ),
     },
@@ -305,7 +305,7 @@ JAZZMIN_SETTINGS = {
         "gmw_aanlevering.GeoOhmCable": "fas fa-tint",
         "gmw_aanlevering.ElectrodeStatic": "fas fa-tint",
         "gmw_aanlevering.ElectrodeDynamic": "fas fa-tint",
-        "gmw_aanlevering.ChangeLog": "fas fa-book-open",
+        "gmw_aanlevering.Event": "fas fa-book-open",
         # "gmw_aanlevering.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
     },
     "changeform_format_overrides": {"gmw_aanlevering.GroundwaterMonitoringWellStatic": "single"}

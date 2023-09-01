@@ -231,13 +231,14 @@ class ElectrodeDynamic(models.Model):
         db_table = 'gmw"."electrodes_dynamic'
         verbose_name_plural = "Electrodes (Dynamic)"
 
-class ChangeLog(models.Model):
+class Event(models.Model):
     change_id = models.IntegerField(primary_key=True)
     scenario_type =  models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
     change_datetime = models.DateTimeField(blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
+    groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_tubes_dynamic = models.ForeignKey('GroundwaterMonitoringTubesDynamic', on_delete = models.CASCADE, null = True, blank = True)   
     electrode_dynamic = models.ForeignKey('ElectrodeDynamic', on_delete = models.CASCADE, null = True, blank = True)
 
@@ -248,5 +249,5 @@ class ChangeLog(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."changelog'
-        verbose_name_plural = "ChangeLog"
+        db_table = 'gmw"."event'
+        verbose_name_plural = "Events"
