@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
 from gld_aanlevering import models
 
-field_value_division_dict = {"cm": 100, "mm": 1000}
+field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
 
 
 def grouper(n, iterable):
@@ -108,7 +108,7 @@ def order_measurements_list(measurement_list):
     return measurement_list_ordered
 
 
-def get_timeseries_tvp_for_measurement_time_series_id(measurement_time_series_id):
+def get_timeseries_tvp_for_observation_id(observation_id):
 
     """
     Get all timeseries values between start and stop datetime, including metadata
@@ -116,7 +116,7 @@ def get_timeseries_tvp_for_measurement_time_series_id(measurement_time_series_id
     # TODO checken of toegepaste filter/check werkt (of de measurement_list alleen de goedgekeurde waardes heeft)
 
     measurement_tvp = models.MeasurementTvp.objects.filter(
-        measurement_time_series_id=measurement_time_series_id
+        observation_id=observation_id
     )
     measurements_list = []
     for measurement in measurement_tvp:
@@ -273,11 +273,6 @@ def get_observation_gld_source_document_data(observation):
     # Get the GLD registration id for this measurement timeseries
     # Check which parts of the observation have already been succesfully delivered
 
-    # Get the measurement series id with observation id (1 to 1 relation)
-    measurement_time_serie = models.MeasurementTimeSeries.objects.get(
-        observation_id=observation.observation_id
-    )
-    measurement_time_series_id = measurement_time_serie.measurement_time_series_id
 
     # Get the observation metadata and procedure data
     (
@@ -323,7 +318,7 @@ def get_observation_gld_source_document_data(observation):
         }
 
         addition_type = "regulier_" + observation_status
-    return source_document_data, measurement_time_series_id, addition_type
+    return source_document_data, addition_type
 
 
 def get_gld_registration_data_for_observation(observation):
@@ -353,7 +348,6 @@ def get_gld_registration_data_for_observation(observation):
 def generate_gld_addition_sourcedoc_data(
     observation,
     observation_source_document_data,
-    measurement_time_series_id,
     additions_dir,
     addition_type,
 ):
@@ -364,8 +358,8 @@ def generate_gld_addition_sourcedoc_data(
     These will later be delivered
     """
 
-    measurement_timeseries_tvp = get_timeseries_tvp_for_measurement_time_series_id(
-        measurement_time_series_id
+    measurement_timeseries_tvp = get_timeseries_tvp_for_observation_id(
+        observation.observation_id
     )
 
     gld_bro_id, quality_regime = get_gld_registration_data_for_observation(observation)
@@ -504,19 +498,16 @@ def create_addition_sourcedocuments_for_observations(
         ).exists():
             continue
 
-        # if an observation has no time-value pairs, don't create a sourcedoc
-        observation_timeseries = models.MeasurementTimeSeries.objects.filter(
-            observation_id=observation.observation_id
-        )
-        if not observation_timeseries:  # if there is no timeseries for this observation
-            continue  # then do nothing
 
-        # if there is a timeseries, check if it contains tvps
-        observation_timeseries = models.MeasurementTimeSeries.objects.get(
-            observation_id=observation.observation_id
-        )
+
+        # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
+        if not models.GroundwaterLevelDossier.objects.get(
+            groundwater_level_dossier_id=gld_id_database
+        ).gld_bro_id:
+            continue
+
         observation_tvps = models.MeasurementTvp.objects.filter(
-            measurement_time_series_id=observation_timeseries.measurement_time_series_id
+            observation_id=observation.observation_id
         )
         if not observation_tvps:  # if there are no tvps in the observation
             continue  # then do nothing
@@ -531,19 +522,16 @@ def create_addition_sourcedocuments_for_observations(
         observation_type = models.TypeObservationType.objects.get(
             id=observation_metadata.parameter_measurement_serie_type_id
         ).value
-
         if observation.status is None and observation_type == "controlemeting":
             # No QC check is performed on controlemeting
             (
                 observation_source_document_data,
-                measurement_time_series_id,
                 addition_type,
             ) = get_observation_gld_source_document_data(observation)
 
             generate_gld_addition_sourcedoc_data(
                 observation,
                 observation_source_document_data,
-                measurement_time_series_id,
                 additions_dir,
                 addition_type,
             )
@@ -559,14 +547,12 @@ def create_addition_sourcedocuments_for_observations(
             # If the QC check has been succesfully completed
             (
                 observation_source_document_data,
-                measurement_time_series_id,
                 addition_type,
             ) = get_observation_gld_source_document_data(observation)
 
             generate_gld_addition_sourcedoc_data(
                 observation,
                 observation_source_document_data,
-                measurement_time_series_id,
                 additions_dir,
                 addition_type,
             )
@@ -576,14 +562,12 @@ def create_addition_sourcedocuments_for_observations(
             # this will probably keep failing until changes are made to the database
             (
                 observation_source_document_data,
-                measurement_time_series_id,
                 addition_type,
             ) = get_observation_gld_source_document_data(observation)
 
             generate_gld_addition_sourcedoc_data(
                 observation,
                 observation_source_document_data,
-                measurement_time_series_id,
                 additions_dir,
                 addition_type,
             )

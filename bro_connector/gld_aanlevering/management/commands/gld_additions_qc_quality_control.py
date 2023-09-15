@@ -37,12 +37,11 @@ from bro_connector_gld.settings import base as settings
 from gld_aanlevering import models
 from gld_aanlevering.management.commands.gld_additions_create import (
     get_measurement_point_metadata_for_measurement,
-    get_timeseries_tvp_for_measurement_time_series_id,
 )
 
 # from create_addition_sourcedocs import get_measurement_point_metadata_for_measurement, get_timeseries_tvp_for_measurement_time_series_id
 
-field_value_division_dict = {"cm": 100, "mm": 1000}
+field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
 
 status_quality_control_values = {
     1: "afgekeurd",
@@ -104,14 +103,10 @@ def long_term_measurement_change_check(past_ten_values):
 
 def QC_check_main(observation, qc_settings):
     # Obtain timeseriesset belonging to the current observation
-    timeseries_set = models.MeasurementTimeSeries.objects.get(
+    timeseries_set = models.MeasurementTvp.objects.filter(
         observation_id=observation.observation_id
     )
-    measurement_time_series_id = timeseries_set.measurement_time_series_id
-    timeseries_set = models.MeasurementTvp.objects.filter(
-        measurement_time_series_id=measurement_time_series_id
-    )
-    field_value_division_dict = {"cm": 100, "mm": 1000}
+    field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
 
     # Create measurement list with all values of the timeseriesset
     measurements_list = []
@@ -261,20 +256,8 @@ class Command(BaseCommand):
                 continue
 
             # Perform qc-check only if the observation contains a timeseries
-            observation_timeseries = models.MeasurementTimeSeries.objects.filter(
-                observation_id=observation.observation_id
-            )
-            if (
-                not observation_timeseries
-            ):  # if there is no timeseries for this observation
-                continue
-
-            # Perform qc-check only if the observation contains tvps
-            observation_timeseries = models.MeasurementTimeSeries.objects.get(
-                observation_id=observation.observation_id
-            )
             observation_tvps = models.MeasurementTvp.objects.filter(
-                measurement_time_series_id=observation_timeseries.measurement_time_series_id
+                observation_id=observation.observation_id
             )
             if not observation_tvps:  # if there are no tvps in the observation
                 continue
@@ -320,6 +303,3 @@ class Command(BaseCommand):
         # hoogte = delvertpos.ground_level_position
         # hoogte_id = delvertpos.registration_object_id
 
-        # measurement_time_serie = models.MeasurementTimeSeries.objects.get(observation_id=observation.observation_id)
-        # measurement_time_series_id = measurement_time_serie.measurement_time_series_id
-        # measurements_list = get_timeseries_tvp_for_measurement_time_series_id(measurement_time_series_id)

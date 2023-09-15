@@ -75,40 +75,12 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
     )
 
 
-class MeasurementTimeSeriesAdmin(admin.ModelAdmin):
-
-    list_display = ("measurement_time_series_id","observation",)
-    list_filter = ("measurement_time_series_id","observation",)
-
-
-# class MeasurementTimeseriesTvpObservationAdmin(admin.ModelAdmin):
-
-#     list_display = (
-#         'measurement_timeseries_tvp_observation_id',
-#         'groundwater_level_dossier_id',
-#         'observation_starttime',
-#         'observation_endtime',
-#         'result_time',
-#         'metadata_observation_id',
-#     )
-#     list_filter = (
-#         'observation_starttime',
-#         'observation_endtime',
-#         'result_time',
-#         'measurement_timeseries_tvp_observation_id',
-#         'groundwater_level_dossier_id',
-#         'observation_starttime',
-#         'observation_endtime',
-#         'result_time',
-#         'metadata_observation_id',
-#     )
-
 
 class MeasurementTvpAdmin(admin.ModelAdmin):
 
     list_display = (
         "measurement_tvp_id",
-        "measurement_time_series_id",
+        "observation_id",
         "measurement_time",
         "field_value",
         "field_value_unit",
@@ -123,7 +95,7 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "measurement_time",
         "correction_time",
         "measurement_tvp_id",
-        "measurement_time_series_id",
+        "observation_id",
         "measurement_time",
         "field_value",
         "field_value_unit",
@@ -716,13 +688,11 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]
                 (
                     observation_source_document_data,
-                    measurement_time_series_id,
                     addition_type,
                 ) = get_observation_gld_source_document_data(observation)
                 generate_gld_addition_sourcedoc_data(
                     observation,
                     observation_source_document_data,
-                    measurement_time_series_id,
                     additions_dir,
                     addition_type,
                 )
@@ -869,10 +839,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
 
 _register(models.GroundwaterLevelDossier, GroundwaterLevelDossierAdmin)
 _register(models.MeasurementPointMetadata, MeasurementPointMetadataAdmin)
-_register(models.MeasurementTimeSeries, MeasurementTimeSeriesAdmin)
-# _register(
-#     models.MeasurementTimeseriesTvpObservation,
-#     MeasurementTimeseriesTvpObservationAdmin)
 _register(models.MeasurementTvp, MeasurementTvpAdmin)
 _register(models.ObservationMetadata, ObservationMetadataAdmin)
 _register(models.ObservationProcess, ObservationProcessAdmin)

@@ -1,8 +1,6 @@
 from gld_aanlevering.models import (
     GroundwaterLevelDossier,
     MeasurementPointMetadata,
-    MeasurementTimeSeries,
-    MeasurementTimeseriesTvpObservation,
     MeasurementTvp,
     Observation,
     ObservationMetadata,
@@ -29,8 +27,6 @@ from gld_aanlevering.models import (
 GLD_MODELS = [
     GroundwaterLevelDossier,
     MeasurementPointMetadata,
-    MeasurementTimeSeries,
-    MeasurementTimeseriesTvpObservation,
     MeasurementTvp,
     Observation,
     ObservationMetadata,

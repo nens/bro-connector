@@ -54,40 +54,7 @@ class MeasurementPointMetadata(models.Model):
 
 
 
-class MeasurementTimeSeries(models.Model):
-    measurement_time_series_id = models.AutoField(primary_key=True)
-    observation = models.ForeignKey('Observation', on_delete = models.CASCADE, null = True, blank = True)
-    #observation_id = models.IntegerField(blank=True, null=True)
 
-    def __str__(self):
-
-        try:
-            starttime = str(self.observation.observation_starttime.date())
-        except:
-            starttime = '?'
-
-        try:
-            endtime = str(self.observation.observation_endtime.date())
-        except:
-            endtime = '?'
-
-        try:
-            dossier = str(self.observation.groundwater_level_dossier.gld_bro_id)
-        except:
-            dossier = 'Registratie onbekend'
-
-        try:
-            status = str(self.observation.observation_metadata.status)
-        except:
-            status = 'Status onbekend'
-
-        return('{}, {}, {} - {}'.format(dossier, status, starttime, endtime))
-
-    class Meta:
-        managed = True
-        db_table = 'gld"."measurement_time_series'
-        verbose_name = "Measurement timeseries"
-        verbose_name_plural = "Measurement timeseries"
 
 
 # We don't use this
@@ -103,38 +70,12 @@ class MeasurementTimeSeries(models.Model):
 #         managed = True
 #         db_table = 'gld"."measurement_timeseries_tvp_observation'
 #         verbose_name = 'Measurement timeseries tvp observation'
-#         verbose_name_plural = 'Measurement timeseries tvp observation'
-
-
-class MeasurementTvp(models.Model):
-    measurement_tvp_id = models.AutoField(primary_key=True)
-    measurement_time_series = models.ForeignKey(MeasurementTimeSeries, on_delete=models.CASCADE, null = True, blank = True)
-    #measurement_time_series_id = models.IntegerField(blank=True, null=True)
-    measurement_time = models.DateTimeField(blank=True, null=True)
-    field_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    field_value_unit = models.CharField(max_length=255, blank=True, null=True)
-    calculated_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    corrected_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    correction_time = models.DateTimeField(blank=True, null=True) 
-    correction_reason = models.CharField(max_length=255, blank=True, null=True)
-    measurement_point_metadata = models.ForeignKey('MeasurementPointMetadata', on_delete = models.CASCADE, null = True, blank = True)
-    #measurement_point_metadata_id = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'gld"."measurement_tvp'
-        verbose_name = "Measurement time-value pairs"
-        verbose_name_plural = "Measurement time-value pairs"
+#         verbose_name_plural = 'Measurement timeserTrueies tvp observation'
 
 
 class Observation(models.Model):
-    observation_id = models.AutoField(primary_key=True)
+    observation_id=models.AutoField(primary_key=True, null=False,blank=False)
+   # idid=models.IntegerField(null=True,blank=True)
     observationperiod = models.DurationField(blank=True, null=True)
     observation_starttime = models.DateTimeField(blank=True, null=True)
     result_time = models.DateTimeField(blank=True, null=True)
@@ -178,6 +119,31 @@ class Observation(models.Model):
         verbose_name = "Observation"
         verbose_name_plural = "Observations"
 
+class MeasurementTvp(models.Model):
+    measurement_tvp_id = models.AutoField(primary_key=True)
+    observation = models.ForeignKey(Observation, on_delete=models.CASCADE, null = True, blank = True)
+    #measurement_time_series_id = models.IntegerField(blank=True, null=True)
+    measurement_time = models.DateTimeField(blank=True, null=True)
+    field_value = models.DecimalField(
+        max_digits=100, decimal_places=10, blank=True, null=True
+    )
+    field_value_unit = models.CharField(max_length=255, blank=True, null=True)
+    calculated_value = models.DecimalField(
+        max_digits=100, decimal_places=10, blank=True, null=True
+    )
+    corrected_value = models.DecimalField(
+        max_digits=100, decimal_places=10, blank=True, null=True
+    )
+    correction_time = models.DateTimeField(blank=True, null=True) 
+    correction_reason = models.CharField(max_length=255, blank=True, null=True)
+    measurement_point_metadata = models.ForeignKey('MeasurementPointMetadata', on_delete = models.CASCADE, null = True, blank = True)
+    #measurement_point_metadata_id = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'gld"."measurement_tvp'
+        verbose_name = "Measurement time-value pairs"
+        verbose_name_plural = "Measurement time-value pairs"
 
 class ObservationMetadata(models.Model):
     observation_metadata_id = models.AutoField(primary_key=True)
