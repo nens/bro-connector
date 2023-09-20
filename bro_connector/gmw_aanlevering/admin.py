@@ -48,14 +48,12 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "nitg_code",
         "olga_code",
         "well_code",
-        "well_construction_date",
-        "well_removal_date",
         "monitoring_pdok_id",
         "coordinates",
-        "referencesystem",
+        "reference_system",
         "horizontal_positioning_method",
         "local_vertical_reference_point",
-        "offset",
+        "well_offset",
         "vertical_datum",
     )
     list_filter = ("well_construction_date",)
@@ -82,7 +80,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 "referencesystem",
                 "horizontal_positioning_method",
                 "local_vertical_reference_point",
-                "offset",
+                "well_offset",
                 "vertical_datum",              
                         ],
         }),
@@ -190,10 +188,10 @@ class EventAdmin(admin.ModelAdmin):
 
     list_display = (
         "change_id",
-        "scenario_type",
-        "change_datetime",
+        "event_name",
+        "event_date",
         "groundwater_monitoring_well_static",
-        "groundwater_monitoring_well_tubes_dynamic",
+        "groundwater_monitoring_well_tube_dynamic",
         "electrode_dynamic",
     )
     list_filter = ("change_id",)

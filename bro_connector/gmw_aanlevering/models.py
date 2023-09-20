@@ -28,11 +28,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
     nitg_code = models.CharField(max_length=256, blank=True, null=True)
     olga_code = models.CharField(max_length=256, blank=True, null=True)
     well_code = models.CharField(max_length=256, blank=True, null=True)
-    well_construction_date = models.DateField(blank=True, null=True)
-    well_removal_date = models.DateField(blank=True, null=True)
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     coordinates = geo_models.PointField(srid=28992, blank=True, null=True, editable=False)  # This field type is a guess.
-    referencesystem = models.TextField(
+    reference_system = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
     horizontal_positioning_method = models.TextField(
@@ -41,7 +39,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
     local_vertical_reference_point = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    offset = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
+    well_offset = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
     vertical_datum = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
@@ -96,7 +94,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
 
 
 class GroundwaterMonitoringTubesStatic(models.Model):
-    groundwater_monitoring_tube_static_id = models.IntegerField(primary_key=True)
+    groundwater_monitoring_tube_static_id = models.AutoField(primary_key=True)
     groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     deliver_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(blank=True, null=True)
@@ -137,8 +135,8 @@ class GroundwaterMonitoringTubesStatic(models.Model):
 
 
 class GroundwaterMonitoringTubesDynamic(models.Model):
-    groundwater_monitoring_tube_dynamic_id = models.IntegerField(primary_key=True)
-    groundwater_monitoring_tube_static_id = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
+    groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_tube_static = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
     tube_top_diameter = models.IntegerField(blank=True, null=True)
     variable_diameter = models.TextField(
         blank=True, null=True
@@ -182,8 +180,8 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
         verbose_name_plural = "Groundwater monitoring tubes (Dynamic)"
 
 class GeoOhmCable(models.Model):
-    geo_ohm_cable_id = models.IntegerField(primary_key=True)
-    groundwater_monitoring_tube_static_id = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
+    geo_ohm_cable_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_tube_static = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
     cable_number = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
@@ -196,8 +194,8 @@ class GeoOhmCable(models.Model):
         verbose_name_plural = "Geo Ohm Cable"
 
 class ElectrodeStatic(models.Model):
-    electrode_static_id = models.IntegerField(primary_key=True)
-    geo_ohm_cable_id = models.ForeignKey('GeoOhmCable', on_delete = models.CASCADE, null = True, blank = True)
+    electrode_static_id = models.AutoField(primary_key=True)
+    geo_ohm_cable = models.ForeignKey('GeoOhmCable', on_delete = models.CASCADE, null = True, blank = True)
     electrode_packing_material = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
@@ -215,8 +213,8 @@ class ElectrodeStatic(models.Model):
         verbose_name_plural = "Electrodes (Static)"
 
 class ElectrodeDynamic(models.Model):
-    electrode_dynamic_id = models.IntegerField(primary_key=True)
-    electrode_static_id = models.ForeignKey('ElectrodeStatic', on_delete = models.CASCADE, null = True, blank = True)
+    electrode_dynamic_id = models.AutoField(primary_key=True)
+    electrode_static = models.ForeignKey('ElectrodeStatic', on_delete = models.CASCADE, null = True, blank = True)
     electrode_number = models.IntegerField(blank=True, null=True)
     electrode_status = models.TextField(
         blank=True, null=True
@@ -232,14 +230,14 @@ class ElectrodeDynamic(models.Model):
         verbose_name_plural = "Electrodes (Dynamic)"
 
 class Event(models.Model):
-    change_id = models.IntegerField(primary_key=True)
-    scenario_type =  models.TextField(
+    change_id = models.AutoField(primary_key=True)
+    event_name =  models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    change_datetime = models.DateTimeField(blank=True, null=True)
+    event_date = models.DateTimeField(blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
-    groundwater_monitoring_well_tubes_dynamic = models.ForeignKey('GroundwaterMonitoringTubesDynamic', on_delete = models.CASCADE, null = True, blank = True)   
+    groundwater_monitoring_well_tube_dynamic = models.ForeignKey('GroundwaterMonitoringTubesDynamic', on_delete = models.CASCADE, null = True, blank = True)   
     electrode_dynamic = models.ForeignKey('ElectrodeDynamic', on_delete = models.CASCADE, null = True, blank = True)
 
 
