@@ -199,7 +199,7 @@ class ElectrodeStatic(models.Model):
     electrode_packing_material = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    electrode_positioning = models.TextField(
+    electrode_position = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
 

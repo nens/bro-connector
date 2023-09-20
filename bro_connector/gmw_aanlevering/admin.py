@@ -169,7 +169,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
         "electrode_static_id",
         "geo_ohm_cable_id",
         "electrode_packing_material",
-        "electrode_positioning",
+        "electrode_position",
     )
     list_filter = ("electrode_static_id",)
 
