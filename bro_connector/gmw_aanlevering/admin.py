@@ -56,7 +56,6 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "well_offset",
         "vertical_datum",
     )
-    list_filter = ("well_construction_date",)
 
     fieldsets = [
         ('', {
