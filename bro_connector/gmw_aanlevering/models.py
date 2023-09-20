@@ -74,7 +74,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     well_head_protector = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    delivered_to_bro = models.BooleanField(blank=False, default=False)
+    deliver_gld_to_bro = models.BooleanField(blank=False, default=False)
     ground_level_position = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
@@ -96,7 +96,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
 class GroundwaterMonitoringTubesStatic(models.Model):
     groundwater_monitoring_tube_static_id = models.AutoField(primary_key=True)
     groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
-    deliver_to_bro = models.BooleanField(blank=True, default=False)
+    deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(blank=True, null=True)
     tube_type = models.TextField(blank=True, null=True)  # This field type is a guess.
     artesian_well_cap_present = models.TextField(

@@ -110,11 +110,11 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "owner",
         "maintenance_responsible_party",
         "well_head_protector",
-        "delivered_to_bro",
+        "deliver_gld_to_bro",
         "ground_level_position",
         "ground_level_positioning_method",
     )
-    list_filter = ("groundwater_monitoring_well", "delivered_to_bro",)
+    list_filter = ("groundwater_monitoring_well", "deliver_gld_to_bro",)
 
 
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
@@ -122,7 +122,7 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_tube_static_id",
         "groundwater_monitoring_well",
-        "deliver_to_bro",
+        "deliver_gld_to_bro",
         "tube_number",
         "tube_type",
         "artesian_well_cap_present",
@@ -133,7 +133,7 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
         "sock_material",
         "sediment_sump_length",
     )
-    list_filter = ("deliver_to_bro",)
+    list_filter = ("deliver_gld_to_bro",)
 
 class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
