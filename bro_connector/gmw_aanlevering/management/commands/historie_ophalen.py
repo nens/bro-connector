@@ -35,10 +35,13 @@ class Command(BaseCommand):
         bro_ids = bro_uitgifte.get_bro_ids(kvk_number)
         gmw_ids = bro_uitgifte.get_gmw_ids(bro_ids)
 
+        print(str(len(gmw_ids)) + " bro ids found for organisation.")
+
         for well in GroundwaterMonitoringWellStatic.objects.all():
             if well.bro_id in gmw_ids:
                 gmw_ids.remove(well.bro_id)
-                
+
+        print(str(len(gmw_ids)) + " not in database.")
 
         # Import the well data
         for id in range(len(gmw_ids)):
@@ -183,20 +186,20 @@ class Command(BaseCommand):
                     gmtd.save()
 
                     try:
-                        if gmts.number_of_geo_ohm_cables > 0:
+                        if int(gmts.number_of_geo_ohm_cables) == 1:
                             geoc = GeoOhmCable.objects.create(
                                 groundwater_monitoring_tube_static=gmts,
-                                cable_number=gmw_dict.get("cableNumber", None),
+                                cable_number=gmw_dict.get(prefix + "cableNumber", None),
                             )  # not in XML -> 0 cables)
                             geoc.save()
 
                             eles = ElectrodeStatic.objects.create(
                                 geo_ohm_cable=geoc,
                                 electrode_packing_material=gmw_dict.get(
-                                    "electrodePackingMaterial", None
+                                    prefix + "electrodePackingMaterial", None
                                 ),
                                 electrode_position=gmw_dict.get(
-                                    "electrodePosition", None
+                                    prefix + "electrodePosition", None
                                 ),
                             )
                             eles.save()
@@ -204,13 +207,16 @@ class Command(BaseCommand):
                             eled = ElectrodeDynamic.objects.create(
                                 electrode_static=eles,
                                 electrode_number=gmw_dict.get(
-                                    "electrodeNumber", None
+                                    prefix + "electrodeNumber", None
                                 ),
                                 electrode_status=gmw_dict.get(
-                                    "electrodeStatus", None
+                                    prefix + "electrodeStatus", None
                                 ),
                             )
                             eled.save()
+                        elif int(gmts.number_of_geo_ohm_cables) > 1:
+                            print(gmw_dict)
+                            exit(print("Multiple Ohm Cables found for the first time. Adjust script. Message steven.hosper@nelen-schuurmans.nl"))
                     except:
                         pass
             except:
@@ -361,6 +367,6 @@ class Command(BaseCommand):
                 event.save()
 
             if id % 25 == 0:
-                print(round(id / len(gmw_ids), 2), "% Complete")
+                print(round(id / len(gmw_ids), 2) * 100, "% Complete")
 
             
