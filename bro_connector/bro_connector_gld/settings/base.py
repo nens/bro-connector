@@ -176,8 +176,6 @@ ADMIN_REORDER = (
             "gld_aanlevering.Observation",
             "gld_aanlevering.GroundwaterLevelDossier",
             "gld_aanlevering.MeasurementPointMetadata",
-            "gld_aanlevering.MeasurementTimeSeries",
-            "gld_aanlevering.MeasurementTimeseriesTvpObservation",
             "gld_aanlevering.MeasurementTvp",
             "gld_aanlevering.ObservationMetadata",
             "gld_aanlevering.ObservationProcess",
@@ -254,7 +252,6 @@ JAZZMIN_SETTINGS = {
         "gld_aanlevering.GroundwaterLevelDossier",
         "gld_aanlevering.Observation",
         "gld_aanlevering.ObservationMetadata",
-        "gld_aanlevering.MeasurementTimeSeries",
         "gld_aanlevering.MeasurementTvp",
         "gld_aanlevering.MeasurementPointMetadata",
     ],
@@ -276,8 +273,6 @@ JAZZMIN_SETTINGS = {
         "gld_aanlevering.Observation": "fas fa-search",
         "gld_aanlevering.GroundwaterLevelDossier": "fas fa-solid fa-folder",
         "gld_aanlevering.MeasurementPointMetadata": "fas fa-solid fa-list-ul",
-        "gld_aanlevering.MeasurementTimeSeries": "fas fa-chart-bar",
-        # 'gld_aanlevering.MeasurementTimeseriesTvpObservation': "",
         "gld_aanlevering.MeasurementTvp": "fas fa-times",
         "gld_aanlevering.ObservationMetadata": "fas fa-solid fa-list-ul",
         # 'gld_aanlevering.ObservationProcess': "",
@@ -305,6 +300,3 @@ GRAPH_MODELS = {
     "all_applications": True,
     "group_models": True,
 }
-
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
-GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
