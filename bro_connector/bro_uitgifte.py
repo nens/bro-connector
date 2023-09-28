@@ -9,6 +9,7 @@ import os
 from datetime import datetime, timedelta
 from django.utils import timezone
 from psycopg2.extras import execute_values
+from pathlib import Path
 
 from gmw_aanlevering.models import (
     GroundwaterMonitoringWellStatic,
@@ -46,7 +47,7 @@ class Progress:
     def next(self):
         self.timer = self.timer + 1
 
-class DataRetrieverKVK(object):
+class DataRetrieverKVK:
     def __init__(self, kvk_nummer):
         self.kvk_nummer = kvk_nummer
         self.bro_ids = []
@@ -70,13 +71,62 @@ class DataRetrieverKVK(object):
             else:
                 self.other_ids.append(id)
 
-class GMWHandler:
-    number_of_events = 0
-    number_of_tubes  = 0
-    dict = {}
+class DataRetrieverFile:
+    def __init__(self, file_path):
+        self.file_path = file_path
 
+    def retrieve(self):
+        self.check_filetype()
+        df = self.read_datafile()
+        df.columns = self.lowered_headers()
+        
+        print(df.columns)
+
+        if 'bro_id' in df.columns:
+            print("Using BRO IDs")
+            gmw_ids = df['bro_id'].to_list()
+            gmw_ids_ini_count = len(gmw_ids)
+
+        elif 'nitg' and ('eigenaar' or 'kvk_nummer') in df.columns:
+            print("Using NITG Codes")
+
+        else:
+            raise Exception("Insufficient information available. Please use the correct formatting of your data.")
+
+        print(df)
+    
+    def check_filetype(self):
+        if ".xlsx" in self.file_path:
+            self.filetype = "Excel"
+
+        elif ".csv" in self.file_path:
+            self.filetype = "CSV"
+
+        else:
+            raise Exception("Given file is not a CSV or Excel file.")
+
+    def read_datafile(self):
+        if self.filetype == 'Excel':
+            self.df = pd.read_excel(self.file_path)
+        
+        elif self.filetype == 'CSV':
+            self.df = pd.read_csv(self.file_path)
+
+        else:
+            raise Exception("Current filetype not yet implemented.")
+
+        return self.df
+    
+    def lowered_headers(self):
+        self.df.columns = map(str.lower, self.df.columns)
+        return map(str.lower, self.df.columns)
+
+
+class GMWHandler:
     def __init__(self):
-        pass
+        self.number_of_events = 0
+        self.number_of_tubes  = 0
+        self.dict = {}
 
     def get_data(self, id: str, full_history: bool):
         basis_url = "https://publiek.broservices.nl/gm/gmw/v1/objects/"
@@ -95,6 +145,7 @@ class GMWHandler:
         tags = []
         values = []
         prefix = ""
+        number_of_events = self.number_of_events
 
         for element in self.root.iter():
             tag = element.tag
@@ -104,8 +155,8 @@ class GMWHandler:
                 prefix = "construction_"
 
             elif split[1] == "intermediateEvent":
-                self.number_of_events = self.number_of_events + 1
-                prefix = "event_" + str(self.number_of_events) + "_"
+                number_of_events = number_of_events + 1
+                prefix = "event_" + str(number_of_events) + "_"
 
             elif split[1] == "wellRemovalDate":
                 prefix = "removal_"
@@ -118,8 +169,15 @@ class GMWHandler:
 
             tags.append(tag)
             values.append(element.text)
+        
+        self.number_of_events = number_of_events
 
         self.dict = dict(zip(tags, values))
+
+    def reset_values(self):
+        self.number_of_events = 0
+        self.number_of_tubes  = 0
+
 
 def slice(sourcedict, string):
     newdict = {}
@@ -176,6 +234,9 @@ class InitializeData:
 
     def __init__(self, gmw_dict):
         self.gmw_dict = gmw_dict
+
+    def reset_tube_number(self):
+        self.tube_number = 0
 
     def increment_tube_number(self):
         self.tube_number = self.tube_number + 1
@@ -323,9 +384,8 @@ class InitializeData:
         self.geoc.save()
 
     def electrode_static(self):
-        geo_ohm_cable = get_geo_ohm_cable(self.gmws)
         self.eles = ElectrodeStatic.objects.create(
-                                    geo_ohm_cable=geo_ohm_cable,
+                                    geo_ohm_cable=self.geoc,
                                     electrode_packing_material=self.gmw_dict.get(
                                         self.prefix + "electrodePackingMaterial", None
                                     ),
@@ -336,9 +396,8 @@ class InitializeData:
         self.eles.save()
 
     def electrode_dynamic(self):
-        electrode_static = get_electrode_static(self.gmws)
         self.eled = ElectrodeDynamic.objects.create(
-                                    electrode_static=electrode_static,
+                                    electrode_static=self.eles,
                                     electrode_number=self.gmw_dict.get(
                                         self.prefix + "electrodeNumber", None
                                     ),
@@ -347,10 +406,6 @@ class InitializeData:
                                     ),
                                 )
         self.eled.save()
-
-def get_geo_ohm_cable(groundwater_monitoring_well_static):
-    geoc = GeoOhmCable.objects.get(groundwater_monitoring_well = groundwater_monitoring_well_static)
-    return geoc
 
 
 
@@ -367,14 +422,20 @@ def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
             )
     event.save()
 
-def get_electrode_static(groundwater_monitoring_well):
-    eles_id = ElectrodeStatic.objects.filter(
-        geo_ohm_cable = GeoOhmCable.objects.filter(
-            groundwater_monitoring_tube_static = GroundwaterMonitoringTubesStatic.objects.get(
-                groundwater_monitoring_well = groundwater_monitoring_well
+def get_electrode_static(groundwater_monitoring_well, tube_number):
+    try:
+        eles_id = ElectrodeStatic.objects.filter(
+            geo_ohm_cable = GeoOhmCable.objects.filter(
+                groundwater_monitoring_tube_static = GroundwaterMonitoringTubesStatic.objects.get(
+                    groundwater_monitoring_well = groundwater_monitoring_well,
+                    tube_number = tube_number,
+                )
+                
             )
         )
-    )
+    except:
+        print(groundwater_monitoring_well, tube_number)
+        
     return eles_id
 
 def get_tube_static(groundwater_monitoring_well, tube_number):
@@ -401,15 +462,17 @@ def get_tube_dynamic_history(well_static, updates):
     return new_gmtds
 
 class Updater:
-    event_number = 1
-    prefix = f"event_{str(event_number)}_"
-    event_updates = []
-    event = None
-
     def __init__(self, gmw_dict, groundwater_monitoring_well):
         self.gmw_dict = gmw_dict
         self.groundwater_monitoring_well = groundwater_monitoring_well
+        self.event_number = 1
+        self.prefix = f"event_{str(self.event_number)}_"
+        self.event_updates = []
+        self.event = None
     
+    def reset_event(self):
+        self.event_number = 1
+
     def increment_event(self):
         self.event_number = self.event_number + 1
         self.prefix = f"event_{str(self.event_number)}_"
@@ -439,9 +502,6 @@ class Updater:
         # Create a base event
         self.read_updates()
         self.create_base()
-
-        # Read the update data
-        print("test", self.event_updates)
 
         # Update tables accordingly
         TableUpdater.fill(self.groundwater_monitoring_well, self.event, self.event_updates)
@@ -479,7 +539,6 @@ class TableUpdater(Updater):
                 raise Exception("No Groundwater Monitoring Tube Dynamic Tables found for this GMT: ", get_tube_static(well_static, updates['tubeNumber']))
 
             # Check what has to be changed
-            print("works so far: ", new_gmtd, "\n", updates)
             new_gmtd = tube_dynamic(new_gmtd, updates)
 
             # Save and add new key to event
@@ -497,7 +556,7 @@ class TableUpdater(Updater):
         try:
             # Clone row and make new primary key with save
             new_eleds = ElectrodeDynamic.objects.filter(
-                electrode_static = get_electrode_static(well_static))
+                electrode_static = get_electrode_static(well_static, updates['tubeNumber']))
             
             # This assumes the gmwds are sorted based on creation date.
             if len(new_eleds) == 1:
@@ -523,7 +582,7 @@ class TableUpdater(Updater):
             event.save()
 
         except:
-            raise Exception(f"Failed to update tube data: {updates}")
+            raise Exception(f"Failed to update electrode data: {updates}")
 
     def well_data(well_static, event, updates):
         try:
@@ -572,26 +631,3 @@ def get_removal_event(gmw_dict, groundwater_monitoring_well_static):
             )
     event.save()
 
-def check_filetype(csv_file: str):
-    if ".xlsx" in csv_file:
-        filetype = "Excel"
-
-    elif ".csv" in csv_file:
-        filetype = "CSV"
-
-    else:
-        raise Exception("Given file is not a CSV or Excel file.")
-
-    return filetype
-
-def read_datafile(file: str, type: str):
-    if type == 'Excel':
-        df = pd.read_excel(file)
-    
-    elif type == 'CSV':
-        df = pd.read_csv(file)
-
-    else:
-        raise Exception("Current filetype not yet implemented.")
-
-    return df

@@ -38,24 +38,8 @@ class Command(BaseCommand):
             gmw_ids_ini_count = len(gmw_ids)
         
         elif csv_file != None:
-            filetype   = bro.check_filetype(csv_file)
-            dataframe  = bro.read_datafile(csv_file, filetype)
-            dataframe.columns = map(str.lower, dataframe.columns)
-            
-            print(dataframe.columns)
-
-            if 'bro_id' in dataframe.columns:
-                print("Using BRO IDs")
-                gmw_ids = dataframe['bro_id'].to_list()
-                gmw_ids_ini_count = len(gmw_ids)
-
-            elif 'nitg' and ('eigenaar' or 'kvk_nummer') in dataframe.columns:
-                print("Using NITG Codes")
-
-            else:
-                raise Exception("Insufficient information available. Please use the correct formatting of your data.")
-
-            print(dataframe)
+            DR = bro.DataRetrieverFile(csv_file)
+            DR.retrieve()
             exit()
 
 
@@ -79,7 +63,8 @@ class Command(BaseCommand):
 
             # Invullen initiële waarden.
             ini = bro.InitializeData(gmw_dict)
-            gmws = ini.well_static()
+            ini.well_static()
+            gmws = ini.gmws
             ini.well_dynamic()
 
 
@@ -90,23 +75,24 @@ class Command(BaseCommand):
                     ini.tube_dynamic()
 
                     try:
-                        for geo_ohm_cable in range(ini.gmts.number_of_geo_ohm_cables):
+                        for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
                             ini.geo_ohm()
                             ini.electrode_static()
                             ini.electrode_dynamic()
 
                     except:
-                        pass
+                        raise Exception("Failed")
             except:
-                pass
-            
+                raise Exception("Failed")
+
             bro.get_construction_event(gmw_dict, gmws)
-            
 
             # Update based on the events
             for nr in range(int(gmw.number_of_events)):
                 updater = bro.Updater(gmw.dict, gmws)
                 updater.intermediate_events()
-                
+
+            gmw.reset_values()
+            ini.reset_tube_number()
             progressor.next()
             progressor.progress()
