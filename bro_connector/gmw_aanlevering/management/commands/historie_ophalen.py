@@ -25,11 +25,14 @@ class Command(BaseCommand):
             help="Gebruik een csv bestand met putinformatie om data in te spoelen")
 
     def handle(self, *args, **options):
+        progressor = bro.Progress()
+        gmw        = bro.GMWHandler()
+
         kvk_number = options["kvk_number"]
         csv_file   = options["csv_file"]
 
         if kvk_number != None:
-            DR = bro.DataRetriever(kvk_number)
+            DR = bro.DataRetrieverKVK(kvk_number)
             DR.get_ids_kvk()
             gmw_ids = DR.gmw_ids
             gmw_ids_ini_count = len(gmw_ids)
@@ -66,49 +69,44 @@ class Command(BaseCommand):
         gmw_ids_count = len(gmw_ids)
         print(f"{gmw_ids_count} not in database.")
 
+        progressor.calibrate(gmw_ids, 25)
+
         # Import the well data
         for id in range(gmw_ids_count):
-            gmw_element = bro.get_gmw_data(gmw_ids[id], True)
-            gmw_dict, number_of_events, number_of_tubes = bro.make_dict(
-                gmw_element
-            )
+            gmw.get_data(gmw_ids[id], True)
+            gmw.make_dict()
+            gmw_dict = gmw.dict
 
             # Invullen initiële waarden.
-            gmws = bro.get_initial_well_static_data(gmw_dict)
-            bro.get_initial_well_dynamic_data(gmw_dict, gmws)
+            ini = bro.InitializeData(gmw_dict)
+            gmws = ini.well_static()
+            ini.well_dynamic()
 
 
             try:
-                for tube_number in range(number_of_tubes):
-                    tube_number = tube_number + 1
-                    gmts = bro.get_initial_tube_static_data(gmw_dict, gmws, tube_number)
-                    bro.get_initial_tube_dynamic_data(gmw_dict, gmts, tube_number)
+                for tube_number in range(gmw.number_of_tubes):
+                    ini.increment_tube_number()
+                    ini.tube_static()
+                    ini.tube_dynamic()
 
                     try:
-                        if int(gmts.number_of_geo_ohm_cables) == 1:
-                            bro.get_initial_geo_ohm_data(gmw_dict, gmts, tube_number)
-                            bro.get_initial_electrode_static_data(gmw_dict, gmws, tube_number)
-                            bro.get_initial_electrode_dynamic_data(gmw_dict, gmws, tube_number)
+                        for geo_ohm_cable in range(ini.gmts.number_of_geo_ohm_cables):
+                            ini.geo_ohm()
+                            ini.electrode_static()
+                            ini.electrode_dynamic()
 
-                        elif int(gmts.number_of_geo_ohm_cables) > 1:
-                            print(gmw_dict)
-                            exit(print("Multiple Ohm Cables found for the first time. Adjust script. Message steven.hosper@nelen-schuurmans.nl"))
                     except:
                         pass
             except:
                 pass
-
+            
             bro.get_construction_event(gmw_dict, gmws)
             
 
             # Update based on the events
-            for nr in range(number_of_events):
-                nr = nr + 1
-                bro.get_intermediate_events(gmw_dict, gmws, nr)
+            for nr in range(int(gmw.number_of_events)):
+                updater = bro.Updater(gmw.dict, gmws)
+                updater.intermediate_events()
                 
-
-            if gmw_dict.get("removal_date", None) is not None:
-                bro.get_removal_event(gmw_dict, gmws)
-
-            if id % 25 == 0:
-                print(round(id / len(gmw_ids), 2) * 100, "% Complete")
+            progressor.next()
+            progressor.progress()
