@@ -5,7 +5,7 @@ from __future__ import division
 
 from django.core.management.base import BaseCommand
 
-import bro_uitgifte
+import bro_uitgifte as bro
 
 
 from gmw_aanlevering.models import (
@@ -15,14 +15,47 @@ from gmw_aanlevering.models import (
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument("kvk_number", type=int)
+        parser.add_argument(
+            "--kvk_number",
+            type=int,
+            help="Gebruik een KVK-nummer om de data in te spoelen")
+        parser.add_argument(
+            "--csv_file",
+            type=str,
+            help="Gebruik een csv bestand met putinformatie om data in te spoelen")
 
     def handle(self, *args, **options):
         kvk_number = options["kvk_number"]
+        csv_file   = options["csv_file"]
 
-        bro_ids = bro_uitgifte.get_bro_ids(kvk_number)
-        gmw_ids = bro_uitgifte.get_gmw_ids(bro_ids)
-        gmw_ids_ini_count = len(gmw_ids)
+        if kvk_number != None:
+            DR = bro.DataRetriever(kvk_number)
+            DR.get_ids_kvk()
+            gmw_ids = DR.gmw_ids
+            gmw_ids_ini_count = len(gmw_ids)
+        
+        elif csv_file != None:
+            filetype   = bro.check_filetype(csv_file)
+            dataframe  = bro.read_datafile(csv_file, filetype)
+            dataframe.columns = map(str.lower, dataframe.columns)
+            
+            print(dataframe.columns)
+
+            if 'bro_id' in dataframe.columns:
+                print("Using BRO IDs")
+                gmw_ids = dataframe['bro_id'].to_list()
+                gmw_ids_ini_count = len(gmw_ids)
+
+            elif 'nitg' and ('eigenaar' or 'kvk_nummer') in dataframe.columns:
+                print("Using NITG Codes")
+
+            else:
+                raise Exception("Insufficient information available. Please use the correct formatting of your data.")
+
+            print(dataframe)
+            exit()
+
+
 
         print(f"{gmw_ids_ini_count} bro ids found for organisation.")
 
@@ -35,27 +68,27 @@ class Command(BaseCommand):
 
         # Import the well data
         for id in range(gmw_ids_count):
-            gmw_element = bro_uitgifte.get_gmw_data(gmw_ids[id], True)
-            gmw_dict, number_of_events, number_of_tubes = bro_uitgifte.make_dict(
+            gmw_element = bro.get_gmw_data(gmw_ids[id], True)
+            gmw_dict, number_of_events, number_of_tubes = bro.make_dict(
                 gmw_element
             )
 
             # Invullen initiële waarden.
-            gmws = bro_uitgifte.get_initial_well_static_data(gmw_dict)
-            bro_uitgifte.get_initial_well_dynamic_data(gmw_dict, gmws)
+            gmws = bro.get_initial_well_static_data(gmw_dict)
+            bro.get_initial_well_dynamic_data(gmw_dict, gmws)
 
 
             try:
                 for tube_number in range(number_of_tubes):
                     tube_number = tube_number + 1
-                    gmts = bro_uitgifte.get_initial_tube_static_data(gmw_dict, gmws, tube_number)
-                    bro_uitgifte.get_initial_tube_dynamic_data(gmw_dict, gmts, tube_number)
+                    gmts = bro.get_initial_tube_static_data(gmw_dict, gmws, tube_number)
+                    bro.get_initial_tube_dynamic_data(gmw_dict, gmts, tube_number)
 
                     try:
                         if int(gmts.number_of_geo_ohm_cables) == 1:
-                            bro_uitgifte.get_initial_geo_ohm_data(gmw_dict, gmts, tube_number)
-                            bro_uitgifte.get_initial_electrode_static_data(gmw_dict, gmws, tube_number)
-                            bro_uitgifte.get_initial_electrode_dynamic_data(gmw_dict, gmws, tube_number)
+                            bro.get_initial_geo_ohm_data(gmw_dict, gmts, tube_number)
+                            bro.get_initial_electrode_static_data(gmw_dict, gmws, tube_number)
+                            bro.get_initial_electrode_dynamic_data(gmw_dict, gmws, tube_number)
 
                         elif int(gmts.number_of_geo_ohm_cables) > 1:
                             print(gmw_dict)
@@ -65,17 +98,17 @@ class Command(BaseCommand):
             except:
                 pass
 
-            bro_uitgifte.get_construction_event(gmw_dict, gmws)
+            bro.get_construction_event(gmw_dict, gmws)
             
 
             # Update based on the events
             for nr in range(number_of_events):
                 nr = nr + 1
-                bro_uitgifte.get_intermediate_events(gmw_dict, gmws, nr)
+                bro.get_intermediate_events(gmw_dict, gmws, nr)
                 
 
             if gmw_dict.get("removal_date", None) is not None:
-                bro_uitgifte.get_removal_event(gmw_dict, gmws)
+                bro.get_removal_event(gmw_dict, gmws)
 
             if id % 25 == 0:
                 print(round(id / len(gmw_ids), 2) * 100, "% Complete")

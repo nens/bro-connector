@@ -3,6 +3,7 @@ import requests.auth
 import xml.etree.ElementTree as ET
 import psycopg2
 import psycopg2.sql
+import pandas as pd
 import json
 import os
 from datetime import datetime, timedelta
@@ -29,28 +30,29 @@ DB_PORT = "5432"
 
 # FORMULAS USED IN HISTORIE_OPHALEN COMMAND DJANGO ZEELAND
 
+class DataRetriever(object):
+    def __init__(self, kvk_nummer):
+        self.kvk_nummer = kvk_nummer
+        self.bro_ids = []
 
-def get_bro_ids(kvk_nummer):
-    basis_url = "https://publiek.broservices.nl"
-    kvk_verzoek = requests.get(
-        basis_url + "/gm/gmw/v1/bro-ids?bronhouder=" + str(kvk_nummer)
-    )
+    def request_bro_ids(self):
+        basis_url = "https://publiek.broservices.nl"
+        kvk_verzoek = requests.get(
+            basis_url + "/gm/gmw/v1/bro-ids?bronhouder=" + str(self.kvk_nummer)
+        )
+        self.bro_ids = json.loads(kvk_verzoek.text)["broIds"]
 
-    bro_ids = json.loads(kvk_verzoek.text)
-    return bro_ids["broIds"]
+    def get_ids_kvk(self):
+        self.gmw_ids = []
+        self.other_ids = []
 
+        self.request_bro_ids()
 
-def get_gmw_ids(IDs):
-    gmw_ids = []
-    other_ids = []
-
-    for id in IDs:
-        if id.startswith("GMW"):
-            gmw_ids.append(id)
-        else:
-            other_ids.append(id)
-
-    return gmw_ids
+        for id in self.bro_ids:
+            if id.startswith("GMW"):
+                self.gmw_ids.append(id)
+            else:
+                self.other_ids.append(id)
 
 
 def get_gmw_data(id: str, full_history: bool):
@@ -500,3 +502,27 @@ def get_removal_event(gmw_dict, groundwater_monitoring_well_static):
                         groundwater_monitoring_well = groundwater_monitoring_well_static).first(),
             )
     event.save()
+
+def check_filetype(csv_file: str):
+    if ".xlsx" in csv_file:
+        filetype = "Excel"
+
+    elif ".csv" in csv_file:
+        filetype = "CSV"
+
+    else:
+        raise Exception("Given file is not a CSV or Excel file.")
+
+    return filetype
+
+def read_datafile(file: str, type: str):
+    if type == 'Excel':
+        df = pd.read_excel(file)
+    
+    elif type == 'CSV':
+        df = pd.read_csv(file)
+
+    else:
+        raise Exception("Current filetype not yet implemented.")
+
+    return df
