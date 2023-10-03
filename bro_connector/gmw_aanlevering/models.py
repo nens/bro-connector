@@ -167,7 +167,12 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
 
     def __str__(self):
 
-        return self.groundwater_monitoring_tube_dynamic_id
+        try:
+            well = str(self.groundwater_monitoring_well.bro_id)
+        except:
+            well = 'Onbekend'
+
+        return('{}, tube {}'.format(well , self.groundwater_monitoring_tube_static.tube_number))
 
     class Meta:
         managed = True
