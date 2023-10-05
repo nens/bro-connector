@@ -83,7 +83,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     )  # This field type is a guess.
 
     def __str__(self):
-        return(self.bro_id)
+        return(self.groundwater_monitoring_well.bro_id)
 
 
     class Meta:
@@ -221,7 +221,7 @@ class ElectrodeDynamic(models.Model):
     )  # This field type is a guess.
 
     def __str__(self):
-        return(self.electrode_dynamic_id)
+        return(self.electrode_static.electrode_static_id)
 
 
     class Meta:
