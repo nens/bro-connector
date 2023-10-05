@@ -51,7 +51,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
         return self.coordinates.y
     
     def __str__(self):
-        return(self.bro_id)
+        return(str(self.bro_id))
 
 
     class Meta:
@@ -83,7 +83,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     )  # This field type is a guess.
 
     def __str__(self):
-        return(self.groundwater_monitoring_well.bro_id)
+        return(str(self.groundwater_monitoring_well.bro_id))
 
 
     class Meta:
@@ -185,7 +185,7 @@ class GeoOhmCable(models.Model):
     cable_number = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
-        return(self.geo_ohm_cable_id)
+        return(str(self.geo_ohm_cable_id))
 
 
     class Meta:
@@ -204,7 +204,7 @@ class ElectrodeStatic(models.Model):
     )  # This field type is a guess.
 
     def __str__(self):
-        return(self.electrode_static_id)
+        return(str(self.electrode_static_id))
 
 
     class Meta:
@@ -221,7 +221,7 @@ class ElectrodeDynamic(models.Model):
     )  # This field type is a guess.
 
     def __str__(self):
-        return(self.electrode_static.electrode_static_id)
+        return(str(self.electrode_static.electrode_static_id))
 
 
     class Meta:
@@ -242,7 +242,7 @@ class Event(models.Model):
 
 
     def __str__(self):
-        return(self.change_id)
+        return(str(self.change_id))
 
 
     class Meta:
