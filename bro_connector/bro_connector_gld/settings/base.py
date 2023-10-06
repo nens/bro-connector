@@ -253,8 +253,8 @@ GMW_AANLEVERING_SETTINGS = {
     "monitoringnetworks": None,
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gmw_aanlevering/additions"),
-    "startregistrations_dir": os.path.join(
-        BASE_DIR, "gmw_aanlevering/startregistrations"
+    "registrations_dir": os.path.join(
+        BASE_DIR, "gmw_aanlevering/registrations"
     ),
 }
 
