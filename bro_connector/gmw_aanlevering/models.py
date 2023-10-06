@@ -43,6 +43,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
     vertical_datum = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
+    current_in_bro = models.BooleanField(blank=True, default=False)
 
     def x(self):
             return self.coordinates.x

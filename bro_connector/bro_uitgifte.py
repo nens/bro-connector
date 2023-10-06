@@ -282,6 +282,7 @@ class InitializeData:
                     ),  # -> Not in XML, maybe under review?
                     vertical_datum=self.gmw_dict.get("verticalDatum", None),
                     well_code=self.gmw_dict.get("wellCode", None),
+                    current_in_bro = True
                     ## Have to readjust the methodology slightly because if there are multiple events they cannot all have the same names and dates...
                 )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)\
         self.gmws.save()
