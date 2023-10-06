@@ -241,6 +241,23 @@ GLD_AANLEVERING_SETTINGS = {
     ),
 }
 
+GMW_AANLEVERING_SETTINGS = {
+    "acces_token_bro_portal_demo": {
+        "user": bro_demo_user,
+        "pass": bro_demo_password,
+    },
+    "acces_token_bro_portal_bro_connector": {
+        "user": bro_production_user,
+        "pass": bro_production_password,
+    },
+    "monitoringnetworks": None,
+    "demo": demo,
+    "additions_dir": os.path.join(BASE_DIR, "gmw_aanlevering/additions"),
+    "startregistrations_dir": os.path.join(
+        BASE_DIR, "gmw_aanlevering/startregistrations"
+    ),
+}
+
 # Quick Scan SETTINGS
 QUICK_SCAN_SETTINGS = {
     "jump_slope_limit": 1 / (60 * 60),  # m/s (1/3600 m/s = 1 m/h)
