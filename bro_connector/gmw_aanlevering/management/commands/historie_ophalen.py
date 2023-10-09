@@ -5,7 +5,7 @@ from __future__ import division
 
 from django.core.management.base import BaseCommand
 
-import bro_uitgifte as bro
+import bro_connector.gmw_aanlevering.management.commands.tasks.bro_uitgifte as bro
 
 
 from gmw_aanlevering.models import (
