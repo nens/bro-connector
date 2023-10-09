@@ -1,14 +1,10 @@
 from django.contrib import admin
-from django.contrib import messages
-from django.utils.translation import ngettext
 from django import forms
-from django.contrib.gis.geos import GEOSGeometry, LineString, Point
-
+from django.contrib.gis.geos import GEOSGeometry
 
 import os
 
 from . import models
-from main.settings.base import GLD_AANLEVERING_SETTINGS
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
