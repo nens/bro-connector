@@ -7,7 +7,7 @@ import os
 
 from . import models
 
-from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
+from main.settings.base import GLD_AANLEVERING_SETTINGS
 
 
 from gld_aanlevering.management.commands.gld_registrations_create import (

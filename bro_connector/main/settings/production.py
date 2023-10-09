@@ -12,11 +12,11 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 import os
-from bro_connector_gld.settings.base import *
-from bro_connector_gld.localsecret import p_user, p_password, p_host, p_port
+from main.settings.base import *
+from main.localsecret import p_user, p_password, p_host, p_port
 
 DEBUG = True
-ROOT_URLCONF = "bro_connector_gld.urls"
+ROOT_URLCONF = "main.urls"
 SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
 
 DATABASES = {

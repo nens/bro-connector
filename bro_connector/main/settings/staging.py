@@ -10,23 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-import os
 from pathlib import Path
-from bro_connector_gld.settings.base import *
+import os
+from main.settings.base import *
 
 DEBUG = True
-ROOT_URLCONF = "bro_connector_gld.urls"
+ROOT_URLCONF = "main.urls"
 SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
-
 
 DATABASES = {
     "default": {
         "NAME": "grondwatermeetnet",
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "USER": t_user,
-        "PASSWORD": t_password,
-        "HOST": t_host,
-        "PORT": t_port,
-        "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
+        "USER": s_user,
+        "PASSWORD": s_password,
+        "HOST": s_host,
+        "PORT": s_port,
+        "OPTIONS": {"options": "-c search_path=django_admin,public"},
     },
 }

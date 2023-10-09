@@ -12,7 +12,7 @@ import datetime
 import logging
 import bisect
 
-from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
+from main.settings.base import GLD_AANLEVERING_SETTINGS
 from gld_aanlevering import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]

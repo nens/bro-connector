@@ -2,22 +2,22 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-from bro_connector_gld.settings.base import ENVIRONMENT
+from main.settings.base import ENVIRONMENT
 
 
 def main():
     """Run administrative tasks."""
     if ENVIRONMENT == "production":
         os.environ.setdefault(
-            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.production"
+            "DJANGO_SETTINGS_MODULE", "main.settings.production"
         )
     elif ENVIRONMENT == "staging":
         os.environ.setdefault(
-            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.staging"
+            "DJANGO_SETTINGS_MODULE", "main.settings.staging"
         )
     elif ENVIRONMENT == "test":
         os.environ.setdefault(
-            "DJANGO_SETTINGS_MODULE", "bro_connector_gld.settings.test"
+            "DJANGO_SETTINGS_MODULE", "main.settings.test"
         )
 
     try:

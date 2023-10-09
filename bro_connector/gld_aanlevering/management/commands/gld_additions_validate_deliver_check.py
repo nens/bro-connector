@@ -9,8 +9,8 @@ from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
-from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
-from bro_connector_gld import settings
+from main.settings.base import GLD_AANLEVERING_SETTINGS
+from main import settings
 from gld_aanlevering import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]

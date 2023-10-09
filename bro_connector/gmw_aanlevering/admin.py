@@ -8,7 +8,7 @@ from django.contrib.gis.geos import GEOSGeometry, LineString, Point
 import os
 
 from . import models
-from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
+from main.settings.base import GLD_AANLEVERING_SETTINGS
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
