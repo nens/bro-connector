@@ -40,8 +40,10 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "jazzmin",
+    "main",
     "gld_aanlevering",
     "gmw_aanlevering",
+    "gmn_aanlevering",
     "admin_reorder",
     "django_extensions",
     "django.contrib.admin",

@@ -10,7 +10,7 @@ from . import models
 from main.settings.base import GLD_AANLEVERING_SETTINGS
 
 
-from gld_aanlevering.management.commands.gld_registrations_create import (
+from main.management.commands.gld_registrations_create import (
     create_start_registration_sourcedocs,
     validate_gld_startregistration_request,
     deliver_startregistration_sourcedocuments,
@@ -18,12 +18,12 @@ from gld_aanlevering.management.commands.gld_registrations_create import (
 )
 
 
-from gld_aanlevering.management.commands.gld_additions_create import (
+from main.management.commands.gld_additions_create import (
     get_observation_gld_source_document_data,
     generate_gld_addition_sourcedoc_data,
 )
 
-from gld_aanlevering.management.commands.gld_additions_validate_deliver_check import (
+from main.management.commands.gld_additions_validate_deliver_check import (
     validate_gld_addition_source_document,
     deliver_gld_addition_source_document,
     check_status_gld_addition,
