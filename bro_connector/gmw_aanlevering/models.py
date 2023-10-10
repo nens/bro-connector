@@ -43,6 +43,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
     vertical_datum = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
+    # Added for GMW delivery
+    current_in_bro = models.BooleanField(blank=True, default=False) # Is it in its current state in the BRO
+    complete_bro = models.BooleanField(blank=True, default=False) # Is the data in the table complete as required for the BRO
 
     # Added for GMW delivery
     current_in_bro = models.BooleanField(blank=True, default=False) # Is it in its current state in the BRO

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-NOTE: INITIALISES THE GMW REGISTER IN DE CSV DATABASE AND IN LIZARD
-CURRENTLY A COPY OF GLD WITH MINOR TWEAKS
+NOTE: INITIALISES THE GLD REGISTER IN DE CSV DATABASE AND IN LIZARD
 """
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -25,8 +24,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from bro_connector_gld.settings.base import GMW_AANLEVERING_SETTINGS
-from gmw_aanlevering import models
+from main.settings.base import GLD_AANLEVERING_SETTINGS
+from gld_aanlevering import models
 
 field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
 
@@ -256,22 +255,22 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
     return observation_procedure_data
 
 
-def get_observation_gmw_source_document_data(observation):
+def get_observation_gld_source_document_data(observation):
 
     """
-    Generate the gmw addition sourcedocs, without result data
+    Generate the GLD addition sourcedocs, without result data
     """
-    gmw_id_database = observation.groundwater_level_dossier_id
-    gmw_data = models.GroundwaterLevelDossier.objects.get(
-        groundwater_level_dossier_id=gmw_id_database
+    gld_id_database = observation.groundwater_level_dossier_id
+    gld_data = models.GroundwaterLevelDossier.objects.get(
+        groundwater_level_dossier_id=gld_id_database
     )
-    gmw_bro_id = gmw_data.gmw_bro_id
+    gmw_bro_id = gld_data.gmw_bro_id
 
     # Get the quality regime for the well
     gmw_well = models.GroundwaterMonitoringWells.objects.get(bro_id=gmw_bro_id)
     quality_regime = gmw_well.quality_regime
 
-    # Get the gmw registration id for this measurement timeseries
+    # Get the GLD registration id for this measurement timeseries
     # Check which parts of the observation have already been succesfully delivered
 
 
@@ -322,30 +321,31 @@ def get_observation_gmw_source_document_data(observation):
     return source_document_data, addition_type
 
 
-def get_gmw_registration_data(observation):
+def get_gld_registration_data_for_observation(observation):
 
     """
-    Each observation has a GWM id
-    When delivering the observations we get the gmw id from the observation
+    Each observation has a GLD id and GWM id
+    When delivering the observations we get the GLD id from the observation
     We use the GWM id to get the quality regime for the well in which the measurement was taken
     """
 
-    # Get the GMW bro id
-    gmw_id_database = observation.groundwater_level_dossier_id
-    gmw_data = models.GroundwaterLevelDossier.objects.get(
-        groundwater_level_dossier_id=gmw_id_database
+    # Get the GLD bro id
+    gld_id_database = observation.groundwater_level_dossier_id
+    gld_data = models.GroundwaterLevelDossier.objects.get(
+        groundwater_level_dossier_id=gld_id_database
     )
-    gmw_bro_id = gmw_data.gmw_bro_id
+    gld_bro_id = gld_data.gld_bro_id
+    gmw_bro_id = gld_data.gmw_bro_id
 
     # Get the quality regime for the well
     # TODO quality regime changes, new well in database?
-    gmw_well = models.GroundwaterMonitoringWellsStatic.objects.get(bro_id=gmw_bro_id)
+    gmw_well = models.GroundwaterMonitoringWells.objects.get(bro_id=gmw_bro_id)
     quality_regime = 'IMBRO' #gmw_well.quality_regime
 
-    return gmw_bro_id, quality_regime
+    return gld_bro_id, quality_regime
 
 
-def generate_gmw_addition_sourcedoc_data(
+def generate_gld_addition_sourcedoc_data(
     observation,
     observation_source_document_data,
     additions_dir,
@@ -362,7 +362,7 @@ def generate_gmw_addition_sourcedoc_data(
         observation.observation_id
     )
 
-    gmw_bro_id, quality_regime = get_gmw_registration_data(observation)
+    gld_bro_id, quality_regime = get_gld_registration_data_for_observation(observation)
 
     # try to create source document
     try:
@@ -371,40 +371,40 @@ def generate_gmw_addition_sourcedoc_data(
         final_timestamp_date = datetime.datetime.fromisoformat(final_timestamp).date()
 
         # Add the timeseries to the sourcedocument
-        gmw_addition_sourcedocument = deepcopy(observation_source_document_data)
-        gmw_addition_sourcedocument["metadata"][
+        gld_addition_sourcedocument = deepcopy(observation_source_document_data)
+        gld_addition_sourcedocument["metadata"][
             "dateStamp"
         ] = final_timestamp_date.isoformat()
-        gmw_addition_sourcedocument["result"] = list(measurement_timeseries_tvp)
+        gld_addition_sourcedocument["result"] = list(measurement_timeseries_tvp)
 
         # filename should be unique
-        filename = "gmw_Addition_Observation_{}_gmw_{}.xml".format(
-            observation.observation_id, gmw_bro_id
+        filename = "GLD_Addition_Observation_{}_GLD_{}.xml".format(
+            observation.observation_id, gld_bro_id
         )
 
         # Create addition source document
-        gmw_addition_registration_request = brx.gmw_registration_request(
-            srcdoc="gmw_Addition",
+        gld_addition_registration_request = brx.gld_registration_request(
+            srcdoc="GLD_Addition",
             requestReference=filename,
             deliveryAccountableParty="27376655",  # investigator_identification (NENS voor TEST)
             qualityRegime=quality_regime,
-            broId=gmw_bro_id,
-            srcdocdata=gmw_addition_sourcedocument,
+            broId=gld_bro_id,
+            srcdocdata=gld_addition_sourcedocument,
         )
 
-        gmw_addition_registration_request.generate()
+        gld_addition_registration_request.generate()
 
-        gmw_addition_registration_request.write_request(
+        gld_addition_registration_request.write_request(
             output_dir=additions_dir, filename=filename
         )
 
-        record, created = models.gmw_addition_log.objects.update_or_create(
+        record, created = models.gld_addition_log.objects.update_or_create(
             observation_id=observation.observation_id,
             defaults=dict(
                 date_modified=datetime.datetime.now(),
                 start=first_timestamp,
                 end=final_timestamp,
-                broid_registration=gmw_bro_id,
+                broid_registration=gld_bro_id,
                 comments="Succesfully generated XML sourcedocument",
                 file=filename,
                 validation_status=None,
@@ -419,10 +419,10 @@ def generate_gmw_addition_sourcedoc_data(
     # Failure to create the source document for this observation
     except Exception as e:
         # all_records_created = False
-        record, created = models.gmw_addition_log.objects.update_or_create(
+        record, created = models.gld_addition_log.objects.update_or_create(
             observation_id=observation.observation_id,
             date_modified=datetime.datetime.now(),
-            broid_registration=gmw_bro_id,
+            broid_registration=gld_bro_id,
             comments="Failed to generate XML source document, {}".format(e),
         )
 
@@ -434,37 +434,37 @@ def generate_gmw_addition_sourcedoc_data(
 
 def create_new_observations():
     """
-    Add a new observation for every gmw that has no open observation
+    Add a new observation for every GLD that has no open observation
     An observation is open if it has no status. Once it has a status, it is
     (being) delivered to BRO and no new time-value pairs can be added.
 
-    This function does not create the first observation of a gmw, this
+    This function does not create the first observation of a GLD, this
     should be done manually because of connections with the metadata.
     """
 
-    gmws = models.GroundwaterLevelDossier.objects.all()
-    for gmw in gmws:
-        gmw_id = gmw.groundwater_level_dossier_id
-        observations_per_gmw = models.Observation.objects.filter(
-            groundwater_level_dossier_id=gmw_id
+    glds = models.GroundwaterLevelDossier.objects.all()
+    for gld in glds:
+        gld_id = gld.groundwater_level_dossier_id
+        observations_per_gld = models.Observation.objects.filter(
+            groundwater_level_dossier_id=gld_id
         )
-        observation_status_per_gmw = observations_per_gmw.filter(status=None)
+        observation_status_per_gld = observations_per_gld.filter(status=None)
 
         # if there is no empty observation status, a new observation is needed
-        if not observation_status_per_gmw:
+        if not observation_status_per_gld:
             # gather information about the previous observation
             try:
-                previous_gmw_observation = observations_per_gmw.last()
+                previous_gld_observation = observations_per_gld.last()
                 previous_observation_metadata_id = (
-                    previous_gmw_observation.observation_metadata_id
+                    previous_gld_observation.observation_metadata_id
                 )
                 previous_observation_process_id = (
-                    previous_gmw_observation.observation_process_id
+                    previous_gld_observation.observation_process_id
                 )
             except:
                 print(
-                    "No observations exist yet for gmw {}, please create an observation".format(
-                        gmw_id
+                    "No observations exist yet for GLD {}, please create an observation".format(
+                        gld_id
                     )
                 )
                 continue
@@ -475,7 +475,7 @@ def create_new_observations():
                 ),
                 observation_metadata_id=previous_observation_metadata_id,
                 observation_process_id=previous_observation_process_id,
-                groundwater_level_dossier_id=gmw_id,
+                groundwater_level_dossier_id=gld_id,
             )
             new_observation.save()
 
@@ -491,19 +491,19 @@ def create_addition_sourcedocuments_for_observations(
     observation_set = models.Observation.objects.all()
 
     for observation in observation_set:
-        # If there is not a gmw registration present in the database we can't create sourcedocs
-        gmw_id_database = observation.groundwater_level_dossier_id
+        # If there is not a GLD registration present in the database we can't create sourcedocs
+        gld_id_database = observation.groundwater_level_dossier_id
         if not models.GroundwaterLevelDossier.objects.filter(
-            groundwater_level_dossier_id=gmw_id_database
+            groundwater_level_dossier_id=gld_id_database
         ).exists():
             continue
 
 
 
-        # An addition sourcedocument shouldn't be created if the BroId of the gmw registration is not available
+        # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
         if not models.GroundwaterLevelDossier.objects.get(
-            groundwater_level_dossier_id=gmw_id_database
-        ).gmw_bro_id:
+            groundwater_level_dossier_id=gld_id_database
+        ).gld_bro_id:
             continue
 
         observation_tvps = models.MeasurementTvp.objects.filter(
@@ -527,9 +527,9 @@ def create_addition_sourcedocuments_for_observations(
             (
                 observation_source_document_data,
                 addition_type,
-            ) = get_observation_gmw_source_document_data(observation)
+            ) = get_observation_gld_source_document_data(observation)
 
-            generate_gmw_addition_sourcedoc_data(
+            generate_gld_addition_sourcedoc_data(
                 observation,
                 observation_source_document_data,
                 additions_dir,
@@ -548,9 +548,9 @@ def create_addition_sourcedocuments_for_observations(
             (
                 observation_source_document_data,
                 addition_type,
-            ) = get_observation_gmw_source_document_data(observation)
+            ) = get_observation_gld_source_document_data(observation)
 
-            generate_gmw_addition_sourcedoc_data(
+            generate_gld_addition_sourcedoc_data(
                 observation,
                 observation_source_document_data,
                 additions_dir,
@@ -563,9 +563,9 @@ def create_addition_sourcedocuments_for_observations(
             (
                 observation_source_document_data,
                 addition_type,
-            ) = get_observation_gmw_source_document_data(observation)
+            ) = get_observation_gld_source_document_data(observation)
 
-            generate_gmw_addition_sourcedoc_data(
+            generate_gld_addition_sourcedoc_data(
                 observation,
                 observation_source_document_data,
                 additions_dir,
@@ -580,7 +580,7 @@ def create_addition_sourcedocuments_for_observations(
         elif observation.status == "observation_corrected":
             # TODO Change request
             # This is basically the same as an addition with corrected values and corrected reason
-            # We can recreate the same delivery sourcedocs with corrected values and deliver to the same gmw research
+            # We can recreate the same delivery sourcedocs with corrected values and deliver to the same GLD research
             pass
 
 
@@ -588,17 +588,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # print(NENS_DEMO_SETTINGS)
 
-        demo = GMW_AANLEVERING_SETTINGS["demo"]
+        demo = GLD_AANLEVERING_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GMW_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GMW_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        additions_dir = GMW_AANLEVERING_SETTINGS["additions_dir"]
+        additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]
 
         create_addition_sourcedocuments_for_observations(
             additions_dir, acces_token_bro_portal
