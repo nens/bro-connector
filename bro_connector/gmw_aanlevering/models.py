@@ -122,7 +122,7 @@ class GroundwaterMonitoringTubesStatic(models.Model):
     sediment_sump_length = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
-    gmm_measuring_point = models.ForeignKey(MeasuringPoint, on_delete=models.CASCADE)
+    gmn_measuring_point = models.ForeignKey(MeasuringPoint, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
 

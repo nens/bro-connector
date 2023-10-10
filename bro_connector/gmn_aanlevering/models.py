@@ -8,8 +8,14 @@ class GroundwaterMonitoringNet(models.Model):
     broid_gmn = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
     )
-    accountable_party = models.CharField(
-        max_length=255, null=True, blank=True
+    delivery_accountable_party = models.CharField(
+        max_length=255, null=True, blank=True,
+    )
+    delivery_responsible_party = models.CharField(
+        max_length=255, null=True, blank=True,
+    )
+    quality_regime = models.CharField(
+        max_length=255, null=True, blank=True,
     )
     object_id_accountable_party = models.CharField(
         max_length=255, null=True, blank=True,
@@ -23,13 +29,13 @@ class GroundwaterMonitoringNet(models.Model):
         verbose_name="Kader aanlevering",
         choices=KADER_AANLEVERING_GMN,
     )
-    monitoringPurpose = models.CharField(
+    monitoring_purpose = models.CharField(
         blank=False,
         max_length=235,
         verbose_name="Monitoringdoel",
         choices= MONITORINGDOEL,
     )
-    groundwaterAspect = models.CharField(
+    groundwater_aspect = models.CharField(
         blank=True,
         max_length=235,
         verbose_name="Grondwateraspect",
@@ -43,21 +49,50 @@ class GroundwaterMonitoringNet(models.Model):
 
 
     def __str__(self):
-        return self.naam
+        return self.name
     
     def __unicode__(self):
-        return self.naam
+        return self.name
         
     class Meta:
             managed = True
-            db_table = 'gmn"."Meetnet'
+            db_table = 'gmn"."groundwater_monitoring_net'
             verbose_name = "BRO meetnet"
             verbose_name_plural = "BRO meetnetten (2.1)"
             _admin_name = "BRO meetnet"
-            ordering = ("naam",)
+            ordering = ("name",)
 
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
     code = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
     )
+    def __str__(self):
+        return self.code
+    
+    class Meta:
+            managed = True
+            db_table = 'gmn"."measuring_point'
+            verbose_name = "BRO Meetpunt"
+            verbose_name_plural = "BRO Meetpunt (3.1)"
+            _admin_name = "BRO Meetpunt"
+            ordering = ("code",)
+
+
+class IntermediateEvent(models.Model):
+    id = models.AutoField(primary_key=True)
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
+    event_name =  models.TextField(
+        blank=True, null=True
+    )
+    event_date = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.code
+    
+    class Meta:
+            managed = True
+            db_table = 'gmn"."intermediate_event'
+            verbose_name = "Meetnet Tussentijdse Gebeurtenis"
+            _admin_name = "Meetnet Tussentijdse Gebeurtenis"
+            ordering = ("event_date",)
