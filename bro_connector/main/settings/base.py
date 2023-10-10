@@ -252,7 +252,6 @@ GMW_AANLEVERING_SETTINGS = {
         "user": bro_production_user,
         "pass": bro_production_password,
     },
-    "monitoringnetworks": None,
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gmw_aanlevering/additions"),
     "registrations_dir": os.path.join(
