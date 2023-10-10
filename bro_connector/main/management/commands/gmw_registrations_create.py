@@ -134,11 +134,12 @@ def get_static_source_doc_data(bro_well: models.GroundwaterMonitoringWellStatic)
 
     return source_doc_data
 
-def create_registration_sourcedocs(
+def create_sourcedocs(
     quality_regime: str,
     delivery_accountable_party,
     well: models.GroundwaterMonitoringWellStatic,
     registrations_dir,
+    source_doc_type: str
     # Might want to add a variable for with or without history
 ):
 
@@ -147,6 +148,8 @@ def create_registration_sourcedocs(
     Registration requests are saved to .xml file in registrations folder
     """
 
+    brx.gmw_registration_request.validate_source_doc_type(source_doc_type)
+
     try:
         # Retrieve general static information of the well
         srcdocdata = get_static_source_doc_data(well)
@@ -154,12 +157,12 @@ def create_registration_sourcedocs(
         # # How many records are already registered -> change the reference
         records_in_register = records_in_registrations(srcdocdata['broId'])
         
-        request_reference = f"{srcdocdata['broId']}_Registration_{records_in_register}"
+        request_reference = f"{srcdocdata['broId']}_{source_doc_type}_{records_in_register}"
 
         # Check what kind of request is required and make as followed.
         # Registrate with history
         gmw_registration_request = brx.gmw_registration_request(
-            srcdoc="GMW_ConstructionWithHistory",
+            srcdoc=f"GMW_{source_doc_type}",
             requestReference=request_reference,
             deliveryAccountableParty=delivery_accountable_party,
             qualityRegime=quality_regime,
@@ -172,12 +175,12 @@ def create_registration_sourcedocs(
             output_dir=registrations_dir, filename=filename
         )
 
-        process_status = "succesfully_generated_registration_request"
+        process_status = f"succesfully_generated_{source_doc_type}_request"
         record, created = models.gmw_registration_log.objects.update_or_create(
             gwm_bro_id=srcdocdata['broId'],
             quality_regime=quality_regime,
             defaults=dict(
-                comments="Succesfully generated registration request",
+                comments=f"succesfully generated {source_doc_type} request",
                 date_modified=datetime.datetime.now(),
                 validation_status=None,
                 process_status=process_status,
@@ -187,14 +190,12 @@ def create_registration_sourcedocs(
 
     except Exception as e:
 
-        process_status = "failed_to_generate_source_documents"
+        process_status = f"failed_to_generate_source_documents"
         record, created = models.gmw_registration_log.objects.update_or_create(
             bro_id=srcdocdata['broId'],
             quality_regime=quality_regime,
             defaults=dict(
-                comments="Failed to create registration source document: {}".format(
-                    e
-                ),
+                comments=f"Failed to create {source_doc_type} source document: {e}",
                 date_modified=datetime.datetime.now(),
                 process_status=process_status,
             ),
@@ -528,9 +529,9 @@ def gmw_registration_wells(
             )
 
         # Get some well properties
-        registration_object_id_well = well.groundwater_monitoring_well_static_id
-        quality_regime = well.quality_regime
         bro_id = well.bro_id
+        quality_regime = well.quality_regime
+        
 
         # Check if there is already a registration for this well
         if not models.gmw_registration_log.objects.filter(
@@ -542,12 +543,12 @@ def gmw_registration_wells(
             # By creating the sourcedocs (or failng to do so), a registration is made in the database
             # This registration is used to track the progress of the delivery in further steps
 
-            delivery_accountable_party = str(well.delivery_accountable_party)
-            registration = create_registration_sourcedocs(
-                quality_regime,
-                delivery_accountable_party,
-                well,
-                registrations_dir,
+            create_sourcedocs(
+                quality_regime = quality_regime,
+                delivery_accountable_party = str(well.delivery_accountable_party),
+                well = well,
+                registrations_dir = registrations_dir,
+                source_doc_type = 'Construction'
             )
 
 
@@ -639,7 +640,7 @@ def gmw_check_existing_registrations(
                 == "source_document_validation_succesful"
                 and get_registration_validation_status(registration_id) == "VALIDE"
             ):
-                delivery_status = registrations_dir(
+                delivery_status = deliver_sourcedocuments(
                     registration_id,
                     registrations_dir,
                     acces_token_bro_portal,
