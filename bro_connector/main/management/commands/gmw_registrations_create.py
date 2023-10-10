@@ -134,6 +134,19 @@ def get_static_source_doc_data(bro_well: models.GroundwaterMonitoringWellStatic)
 
     return source_doc_data
 
+def validate_source_doc_type(source_doc_type):
+    full_source_doc_type = f"GMW_{source_doc_type}"
+    
+    # From bro-exchange
+    allowed_srcdocs = ['GMW_Construction','GMW_WellHeadProtector','GMW_Lengthening',
+                       'GMW_GroundLevel','GMW_Owner','GMW_Shortening','GMW_Positions',
+                       'GMW_ElectrodeStatus','GMW_Maintainer','GMW_TubeStatus',
+                       'GMW_Insertion','GMW_Shift','GMW_Removal','GMW_GroundLevelMeasuring',
+                       'GMW_PositionsMeasuring','GMW_ConstructionWithHistory']
+
+    if full_source_doc_type not in allowed_srcdocs:
+        raise Exception("Invalid source document type.")
+
 def create_sourcedocs(
     quality_regime: str,
     delivery_accountable_party,
@@ -148,7 +161,7 @@ def create_sourcedocs(
     Registration requests are saved to .xml file in registrations folder
     """
 
-    brx.gmw_registration_request.validate_source_doc_type(source_doc_type)
+    validate_source_doc_type(source_doc_type)
 
     try:
         # Retrieve general static information of the well
@@ -520,12 +533,11 @@ def gmw_registration_wells(
     """
 
     # Pak de construction events, filter welke events al in de BRO staan
-    get_events = GetEvents()
-    construction_events = get_events.construction()
+    construction_events = GetEvents.construction()
 
     for event in construction_events:
         well = models.GroundwaterMonitoringWellStatic.objects.get(
-                groundwater_monitoring_well_static_id = event.groundwater_monitoring_well_static
+                bro_id = event.groundwater_monitoring_well_static
             )
 
         # Get some well properties
@@ -703,6 +715,8 @@ class Command(BaseCommand):
         registration = gmw_registration_wells(
             acces_token_bro_portal, registrations_dir, demo
         )
+
+        exit()
 
         #print('check status')
         # Check existing registrations
