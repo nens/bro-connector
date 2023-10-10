@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import transaction, models
 
 import pandas as pd
 import requests
@@ -20,13 +20,126 @@ failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 def records_in_registrations(bro_id) -> int:
     return len(models.gmw_registration_log.objects.filter(bro_id = bro_id))
 
+
+class DjangoTableToDict:
+    def __init__(self, well: models.GroundwaterMonitoringWellStatic, datafile):
+        self.datafile = datafile
+        self.well = well
+        self.tubes = {}
+        self.geo_ohm_cables = {}
+        self.electrodes = {}
+
+    def update_static_well(self):
+        static_well_data = {
+            "registrationObjectType": self.well.registration_object_type,
+            "broId": self.well.bro_id,
+            "requestReference": self.well.request_reference,
+            "deliveryAccountableParty": self.well.delivery_accountable_party,
+            "deliveryResponsibleParty": self.well.delivery_responsible_party,
+            "qualityRegime": self.well.quality_regime,
+            "underPrivilige": self.well.under_privilege,
+            "deliveryContext": self.well.delivery_context,
+            "constructionStandard": self.well.construction_standard,
+            "initialFunction": self.well.initial_function,
+            "nitgCode": self.well.nitg_code,
+            "olgaCoda": self.well.olga_code,
+            "wellCode": self.well.well_code,
+            "monitoringPdokId": self.well.monitoring_pdok_id,
+            "coordinates": self.well.coordinates,
+            "referenceSystem": self.well.reference_system,
+            "horizontalPositioningMethod": self.well.horizontal_positioning_method,
+            "localVerticalReferencePoint": self.well.local_vertical_reference_point,
+            "offset": self.well.well_offset,
+            "verticalDatum": self.well.vertical_datum,
+        }
+        self.datafile.update(static_well_data)
+    
+    def get_all_tubes(self):
+        return models.GroundwaterMonitoringTubesStatic.objects.filter(
+                groundwater_monitoring_well = self.well.groundwater_monitoring_well_static_id,
+            )
+
+    def update_static_tube(self, tube: models.GroundwaterMonitoringTubesStatic):
+        static_tube_data = {
+            "tubeNumber": tube.tube_number,
+            "tubeType": tube.tube_type,
+            "artesianWellCapPresent": tube.artesian_well_cap_present,
+            "sedimentSumpPresent": tube.sediment_sump_present,
+            "numberOfGeoOhmCables": tube.number_of_geo_ohm_cables,
+            "tubeMaterial": tube.tube_material,
+            "screenLength": tube.screen_length,
+            "sockMaterial": tube.sock_material,
+            "sedimentSumpLength": tube.sediment_sump_length,
+        }
+
+        if tube.number_of_geo_ohm_cables > 0:
+
+            geo_ohm_cables = self.get_all_geo_ohm_cables(tube)
+
+            for geo_ohm_cable in geo_ohm_cables:
+
+                self.update_static_geo_ohm_cable(geo_ohm_cable)
+
+                electrodes = self.get_all_electrodes(geo_ohm_cable)
+                
+                for electrode in electrodes:
+
+                    self.update_static_electrode(electrode)
+        
+        self.tubes[tube.groundwater_monitoring_tube_static_id] = static_tube_data
+        self.datafile['monitoringTubes'] = self.tubes
+    
+    def get_all_geo_ohm_cables(self, tube: models.GroundwaterMonitoringTubesStatic):
+        return models.GeoOhmCable.objects.filter(
+                groundwater_monitoring_tube_static = tube.groundwater_monitoring_tube_static_id,
+            )
+
+    def update_static_geo_ohm_cable(self, geo_ohm_cable: models.GeoOhmCable):
+        geo_ohm_cable_data = {
+            "cableNumber": geo_ohm_cable.cable_number
+        }
+        self.geo_ohm_cables[geo_ohm_cable.geo_ohm_cable_id] = geo_ohm_cable_data
+        self.datafile['geoOhmCables'] = self.geo_ohm_cables
+    
+    def get_all_electrodes(self, geo_ohm_cable: models.GeoOhmCable):
+        return models.ElectrodeStatic.objects.filter(
+                geo_ohm_cable = geo_ohm_cable.geo_ohm_cable_id
+            )
+
+    def update_static_electrode(self, electrode: models.ElectrodeStatic):
+        electrode_static_data = {
+            "electrodePackingMaterial": electrode.electrode_packing_material,
+            "electrodePosition": electrode.electrode_position,
+        }
+
+        self.electrodes[electrode.electrode_static_id] = electrode_static_data
+        self.datafile['electrodes'] = self.electrodes
+    
+
+def get_static_source_doc_data(bro_well: models.GroundwaterMonitoringWellStatic) -> dict:
+    """
+    Retrieve all the data from the Django database to make it available for the source doc generation.
+    """
+    source_doc_data = {}
+
+    # Initialize data retriever
+    get_data = DjangoTableToDict(well = bro_well, datafile = source_doc_data)
+
+    # Get all static data
+    get_data.update_static_well()
+    
+    tubes = get_data.get_all_tubes()
+    for tube in tubes:
+        get_data.update_static_tube(tube)
+
+    return source_doc_data
+
 def create_registration_sourcedocs(
-    quality_regime,
+    quality_regime: str,
     delivery_accountable_party,
-    bro_id,
-    locationcode,
+    well: models.GroundwaterMonitoringWellStatic,
     registrations_dir,
-    monitoringnetworks,
+    # Might want to add a variable for with or without history
 ):
 
     """
@@ -35,27 +148,18 @@ def create_registration_sourcedocs(
     """
 
     try:
-        monitoringpoints = [{"broId": bro_id}]
+        # Retrieve general static information of the well
+        srcdocdata = get_static_source_doc_data(well)
+        
+        # # How many records are already registered -> change the reference
+        records_in_register = records_in_registrations(srcdocdata['broId'])
+        
+        request_reference = f"{srcdocdata['broId']}_Registration_{records_in_register}"
 
-        if monitoringnetworks == None:
-
-            srcdocdata = {
-                "objectIdAccountableParty": locationcode,
-                "monitoringPoints": monitoringpoints,
-            }
-        else:
-            srcdocdata = {
-                "objectIdAccountableParty": locationcode,
-                "groundwaterMonitoringNets": monitoringnetworks,  #
-                "monitoringPoints": monitoringpoints,
-            }
-
-        records_in_register = records_in_registrations(bro_id)
-
-        request_reference = f"{bro_id}_Registration_{records_in_register}"
-
+        # Check what kind of request is required and make as followed.
+        # Registrate with history
         gmw_registration_request = brx.gmw_registration_request(
-            srcdoc="GMW_registration",
+            srcdoc="GMW_ConstructionWithHistory",
             requestReference=request_reference,
             deliveryAccountableParty=delivery_accountable_party,
             qualityRegime=quality_regime,
@@ -70,7 +174,7 @@ def create_registration_sourcedocs(
 
         process_status = "succesfully_generated_registration_request"
         record, created = models.gmw_registration_log.objects.update_or_create(
-            gwm_bro_id=bro_id,
+            gwm_bro_id=srcdocdata['broId'],
             quality_regime=quality_regime,
             defaults=dict(
                 comments="Succesfully generated registration request",
@@ -85,7 +189,7 @@ def create_registration_sourcedocs(
 
         process_status = "failed_to_generate_source_documents"
         record, created = models.gmw_registration_log.objects.update_or_create(
-            gwm_bro_id=bro_id,
+            bro_id=srcdocdata['broId'],
             quality_regime=quality_regime,
             defaults=dict(
                 comments="Failed to create registration source document: {}".format(
@@ -315,8 +419,97 @@ def get_registration_validation_status(registration_id):
     return validation_status
 
 
+class GetEvents:
+    """
+    A Class that helps retrieving different types of events.
+    The events will have information linking to the data that changed.
+    """
+    def construction():
+        return models.Event.objects.filter(
+            event_name = 'construction',
+            event_in_bro = False,
+        )
+
+    def wellHeadProtector():
+        return models.Event.objects.filter(
+            event_name = 'beschermconstructieVeranderd',
+            event_in_bro = False,
+        )
+    
+    def lengthening():
+        return models.Event.objects.filter(
+            event_name = 'buisOpgelengd',
+            event_in_bro = False,
+        )
+    
+    def shortening():
+        return models.Event.objects.filter(
+            event_name = 'buisIngekort',
+            event_in_bro = False,
+        )
+    
+    def groundLevelMeasuring():
+        return models.Event.objects.filter(
+            event_name = 'nieuweInmetingMaaiveld',
+            event_in_bro = False,
+        )
+    
+    def positionMeasuring():
+        return models.Event.objects.filter(
+            event_name = 'nieuweInmetingPosities',
+            event_in_bro = False,
+        )
+    
+    def groundLevel():
+        return models.Event.objects.filter(
+            event_name = 'nieuweBepalingMaaiveld',
+            event_in_bro = False,
+        )
+    
+    def owner():
+        return models.Event.objects.filter(
+            event_name = 'eigenaarVeranderd',
+            event_in_bro = False,
+        )
+    
+    def positions():
+        return models.Event.objects.filter(
+            event_name = 'construction',
+            event_in_bro = False,
+        )
+    
+    def electrodeStatus():
+        return models.Event.objects.filter(
+            event_name = 'construction',
+            event_in_bro = False,
+        )
+    
+    def maintainer():
+        return models.Event.objects.filter(
+            event_name = 'onderhouderVeranderd',
+            event_in_bro = False,
+        )
+    
+    def tubeStatus():
+        return models.Event.objects.filter(
+            event_name = 'buisstatusVeranderd',
+            event_in_bro = False,
+        )
+    
+    def insertion():
+        return models.Event.objects.filter(
+            event_name = 'buisdeelIngeplaatst',
+            event_in_bro = False,
+        )
+    
+    def shift():
+        return models.Event.objects.filter(
+            event_name = 'maaiveldVerlegd',
+            event_in_bro = False,
+        )
+
 def gmw_registration_wells(
-    acces_token_bro_portal, monitoringnetworks, registrations_dir, demo
+    acces_token_bro_portal, registrations_dir, demo
 ):
 
     """
@@ -325,27 +518,23 @@ def gmw_registration_wells(
     This will not interfere with additions, as a check will be done on registration availibility
     """
 
-    gwm_wells = models.GroundwaterMonitoringWellStatic.objects.all()
-    # Loop over all GMW objects in the database
-    for well in gwm_wells:
+    # Pak de construction events, filter welke events al in de BRO staan
+    get_events = GetEvents()
+    construction_events = get_events.construction()
 
-        # Ignore wells that are  delivered to BRO
-        if well.current_in_bro == True:
-            continue
-        
-        if demo == True:
-            #print(well.bro_id)
-            if well.bro_id != 'GMW000000042583':
-                continue
+    for event in construction_events:
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+                groundwater_monitoring_well_static_id = event.groundwater_monitoring_well_static
+            )
 
         # Get some well properties
         registration_object_id_well = well.groundwater_monitoring_well_static_id
         quality_regime = well.quality_regime
-        gwm_bro_id = well.bro_id
+        bro_id = well.bro_id
 
         # Check if there is already a registration for this well
         if not models.gmw_registration_log.objects.filter(
-            gwm_bro_id=gwm_bro_id, quality_regime=quality_regime
+            bro_id=bro_id, quality_regime=quality_regime
         ).exists():
 
             # There is not a gmw registration object with this configuration
@@ -354,15 +543,11 @@ def gmw_registration_wells(
             # This registration is used to track the progress of the delivery in further steps
 
             delivery_accountable_party = str(well.delivery_accountable_party)
-            well_bro_id = well.bro_id
-            location_code_internal = well.nitg_code
             registration = create_registration_sourcedocs(
                 quality_regime,
                 delivery_accountable_party,
-                well_bro_id,
-                location_code_internal,
+                well,
                 registrations_dir,
-                monitoringnetworks,
             )
 
 
@@ -510,13 +695,12 @@ class Command(BaseCommand):
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        monitoringnetworks = GMW_AANLEVERING_SETTINGS["monitoringnetworks"]
         registrations_dir = GMW_AANLEVERING_SETTINGS["registrations_dir"]
 
         #print('start registrations')
         # Check the database for new wells/tubes and start a gmw registration for these objects if its it needed
         registration = gmw_registration_wells(
-            acces_token_bro_portal, monitoringnetworks, registrations_dir, demo
+            acces_token_bro_portal, registrations_dir, demo
         )
 
         #print('check status')
