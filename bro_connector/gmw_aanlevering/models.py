@@ -43,7 +43,11 @@ class GroundwaterMonitoringWellStatic(models.Model):
     vertical_datum = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    current_in_bro = models.BooleanField(blank=True, default=False)
+
+    # Added for GMW delivery
+    current_in_bro = models.BooleanField(blank=True, default=False) # Is it in its current state in the BRO
+    complete_bro = models.BooleanField(blank=True, default=False) # Is the data in the table complete as required for the BRO
+    
 
     def x(self):
             return self.coordinates.x
@@ -254,7 +258,7 @@ class Event(models.Model):
 class gmw_registration_log(models.Model):
     id = models.AutoField(primary_key=True)
     date_modified = models.CharField(max_length=254, null=True, blank=True)
-    gwm_bro_id = models.CharField(max_length=254, null=True, blank=True)
+    bro_id = models.CharField(max_length=254, null=True, blank=True)
     # filter_id = models.CharField(max_length=254, null=True, blank=True) -> Should we even add filters? Is it needed?
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
