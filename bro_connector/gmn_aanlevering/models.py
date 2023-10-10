@@ -53,12 +53,16 @@ class GroundwaterMonitoringNet(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    @property
+    def measuring_point_count(self):
+        return MeasuringPoint.objects.filter(gmn=self).count()
         
     class Meta:
             managed = True
             db_table = 'gmn"."groundwater_monitoring_net'
-            verbose_name = "BRO meetnet"
-            verbose_name_plural = "BRO meetnetten (2.1)"
+            verbose_name = "Groundwater Monitoring Network"
+            verbose_name_plural = "Groundwater Monitoring Networks (2.1)"
             _admin_name = "BRO meetnet"
             ordering = ("name",)
 
@@ -73,8 +77,8 @@ class MeasuringPoint(models.Model):
     class Meta:
             managed = True
             db_table = 'gmn"."measuring_point'
-            verbose_name = "BRO Meetpunt"
-            verbose_name_plural = "BRO Meetpunt (3.1)"
+            verbose_name = "GMN Meetpunt"
+            verbose_name_plural = "GMN Meetpunt (3.1)"
             _admin_name = "BRO Meetpunt"
             ordering = ("code",)
 
@@ -93,6 +97,6 @@ class IntermediateEvent(models.Model):
     class Meta:
             managed = True
             db_table = 'gmn"."intermediate_event'
-            verbose_name = "Meetnet Tussentijdse Gebeurtenis"
-            _admin_name = "Meetnet Tussentijdse Gebeurtenis"
+            verbose_name = "GMN Intermediate Event"
+            _admin_name = "GMN Intermediate Event"
             ordering = ("event_date",)

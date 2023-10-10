@@ -202,8 +202,17 @@ ADMIN_REORDER = (
         ),
     },
     {
+        "app": "gmn_aanlevering",
+        "label": "Grondwatermonitoringsnet (GMN) data", 
+        "models": (
+            "gmn_aanlevering.GroundwaterMonitoringNet",
+            "gmn_aanlevering.MeasuringPoint",
+            "gmn_aanlevering.IntermediateEvent",
+        ),
+    },
+    {
         "app": "gmw_aanlevering",
-        "label": "Grondwatermonitoring data - Statische Data",  # Provincie Zeeland GWM - Data
+        "label": "Grondwatermonitoring data",  # Provincie Zeeland GWM - Data
         "models": (
             "gmw_aanlevering.GroundwaterMonitoringWellStatic",
             "gmw_aanlevering.GroundwaterMonitoringWellDynamic",
