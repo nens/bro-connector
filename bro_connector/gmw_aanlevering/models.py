@@ -43,9 +43,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
     vertical_datum = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    
+
     # Added for GMW delivery
-    current_in_bro = models.BooleanField(blank=True, default=False) # Is it in its current state in the BRO
+    in_bro = models.BooleanField(blank=True, default=False) # Is this well in the BRO
     complete_bro = models.BooleanField(blank=True, default=False) # Is the data in the table complete as required for the BRO
     
 
@@ -192,6 +192,9 @@ class GeoOhmCable(models.Model):
     def __str__(self):
         return(str(self.geo_ohm_cable_id))
 
+    @property
+    def electrode_count(self):
+        return ElectrodeStatic.objects.filter(geo_ohm_cable = self).count()
 
     class Meta:
         managed = True
@@ -244,6 +247,7 @@ class Event(models.Model):
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_tube_dynamic = models.ForeignKey('GroundwaterMonitoringTubesDynamic', on_delete = models.CASCADE, null = True, blank = True)   
     electrode_dynamic = models.ForeignKey('ElectrodeDynamic', on_delete = models.CASCADE, null = True, blank = True)
+    event_in_bro = models.BooleanField(blank = True, default = False)
 
 
     def __str__(self):
