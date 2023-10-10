@@ -24,7 +24,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from bro_connector_gld.settings.base import GLD_AANLEVERING_SETTINGS
+from main.settings.base import GLD_AANLEVERING_SETTINGS
 from gld_aanlevering import models
 
 field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
