@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.gis.db import models as geo_models
+from gmn_aanlevering.models import MeasuringPoint
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
@@ -121,6 +122,7 @@ class GroundwaterMonitoringTubesStatic(models.Model):
     sediment_sump_length = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
+    gmm_measuring_point = models.ForeignKey(MeasuringPoint, on_delete=models.CASCADE)
 
     def __str__(self):
 

@@ -1,52 +1,6 @@
 from django.db import models
+from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
 
-KADER_AANLEVERING_GMN = (
-    ("waterwetStrategischGrondwaterbeheer", "waterwetStrategischGrondwaterbeheer"),
-    ("waterwetGrondwaterzorgplicht", "waterwetGrondwaterzorgplicht"),
-    ("waterwetOnttrekkingInfiltratie", "waterwetOnttrekkingInfiltratie"),
-    ("waterwetPeilbeheer", "waterwetPeilbeheer"),
-    (
-        "waterwetWaterstaatswerkAanlegWijziging",
-        "waterwetWaterstaatswerkAanlegWijziging",
-    ),
-    ("waterwetWaterstaatswerkIngreep", "waterwetWaterstaatswerkIngreep"),
-    ("waterwetWaterstaatswerkBeheer", "waterwetWaterstaatswerkBeheer"),
-    ("kaderrichtlijnWater", "kaderrichtlijnWater"),
-    ("waterschapswet", "waterschapswet"),
-    ("drinkwaterwet", "drinkwaterwet"),
-    ("ontgrondingenwet", "ontgrondingenwet"),
-    ("wetNatuurbescherming", "wetNatuurbescherming"),
-)
-
-MONITORINGDOEL = (
-    ("strategischBeheerKwaliteitLandelijk", "strategischBeheerKwaliteitLandelijk"),
-    ("strategischBeheerKwantiteitLandelijk", "strategischBeheerKwantiteitLandelijk"),
-    ("strategischBeheerKwaliteitRegionaal", "strategischBeheerKwaliteitRegionaal"),
-    ("strategischBeheerKwantiteitRegionaal", "strategischBeheerKwantiteitRegionaal"),
-    ("beheersingStedelijkGebied", "beheersingStedelijkGebied"),
-    ("gevolgenOnttrekkingKwaliteit", "gevolgenOnttrekkingKwaliteit"),
-    ("gevolgenOnttrekkingKwantiteit", "gevolgenOnttrekkingKwantiteit"),
-    ("gevolgenPeilbeheer", "gevolgenPeilbeheer"),
-    ("gevolgenWaterstaatswerkKwaliteit", "gevolgenWaterstaatswerkKwaliteit"),
-    ("gevolgenWaterstaatswerkKwantiteit", "gevolgenWaterstaatswerkKwantiteit"),
-    ("waterstaatswerkBeheerKwaliteit", "waterstaatswerkBeheerKwaliteit"),
-    ("waterstaatswerkBeheerKwantiteit", "waterstaatswerkBeheerKwantiteit"),
-    ("veiligstellingGrondwaterKwaliteit", "veiligstellingGrondwaterKwaliteit"),
-    ("veiligstellingGrondwaterKwantiteit", "veiligstellingGrondwaterKwantiteit"),
-    ("waterstaatkundigeVerzorgingKwaliteit", "waterstaatkundigeVerzorgingKwaliteit"),
-    ("waterstaatkundigeVerzorgingKwantiteit", "waterstaatkundigeVerzorgingKwantiteit"),
-    (
-        "veiligstellingDrinkwatervoorzieningKwaliteit",
-        "veiligstellingDrinkwatervoorzieningKwaliteit",
-    ),
-    (
-        "veiligstellingDrinkwatervoorzieningKwantiteit",
-        "veiligstellingDrinkwatervoorzieningKwantiteit",
-    ),
-    ("gevolgenOntgronding", "gevolgenOntgronding"),
-    ("natuurbescherming", "natuurbescherming"),
-    ("natuurbeheer", "natuurbeheer"),
-)
 
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
@@ -54,8 +8,14 @@ class GroundwaterMonitoringNet(models.Model):
     broid_gmn = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
     )
+    accountable_party = models.CharField(
+        max_length=255, null=True, blank=True
+    )
+    object_id_accountable_party = models.CharField(
+        max_length=255, null=True, blank=True,
+    )
     name = models.CharField(
-        max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
+        max_length=255, null=True, blank=True, verbose_name="Naam"
     )
     delivery_context = models.CharField(
         blank=False,
@@ -78,17 +38,26 @@ class GroundwaterMonitoringNet(models.Model):
             ("kwantiteit", "kwantiteit"),
         ),
     )
+    start_date_monitoring = models.DateField(blank=True, null=True)
+    end_date_monitoring = models.DateField(blank=True, null=True)
+
 
     def __str__(self):
         return self.naam
     
     def __unicode__(self):
         return self.naam
-    
-class Meta:
-        managed = True
-        db_table = 'gmn"."Meetnet'
-        verbose_name = "BRO meetnet"
-        verbose_name_plural = "BRO meetnetten (2.1)"
-        _admin_name = "BRO meetnet"
-        ordering = ("naam",)
+        
+    class Meta:
+            managed = True
+            db_table = 'gmn"."Meetnet'
+            verbose_name = "BRO meetnet"
+            verbose_name_plural = "BRO meetnetten (2.1)"
+            _admin_name = "BRO meetnet"
+            ordering = ("naam",)
+
+class MeasuringPoint(models.Model):
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
+    code = models.CharField(
+        max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
+    )
