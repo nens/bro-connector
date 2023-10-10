@@ -43,6 +43,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
     vertical_datum = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
+    # Added for GMW delivery
+    current_in_bro = models.BooleanField(blank=True, default=False) # Is it in its current state in the BRO
+    complete_bro = models.BooleanField(blank=True, default=False) # Is the data in the table complete as required for the BRO
 
     def x(self):
             return self.coordinates.x
@@ -249,3 +252,23 @@ class Event(models.Model):
         managed = True
         db_table = 'gmw"."event'
         verbose_name_plural = "Events"
+
+class gmw_registration_log(models.Model):
+    id = models.AutoField(primary_key=True)
+    date_modified = models.CharField(max_length=254, null=True, blank=True)
+    bro_id = models.CharField(max_length=254, null=True, blank=True)
+    # filter_id = models.CharField(max_length=254, null=True, blank=True) -> Should we even add filters? Is it needed?
+    validation_status = models.CharField(max_length=254, null=True, blank=True)
+    levering_id = models.CharField(max_length=254, null=True, blank=True)
+    levering_status = models.CharField(max_length=254, null=True, blank=True)
+    comments = models.CharField(max_length=10000, null=True, blank=True)
+    last_changed = models.CharField(max_length=254, null=True, blank=True)
+    corrections_applied = models.BooleanField(blank=True, null=True)
+    quality_regime = models.CharField(max_length=254, null=True, blank=True)
+    file = models.CharField(max_length=254, null=True, blank=True)
+    process_status = models.CharField(max_length=254, null=True, blank=True)
+
+    class Meta:
+        db_table = 'aanlevering"."gmw_registration_log'
+        verbose_name = "GMW registration logging"
+        verbose_name_plural = "GMW registration logging"
