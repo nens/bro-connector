@@ -227,11 +227,11 @@ else:
 
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
-    "acces_token_bro_portal_demo": {
+    "bro_info_demo": {
         "user": bro_demo_user,
         "pass": bro_demo_password,
     },
-    "acces_token_bro_portal_bro_connector": {
+    "bro_info_bro_connector": {
         "user": bro_production_user,
         "pass": bro_production_password,
     },
@@ -241,14 +241,15 @@ GLD_AANLEVERING_SETTINGS = {
     "startregistrations_dir": os.path.join(
         BASE_DIR, "gld_aanlevering/startregistrations"
     ),
+    "api_version": "v1",
 }
 
 GMW_AANLEVERING_SETTINGS = {
-    "acces_token_bro_portal_demo": {
+    "bro_info_demo": {
         "user": bro_demo_user,
         "pass": bro_demo_password,
     },
-    "acces_token_bro_portal_bro_connector": {
+    "bro_info_bro_connector": {
         "user": bro_production_user,
         "pass": bro_production_password,
     },
@@ -257,6 +258,7 @@ GMW_AANLEVERING_SETTINGS = {
     "registrations_dir": os.path.join(
         BASE_DIR, "gmw_aanlevering/registrations"
     ),
+    "api_version": "v1",
 }
 
 # Quick Scan SETTINGS
