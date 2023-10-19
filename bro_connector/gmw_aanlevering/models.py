@@ -263,9 +263,10 @@ class gmw_registration_log(models.Model):
     id = models.AutoField(primary_key=True)
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     bro_id = models.CharField(max_length=254, null=True, blank=True)
-    # filter_id = models.CharField(max_length=254, null=True, blank=True) -> Should we even add filters? Is it needed?
+    event_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
+    levering_type = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
@@ -273,6 +274,9 @@ class gmw_registration_log(models.Model):
     quality_regime = models.CharField(max_length=254, null=True, blank=True)
     file = models.CharField(max_length=254, null=True, blank=True)
     process_status = models.CharField(max_length=254, null=True, blank=True)
+
+    # Could possibly be removed later
+    object_id_accountable_party = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
         db_table = 'aanlevering"."gmw_registration_log'

@@ -71,30 +71,38 @@ class DjangoTableToDict:
             "sedimentSumpPresent": tube.sediment_sump_present,
             "numberOfGeoOhmCables": tube.number_of_geo_ohm_cables,
             "tubeMaterial": tube.tube_material,
-            "screenLength": tube.screen_length,
-            "sockMaterial": tube.sock_material,
+            "screen": {
+                "screenLength": tube.screen_length,
+                "sockMaterial": tube.sock_material
+            },
             "sedimentSumpLength": tube.sediment_sump_length,
         }
-
-        self.tubes[tube.groundwater_monitoring_tube_static_id] = static_tube_data
+        self.tubes[tube.tube_number] = static_tube_data
+        self.tubes[tube.tube_number]['geoOhmCables'] = {}
 
         if tube.number_of_geo_ohm_cables > 0:
 
             geo_ohm_cables = GetDjangoObjects.get_all_geo_ohm_cables(tube.groundwater_monitoring_tube_static_id)
-
+            geo_ohm_cable_number = 0
             for geo_ohm_cable in geo_ohm_cables:
 
                 geo_ohm_cable_data = self.update_static_geo_ohm_cable(geo_ohm_cable)
-                self.tubes[tube.groundwater_monitoring_tube_static_id]['geoOhmCables'] = geo_ohm_cable_data
+                
+                self.tubes[tube.tube_number]['geoOhmCables'][geo_ohm_cable_number] = geo_ohm_cable_data
 
                 electrodes = GetDjangoObjects.get_all_electrodes(geo_ohm_cable.geo_ohm_cable_id)
                 
+                electrodes_number = 0
+                self.tubes[tube.tube_number]['geoOhmCables'][geo_ohm_cable_number]['electrodes'] = {}
+
                 for electrode in electrodes:
 
                     electrodes_data = self.update_static_electrode(electrode)
-                    self.tubes[tube.groundwater_monitoring_tube_static_id]['geoOhmCables'][geo_ohm_cable.geo_ohm_cable_id]['electrodes'] = electrodes_data
-        
-        
+                    self.tubes[tube.tube_number]['geoOhmCables'][geo_ohm_cable_number]['electrodes'][electrodes_number] = electrodes_data
+
+                    electrodes_number += 1
+                
+                geo_ohm_cable_number += 1
         
         return self.tubes
 
@@ -102,8 +110,7 @@ class DjangoTableToDict:
         geo_ohm_cable_data = {
             "cableNumber": geo_ohm_cable.cable_number
         }
-        self.geo_ohm_cables[geo_ohm_cable.geo_ohm_cable_id] = geo_ohm_cable_data
-        return self.geo_ohm_cables
+        return geo_ohm_cable_data
 
     def update_static_electrode(self, electrode: models.ElectrodeStatic):
         electrode_static_data = {
@@ -111,8 +118,7 @@ class DjangoTableToDict:
             "electrodePosition": electrode.electrode_position,
         }
         
-        self.electrodes[electrode.electrode_static_id] = electrode_static_data
-        return self.electrodes
+        return electrode_static_data
 
     def update_dynamic_well(self, dynamic_well: models.GroundwaterMonitoringWellDynamic) -> None:
         dynamic_well_data = {
@@ -137,7 +143,7 @@ class DjangoTableToDict:
             'tubeTopPositioningMethod': dynamic_tube.tube_top_positioning_method,
             'tubePackingMaterial': dynamic_tube.tube_packing_material,
             'glue': dynamic_tube.glue,
-            'plainTubePartLength': dynamic_tube.plain_tube_part_length,
+            'plainTubePart': {'plainTubePartLength': dynamic_tube.plain_tube_part_length},
             'insertedPartDiameter': dynamic_tube.inserted_part_diameter,
             'insertedPartLength': dynamic_tube.inserted_part_length,
             'insertedPartMaterial': dynamic_tube.inserted_part_material,
@@ -217,13 +223,13 @@ class GetEvents:
     
     def positions():
         return models.Event.objects.filter(
-            event_name = 'construction',
+            event_name = 'inmeting',
             event_in_bro = False,
         )
     
     def electrodeStatus():
         return models.Event.objects.filter(
-            event_name = 'construction',
+            event_name = 'electrodeStatus',
             event_in_bro = False,
         )
     
