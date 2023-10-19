@@ -26,8 +26,10 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
 class MeasuringPointAdmin(admin.ModelAdmin):
 
     list_display = (
-        "gmn",
         "code",
+        "gmn",
+        "groundwater_monitoring_tube", 
+        
         
     )
     list_filter = (

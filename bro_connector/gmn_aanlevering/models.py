@@ -1,5 +1,6 @@
 from django.db import models
 from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
+from gmw_aanlevering.models import GroundwaterMonitoringTubesStatic
 
 
 # Create your models here.
@@ -68,9 +69,11 @@ class GroundwaterMonitoringNet(models.Model):
 
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
+    groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = True)
     code = models.CharField(
-        max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
+        max_length=255, null=True, blank=True, editable=False, verbose_name="Meetpunt naam"
     )
+    
     def __str__(self):
         return self.code
     
