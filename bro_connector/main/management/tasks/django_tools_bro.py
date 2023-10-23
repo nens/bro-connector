@@ -37,7 +37,7 @@ class DjangoTableToDict:
         self.geo_ohm_cables = {}
         self.electrodes = {}
 
-    def update_static_well(self, well):
+    def update_static_well(self, well) -> dict:
         static_well_data = {
             "registrationObjectType": well.registration_object_type,
             "broId": well.bro_id,
@@ -62,7 +62,7 @@ class DjangoTableToDict:
         }
         return static_well_data
 
-    def update_static_tube(self, tube: models.GroundwaterMonitoringTubesStatic):
+    def update_static_tube(self, tube: models.GroundwaterMonitoringTubesStatic) -> dict:
         
         static_tube_data = {
             "tubeNumber": tube.tube_number,
@@ -106,13 +106,13 @@ class DjangoTableToDict:
         
         return static_tube_data
 
-    def update_static_geo_ohm_cable(self, geo_ohm_cable: models.GeoOhmCable):
+    def update_static_geo_ohm_cable(self, geo_ohm_cable: models.GeoOhmCable) -> dict:
         geo_ohm_cable_data = {
             "cableNumber": geo_ohm_cable.cable_number
         }
         return geo_ohm_cable_data
 
-    def update_static_electrode(self, electrode: models.ElectrodeStatic):
+    def update_static_electrode(self, electrode: models.ElectrodeStatic) -> dict:
         electrode_static_data = {
             "electrodePackingMaterial": electrode.electrode_packing_material,
             "electrodePosition": electrode.electrode_position,
@@ -120,7 +120,7 @@ class DjangoTableToDict:
         
         return electrode_static_data
 
-    def update_dynamic_well(self, dynamic_well: models.GroundwaterMonitoringWellDynamic) -> None:
+    def update_dynamic_well(self, dynamic_well: models.GroundwaterMonitoringWellDynamic) -> dict:
         dynamic_well_data = {
             'numberOfStandpipes': dynamic_well.number_of_standpipes,
             'groundLevelStable': dynamic_well.ground_level_stable,
@@ -134,7 +134,7 @@ class DjangoTableToDict:
         }
         return dynamic_well_data
 
-    def update_dynamic_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic) -> None:
+    def update_dynamic_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic) -> dict:
         dynamic_tube_data = {
             'tubeTopDiameter': dynamic_tube.tube_top_diameter,
             'variableDiameter': dynamic_tube.variable_diameter,
@@ -150,7 +150,7 @@ class DjangoTableToDict:
         }
         return dynamic_tube_data
 
-    def update_dynamic_electrode(self, dynamic_electrode: models.ElectrodeDynamic) -> None:
+    def update_dynamic_electrode(self, dynamic_electrode: models.ElectrodeDynamic) -> dict:
         dynamic_electrode_data = {
             'electrodeNumber': dynamic_electrode.electrode_number,
             'electrodeStatus': dynamic_electrode.electrode_status,
@@ -158,7 +158,7 @@ class DjangoTableToDict:
         
         return dynamic_electrode_data
 
-    def update_workaround_data(self):
+    def update_workaround_data(self) -> dict:
         workaround_data = {
         # Additions required for different generations in bro-exchange -> WORK-AROUND
             "numberOfMonitoringTubes": 1, # This is set static as we are only ever handling one monitoring tube per event.

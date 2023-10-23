@@ -117,9 +117,13 @@ class GetSourceDocData:
     def handle_individual_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic):
         self.datafile['monitoringTubes'] = {}
 
+        # Static
         static_tube_data = self.get_data.update_static_tube(dynamic_tube.groundwater_monitoring_tube_static)
         self.datafile['monitoringTubes'][0] = static_tube_data
-        self.handle_dynamic_tube(self, dynamic_tube, 0)
+
+        # Dynamic
+        dynamic_tube_data = self.get_data.update_dynamic_tube(dynamic_tube)
+        self.datafile['monitoringTubes'][0].update(dynamic_tube_data)
 
     def handle_dynamic_well(self, well_dynamic: models.GroundwaterMonitoringWellDynamic):
         dynamic_well_data = self.get_data.update_dynamic_well(well_dynamic)
@@ -239,9 +243,16 @@ class GetSourceDocData:
         self.datafile.update({'numberOfTubesShortened': 1})
         self.datafile.update({'numberOfTubesLengthened': 0})
 
-
         # Get tube information
         self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic)
+
+        tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
+
+        material_used = self.create_material_used_dict(
+                tube_static=tube_static,
+                tube_dynamic=event.groundwater_monitoring_well_tube_dynamic,
+            )
+        self.datafile['monitoringTubes'][0].update(material_used)
 
 
     def lengthening(self, event: models.Event) -> None:
@@ -260,15 +271,19 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        if event.groundwater_monitoring_well_tube_dynamic != None:
-            # There is always only change to one tube
-            self.datafile.update({'numberOfTubesLengthened': 1})
-            self.datafile.update({'numberOfTubesShortened': 0})
+        self.datafile.update({'numberOfTubesLengthened': 1})
+        self.datafile.update({'numberOfTubesShortened': 0})      
 
-            
+        # Get tube information
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic)
 
-            # Get tube information
-            self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic)
+        tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
+
+        material_used = self.create_material_used_dict(
+            tube_static= tube_static,
+            tube_dynamic=event.groundwater_monitoring_well_tube_dynamic,
+        )
+        self.datafile['monitoringTubes'][0].update(material_used)
 
     def positions_measuring(self, event: models.Event) -> None:
         """
@@ -286,16 +301,16 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        # If the id is given get the information directly
-        if event.groundwater_monitoring_well_dynamic != None:
-            self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+        ic(event.groundwater_monitoring_well_dynamic, event.groundwater_monitoring_well_tube_dynamic)
 
-            delivered_vertical_position = self.create_delivered_vertical_position_dict(
-                well_static=event.groundwater_monitoring_well_static, 
-                well_dynamic=event.groundwater_monitoring_well_dynamic,
-            )
+        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
 
-            self.datafile.update(delivered_vertical_position)
+        delivered_vertical_position = self.create_delivered_vertical_position_dict(
+            well_static=event.groundwater_monitoring_well_static, 
+            well_dynamic=event.groundwater_monitoring_well_dynamic,
+        )
+
+        self.datafile.update(delivered_vertical_position)
 
     def well_head_protector(self, event: models.Event) -> None:
         """
@@ -313,28 +328,39 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        # If the id is given get the information directly
-        if event.groundwater_monitoring_well_dynamic != None:
-            self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
 
-            delivered_vertical_position = self.create_delivered_vertical_position_dict(
-                well_static=event.groundwater_monitoring_well_static, 
-                well_dynamic=event.groundwater_monitoring_well_dynamic,
-            )
+        delivered_vertical_position = self.create_delivered_vertical_position_dict(
+            well_static=event.groundwater_monitoring_well_static, 
+            well_dynamic=event.groundwater_monitoring_well_dynamic,
+        )
 
-            self.datafile.update(delivered_vertical_position)
+        self.datafile.update(delivered_vertical_position)
 
     def positions(self, event: models.Event) -> None:
         # If the id is given get the information directly
-        if event.groundwater_monitoring_well_dynamic != None:
-            self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = str(event.groundwater_monitoring_well_static)
+        )
 
-            delivered_vertical_position = self.create_delivered_vertical_position_dict(
-                well_static=event.groundwater_monitoring_well_static, 
-                well_dynamic=event.groundwater_monitoring_well_dynamic,
-            )
+        # Get all static well data
+        static_well_data = self.get_data.update_static_well(well)
+        self.datafile.update(static_well_data)
 
-            self.datafile.update(delivered_vertical_position)
+        # Get delivered vertical position
+        delivered_location = self.create_delivered_location_dict(well)
+        self.datafile.update(delivered_location)
+
+        ic(event.groundwater_monitoring_well_dynamic, event.groundwater_monitoring_well_tube_dynamic)
+
+        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+
+        delivered_vertical_position = self.create_delivered_vertical_position_dict(
+            well_static=event.groundwater_monitoring_well_static, 
+            well_dynamic=event.groundwater_monitoring_well_dynamic,
+        )
+
+        self.datafile.update(delivered_vertical_position)
 
 
 
@@ -354,16 +380,14 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        # If the id is given get the information directly
-        if event.groundwater_monitoring_well_dynamic != None:
-            self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
 
-            delivered_vertical_position = self.create_delivered_vertical_position_dict(
-                well_static=event.groundwater_monitoring_well_static, 
-                well_dynamic=event.groundwater_monitoring_well_dynamic,
-            )
+        delivered_vertical_position = self.create_delivered_vertical_position_dict(
+            well_static=event.groundwater_monitoring_well_static, 
+            well_dynamic=event.groundwater_monitoring_well_dynamic,
+        )
 
-            self.datafile.update(delivered_vertical_position)
+        self.datafile.update(delivered_vertical_position)
 
     def ground_level(self, event: models.Event) -> None:
         """
