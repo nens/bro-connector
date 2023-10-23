@@ -260,7 +260,6 @@ class Event(models.Model):
         verbose_name_plural = "Events"
 
 class gmw_registration_log(models.Model):
-    id = models.AutoField(primary_key=True)
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     bro_id = models.CharField(max_length=254, null=True, blank=True)
     event_id = models.CharField(max_length=254, null=True, blank=True)
