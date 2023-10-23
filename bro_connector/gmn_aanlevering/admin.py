@@ -9,7 +9,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
-        "broid_gmn",
+        "gmn_bro_id",
         "name",
         "measuring_point_count",
         "quality_regime",
@@ -19,7 +19,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "start_date_monitoring",
     )
     list_filter = (
-        "broid_gmn",
+        "gmn_bro_id",
         "name",
     )
 
@@ -49,6 +49,18 @@ class IntermediateEventAdmin(admin.ModelAdmin):
         "event_name",
     )
 
+class gmn_registration_logAdmin(admin.ModelAdmin):
+    list_display = (
+        "object_id_accountable_party",
+        "gmn_bro_id",
+        "process_status",
+    )
+    list_filter = (
+        "object_id_accountable_party",
+        "gmn_bro_id",  
+    )
+
 _register(models.GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
 _register(models.MeasuringPoint, MeasuringPointAdmin)
 _register(models.IntermediateEvent, IntermediateEventAdmin)
+_register(models.gmn_registration_log, gmn_registration_logAdmin)

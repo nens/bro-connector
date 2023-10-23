@@ -6,7 +6,7 @@ from gmw_aanlevering.models import GroundwaterMonitoringTubesStatic
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
     id = models.AutoField(primary_key=True)
-    broid_gmn = models.CharField(
+    gmn_bro_id = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
     )
     delivery_accountable_party = models.CharField(
@@ -58,7 +58,8 @@ class GroundwaterMonitoringNet(models.Model):
     @property
     def measuring_point_count(self):
         return MeasuringPoint.objects.filter(gmn=self).count()
-        
+    
+
     class Meta:
             managed = True
             db_table = 'gmn"."groundwater_monitoring_net'
@@ -76,6 +77,7 @@ class MeasuringPoint(models.Model):
     
     def __str__(self):
         return self.code
+        
     
     class Meta:
             managed = True
@@ -103,3 +105,27 @@ class IntermediateEvent(models.Model):
             verbose_name = "GMN Intermediate Event"
             _admin_name = "GMN Intermediate Event"
             ordering = ("event_date",)
+
+
+class gmn_registration_log(models.Model):
+    date_modified = models.DateField(null=True, blank=True)
+    gmn_bro_id = models.CharField(max_length=254, null=True, blank=True)
+    object_id_accountable_party  = models.CharField(max_length=255, null=True, blank=True)
+    validation_status = models.CharField(max_length=254, null=True, blank=True)
+    levering_id = models.CharField(max_length=254, null=True, blank=True)
+    levering_status = models.CharField(max_length=254, null=True, blank=True)
+    comments = models.CharField(max_length=10000, null=True, blank=True)
+    last_changed = models.DateField(null=True, blank=True)
+    corrections_applied = models.BooleanField(blank=True, null=True)
+    timestamp_end_registration = models.DateTimeField(blank=True, null=True)
+    quality_regime = models.CharField(max_length=254, null=True, blank=True)
+    file = models.CharField(max_length=254, null=True, blank=True)
+    process_status = models.CharField(max_length=254, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.object_id_accountable_party}_log"
+
+    class Meta:
+        db_table = 'gmn"."gmn_registration_log'
+        verbose_name = "GMN Registration Log"
+        verbose_name_plural = "GMN Registration Logs"
