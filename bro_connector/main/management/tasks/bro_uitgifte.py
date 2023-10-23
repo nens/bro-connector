@@ -266,11 +266,11 @@ class InitializeData:
 
     def increment_geo_ohm_number(self):
         self.tube_number = self.tube_number + 1
-        prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_"
+        self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_"
 
     def increment_electrode_number(self):
         self.tube_number = self.tube_number + 1
-        prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
+        self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
     def well_static(self):
         self.gmws = GroundwaterMonitoringWellStatic.objects.create(
