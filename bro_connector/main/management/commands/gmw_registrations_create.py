@@ -114,14 +114,20 @@ class GetSourceDocData:
         }
         return material_used
 
+    def handle_individual_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic):
+        self.datafile['monitoringTubes'] = {}
+
+        static_tube_data = self.get_data.update_static_tube(dynamic_tube.groundwater_monitoring_tube_static)
+        self.datafile['monitoringTubes'][0] = static_tube_data
+        self.handle_dynamic_tube(self, dynamic_tube, 0)
 
     def handle_dynamic_well(self, well_dynamic: models.GroundwaterMonitoringWellDynamic):
         dynamic_well_data = self.get_data.update_dynamic_well(well_dynamic)
         self.datafile.update(dynamic_well_data)
 
-    def handle_dynamic_tube(self, tube_dynamic: models.GroundwaterMonitoringTubesDynamic):
+    def handle_dynamic_tube(self, tube_dynamic: models.GroundwaterMonitoringTubesDynamic, tube_number):
         tubes_dynamic_data = self.get_data.update_dynamic_tube(tube_dynamic)
-        self.datafile['monitoringTubes'][tube_dynamic.groundwater_monitoring_tube_static.tube_number].update(tubes_dynamic_data)
+        self.datafile['monitoringTubes'][tube_number].update(tubes_dynamic_data)
 
     def handle_dynamic_electrode(self, electrode_dynamic: models.ElectrodeDynamic):
         electrode_static = GetDjangoObjects.get_electrode_static(electrode_dynamic.electrode_static)
@@ -181,45 +187,105 @@ class GetSourceDocData:
         tubes = GetDjangoObjects.get_all_tubes(well)
 
         self.datafile['monitoringTubes'] = {}
-
+        tube_number = 0
         for tube in tubes:
             tubes_static_data = self.get_data.update_static_tube(tube)
-            self.datafile['monitoringTubes'] = tubes_static_data
+            ic(tubes_static_data)
+            self.datafile['monitoringTubes'][tube_number] = tubes_static_data
 
             tube_dynamic = models.GroundwaterMonitoringTubesDynamic.objects.filter(
                 groundwater_monitoring_tube_static = tube    
             ).order_by('groundwater_monitoring_tube_dynamic_id').first()
 
-            self.handle_dynamic_tube(tube_dynamic)
+            self.handle_dynamic_tube(tube_dynamic, tube_number)
 
             material_used = self.create_material_used_dict(
                 tube_static=tube,
                 tube_dynamic=tube_dynamic,
             )
-            self.datafile['monitoringTubes'][tube.tube_number].update(material_used)
+            self.datafile['monitoringTubes'][tube_number].update(material_used)
+            tube_number += 1
+
+        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+
+        delivered_vertical_position = self.create_delivered_vertical_position_dict(
+            well_static=event.groundwater_monitoring_well_static, 
+            well_dynamic=event.groundwater_monitoring_well_dynamic,
+        )
+        ic(self.datafile)
+        self.datafile.update(delivered_vertical_position)
 
         # Add some data as workaround
         workaround_data = self.get_data.update_workaround_data()
         self.datafile.update(workaround_data)        
 
-
     def shortening(self, event: models.Event) -> None:
+        """
+        Retrieve all the data from the Django database to make it available for shortening generation.
+        """
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = str(event.groundwater_monitoring_well_static)
+        )
 
-        if event.electrode_dynamic != None:
-            electrode_dynamic = models.ElectrodeDynamic.objects.get(
-                electrode_dynamic_id = event.electrode_dynamic
-            )
-            self.handle_dynamic_electrode(event.electrode_dynamic)
+        # Get all static well data
+        static_well_data = self.get_data.update_static_well(well)
+        self.datafile.update(static_well_data)
 
-    def shortening(self, event: models.Event) -> None:
-        self.handle_dynamic_tube(event.groundwater_monitoring_well_tube_dynamic)
+        # Get delivered vertical position
+        delivered_location = self.create_delivered_location_dict(well)
+        self.datafile.update(delivered_location)
+
+        # There is always only change to one tube
+        self.datafile.update({'numberOfTubesShortened': 1})
+        self.datafile.update({'numberOfTubesLengthened': 0})
+
+
+        # Get tube information
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic)
 
 
     def lengthening(self, event: models.Event) -> None:
-        self.handle_dynamic_tube(event.groundwater_monitoring_well_tube_dynamic)
+        """
+        Retrieve all the data from the Django database to make it available for lengthening generation.
+        """
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = str(event.groundwater_monitoring_well_static)
+        )
 
+        # Get all static well data
+        static_well_data = self.get_data.update_static_well(well)
+        self.datafile.update(static_well_data)
+
+        # Get delivered vertical position
+        delivered_location = self.create_delivered_location_dict(well)
+        self.datafile.update(delivered_location)
+
+        if event.groundwater_monitoring_well_tube_dynamic != None:
+            # There is always only change to one tube
+            self.datafile.update({'numberOfTubesLengthened': 1})
+            self.datafile.update({'numberOfTubesShortened': 0})
+
+            
+
+            # Get tube information
+            self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic)
 
     def positions_measuring(self, event: models.Event) -> None:
+        """
+        Retrieve all the data from the Django database to make it available for positionsmeasuring generation.
+        """
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = str(event.groundwater_monitoring_well_static)
+        )
+
+        # Get all static well data
+        static_well_data = self.get_data.update_static_well(well)
+        self.datafile.update(static_well_data)
+
+        # Get delivered vertical position
+        delivered_location = self.create_delivered_location_dict(well)
+        self.datafile.update(delivered_location)
+
         # If the id is given get the information directly
         if event.groundwater_monitoring_well_dynamic != None:
             self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
@@ -230,11 +296,23 @@ class GetSourceDocData:
             )
 
             self.datafile.update(delivered_vertical_position)
-
-        if event.groundwater_monitoring_well_tube_dynamic != None:
-            self.handle_dynamic_tube(event.groundwater_monitoring_well_tube_dynamic)
 
     def well_head_protector(self, event: models.Event) -> None:
+        """
+        Retrieve all the data from the Django database to make it available for wellheadprotector generation.
+        """
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = str(event.groundwater_monitoring_well_static)
+        )
+
+        # Get all static well data
+        static_well_data = self.get_data.update_static_well(well)
+        self.datafile.update(static_well_data)
+
+        # Get delivered vertical position
+        delivered_location = self.create_delivered_location_dict(well)
+        self.datafile.update(delivered_location)
+
         # If the id is given get the information directly
         if event.groundwater_monitoring_well_dynamic != None:
             self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
@@ -245,9 +323,6 @@ class GetSourceDocData:
             )
 
             self.datafile.update(delivered_vertical_position)
-
-        if event.groundwater_monitoring_well_tube_dynamic != None:
-            self.handle_dynamic_tube(event.groundwater_monitoring_well_tube_dynamic)
 
     def positions(self, event: models.Event) -> None:
         # If the id is given get the information directly
@@ -261,10 +336,24 @@ class GetSourceDocData:
 
             self.datafile.update(delivered_vertical_position)
 
-        if event.groundwater_monitoring_well_tube_dynamic != None:
-            self.handle_dynamic_tube(event.groundwater_monitoring_well_tube_dynamic)
+
 
     def ground_level_measuring(self, event: models.Event) -> None:
+        """
+        Retrieve all the data from the Django database to make it available for groundlevelmeasuring generation.
+        """
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = str(event.groundwater_monitoring_well_static)
+        )
+
+        # Get all static well data
+        static_well_data = self.get_data.update_static_well(well)
+        self.datafile.update(static_well_data)
+
+        # Get delivered vertical position
+        delivered_location = self.create_delivered_location_dict(well)
+        self.datafile.update(delivered_location)
+
         # If the id is given get the information directly
         if event.groundwater_monitoring_well_dynamic != None:
             self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
@@ -275,9 +364,6 @@ class GetSourceDocData:
             )
 
             self.datafile.update(delivered_vertical_position)
-
-        if event.groundwater_monitoring_well_tube_dynamic != None:
-            self.handle_dynamic_tube(event.groundwater_monitoring_well_tube_dynamic)
 
     def ground_level(self, event: models.Event) -> None:
         """
@@ -306,8 +392,6 @@ class GetSourceDocData:
 
             self.datafile.update(delivered_vertical_position)
 
-        if event.groundwater_monitoring_well_tube_dynamic != None:
-            self.handle_dynamic_tube(event.groundwater_monitoring_well_tube_dynamic)
 
 def validate_source_doc_type(source_doc_type):
     full_source_doc_type = f"GMW_{source_doc_type}"
@@ -372,6 +456,7 @@ def create_sourcedocs(
             )
 
         else:
+            ic(srcdocdata)
             gmw_registration_request = brx.gmw_registration_request(
                 srcdoc=f"GMW_{source_doc_type}",
                 requestReference=request_reference,
