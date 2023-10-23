@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from psycopg2.extras import execute_values
 from pathlib import Path
+from icecream import *
 
 from gmw_aanlevering.models import (
     GroundwaterMonitoringWellStatic,
@@ -126,6 +127,8 @@ class GMWHandler:
     def __init__(self):
         self.number_of_events = 0
         self.number_of_tubes  = 0
+        self.number_of_geo_ohm_cables = 0
+        self.number_of_electrodes = 0
         self.dict = {}
 
     def get_data(self, id: str, full_history: bool):
@@ -165,6 +168,14 @@ class GMWHandler:
                 self.number_of_tubes = self.number_of_tubes + 1
                 prefix = "tube_" + str(self.number_of_tubes) + "_"
 
+            elif split[1] == "geoOhmCable":
+                self.number_of_geo_ohm_cables = self.number_of_geo_ohm_cables + 1
+                prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_"
+
+            elif split[1] == "electrode":
+                self.number_of_electrodes = self.number_of_electrodes + 1
+                prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_electrode_{str(self.number_of_electrodes)}_"
+
             tag = str(prefix) + split[1]
 
             tags.append(tag)
@@ -177,6 +188,8 @@ class GMWHandler:
     def reset_values(self):
         self.number_of_events = 0
         self.number_of_tubes  = 0
+        self.number_of_geo_ohm_cables = 0
+        self.number_of_electrodes = 0
 
 
 def slice(sourcedict, string):
@@ -230,6 +243,9 @@ def get_mytimezone_date(original_datetime):
 class InitializeData:
 
     tube_number = 0
+    geo_ohm_number = 0
+    electrode_number = 0
+
     prefix = f"tube_{tube_number}_"
 
     def __init__(self, gmw_dict):
@@ -237,10 +253,24 @@ class InitializeData:
 
     def reset_tube_number(self):
         self.tube_number = 0
+    
+    def reset_geo_ohm_number(self):
+        self.geo_ohm_number = 0
+    
+    def reset_electrode_number(self):
+        self.electrode_number = 0
 
     def increment_tube_number(self):
         self.tube_number = self.tube_number + 1
         self.prefix =f"tube_{self.tube_number}_"
+
+    def increment_geo_ohm_number(self):
+        self.tube_number = self.tube_number + 1
+        prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_"
+
+    def increment_electrode_number(self):
+        self.tube_number = self.tube_number + 1
+        prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
     def well_static(self):
         self.gmws = GroundwaterMonitoringWellStatic.objects.create(
@@ -282,7 +312,7 @@ class InitializeData:
                     ),  # -> Not in XML, maybe under review?
                     vertical_datum=self.gmw_dict.get("verticalDatum", None),
                     well_code=self.gmw_dict.get("wellCode", None),
-                    current_in_bro = True
+                    in_bro = True
                     ## Have to readjust the methodology slightly because if there are multiple events they cannot all have the same names and dates...
                 )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)\
         self.gmws.save()
@@ -446,7 +476,7 @@ def get_tube_static(groundwater_monitoring_well, tube_number):
     )
     return gmts_id
 
-def get_tube_dynamic_history(well_static, updates):
+def get_tube_dynamic_history(well_static: GroundwaterMonitoringWellStatic, updates):
     try:
         # Find which filter needs to be adjusted
         new_gmts = GroundwaterMonitoringTubesStatic.objects.get(
@@ -458,7 +488,7 @@ def get_tube_dynamic_history(well_static, updates):
         new_gmtds = GroundwaterMonitoringTubesDynamic.objects.filter(
             groundwater_monitoring_tube_static = new_gmts)
     except:
-        raise Exception("failed to create new tube: ", updates)
+        raise Exception("failed to create new tube: ", updates, well_static.groundwater_monitoring_well_static_id)
     
     return new_gmtds
 

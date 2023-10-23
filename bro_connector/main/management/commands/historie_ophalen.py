@@ -6,6 +6,7 @@ from __future__ import division
 from django.core.management.base import BaseCommand
 
 from ..tasks import bro_uitgifte as bro
+from icecream import *
 
 
 from gmw_aanlevering.models import (
@@ -76,10 +77,17 @@ class Command(BaseCommand):
 
                     try:
                         for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
+                            ini.increment_geo_ohm_number()
+                            ic(gmw_dict)
                             ini.geo_ohm()
-                            ini.electrode_static()
-                            ini.electrode_dynamic()
 
+                            for electrode in range(int(gmw.number_of_electrodes)):
+                                ini.increment_electrode_number()
+                                ini.electrode_static()
+                                ini.electrode_dynamic()
+                            
+                            ini.reset_electrode_number()
+                        ini.reset_geo_ohm_number()
                     except:
                         raise Exception("Failed")
             except:
