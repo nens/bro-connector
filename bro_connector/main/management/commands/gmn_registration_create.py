@@ -26,7 +26,7 @@ class Command(BaseCommand):
                 object_id_accountable_party = monitoring_network.object_id_accountable_party,
             )
 
-            if gmn_registration_log_obj.exists() and gmn_registration_log_obj.process_status == 'succesfully_generated_startregistration_request':
+            if gmn_registration_log_obj.exists() and gmn_registration_log_obj[0].process_status == 'succesfully_generated_startregistration_request':
                 print(f"Succesvolle registratie log gevonden voor {monitoring_network}. De registratie hiervoor wordt overgeslagen.")
                 continue
             else:
@@ -72,7 +72,7 @@ class Command(BaseCommand):
                 "deliveryContext": monitoring_network.delivery_context,
                 "monitoringPurpose": monitoring_network.monitoring_purpose,
                 "groundwaterAspect": monitoring_network.groundwater_aspect,
-                "startDateMonitoring": [monitoring_network.start_date_monitoring, "date"],
+                "startDateMonitoring": [str(monitoring_network.start_date_monitoring), "date"],
                 "measuringPoints": measuringpoints,
             }
 
@@ -86,8 +86,10 @@ class Command(BaseCommand):
                 srcdocdata = srcdocdata,
             )
 
+
             # Generate the startregistration request
             gmn_startregistration_request.generate()
+
             
             # Write the request
             xml_filename = f"register {monitoring_network.name}.xml"
@@ -111,6 +113,7 @@ class Command(BaseCommand):
             
         except Exception as e:
             gmn_registration_log.objects.update_or_create(
+                object_id_accountable_party = monitoring_network.object_id_accountable_party,
                 gmn_bro_id=monitoring_network.gmn_bro_id,
                 quality_regime=monitoring_network.quality_regime,
                 defaults=dict(
