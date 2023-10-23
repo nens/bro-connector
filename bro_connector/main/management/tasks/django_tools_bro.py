@@ -77,8 +77,8 @@ class DjangoTableToDict:
             },
             "sedimentSumpLength": tube.sediment_sump_length,
         }
-        self.tubes[tube.tube_number] = static_tube_data
-        self.tubes[tube.tube_number]['geoOhmCables'] = {}
+        
+        static_tube_data['geoOhmCables'] = {}
 
         if tube.number_of_geo_ohm_cables > 0:
 
@@ -88,23 +88,23 @@ class DjangoTableToDict:
 
                 geo_ohm_cable_data = self.update_static_geo_ohm_cable(geo_ohm_cable)
                 
-                self.tubes[tube.tube_number]['geoOhmCables'][geo_ohm_cable_number] = geo_ohm_cable_data
+                static_tube_data['geoOhmCables'][geo_ohm_cable_number] = geo_ohm_cable_data
 
                 electrodes = GetDjangoObjects.get_all_electrodes(geo_ohm_cable.geo_ohm_cable_id)
                 
                 electrodes_number = 0
-                self.tubes[tube.tube_number]['geoOhmCables'][geo_ohm_cable_number]['electrodes'] = {}
+                static_tube_data['geoOhmCables'][geo_ohm_cable_number]['electrodes'] = {}
 
                 for electrode in electrodes:
 
                     electrodes_data = self.update_static_electrode(electrode)
-                    self.tubes[tube.tube_number]['geoOhmCables'][geo_ohm_cable_number]['electrodes'][electrodes_number] = electrodes_data
+                    static_tube_data['geoOhmCables'][geo_ohm_cable_number]['electrodes'][electrodes_number] = electrodes_data
 
                     electrodes_number += 1
                 
                 geo_ohm_cable_number += 1
         
-        return self.tubes
+        return static_tube_data
 
     def update_static_geo_ohm_cable(self, geo_ohm_cable: models.GeoOhmCable):
         geo_ohm_cable_data = {
