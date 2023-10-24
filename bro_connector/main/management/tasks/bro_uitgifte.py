@@ -265,11 +265,11 @@ class InitializeData:
         self.prefix =f"tube_{self.tube_number}_"
 
     def increment_geo_ohm_number(self):
-        self.tube_number = self.tube_number + 1
+        self.geo_ohm_number = self.geo_ohm_number + 1
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_"
 
     def increment_electrode_number(self):
-        self.tube_number = self.tube_number + 1
+        self.electrode_number = self.electrode_number + 1
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
     def well_static(self):
@@ -408,9 +408,10 @@ class InitializeData:
         self.gmtd.save()
 
     def geo_ohm(self):
+        ic(self.prefix)
         self.geoc = GeoOhmCable.objects.create(
                                     groundwater_monitoring_tube_static=self.gmts,
-                                    cable_number=self.gmw_dict.get(self.prefix + "cableNumber", None),
+                                    cable_number=ic(self.gmw_dict.get(self.prefix + "cableNumber", None)),
                                 )  # not in XML -> 0 cables)
         self.geoc.save()
 
@@ -442,11 +443,18 @@ class InitializeData:
 
 
 def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
+    if 'construction_date' in gmw_dict:
+        date = gmw_dict["construction_date"]
+        
+    elif 'construction_year' in gmw_dict:
+        date = gmw_dict["construction_year"]
+    
+    else:
+        raise Exception(f"date/year not found in dict: {gmw_dict}")
+    
     event = Event.objects.create(
                 event_name = "construction",
-                event_date = get_mytimezone_date(gmw_dict.get(
-                    "construction_date", None
-                )),
+                event_date = date,
                 groundwater_monitoring_well_static = groundwater_monitoring_well_static,
                 groundwater_monitoring_well_dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
                     groundwater_monitoring_well = groundwater_monitoring_well_static).first(),
@@ -512,22 +520,24 @@ class Updater:
         self.event_updates = slice(self.gmw_dict, self.prefix)
 
     def create_base(self):
+        if 'date' in self.event_updates:
+            date = self.event_updates["date"]
+        
+        elif 'year' in self.event_updates:
+            date = self.event_updates["year"]
+    
+        else:
+            raise Exception(f"date/year not found in dict: {self.event_updates}")
+
         try:
             self.event = Event.objects.create(
                 event_name = self.event_updates['eventName'],
-                event_date = get_mytimezone_date(self.event_updates['date']),
+                event_date = date,
                 groundwater_monitoring_well_static = self.groundwater_monitoring_well,
             )
         except:
-            try:
-                self.event = Event.objects.create(
-                    event_name = self.event_updates['eventName'],
-                    event_date = get_mytimezone_date(str(self.event_updates['year']) + "-01-01"),
-                    groundwater_monitoring_well_static = self.groundwater_monitoring_well,
-                )
-            except:
-                print(self.event_updates)
-                exit()
+            print(self.event_updates)
+            exit()
     
     def intermediate_events(self):
         # Create a base event

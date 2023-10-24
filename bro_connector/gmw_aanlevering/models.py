@@ -242,7 +242,7 @@ class Event(models.Model):
     event_name =  models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    event_date = models.DateTimeField(blank=True, null=True)
+    event_date = models.CharField(max_length=254, blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_tube_dynamic = models.ForeignKey('GroundwaterMonitoringTubesDynamic', on_delete = models.CASCADE, null = True, blank = True)   
