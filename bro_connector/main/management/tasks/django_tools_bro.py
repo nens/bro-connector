@@ -75,9 +75,13 @@ class DjangoTableToDict:
                 "screenLength": tube.screen_length,
                 "sockMaterial": tube.sock_material
             },
-            "sedimentSumpLength": tube.sediment_sump_length,
         }
         
+        if static_tube_data['sedimentSumpPresent'] == 'ja':
+            static_tube_data.update({"sedimentSump": {
+                "sedimentSumpLength": tube.sediment_sump_length
+            }})
+
         static_tube_data['geoOhmCables'] = {}
 
         if tube.number_of_geo_ohm_cables > 0:
@@ -124,14 +128,18 @@ class DjangoTableToDict:
         dynamic_well_data = {
             'numberOfStandpipes': dynamic_well.number_of_standpipes,
             'groundLevelStable': dynamic_well.ground_level_stable,
-            'wellStability': dynamic_well.well_stability,
             'owner': dynamic_well.owner,
-            'maintenanceResponsibleParty': dynamic_well.maintenance_responsible_party,
             'wellHeadProtector': dynamic_well.well_head_protector,
             'deliverGldToBro': dynamic_well.deliver_gld_to_bro,
             'groundLevelPosition': dynamic_well.ground_level_position,
             'groundLevelPositioningMethod': dynamic_well.ground_level_positioning_method,
         }
+        if dynamic_well_data['groundLevelStable'] != 'ja':
+            dynamic_well_data.update({'wellStability': dynamic_well.well_stability})
+
+        if dynamic_well.maintenance_responsible_party != None:
+            dynamic_well_data.update({'maintenanceResponsibleParty': dynamic_well.maintenance_responsible_party})
+
         return dynamic_well_data
 
     def update_dynamic_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic) -> dict:
@@ -157,16 +165,6 @@ class DjangoTableToDict:
         }
         
         return dynamic_electrode_data
-
-    def update_workaround_data(self) -> dict:
-        workaround_data = {
-        # Additions required for different generations in bro-exchange -> WORK-AROUND
-            "numberOfMonitoringTubes": 1, # This is set static as we are only ever handling one monitoring tube per event.
-            "numberOfTubesLengthened": 1,
-            "numberOfTubesShortened": 1,
-            'numberOfElectrodesChanged': 1,
-        }
-        return workaround_data
     
 class GetEvents:
     """

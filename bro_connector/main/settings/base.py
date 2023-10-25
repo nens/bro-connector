@@ -246,17 +246,23 @@ GLD_AANLEVERING_SETTINGS = {
 
 GMW_AANLEVERING_SETTINGS = {
     "bro_info_demo": {
-        "user": bro_demo_user,
-        "pass": bro_demo_password,
+        "token": {
+            "user": bro_demo_user,
+            "pass": bro_demo_password,
+        },
+        "kvk_nummer": 20168636,
     },
     "bro_info_bro_connector": {
-        "user": bro_production_user,
-        "pass": bro_production_password,
+        "token": {
+            "user": bro_demo_user,
+            "pass": bro_demo_password,
+        },
+        "kvk_nummer": 20168636,
     },
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gmw_aanlevering/additions"),
     "registrations_dir": os.path.join(
-        BASE_DIR, "gmw_aanlevering/registrations"
+        BASE_DIR, "gmw_aanlevering\\registrations"
     ),
     "api_version": "v1",
 }

@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction, models
+from django.db.models import Q
 
 import bro_exchange as brx
 import os
@@ -17,10 +18,22 @@ failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 def records_in_registrations(bro_id) -> int:
     return len(models.gmw_registration_log.objects.filter(bro_id = bro_id))
 
+def fix_datetime_string(datetime: str):
+    new_datetime = datetime.replace(' ', 'T', 1)
+    return new_datetime
+
 def check_if_object_id_in_database(object_id: str) -> bool:
     return models.gmw_registration_log.objects.filter(
         object_id_accountable_party = object_id
     ).exists()
+
+def get_event_date(event: models.Event) -> str:
+    try:
+        date = event.event_date
+    except:
+        date = None
+    
+    return date
 
 def generate_object_id(well: models.GroundwaterMonitoringWellStatic) -> dict:
     """
@@ -94,6 +107,7 @@ class GetSourceDocData:
     def create_delivered_location_dict(self, well_static: models.GroundwaterMonitoringWellStatic) -> dict:
         """
         dictionary containing the following items:
+        In RD format.
             X: xcoordinate
             Y: ycoordinate
             horizontalPositioningMethod: horizontalPositioningMethod 
@@ -114,17 +128,38 @@ class GetSourceDocData:
         }
         return material_used
 
-    def handle_individual_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic):
-        self.datafile['monitoringTubes'] = {}
-
+    def handle_individual_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic, tube_number):
         # Static
         static_tube_data = self.get_data.update_static_tube(dynamic_tube.groundwater_monitoring_tube_static)
-        self.datafile['monitoringTubes'][0] = static_tube_data
+        self.datafile['monitoringTubes'][tube_number] = static_tube_data
 
         # Dynamic
         dynamic_tube_data = self.get_data.update_dynamic_tube(dynamic_tube)
-        self.datafile['monitoringTubes'][0].update(dynamic_tube_data)
+        self.datafile['monitoringTubes'][tube_number].update(dynamic_tube_data)
 
+        # material used
+        material_used = self.create_material_used_dict(
+                tube_static=dynamic_tube.groundwater_monitoring_tube_static,
+                tube_dynamic=dynamic_tube,
+            )
+        self.datafile['monitoringTubes'][tube_number].update(material_used)
+
+    def handle_individual_geo_ohm_cable(self, geo_ohm_cable: models.GeoOhmCable, tube_number, geo_ohm_number) -> None:
+        # Static
+        static_tube_data = self.get_data.update_static_geo_ohm_cable(geo_ohm_cable)
+        self.datafile['monitoringTubes'][tube_number]['geoOhmCables'][geo_ohm_number] = static_tube_data
+
+
+    def handle_individual_electrode(self, electrode_static: models.ElectrodeStatic, electrode_dynamic: models.ElectrodeDynamic, tube_number, geo_ohm_number, electrode_number):
+        # Static
+        static_tube_data = self.get_data.update_static_electrode(electrode_static)
+        self.datafile['monitoringTubes'][tube_number]['geoOhmCables'][geo_ohm_number]['electrodes'][electrode_number] = static_tube_data
+
+        # Dynamic
+        dynamic_tube_data = self.get_data.update_dynamic_electrode(electrode_dynamic)
+        self.datafile['monitoringTubes'][tube_number]['geoOhmCables'][geo_ohm_number]['electrodes'][electrode_number].update(dynamic_tube_data)
+
+        
     def handle_dynamic_well(self, well_dynamic: models.GroundwaterMonitoringWellDynamic):
         dynamic_well_data = self.get_data.update_dynamic_well(well_dynamic)
         self.datafile.update(dynamic_well_data)
@@ -148,7 +183,8 @@ class GetSourceDocData:
 
     def execute_for_type(self, source_doc_type, event: models.Event) -> None:
         if source_doc_type == 'Construction':
-            self.datafile.update({'wellConstructionDate': event.event_date})
+            well_construction_date = get_event_date(event)
+            self.datafile.update({'wellConstructionDate': well_construction_date})
             self.construction(event)
         
         if source_doc_type == 'Shortening':
@@ -176,6 +212,7 @@ class GetSourceDocData:
         """
         Retrieve all the data from the Django database to make it available for construction generation.
         """
+        test = False
         well = models.GroundwaterMonitoringWellStatic.objects.get(
             bro_id = str(event.groundwater_monitoring_well_static)
         )
@@ -191,23 +228,50 @@ class GetSourceDocData:
         tubes = GetDjangoObjects.get_all_tubes(well)
 
         self.datafile['monitoringTubes'] = {}
-        tube_number = 0
-        for tube in tubes:
-            tubes_static_data = self.get_data.update_static_tube(tube)
-            ic(tubes_static_data)
-            self.datafile['monitoringTubes'][tube_number] = tubes_static_data
 
+        tube_number = 0
+
+        for tube in tubes:
             tube_dynamic = models.GroundwaterMonitoringTubesDynamic.objects.filter(
                 groundwater_monitoring_tube_static = tube    
             ).order_by('groundwater_monitoring_tube_dynamic_id').first()
 
-            self.handle_dynamic_tube(tube_dynamic, tube_number)
+            self.handle_individual_tube(dynamic_tube=tube_dynamic, tube_number=tube_number)
+            
+            geo_ohm_number = 0
 
-            material_used = self.create_material_used_dict(
-                tube_static=tube,
-                tube_dynamic=tube_dynamic,
-            )
-            self.datafile['monitoringTubes'][tube_number].update(material_used)
+            geo_ohm_cables = GetDjangoObjects.get_all_geo_ohm_cables(tube)
+
+            self.datafile['monitoringTubes'][tube_number]['geoOhmCables'] = {}
+
+            for geo_ohm_cable in geo_ohm_cables:
+                
+                electrode_number = 0
+
+                electrodes = GetDjangoObjects.get_all_electrodes(geo_ohm_cable)
+
+                self.handle_individual_geo_ohm_cable(geo_ohm_cable=geo_ohm_cable,
+                                                     tube_number=tube_number,
+                                                     geo_ohm_number=geo_ohm_number
+                                                     )
+
+                self.datafile['monitoringTubes'][tube_number]['geoOhmCables'][geo_ohm_number]['electrodes'] = {}
+
+                for electrode in electrodes:
+                    electrode_dynamic = models.ElectrodeDynamic.objects.filter(
+                        electrode_static = electrode
+                    ).order_by('electrode_dynamic_id').first()
+
+                    self.handle_individual_electrode(electrode_static=electrode,
+                                                     electrode_dynamic=electrode_dynamic,
+                                                     tube_number=tube_number,
+                                                     geo_ohm_number=geo_ohm_number,
+                                                     electrode_number=electrode_number)
+
+                    electrode_number += 1
+
+                geo_ohm_number += 1
+
             tube_number += 1
 
         self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
@@ -216,12 +280,10 @@ class GetSourceDocData:
             well_static=event.groundwater_monitoring_well_static, 
             well_dynamic=event.groundwater_monitoring_well_dynamic,
         )
-        ic(self.datafile)
+
         self.datafile.update(delivered_vertical_position)
 
-        # Add some data as workaround
-        workaround_data = self.get_data.update_workaround_data()
-        self.datafile.update(workaround_data)        
+        self.datafile.update({'numberOfMonitoringTubes': len(self.datafile['monitoringTubes'])})      
 
     def shortening(self, event: models.Event) -> None:
         """
@@ -244,7 +306,8 @@ class GetSourceDocData:
         self.datafile.update({'numberOfTubesLengthened': 0})
 
         # Get tube information
-        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic)
+        self.datafile['monitoringTubes'] = {}
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0)
 
         tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
 
@@ -275,7 +338,8 @@ class GetSourceDocData:
         self.datafile.update({'numberOfTubesShortened': 0})      
 
         # Get tube information
-        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic)
+        self.datafile['monitoringTubes'] = {}
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0)
 
         tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
 
@@ -285,10 +349,58 @@ class GetSourceDocData:
         )
         self.datafile['monitoringTubes'][0].update(material_used)
 
+    def positions_measuring_well(self, event: models.Event) -> None:
+        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+
+        delivered_vertical_position = self.create_delivered_vertical_position_dict(
+            well_static=event.groundwater_monitoring_well_static, 
+            well_dynamic=event.groundwater_monitoring_well_dynamic,
+        )
+
+        self.datafile.update(delivered_vertical_position)
+
+        # Get tube event at same time
+        tube_event = models.Event.objects.filter(
+            groundwater_monitoring_well_dynamic = None,
+            groundwater_monitoring_well_static = event.groundwater_monitoring_well_static,
+        ).order_by('event_date').first()
+
+        try:
+            self.datafile['monitoringTubes'] = {}
+            self.handle_individual_tube(dynamic_tube=tube_event.groundwater_monitoring_well_tube_dynamic, tube_number=0)
+        except:
+            self.datafile.update({'numberOfMonitoringTubes': 0})
+
+    def positions_measuring_tube(self, event: models.Event) -> None:
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = str(event.groundwater_monitoring_well_static)
+        )
+
+        self.datafile['monitoringTubes'] = {}
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0)
+
+        # Get well event at same time
+        well_event = models.Event.objects.filter(
+            groundwater_monitoring_well_tube_dynamic = None,
+            groundwater_monitoring_well_static = event.groundwater_monitoring_well_static,
+        ).order_by('-event_date').first()
+        
+        try:
+            delivered_vertical_position = self.create_delivered_vertical_position_dict(
+                well_static=well,
+                well_dynamic=well_event.groundwater_monitoring_well_dynamic,
+            )
+
+            self.datafile.update(delivered_vertical_position)
+        except:
+            pass
+
+
     def positions_measuring(self, event: models.Event) -> None:
         """
         Retrieve all the data from the Django database to make it available for positionsmeasuring generation.
         """
+        self.datafile.update({'numberOfMonitoringTubes': 1})
         well = models.GroundwaterMonitoringWellStatic.objects.get(
             bro_id = str(event.groundwater_monitoring_well_static)
         )
@@ -301,16 +413,12 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        ic(event.groundwater_monitoring_well_dynamic, event.groundwater_monitoring_well_tube_dynamic)
-
-        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
-
-        delivered_vertical_position = self.create_delivered_vertical_position_dict(
-            well_static=event.groundwater_monitoring_well_static, 
-            well_dynamic=event.groundwater_monitoring_well_dynamic,
-        )
-
-        self.datafile.update(delivered_vertical_position)
+        if event.groundwater_monitoring_well_dynamic != None:
+            self.positions_measuring_well(event)      
+        
+        if event.groundwater_monitoring_well_tube_dynamic != None:
+            self.positions_measuring_tube(event)
+            
 
     def well_head_protector(self, event: models.Event) -> None:
         """
@@ -351,16 +459,11 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        ic(event.groundwater_monitoring_well_dynamic, event.groundwater_monitoring_well_tube_dynamic)
-
-        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
-
-        delivered_vertical_position = self.create_delivered_vertical_position_dict(
-            well_static=event.groundwater_monitoring_well_static, 
-            well_dynamic=event.groundwater_monitoring_well_dynamic,
-        )
-
-        self.datafile.update(delivered_vertical_position)
+        if event.groundwater_monitoring_well_dynamic != None:
+            self.positions_measuring_well
+        
+        if event.groundwater_monitoring_well_tube_dynamic != None:
+            self.positions_measuring_tube
 
 
 
@@ -459,7 +562,8 @@ def create_sourcedocs(
         srcdocdata.update(objectIdAccountableParty)
 
         # Add event date
-        srcdocdata.update({'eventDate': str(event.event_date)})
+        event_date = get_event_date(event)
+        srcdocdata.update({'eventDate': event_date})
         
         # How many records are already registered -> change the reference
         records_in_register = records_in_registrations(srcdocdata['broId'])
@@ -468,23 +572,22 @@ def create_sourcedocs(
         #print(f"all data retrieved: {source_doc_type}, {request_reference}, {srcdocdata}")
         # Check what kind of request is required and make as followed.
         # Registrate with history
-        
 
         if source_doc_type == 'Construction':
             gmw_registration_request = brx.gmw_registration_request(
                 srcdoc=f"GMW_{source_doc_type}",
                 requestReference=request_reference,
-                deliveryAccountableParty=str(well.delivery_accountable_party),
+                deliveryAccountableParty=str(27376655), # well.delivery_accountable_party
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
+                underPrivilege = 'ja',
             )
 
         else:
-            ic(srcdocdata)
             gmw_registration_request = brx.gmw_registration_request(
                 srcdoc=f"GMW_{source_doc_type}",
                 requestReference=request_reference,
-                deliveryAccountableParty=str(well.delivery_accountable_party),
+                deliveryAccountableParty=str(27376655), # well.delivery_accountable_party
                 qualityRegime=quality_regime,
                 broId=srcdocdata['broId'],
                 srcdocdata=srcdocdata,
@@ -535,55 +638,55 @@ def validate_gmw_registration_request(
     Validate generated registration sourcedocuments
     """
 
-    try:
-        gmw_registration = models.gmw_registration_log.objects.get(
-            id=registration_id
-        )
-        file = gmw_registration.file
-        source_doc_file = os.path.join(registrations_dir, file)
-        payload = open(source_doc_file)
+    
+    gmw_registration = models.gmw_registration_log.objects.get(
+        id=registration_id
+    )
+    file = gmw_registration.file
+    source_doc_file = os.path.join(registrations_dir, file)
+    payload = open(source_doc_file)
 
-        validation_info = brx.validate_sourcedoc(payload, bro_info, demo = demo)
-        validation_status = validation_info["status"]
+    validation_info = ic(brx.validate_sourcedoc(payload, bro_info, demo = demo, api='v1'))
+    validation_status = validation_info["status"]
 
-        if "errors" in validation_info:
-            validation_errors = validation_info["errors"]
-            comments = "Validated registration document, found errors: {}".format(
-                validation_errors
-            )
-
-            record, created = models.gmw_registration_log.objects.update_or_create(
-                id=registration_id,
-                defaults=dict(
-                    comments="Registration document is invalid, {}".format(
-                        validation_errors
-                    ),
-                    validation_status=validation_status,
-                    process_status="source_document_validation_succesful",
-                ),
-            )
-
-        else:
-            comments = "Succesfully validated sourcedocument, no errors"
-            record, created = models.gmw_registration_log.objects.update_or_create(
-                id=registration_id,
-                defaults=dict(
-                    date_modified = datetime.now(),
-                    comments=comments,
-                    validation_status=validation_status,
-                    process_status="source_document_validation_succesful",
-                ),
-            )
-
-    except Exception as e:
-        process_status = "failed_to_validate_sourcedocument"
-        comments = "Exception occured during validation of sourcedocuments: {}".format(
-            e
-        )
+    if validation_info["status"] == "VALIDE":
+        comments = "Succesfully validated sourcedocument, no errors"
         record, created = models.gmw_registration_log.objects.update_or_create(
             id=registration_id,
-            defaults=dict(comments=comments, process_status=process_status),
+            defaults=dict(
+                date_modified = datetime.now(),
+                comments=comments,
+                validation_status=validation_status,
+                process_status="source_document_validation_succesful",
+            ),
         )
+
+    else:
+        validation_errors = validation_info["errors"]
+        comments = "Validated registration document, found errors: {}".format(
+            validation_errors
+        )
+
+        record, created = models.gmw_registration_log.objects.update_or_create(
+            id=registration_id,
+            defaults=dict(
+                comments="Registration document is invalid, {}".format(
+                    validation_errors
+                ),
+                validation_status=validation_status,
+                process_status="source_document_validation_succesful",
+            ),
+        )
+
+    # except Exception as e:
+    #     process_status = "failed_to_validate_sourcedocument"
+    #     comments = "Exception occured during validation of sourcedocuments: {}".format(
+    #         e
+    #     )
+    #     record, created = models.gmw_registration_log.objects.update_or_create(
+    #         id=registration_id,
+    #         defaults=dict(comments=comments, process_status=process_status),
+    #     )
 
 
 def deliver_sourcedocuments(
@@ -596,7 +699,7 @@ def deliver_sourcedocuments(
 
     # Get the registration
     gmw_registration = models.gmw_registration_log.objects.get(id=registration_id)
-
+    print("test")
     # If the delivery fails, use the this to indicate how many attempts were made
     delivery_status = gmw_registration.levering_status
     if delivery_status is None:
@@ -608,6 +711,7 @@ def deliver_sourcedocuments(
     try:
         file = gmw_registration.file
         source_doc_file = os.path.join(registrations_dir, file)
+        ic(source_doc_file)
         payload = open(source_doc_file)
         request = {file: payload}
 
@@ -618,7 +722,7 @@ def deliver_sourcedocuments(
             demo = demo,
             api=GMW_AANLEVERING_SETTINGS['api']
         )
-
+        ic(upload_info.json())
         if upload_info == "Error":
             comments = "Error occured during delivery of sourcedocument"
             models.gmw_registration_log.objects.update_or_create(
@@ -691,10 +795,9 @@ def check_delivery_status_levering(
 
     registration = models.gmw_registration_log.objects.get(id=registration_id)
     levering_id = registration.levering_id
-
     try:
         upload_info = brx.check_delivery_status(
-            levering_id, bro_info, demo = demo
+            levering_id, token=bro_info['token'], demo = demo
         )
         if (
             upload_info.json()["status"] == "DOORGELEVERD"
@@ -879,13 +982,16 @@ def gmw_check_existing_registrations(
     None.
 
     """
-    # Get all the current registrations
-    gmw_registrations = models.gmw_registration_log.objects.all()
+    # Get all the current registrations, order by event id so construction is handled first.
+    gmw_registrations = models.gmw_registration_log.objects.all().order_by('levering_type')
 
     for registration in gmw_registrations:
 
         # We check the status of the registration and either validate/deliver/check status/do nothing
-        registration_id = registration.id  
+        registration_id = registration.id
+        source_doc_type = registration.levering_type
+
+        ic(registration, registration.levering_type)
 
         if (
             get_registration_process_status(registration_id)
@@ -903,7 +1009,7 @@ def gmw_check_existing_registrations(
             # Validate the created sourcedocument
             if (
                 get_registration_process_status(registration_id)
-                == "succesfully_generated_registration_request"
+                == f"succesfully_generated_{source_doc_type}_request"
             ):
                 validation_status = validate_gmw_registration_request(
                     registration_id,
@@ -918,7 +1024,7 @@ def gmw_check_existing_registrations(
             # Even if a document is invalid, the validation process has succeeded and won't be reattempted
             if (
                 get_registration_process_status(registration_id)
-                == "failed_to_validate_source_documents"
+                == "failed_to_validate_source_documents" or get_registration_validation_status(registration_id) != "VALIDE"
             ):
                 # If we failed to validate the sourcedocument, try again
                 # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
@@ -962,14 +1068,13 @@ def gmw_check_existing_registrations(
                 get_registration_process_status(registration_id)
                 == "failed_to_deliver_sourcedocuments"
             ):
-
                 # This will not be the case on the first try
                 if registration.levering_status == "failed_thrice":
                     # TODO report with mail?
                     continue
                 else:
-                    delivery_status = registrations_dir(
-                        registration.id,
+                    delivery_status = deliver_sourcedocuments(
+                        registration_id,
                         registrations_dir,
                         bro_info,
                         demo,
@@ -993,12 +1098,10 @@ class Command(BaseCommand):
 
         registrations_dir = GMW_AANLEVERING_SETTINGS["registrations_dir"]
 
-        #print('start registrations')
         # Check the database for new wells/tubes and start a gmw registration for these objects if its it needed
         gmw_create_sourcedocs_wells(
             registrations_dir,
         )
-        exit()
 
         #print('check status')
         # Check existing registrations
