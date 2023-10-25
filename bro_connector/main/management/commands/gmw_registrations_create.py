@@ -962,7 +962,10 @@ def gmw_create_sourcedocs_wells(registrations_dir):
     wellHeadProtector_events = GetEvents.wellHeadProtector()
     events_handler.create_sourcedocs_events(events=wellHeadProtector_events, event_type='WellHeadProtector')
 
-def has_been_delivered(registration: models.gmw_registration_log) -> bool:
+def has_been_delivered(registration: models.gmw_registration_log, demo) -> bool:
+    if demo:
+        return False
+    
     event = models.Event.objects.get(
         change_id = registration.event_id
     )
@@ -1020,8 +1023,8 @@ def gmw_check_existing_registrations(
 
         ic(registration, registration.levering_type)
         
-        # if has_been_delivered(registration):
-        #     continue
+        if has_been_delivered(registration, demo):
+            continue
 
         if (
             get_registration_process_status(registration_id)
