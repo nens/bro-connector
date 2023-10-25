@@ -629,6 +629,33 @@ def create_sourcedocs(
             ),
         )
 
+def handle_not_valid_or_error(registration_id, validation_info):
+    defaults=dict(
+        validation_status=validation_info["status"],
+        process_status="source_document_validation_succesful",
+    )
+
+    try:
+        validation_errors = validation_info["errors"]
+        comments = "Validated registration document, found errors: {}".format(
+            validation_errors
+        )
+
+        defaults.update({'comments': comments})
+
+        record, created = models.gmw_registration_log.objects.update_or_create(
+            id=registration_id,
+            defaults=defaults
+        )
+    except:
+        comments = f"No errors found, details: {validation_info['detail']}"
+
+        defaults.update({'comments': comments})
+
+        record, created = models.gmw_registration_log.objects.update_or_create(
+            id=registration_id,
+            defaults=defaults
+        )
 
 def validate_gmw_registration_request(
     registration_id, registrations_dir, bro_info, demo
@@ -646,7 +673,7 @@ def validate_gmw_registration_request(
     source_doc_file = os.path.join(registrations_dir, file)
     payload = open(source_doc_file)
 
-    validation_info = ic(brx.validate_sourcedoc(payload, bro_info, demo = demo, api='v1'))
+    validation_info = brx.validate_sourcedoc(payload, bro_info, demo = demo, api='v1')
     validation_status = validation_info["status"]
 
     if validation_info["status"] == "VALIDE":
@@ -662,31 +689,9 @@ def validate_gmw_registration_request(
         )
 
     else:
-        validation_errors = validation_info["errors"]
-        comments = "Validated registration document, found errors: {}".format(
-            validation_errors
-        )
-
-        record, created = models.gmw_registration_log.objects.update_or_create(
-            id=registration_id,
-            defaults=dict(
-                comments="Registration document is invalid, {}".format(
-                    validation_errors
-                ),
-                validation_status=validation_status,
-                process_status="source_document_validation_succesful",
-            ),
-        )
-
-    # except Exception as e:
-    #     process_status = "failed_to_validate_sourcedocument"
-    #     comments = "Exception occured during validation of sourcedocuments: {}".format(
-    #         e
-    #     )
-    #     record, created = models.gmw_registration_log.objects.update_or_create(
-    #         id=registration_id,
-    #         defaults=dict(comments=comments, process_status=process_status),
-    #     )
+        handle_not_valid_or_error(registration_id=registration_id,
+                                  validation_info=validation_info)
+        
 
 
 def deliver_sourcedocuments(
@@ -699,7 +704,7 @@ def deliver_sourcedocuments(
 
     # Get the registration
     gmw_registration = models.gmw_registration_log.objects.get(id=registration_id)
-    print("test")
+
     # If the delivery fails, use the this to indicate how many attempts were made
     delivery_status = gmw_registration.levering_status
     if delivery_status is None:
@@ -717,8 +722,8 @@ def deliver_sourcedocuments(
 
         upload_info = brx.upload_sourcedocs_from_dict(
             request,
-            user = bro_info['user'], 
-            password=bro_info['pass'], 
+            user = bro_info['token']['user'], 
+            password=bro_info['token']['pass'], 
             demo = demo,
             api=GMW_AANLEVERING_SETTINGS['api']
         )
