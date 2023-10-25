@@ -45,7 +45,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
     )  # This field type is a guess.
 
     # Added for GMW delivery
-    in_bro = models.BooleanField(blank=True, default=False) # Is this well in the BRO
+    deliver_gmw_to_bro = models.BooleanField(blank=True, default=False) # Should information of this well be delivered to the BRO
     complete_bro = models.BooleanField(blank=True, default=False) # Is the data in the table complete as required for the BRO
     
 
@@ -247,7 +247,7 @@ class Event(models.Model):
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_tube_dynamic = models.ForeignKey('GroundwaterMonitoringTubesDynamic', on_delete = models.CASCADE, null = True, blank = True)   
     electrode_dynamic = models.ForeignKey('ElectrodeDynamic', on_delete = models.CASCADE, null = True, blank = True)
-    event_in_bro = models.BooleanField(blank = True, default = False)
+    delivered_to_bro = models.BooleanField(blank = True, default = False)
 
 
     def __str__(self):

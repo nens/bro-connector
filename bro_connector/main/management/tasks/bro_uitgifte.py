@@ -319,7 +319,7 @@ class InitializeData:
                     ),  # -> Not in XML, maybe under review?
                     vertical_datum=self.gmw_dict.get("verticalDatum", None),
                     well_code=self.gmw_dict.get("wellCode", None),
-                    in_bro = True
+                    deliver_gmw_to_bro = True
                     ## Have to readjust the methodology slightly because if there are multiple events they cannot all have the same names and dates...
                 )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)\
         self.gmws.save()
@@ -465,6 +465,7 @@ def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
                 groundwater_monitoring_well_static = groundwater_monitoring_well_static,
                 groundwater_monitoring_well_dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
                     groundwater_monitoring_well = groundwater_monitoring_well_static).first(),
+                delivered_to_bro = True
             )
     event.save()
 
@@ -541,6 +542,7 @@ class Updater:
                 event_name = self.event_updates['eventName'],
                 event_date = date,
                 groundwater_monitoring_well_static = self.groundwater_monitoring_well,
+                delivered_to_bro = True
             )
         except:
             print(self.event_updates)
@@ -676,6 +678,7 @@ def get_removal_event(gmw_dict, groundwater_monitoring_well_static):
                     groundwater_monitoring_well_static = groundwater_monitoring_well_static,
                     groundwater_monitoring_well_dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
                         groundwater_monitoring_well = groundwater_monitoring_well_static).first(),
+                    delivered_to_bro = True
             )
     event.save()
 
