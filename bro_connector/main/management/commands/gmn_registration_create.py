@@ -13,9 +13,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """
-        This is the main function for the registration of all monitoringnetworks that havent been registered yet.
-        It loops over all networks and checks whether it should be registered or not.
+        This is the main function for the delivery process of the GMN to the BRO.
+        It loops over all GMNs in the database, and checks for each instance where in the delivery process it is.
+        Depending on this status, it runs the:
+            1) Registration
+            2) Validation
+            3) Delivery
+            4) Check of the delivery status
+        The process status is stored in an gmn_registration_log object. Each network has one. 
         """
+        
+        ### SETUP ###
+        # Check demo settings and define required acces token
         demo = GMN_AANLEVERING_SETTINGS["demo"]
         if demo:
             acces_token_bro_portal = GMN_AANLEVERING_SETTINGS[
@@ -26,6 +35,7 @@ class Command(BaseCommand):
                 "acces_token_bro_portal_bro_connector"
             ]
 
+        ### LOOP OVER GMNs ###
         monitoring_networks = GroundwaterMonitoringNet.objects.all()
 
         for monitoring_network in monitoring_networks:
@@ -35,13 +45,13 @@ class Command(BaseCommand):
                 print(f"Het {monitoring_network} moet niet aangeleverd worden, dus wordt overgeslagen")
                 continue
 
-            # Check if the network has a registration log. If not, create one.
-            # If it has one, but has a failed to generate status: try to create new one
+            # Check for an existing registration log.  
             gmn_registration_log_qs = gmn_registration_log.objects.filter(
                 gmn_bro_id = monitoring_network.gmn_bro_id,
                 object_id_accountable_party = monitoring_network.object_id_accountable_party,
             )
             
+            # Create startregistration xml file if required
             if not gmn_registration_log_qs.exists() or gmn_registration_log_qs[0].process_status == 'failed_to_generate_source_documents':
                 print(f'Geen registratie gevonden voor {monitoring_network}. Er wordt nu een registratie bestand aangemaakt.')
                 gmn_registration_log_obj = self.create_register_xml(
@@ -51,7 +61,7 @@ class Command(BaseCommand):
                 gmn_registration_log_obj = gmn_registration_log_qs[0]
                 print(f"Succesvolle registratie log gevonden voor {monitoring_network}. De registratie hiervoor wordt overgeslagen.")
 
-            # Validate registration if required
+            # Validate startregistration if required
             if gmn_registration_log_obj.process_status in ['succesfully_generated_startregistration_request', 'failed_to_validate_sourcedocument']:
                 print(f"{monitoring_network} word gevalideerd.")
                 self.validate_registration(
@@ -59,6 +69,14 @@ class Command(BaseCommand):
                     acces_token_bro_portal
                 )
             
+            # Deliver startregistration if required
+            if gmn_registration_log_obj.process_status == 'source_document_validation_succesful' and gmn_registration_log_obj.validation_status == 'VALIDE':
+                print(f'De registratie van {monitoring_network} word aangeleverd.')
+                self.deliver_registration(
+                    gmn_registration_log_obj,
+                    acces_token_bro_portal
+                )
+
     def create_register_xml(
         self,
         monitoring_network
@@ -165,6 +183,30 @@ class Command(BaseCommand):
             filepath = os.path.join(GMN_AANLEVERING_SETTINGS["registrations_dir"], filename)
             payload = open(filepath)
             validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, GMN_AANLEVERING_SETTINGS["demo"])
+            validation_status = validation_info["status"]
+
+
+            if "errors" in validation_info:
+                validation_errors = validation_info["errors"]
+                comments = f"Found errors during the valiedation of {gmn_registration_log_obj.name}: {validation_errors}"
+                process_status="failed_to_validate_sourcedocument"
+            elif validation_status == 500:
+                comments = f"BRO server is down. Please try again later"
+                process_status="failed_to_validate_sourcedocument"
+            else:
+                comments = f"Succesfully validated sourcedocument for meetnet {gmn_registration_log_obj.name}."
+                process_status="source_document_validation_succesful"
+
+            print(comments)
+
+            gmn_registration_log.objects.update_or_create(
+                id = gmn_registration_log_obj.id,
+                defaults=dict(
+                    comments=comments,
+                    validation_status=validation_status,
+                    process_status=process_status,
+                    ),
+            )
 
         except Exception as e:
             gmn_registration_log.objects.update_or_create(
@@ -174,6 +216,16 @@ class Command(BaseCommand):
                     process_status='failed_to_validate_sourcedocument',
                     ),
             )
+            
+    
+    def deliver_registration(
+            self,
+            gmn_registration_log_obj,
+            acces_token_bro_portal
+        ):
+        """
+        Function to actually deliver the registration.
+        """
         
 
         
