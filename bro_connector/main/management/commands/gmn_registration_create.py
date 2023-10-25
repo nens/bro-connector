@@ -226,7 +226,8 @@ class Command(BaseCommand):
         """
         Function to actually deliver the registration.
         """
-        
+        if gmn_registration_log_obj.levering_status == None:
+            print('hi')
 
         
             
