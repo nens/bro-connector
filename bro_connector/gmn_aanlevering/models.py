@@ -6,6 +6,7 @@ from gmw_aanlevering.models import GroundwaterMonitoringTubesStatic
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
     id = models.AutoField(primary_key=True)
+    deliver_to_bro = models.BooleanField(blank=True, null=True)
     gmn_bro_id = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
     )
