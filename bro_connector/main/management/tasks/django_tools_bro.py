@@ -174,83 +174,83 @@ class GetEvents:
     def construction():
         return models.Event.objects.filter(
             event_name = 'construction',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
 
     def wellHeadProtector():
         return models.Event.objects.filter(
             event_name = 'beschermconstructieVeranderd',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def lengthening():
         return models.Event.objects.filter(
             event_name = 'buisOpgelengd',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def shortening():
         return models.Event.objects.filter(
             event_name = 'buisIngekort',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def groundLevelMeasuring():
         return models.Event.objects.filter(
             event_name = 'nieuweInmetingMaaiveld',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def positionsMeasuring():
         return models.Event.objects.filter(
             event_name = 'nieuweInmetingPosities',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def groundLevel():
         return models.Event.objects.filter(
             event_name = 'nieuweBepalingMaaiveld',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def owner():
         return models.Event.objects.filter(
             event_name = 'eigenaarVeranderd',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def positions():
         return models.Event.objects.filter(
             event_name = 'inmeting',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def electrodeStatus():
         return models.Event.objects.filter(
             event_name = 'electrodeStatus',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def maintainer():
         return models.Event.objects.filter(
             event_name = 'onderhouderVeranderd',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def tubeStatus():
         return models.Event.objects.filter(
             event_name = 'buisstatusVeranderd',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def insertion():
         return models.Event.objects.filter(
             event_name = 'buisdeelIngeplaatst',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
     
     def shift():
         return models.Event.objects.filter(
             event_name = 'maaiveldVerlegd',
-            event_in_bro = False,
+            delivered_to_bro = True,
         )
