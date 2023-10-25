@@ -129,6 +129,7 @@ class GMWHandler:
         self.number_of_tubes  = 0
         self.number_of_geo_ohm_cables = 0
         self.number_of_electrodes = 0
+        self.positions = 0
         self.dict = {}
 
     def get_data(self, id: str, full_history: bool):
@@ -157,26 +158,31 @@ class GMWHandler:
             if split[1] == "wellConstructionDate":
                 prefix = "construction_"
 
-            elif split[1] == "intermediateEvent":
+            if split[1] == "intermediateEvent":
                 number_of_events = number_of_events + 1
                 prefix = "event_" + str(number_of_events) + "_"
 
-            elif split[1] == "wellRemovalDate":
+            if split[1] == "wellRemovalDate":
                 prefix = "removal_"
 
-            elif split[1] == "monitoringTube":
+            if split[1] == "monitoringTube":
                 self.number_of_tubes = self.number_of_tubes + 1
                 prefix = "tube_" + str(self.number_of_tubes) + "_"
 
-            elif split[1] == "geoOhmCable":
+            if split[1] == "geoOhmCable":
                 self.number_of_geo_ohm_cables = self.number_of_geo_ohm_cables + 1
                 prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_"
 
-            elif split[1] == "electrode":
+            if split[1] == "electrode":
                 self.number_of_electrodes = self.number_of_electrodes + 1
                 prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_electrode_{str(self.number_of_electrodes)}_"
-
+            
             tag = str(prefix) + split[1]
+            
+            if split[1] == "pos":
+                self.positions = self.positions + 1
+                postfix = f"_{self.positions}"
+                tag = split[1] + postfix
 
             tags.append(tag)
             values.append(element.text)
@@ -190,6 +196,7 @@ class GMWHandler:
         self.number_of_tubes  = 0
         self.number_of_geo_ohm_cables = 0
         self.number_of_electrodes = 0
+        self.positions = 0
 
 
 def slice(sourcedict, string):
@@ -277,7 +284,7 @@ class InitializeData:
                     bro_id=self.gmw_dict.get("broId", None),
                     construction_standard=self.gmw_dict.get("constructionStandard", None),
                     coordinates=(
-                        f"POINT({self.gmw_dict.get('pos', None)})"
+                        f"POINT({self.gmw_dict.get('pos_1', None)})"
                     ),  # -> Has a delivered location and a standardized location, which do we want? Used std for now
                     delivery_accountable_party=self.gmw_dict.get(
                         "deliveryAccountableParty", None

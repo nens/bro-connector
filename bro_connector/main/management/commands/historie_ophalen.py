@@ -78,7 +78,6 @@ class Command(BaseCommand):
                     try:
                         for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
                             ini.increment_geo_ohm_number()
-                            ic(gmw_dict)
                             ini.geo_ohm()
 
                             for electrode in range(int(gmw.number_of_electrodes)):
