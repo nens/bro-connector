@@ -233,8 +233,9 @@ class Command(BaseCommand):
                 GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
             )
             payload = open(filepath)
+            
             validation_info = brx.validate_sourcedoc(
-                payload, acces_token_bro_portal, demo =  GMN_AANLEVERING_SETTINGS["demo"]
+                payload = payload, token = acces_token_bro_portal, demo =  GMN_AANLEVERING_SETTINGS["demo"]
             )
             validation_status = validation_info["status"]
 
