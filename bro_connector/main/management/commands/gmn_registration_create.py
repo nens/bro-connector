@@ -48,9 +48,10 @@ class Command(BaseCommand):
             # Check if the network should be delivered to the bro. If not, skip this network
             if monitoring_network.deliver_to_bro == False:
                 print(
-                    f"Het {monitoring_network} moet niet aangeleverd worden, dus wordt overgeslagen"
+                    f"Het {monitoring_network} moet niet aangeleverd worden, en wordt daarom overgeslagen."
                 )
                 continue
+
 
             # Check for an existing registration log.
             gmn_registration_log_qs = gmn_registration_log.objects.filter(
@@ -58,23 +59,25 @@ class Command(BaseCommand):
                 object_id_accountable_party=monitoring_network.object_id_accountable_party,
             )
 
+
             # Create startregistration xml file if required
             if (
                 not gmn_registration_log_qs.exists()
-                or gmn_registration_log_qs[0].process_status
+                or gmn_registration_log_qs.first().process_status
                 == "failed_to_generate_source_documents"
             ):
                 print(
-                    f"Geen registratie gevonden voor {monitoring_network}. Er wordt nu een registratie bestand aangemaakt."
+                    f"Geen succesvolle registratie gevonden voor {monitoring_network}. Er wordt nu een registratie bestand aangemaakt."
                 )
                 gmn_registration_log_obj = self.create_registration_file(
                     monitoring_network,
                 )
             else:
-                gmn_registration_log_obj = gmn_registration_log_qs[0]
-                print(
-                    f"Succesvolle registratie log gevonden voor {monitoring_network}. De registratie hiervoor wordt overgeslagen."
-                )
+                gmn_registration_log_obj = gmn_registration_log_qs.first()
+
+                # If the delivery allready is completely succesfull, skip everything for this meetnet.
+                if gmn_registration_log_obj.process_status == "delivery_approved":
+                    continue
 
             # Validate startregistration if required
             if gmn_registration_log_obj.process_status in [
@@ -82,6 +85,7 @@ class Command(BaseCommand):
                 "failed_to_validate_sourcedocument",
             ]:
                 print(f"{monitoring_network} word gevalideerd.")
+
                 self.validate_registration(
                     gmn_registration_log_obj, acces_token_bro_portal
                 )
@@ -100,6 +104,7 @@ class Command(BaseCommand):
                 self.deliver_registration(
                     gmn_registration_log_obj, acces_token_bro_portal
                 )
+                
 
             # If delivery failed 3 times: break the process
             if (
@@ -111,7 +116,8 @@ class Command(BaseCommand):
                     f'De registratie van {monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
                 )
                 continue
-
+            
+            # Check the delivery status
             if (
                 gmn_registration_log_obj.process_status
                 == "succesfully_delivered_sourcedocuments"
@@ -201,7 +207,7 @@ class Command(BaseCommand):
                     file=xml_filename,
                 ),
             )
-            return log_obj
+            return log_obj[0]
 
         except Exception as e:
             log_obj = gmn_registration_log.objects.update_or_create(
@@ -215,7 +221,7 @@ class Command(BaseCommand):
                 ),
             )
 
-            return log_obj
+            return log_obj[0]
 
     def validate_registration(self, gmn_registration_log_obj, acces_token_bro_portal):
         """
@@ -228,19 +234,22 @@ class Command(BaseCommand):
             )
             payload = open(filepath)
             validation_info = brx.validate_sourcedoc(
-                payload, acces_token_bro_portal, GMN_AANLEVERING_SETTINGS["demo"]
+                payload, acces_token_bro_portal, demo =  GMN_AANLEVERING_SETTINGS["demo"]
             )
             validation_status = validation_info["status"]
 
             if "errors" in validation_info:
                 validation_errors = validation_info["errors"]
-                comments = f"Found errors during the valiedation of {gmn_registration_log_obj.name}: {validation_errors}"
+                comments = f"Found errors during the validation of {gmn_registration_log_obj.object_id_accountable_party}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 500:
                 comments = f"BRO server is down. Please try again later"
                 process_status = "failed_to_validate_sourcedocument"
+            elif validation_status == 400:
+                comments = f"Something went wrong while validating. Try again."
+                process_status = "failed_to_validate_sourcedocument"
             else:
-                comments = f"Succesfully validated sourcedocument for meetnet {gmn_registration_log_obj.name}."
+                comments = f"Succesfully validated sourcedocument for meetnet {gmn_registration_log_obj.object_id_accountable_party}."
                 process_status = "source_document_validation_succesful"
 
             print(comments)
@@ -279,7 +288,7 @@ class Command(BaseCommand):
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, acces_token_bro_portal, GMN_AANLEVERING_SETTINGS["demo"]
+                request, acces_token_bro_portal, demo = GMN_AANLEVERING_SETTINGS["demo"]
             )
 
             # Log the result
@@ -287,7 +296,7 @@ class Command(BaseCommand):
                 delivery_status = str(current_delivery_status + 1)
 
                 print(
-                    f"De aanlevering van {gmn_registration_log_obj.name} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
+                    f"De aanlevering van {gmn_registration_log_obj.object_id_accountable_party} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
                 )
                 gmn_registration_log.objects.update_or_create(
                     id=gmn_registration_log_obj.id,
@@ -341,9 +350,11 @@ class Command(BaseCommand):
             delivery_status_info = brx.check_delivery_status(
                 gmn_registration_log_obj.levering_id,
                 acces_token_bro_portal,
-                GMN_AANLEVERING_SETTINGS["demo"],
+                demo = GMN_AANLEVERING_SETTINGS["demo"],
             )
 
+            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
+            
             if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
                 gmn_registration_log.objects.update_or_create(
                     id=gmn_registration_log_obj.id,
@@ -362,6 +373,17 @@ class Command(BaseCommand):
                     GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
                 )
                 os.remove(filepath)
+
+            
+            elif delivery_errors:
+                
+                gmn_registration_log.objects.update_or_create(
+                    id=gmn_registration_log_obj.id,
+                    defaults=dict(
+                        last_changed=delivery_status_info.json()["lastChanged"],
+                        comments=f"Found errors during the check of {gmn_registration_log_obj.object_id_accountable_party}: {delivery_errors}",
+                    ),
+                )
             
             else:
                 gmn_registration_log.objects.update_or_create(

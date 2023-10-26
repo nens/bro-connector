@@ -124,7 +124,7 @@ class gmn_registration_log(models.Model):
     levering_status = models.CharField(choices=LEVERINGSTATUS_CHOICES, max_length = 10, null=True, blank=True, default = 0)
     levering_status_info = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
-    last_changed = models.DateField(null=True, blank=True)
+    last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
     timestamp_end_registration = models.DateTimeField(blank=True, null=True)
     quality_regime = models.CharField(max_length=254, null=True, blank=True)
