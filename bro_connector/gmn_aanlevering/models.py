@@ -107,6 +107,13 @@ class IntermediateEvent(models.Model):
             _admin_name = "GMN Intermediate Event"
             ordering = ("event_date",)
 
+LEVERINGSTATUS_CHOICES = [
+     ("0","Nog niet aangeleverd"),
+     ("1","1 keer gefaald"),
+     ("2","2 keer gefaald"),
+     ("3","3 keer gefaald"),
+     ("4","Succesvol aangeleverd"),
+]
 
 class gmn_registration_log(models.Model):
     date_modified = models.DateField(null=True, blank=True)
@@ -114,7 +121,8 @@ class gmn_registration_log(models.Model):
     object_id_accountable_party  = models.CharField(max_length=255, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(max_length=254, null=True, blank=True)
+    levering_status = models.CharField(choices=LEVERINGSTATUS_CHOICES, max_length = 10, null=True, blank=True, default = 0)
+    levering_status_info = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.DateField(null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)

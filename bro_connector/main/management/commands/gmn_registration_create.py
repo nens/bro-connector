@@ -1,10 +1,15 @@
 from django.core.management.base import BaseCommand
 from main.settings.base import GMN_AANLEVERING_SETTINGS
-from gmn_aanlevering.models import GroundwaterMonitoringNet, MeasuringPoint, gmn_registration_log
+from gmn_aanlevering.models import (
+    GroundwaterMonitoringNet,
+    MeasuringPoint,
+    gmn_registration_log,
+)
 from datetime import datetime
 
 import bro_exchange as brx
 import os
+
 
 class Command(BaseCommand):
     """
@@ -20,9 +25,9 @@ class Command(BaseCommand):
             2) Validation
             3) Delivery
             4) Check of the delivery status
-        The process status is stored in an gmn_registration_log object. Each network has one. 
+        The process status is stored in an gmn_registration_log object. Each network has one.
         """
-        
+
         ### SETUP ###
         # Check demo settings and define required acces token
         demo = GMN_AANLEVERING_SETTINGS["demo"]
@@ -39,48 +44,88 @@ class Command(BaseCommand):
         monitoring_networks = GroundwaterMonitoringNet.objects.all()
 
         for monitoring_network in monitoring_networks:
-            
+
             # Check if the network should be delivered to the bro. If not, skip this network
             if monitoring_network.deliver_to_bro == False:
-                print(f"Het {monitoring_network} moet niet aangeleverd worden, dus wordt overgeslagen")
+                print(
+                    f"Het {monitoring_network} moet niet aangeleverd worden, dus wordt overgeslagen"
+                )
                 continue
 
-            # Check for an existing registration log.  
+            # Check for an existing registration log.
             gmn_registration_log_qs = gmn_registration_log.objects.filter(
-                gmn_bro_id = monitoring_network.gmn_bro_id,
-                object_id_accountable_party = monitoring_network.object_id_accountable_party,
+                gmn_bro_id=monitoring_network.gmn_bro_id,
+                object_id_accountable_party=monitoring_network.object_id_accountable_party,
             )
-            
+
             # Create startregistration xml file if required
-            if not gmn_registration_log_qs.exists() or gmn_registration_log_qs[0].process_status == 'failed_to_generate_source_documents':
-                print(f'Geen registratie gevonden voor {monitoring_network}. Er wordt nu een registratie bestand aangemaakt.')
-                gmn_registration_log_obj = self.create_register_xml(
+            if (
+                not gmn_registration_log_qs.exists()
+                or gmn_registration_log_qs[0].process_status
+                == "failed_to_generate_source_documents"
+            ):
+                print(
+                    f"Geen registratie gevonden voor {monitoring_network}. Er wordt nu een registratie bestand aangemaakt."
+                )
+                gmn_registration_log_obj = self.create_registration_file(
                     monitoring_network,
                 )
             else:
                 gmn_registration_log_obj = gmn_registration_log_qs[0]
-                print(f"Succesvolle registratie log gevonden voor {monitoring_network}. De registratie hiervoor wordt overgeslagen.")
+                print(
+                    f"Succesvolle registratie log gevonden voor {monitoring_network}. De registratie hiervoor wordt overgeslagen."
+                )
 
             # Validate startregistration if required
-            if gmn_registration_log_obj.process_status in ['succesfully_generated_startregistration_request', 'failed_to_validate_sourcedocument']:
+            if gmn_registration_log_obj.process_status in [
+                "succesfully_generated_startregistration_request",
+                "failed_to_validate_sourcedocument",
+            ]:
                 print(f"{monitoring_network} word gevalideerd.")
                 self.validate_registration(
-                    gmn_registration_log_obj,
-                    acces_token_bro_portal
-                )
-            
-            # Deliver startregistration if required
-            if gmn_registration_log_obj.process_status == 'source_document_validation_succesful' and gmn_registration_log_obj.validation_status == 'VALIDE':
-                print(f'De registratie van {monitoring_network} word aangeleverd.')
-                self.deliver_registration(
-                    gmn_registration_log_obj,
-                    acces_token_bro_portal
+                    gmn_registration_log_obj, acces_token_bro_portal
                 )
 
-    def create_register_xml(
-        self,
-        monitoring_network
-    ): 
+            # Deliver startregistration if validation succeeded, or previous deliveries failed (to a max of 3)
+            if (
+                gmn_registration_log_obj.process_status
+                == "source_document_validation_succesful"
+                and gmn_registration_log_obj.validation_status == "VALIDE"
+            ) or (
+                gmn_registration_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and gmn_registration_log_obj.levering_status in ["1", "2"]
+            ):
+                print(f"De registratie van {monitoring_network} word aangeleverd.")
+                self.deliver_registration(
+                    gmn_registration_log_obj, acces_token_bro_portal
+                )
+
+            # If delivery failed 3 times: break the process
+            if (
+                gmn_registration_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and gmn_registration_log_obj.levering_status == "3"
+            ):
+                print(
+                    f'De registratie van {monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
+                )
+                continue
+
+            if (
+                gmn_registration_log_obj.process_status
+                == "succesfully_delivered_sourcedocuments"
+                and gmn_registration_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
+                and gmn_registration_log_obj.levering_id is not None
+            ):
+                print(
+                    f"De status van de levering van {monitoring_network} wordt gecontroleerd."
+                )
+                self.check_delivery_status_levering(
+                    gmn_registration_log_obj, acces_token_bro_portal
+                )
+
+    def create_registration_file(self, monitoring_network):
         """
         This function handles the start registration of a single monitoringnetwork.
         It logs its results in a gmn_registration_log instance, with the monitoringnetwork_name as name.
@@ -89,7 +134,7 @@ class Command(BaseCommand):
         try:
             # Set default quality regime IMBRO if value is not filled in in GMN instance
             if monitoring_network.quality_regime == None:
-                quality_regime = 'IMBRO'
+                quality_regime = "IMBRO"
             else:
                 quality_regime = monitoring_network.quality_regime
 
@@ -98,16 +143,17 @@ class Command(BaseCommand):
             measuringpoints = []
 
             for measuringpoint_obj in measuringpoint_objs:
-                well_code = measuringpoint_obj.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id
+                well_code = (
+                    measuringpoint_obj.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id
+                )
                 measuringpoint = {
-                    "measuringPointCode":measuringpoint_obj.code,
-                    "monitoringTube":{
-                        "broId":well_code,
-                        "tubeNumber":measuringpoint_obj.groundwater_monitoring_tube.tube_number,
+                    "measuringPointCode": measuringpoint_obj.code,
+                    "monitoringTube": {
+                        "broId": well_code,
+                        "tubeNumber": measuringpoint_obj.groundwater_monitoring_tube.tube_number,
                     },
                 }
                 measuringpoints.append(measuringpoint)
-
 
             # Create source docs
             srcdocdata = {
@@ -116,34 +162,35 @@ class Command(BaseCommand):
                 "deliveryContext": monitoring_network.delivery_context,
                 "monitoringPurpose": monitoring_network.monitoring_purpose,
                 "groundwaterAspect": monitoring_network.groundwater_aspect,
-                "startDateMonitoring": [str(monitoring_network.start_date_monitoring), "date"],
+                "startDateMonitoring": [
+                    str(monitoring_network.start_date_monitoring),
+                    "date",
+                ],
                 "measuringPoints": measuringpoints,
             }
 
-            
-            # Initialize the gmn_registration_request instance 
+            # Initialize the gmn_registration_request instance
             gmn_startregistration_request = brx.gmn_registration_request(
-                srcdoc = "GMN_StartRegistration",
-                requestReference = f"register {monitoring_network.name}",
-                deliveryAccountableParty = monitoring_network.delivery_accountable_party,
-                qualityRegime = quality_regime,
-                srcdocdata = srcdocdata,
+                srcdoc="GMN_StartRegistration",
+                requestReference=f"register {monitoring_network.name}",
+                deliveryAccountableParty=monitoring_network.delivery_accountable_party,
+                qualityRegime=quality_regime,
+                srcdocdata=srcdocdata,
             )
-
 
             # Generate the startregistration request
             gmn_startregistration_request.generate()
 
-            
             # Write the request
             xml_filename = f"register {monitoring_network.name}.xml"
             gmn_startregistration_request.write_request(
-                output_dir=GMN_AANLEVERING_SETTINGS["registrations_dir"], filename=xml_filename
+                output_dir=GMN_AANLEVERING_SETTINGS["registrations_dir"],
+                filename=xml_filename,
             )
 
             # Create a log instance for the request
             log_obj = gmn_registration_log.objects.update_or_create(
-                object_id_accountable_party = monitoring_network.object_id_accountable_party,
+                object_id_accountable_party=monitoring_network.object_id_accountable_party,
                 gmn_bro_id=monitoring_network.gmn_bro_id,
                 quality_regime=monitoring_network.quality_regime,
                 defaults=dict(
@@ -155,10 +202,10 @@ class Command(BaseCommand):
                 ),
             )
             return log_obj
-            
+
         except Exception as e:
             log_obj = gmn_registration_log.objects.update_or_create(
-                object_id_accountable_party = monitoring_network.object_id_accountable_party,
+                object_id_accountable_party=monitoring_network.object_id_accountable_party,
                 gmn_bro_id=monitoring_network.gmn_bro_id,
                 quality_regime=monitoring_network.quality_regime,
                 defaults=dict(
@@ -170,64 +217,167 @@ class Command(BaseCommand):
 
             return log_obj
 
-    def validate_registration(
-            self,
-            gmn_registration_log_obj,
-            acces_token_bro_portal
-        ):
+    def validate_registration(self, gmn_registration_log_obj, acces_token_bro_portal):
         """
         This function validates new registrations, and registers its process in the log instance.
         """
         try:
             filename = gmn_registration_log_obj.file
-            filepath = os.path.join(GMN_AANLEVERING_SETTINGS["registrations_dir"], filename)
+            filepath = os.path.join(
+                GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
+            )
             payload = open(filepath)
-            validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, GMN_AANLEVERING_SETTINGS["demo"])
+            validation_info = brx.validate_sourcedoc(
+                payload, acces_token_bro_portal, GMN_AANLEVERING_SETTINGS["demo"]
+            )
             validation_status = validation_info["status"]
-
 
             if "errors" in validation_info:
                 validation_errors = validation_info["errors"]
                 comments = f"Found errors during the valiedation of {gmn_registration_log_obj.name}: {validation_errors}"
-                process_status="failed_to_validate_sourcedocument"
+                process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 500:
                 comments = f"BRO server is down. Please try again later"
-                process_status="failed_to_validate_sourcedocument"
+                process_status = "failed_to_validate_sourcedocument"
             else:
                 comments = f"Succesfully validated sourcedocument for meetnet {gmn_registration_log_obj.name}."
-                process_status="source_document_validation_succesful"
+                process_status = "source_document_validation_succesful"
 
             print(comments)
 
             gmn_registration_log.objects.update_or_create(
-                id = gmn_registration_log_obj.id,
+                id=gmn_registration_log_obj.id,
                 defaults=dict(
                     comments=comments,
                     validation_status=validation_status,
                     process_status=process_status,
-                    ),
+                ),
             )
 
         except Exception as e:
             gmn_registration_log.objects.update_or_create(
-                id = gmn_registration_log_obj.id,
+                id=gmn_registration_log_obj.id,
                 defaults=dict(
-                    comments=f'Exception occured during validation of sourcedocuments: {e}',
-                    process_status='failed_to_validate_sourcedocument',
-                    ),
+                    comments=f"Exception occured during validation of sourcedocuments: {e}",
+                    process_status="failed_to_validate_sourcedocument",
+                ),
             )
-            
-    
-    def deliver_registration(
-            self,
-            gmn_registration_log_obj,
-            acces_token_bro_portal
-        ):
+
+    def deliver_registration(self, gmn_registration_log_obj, acces_token_bro_portal):
         """
         Function to actually deliver the registration.
         """
-        if gmn_registration_log_obj.levering_status == None:
-            print('hi')
+        current_delivery_status = int(gmn_registration_log_obj.levering_status)
 
-        
+        try:
+            # Prepare and deliver registration
+            filename = gmn_registration_log_obj.file
+            filepath = os.path.join(
+                GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
+            )
+            payload = open(filepath)
+            request = {filename: payload}
+
+            upload_info = brx.upload_sourcedocs_from_dict(
+                request, acces_token_bro_portal, GMN_AANLEVERING_SETTINGS["demo"]
+            )
+
+            # Log the result
+            if upload_info == "Error":
+                delivery_status = str(current_delivery_status + 1)
+
+                print(
+                    f"De aanlevering van {gmn_registration_log_obj.name} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
+                )
+                gmn_registration_log.objects.update_or_create(
+                    id=gmn_registration_log_obj.id,
+                    defaults={
+                        "date_modified": datetime.now(),
+                        "comments": "Error occured during delivery of sourcedocument",
+                        "levering_status": delivery_status,
+                        "process_status": "failed_to_deliver_sourcedocuments",
+                    },
+                )
+            else:
+                print(
+                    f"De levering van {gmn_registration_log_obj.object_id_accountable_party} is geslaagd"
+                )
+                gmn_registration_log.objects.update_or_create(
+                    id=gmn_registration_log_obj.id,
+                    defaults={
+                        "date_modified": datetime.now(),
+                        "comments": "Succesfully delivered startregistration sourcedocument",
+                        "levering_status": "4",
+                        "levering_status_info": upload_info.json()["status"],
+                        "lastchanged": upload_info.json()["lastChanged"],
+                        "levering_id": upload_info.json()["identifier"],
+                        "process_status": "succesfully_delivered_sourcedocuments",
+                    },
+                )
+
+        except Exception as e:
+            delivery_status = str(current_delivery_status + 1)
+            print(
+                f"De aanlevering van {gmn_registration_log_obj.object_id_accountable_party} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
+            )
+
+            gmn_registration_log.objects.update_or_create(
+                id=gmn_registration_log_obj.id,
+                defaults={
+                    "date_modified": datetime.now(),
+                    "comments": f"Exception occured during delivery of startregistration sourcedocument: {e}",
+                    "levering_status": delivery_status,
+                    "process_status": "failed_to_deliver_sourcedocuments",
+                },
+            )
+
+    def check_delivery_status_levering(
+        self, gmn_registration_log_obj, acces_token_bro_portal
+    ):
+        """
+        Function to check and log the status of the delivery
+        """
+        try:
+            delivery_status_info = brx.check_delivery_status(
+                gmn_registration_log_obj.levering_id,
+                acces_token_bro_portal,
+                GMN_AANLEVERING_SETTINGS["demo"],
+            )
+
+            if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
+                gmn_registration_log.objects.update_or_create(
+                    id=gmn_registration_log_obj.id,
+                    defaults=dict(
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
+                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        last_changed=delivery_status_info.json()["lastChanged"],
+                        comments="Startregistration request approved",
+                        process_status="delivery_approved",
+                    ),
+                )
+
+                # Remove the sourcedocument file if delivery is approved
+                filename = gmn_registration_log_obj.file
+                filepath = os.path.join(
+                    GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
+                )
+                os.remove(filepath)
             
+            else:
+                gmn_registration_log.objects.update_or_create(
+                    id=gmn_registration_log_obj.id,
+                    defaults=dict(
+                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        last_changed=delivery_status_info.json()["lastChanged"],
+                        comments="Startregistration request not yet approved",
+                    ),
+                )
+
+
+        except Exception as e:
+            gmn_registration_log.objects.update_or_create(
+                id=gmn_registration_log_obj.id,
+                defaults={
+                    "comments": f"Error occured during status check of delivery: {e}",
+                },
+            )
