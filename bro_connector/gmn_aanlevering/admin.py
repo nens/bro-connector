@@ -40,14 +40,16 @@ class MeasuringPointAdmin(admin.ModelAdmin):
 
 class IntermediateEventAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
         "gmn",
-        "event_name",
-        "event_date",   
+        "event_type",
+        "event_date",
+        "synced_to_bro",
     )
     list_filter = (
         "gmn",
-        "event_name",
+        "event_type",
+        "event_date",
+        "synced_to_bro",
     )
 
 class gmn_registration_logAdmin(admin.ModelAdmin):

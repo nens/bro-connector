@@ -283,7 +283,7 @@ GMN_AANLEVERING_SETTINGS = {
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gmn_aanlevering/additions"),
     "registrations_dir": os.path.join(
-        BASE_DIR, "gmn_aanlevering/registrations/"
+        BASE_DIR, "gmn_aanlevering\\registrations"
     ),
 }
 

@@ -86,7 +86,7 @@ class Command(BaseCommand):
             ]:
                 print(f"{monitoring_network} word gevalideerd.")
 
-                self.validate_registration(
+                gmn_registration_log_obj = self.validate_registration(
                     gmn_registration_log_obj, acces_token_bro_portal
                 )
 
@@ -101,7 +101,7 @@ class Command(BaseCommand):
                 and gmn_registration_log_obj.levering_status in ["1", "2"]
             ):
                 print(f"De registratie van {monitoring_network} word aangeleverd.")
-                self.deliver_registration(
+                gmn_registration_log_obj = self.deliver_registration(
                     gmn_registration_log_obj, acces_token_bro_portal
                 )
                 
@@ -237,9 +237,12 @@ class Command(BaseCommand):
             validation_info = brx.validate_sourcedoc(
                 payload = payload, token = acces_token_bro_portal, demo =  GMN_AANLEVERING_SETTINGS["demo"]
             )
+            
+            errors_count = len(validation_info['errors'])
+
             validation_status = validation_info["status"]
 
-            if "errors" in validation_info:
+            if errors_count > 0 :
                 validation_errors = validation_info["errors"]
                 comments = f"Found errors during the validation of {gmn_registration_log_obj.object_id_accountable_party}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
@@ -255,7 +258,7 @@ class Command(BaseCommand):
 
             print(comments)
 
-            gmn_registration_log.objects.update_or_create(
+            log_obj = gmn_registration_log.objects.update_or_create(
                 id=gmn_registration_log_obj.id,
                 defaults=dict(
                     comments=comments,
@@ -264,14 +267,18 @@ class Command(BaseCommand):
                 ),
             )
 
+            return log_obj[0]
+
         except Exception as e:
-            gmn_registration_log.objects.update_or_create(
+            log_obj = gmn_registration_log.objects.update_or_create(
                 id=gmn_registration_log_obj.id,
                 defaults=dict(
                     comments=f"Exception occured during validation of sourcedocuments: {e}",
                     process_status="failed_to_validate_sourcedocument",
                 ),
             )
+
+            return log_obj[0]
 
     def deliver_registration(self, gmn_registration_log_obj, acces_token_bro_portal):
         """
@@ -299,7 +306,7 @@ class Command(BaseCommand):
                 print(
                     f"De aanlevering van {gmn_registration_log_obj.object_id_accountable_party} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
                 )
-                gmn_registration_log.objects.update_or_create(
+                log_obj = gmn_registration_log.objects.update_or_create(
                     id=gmn_registration_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -308,11 +315,13 @@ class Command(BaseCommand):
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
+
+                return log_obj[0]
             else:
                 print(
                     f"De levering van {gmn_registration_log_obj.object_id_accountable_party} is geslaagd"
                 )
-                gmn_registration_log.objects.update_or_create(
+                log_obj = gmn_registration_log.objects.update_or_create(
                     id=gmn_registration_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -325,13 +334,15 @@ class Command(BaseCommand):
                     },
                 )
 
+                return log_obj[0]
+
         except Exception as e:
             delivery_status = str(current_delivery_status + 1)
             print(
                 f"De aanlevering van {gmn_registration_log_obj.object_id_accountable_party} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
             )
 
-            gmn_registration_log.objects.update_or_create(
+            log_obj = gmn_registration_log.objects.update_or_create(
                 id=gmn_registration_log_obj.id,
                 defaults={
                     "date_modified": datetime.now(),
@@ -340,6 +351,8 @@ class Command(BaseCommand):
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
+
+            return log_obj[0]
 
     def check_delivery_status_levering(
         self, gmn_registration_log_obj, acces_token_bro_portal
@@ -365,6 +378,13 @@ class Command(BaseCommand):
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Startregistration request approved",
                         process_status="delivery_approved",
+                    ),
+                )
+
+                GroundwaterMonitoringNet.objects.update_or_create(
+                    object_id_accountable_party = gmn_registration_log_obj.object_id_accountable_party,
+                    defaults=dict(
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
                     ),
                 )
 

@@ -73,7 +73,7 @@ class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
     groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = True)
     code = models.CharField(
-        max_length=255, null=True, blank=True, editable=False, verbose_name="Meetpunt naam"
+        max_length=255, null=True, blank=True, verbose_name="Meetpunt naam"
     )
     
     def __str__(self):
@@ -89,16 +89,28 @@ class MeasuringPoint(models.Model):
             ordering = ("code",)
 
 
+EVENT_TYPE_CHOICES = [
+     ("GMN_StartRegistration","Start Registration"),
+     ("GMN_MeasuringPoint","Add MeasuringPoints"),
+     ("GMN_MeasuringPointEndDate","Remove MeasuringPoints"),
+     ("GMN_Closure","GMN Closure"),
+]
+
 class IntermediateEvent(models.Model):
-    id = models.AutoField(primary_key=True)
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
-    event_name =  models.TextField(
-        blank=True, null=True
+    event_type =  models.CharField(
+        choices=EVENT_TYPE_CHOICES,
+        blank=True,
+        null=True,
+        max_length = 25,
     )
     event_date = models.DateTimeField(blank=True, null=True)
+    synced_to_bro = models.BooleanField(blank=True, null=True, default=False)
+    measuring_points = models.ManyToManyField(MeasuringPoint, blank=True)
+
 
     def __str__(self):
-        return self.code
+        return f"{self.gmn} - {self.event_type} - {self.event_date}"
     
     class Meta:
             managed = True
