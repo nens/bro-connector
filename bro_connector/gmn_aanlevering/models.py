@@ -6,24 +6,28 @@ from gmw_aanlevering.models import GroundwaterMonitoringTubesStatic
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
     id = models.AutoField(primary_key=True)
-    deliver_to_bro = models.BooleanField(blank=True, null=True)
+    deliver_to_bro = models.BooleanField(blank=False, null=True)
     gmn_bro_id = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
     )
     delivery_accountable_party = models.CharField(
-        max_length=255, null=True, blank=True,
+        max_length=255, null=True, blank=False,
     )
     delivery_responsible_party = models.CharField(
-        max_length=255, null=True, blank=True,
+        max_length=255, null=True, blank=False,
     )
     quality_regime = models.CharField(
-        max_length=255, null=True, blank=True,
+        choices=(
+            ("IMBRO", "IMBRO"),
+            ("IMBRO/A", "IMBRO/A"),
+        ),
+        max_length=255, null=True, blank=False,
     )
     object_id_accountable_party = models.CharField(
-        max_length=255, null=True, blank=True,
+        max_length=255, null=True, blank=False,
     )
     name = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name="Naam"
+        max_length=255, null=True, blank=False, verbose_name="Naam"
     )
     delivery_context = models.CharField(
         blank=False,
@@ -38,7 +42,7 @@ class GroundwaterMonitoringNet(models.Model):
         choices= MONITORINGDOEL,
     )
     groundwater_aspect = models.CharField(
-        blank=True,
+        blank=False,
         max_length=235,
         verbose_name="Grondwateraspect",
         choices=(
@@ -46,8 +50,8 @@ class GroundwaterMonitoringNet(models.Model):
             ("kwantiteit", "kwantiteit"),
         ),
     )
-    start_date_monitoring = models.DateField(blank=True, null=True)
-    end_date_monitoring = models.DateField(blank=True, null=True)
+    start_date_monitoring = models.DateField(blank=False, null=True)
+    end_date_monitoring = models.DateField(blank=True, null=True, help_text='Als een Meetnet verwijderd moet worden uit de BRO, verwijder het dan NIET uit de BRO-Connector. Vul dit veld in om de verwijdering uit de BRO te realiseren.')
 
 
     def __str__(self):
@@ -60,6 +64,27 @@ class GroundwaterMonitoringNet(models.Model):
     def measuring_point_count(self):
         return MeasuringPoint.objects.filter(gmn=self).count()
     
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding  
+        super().save(*args, **kwargs)  
+        
+        # Create a new GMN_StartRegistration event when a new meetnet is added
+        if is_new:
+            IntermediateEvent.objects.create(
+                gmn=self,
+                event_type='GMN_StartRegistration',
+                event_date=self.start_date_monitoring,
+                synced_to_bro=False,
+            )
+
+        # Create a GMN_Closure event if an enddate is filled in
+        if self.end_date_monitoring != None:
+            IntermediateEvent.objects.create(
+                gmn=self,
+                event_type='GMN_MeasuringPointEndDate',
+                event_date=self.end_date_monitoring,
+                synced_to_bro=False,
+            )
 
     class Meta:
             managed = True
@@ -71,14 +96,40 @@ class GroundwaterMonitoringNet(models.Model):
 
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
-    groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = True)
+    groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = False)
     code = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Meetpunt naam"
     )
+    added_to_gmn_date = models.DateField(blank=False, null=True)
+    deleted_from_gmn_date = models.DateField(blank=True, null=True, help_text='Als een Meetpunt van een meetnet verwijderd moet worden, verwijder het object dan NIET uit de BRO-Connector, maar vul dit veld in!')
     
     def __str__(self):
         return self.code
+    
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding  
+        super().save(*args, **kwargs)  
         
+        # Create GMN_MeasuringPoint event if new measuringpoint is created
+        if is_new:
+            IntermediateEvent.objects.create(
+                gmn=self.gmn,
+                event_type='GMN_MeasuringPoint',
+                event_date=self.added_to_gmn_date,
+                synced_to_bro=False,
+                measuring_point = self
+            )
+
+        # Create GMN_MeasuringPointEndDate event if MP is deleted
+        if self.deleted_from_gmn_date != None:
+            IntermediateEvent.objects.create(
+                gmn=self.gmn,
+                event_type='GMN_MeasuringPointEndDate',
+                event_date=self.deleted_from_gmn_date,
+                synced_to_bro=False,
+                measuring_point = self
+            )
+
     
     class Meta:
             managed = True
@@ -91,7 +142,7 @@ class MeasuringPoint(models.Model):
 
 EVENT_TYPE_CHOICES = [
      ("GMN_StartRegistration","Start Registration"),
-     ("GMN_MeasuringPoint","Add MeasuringPoints"),
+     ("GMN_MeasuringPoint","Add MeasuringPoint"),
      ("GMN_MeasuringPointEndDate","Remove MeasuringPoints"),
      ("GMN_Closure","GMN Closure"),
 ]
@@ -100,13 +151,13 @@ class IntermediateEvent(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
     event_type =  models.CharField(
         choices=EVENT_TYPE_CHOICES,
-        blank=True,
+        blank=False,
         null=True,
         max_length = 25,
     )
-    event_date = models.DateTimeField(blank=True, null=True)
-    synced_to_bro = models.BooleanField(blank=True, null=True, default=False)
-    measuring_points = models.ManyToManyField(MeasuringPoint, blank=True)
+    event_date = models.DateField(blank=False, null=True)
+    synced_to_bro = models.BooleanField(blank=False, null=True, default=False)
+    measuring_point = models.ForeignKey(MeasuringPoint, blank=True, null=True, on_delete=models.SET_NULL)
 
 
     def __str__(self):

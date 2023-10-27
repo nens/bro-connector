@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . import models
+from .models import *
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
@@ -22,7 +22,13 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
     list_filter = (
         "gmn_bro_id",
         "name",
+        "quality_regime",
+        "delivery_context",
+        "monitoring_purpose",
+        "groundwater_aspect",
+        "deliver_to_bro",
     )
+
 
 class MeasuringPointAdmin(admin.ModelAdmin):
 
@@ -63,7 +69,7 @@ class gmn_registration_logAdmin(admin.ModelAdmin):
         "gmn_bro_id",  
     )
 
-_register(models.GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
-_register(models.MeasuringPoint, MeasuringPointAdmin)
-_register(models.IntermediateEvent, IntermediateEventAdmin)
-_register(models.gmn_registration_log, gmn_registration_logAdmin)
+_register(GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
+_register(MeasuringPoint, MeasuringPointAdmin)
+_register(IntermediateEvent, IntermediateEventAdmin)
+_register(gmn_registration_log, gmn_registration_logAdmin)
