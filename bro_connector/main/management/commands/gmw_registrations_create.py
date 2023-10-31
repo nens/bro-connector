@@ -533,6 +533,14 @@ def validate_source_doc_type(source_doc_type):
     if full_source_doc_type not in allowed_srcdocs:
         raise Exception(f"Invalid source document type: {source_doc_type}")
 
+def set_delivery_accountable_party(well: models.GroundwaterMonitoringWellStatic, demo: bool) -> str:
+    if demo == True:
+        delivery_accountable_party = 27376655
+    else:
+        delivery_accountable_party = well.delivery_accountable_party
+
+    return delivery_accountable_party
+
 def create_sourcedocs(
     event: models.Event,
     registrations_dir,
@@ -550,6 +558,8 @@ def create_sourcedocs(
         bro_id = event.groundwater_monitoring_well_static
     )
     quality_regime = well.quality_regime
+
+    delivery_accountable_party = set_delivery_accountable_party(well, GMW_AANLEVERING_SETTINGS["demo"])
 
     try:
         # Retrieve general static information of the well
@@ -569,7 +579,6 @@ def create_sourcedocs(
         records_in_register = records_in_registrations(srcdocdata['broId'])
 
         request_reference = f"{srcdocdata['broId']}_{source_doc_type}_{records_in_register}"
-        #print(f"all data retrieved: {source_doc_type}, {request_reference}, {srcdocdata}")
         # Check what kind of request is required and make as followed.
         # Registrate with history
 
@@ -577,7 +586,7 @@ def create_sourcedocs(
             gmw_registration_request = brx.gmw_registration_request(
                 srcdoc=f"GMW_{source_doc_type}",
                 requestReference=request_reference,
-                deliveryAccountableParty=str(27376655), # well.delivery_accountable_party
+                deliveryAccountableParty=delivery_accountable_party,
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
                 underPrivilege = 'ja',
@@ -587,7 +596,7 @@ def create_sourcedocs(
             gmw_registration_request = brx.gmw_registration_request(
                 srcdoc=f"GMW_{source_doc_type}",
                 requestReference=request_reference,
-                deliveryAccountableParty=str(27376655), # well.delivery_accountable_party
+                deliveryAccountableParty=delivery_accountable_party,
                 qualityRegime=quality_regime,
                 broId=srcdocdata['broId'],
                 srcdocdata=srcdocdata,
@@ -725,7 +734,7 @@ def deliver_sourcedocuments(
             user = bro_info['token']['user'], 
             password=bro_info['token']['pass'], 
             demo = demo,
-            api=GMW_AANLEVERING_SETTINGS['api']
+            api = GMW_AANLEVERING_SETTINGS['api_version']
         )
         ic(upload_info.json())
         if upload_info == "Error":
@@ -771,6 +780,13 @@ def deliver_sourcedocuments(
             },
         )
 
+def update_event_based_on_levering(registration: models.gmw_registration_log) -> None:
+    event = models.Event.objects.get(
+        change_id = registration.event_id,
+    )
+
+    event.delivered_to_bro = True
+    event.save(update_fields=['delivered_to_bro'])
 
 def check_delivery_status_levering(
     registration_id, registrations_dir, bro_info, demo
@@ -819,6 +835,9 @@ def check_delivery_status_levering(
                     process_status="delivery_approved",
                 ),
             )
+
+            # Update the event
+            update_event_based_on_levering(registration)
 
             # Remove the sourcedocument file if delivery is approved
             file = registration.file
@@ -963,6 +982,10 @@ def gmw_create_sourcedocs_wells(registrations_dir):
     events_handler.create_sourcedocs_events(events=wellHeadProtector_events, event_type='WellHeadProtector')
 
 def has_been_delivered(registration: models.gmw_registration_log, demo) -> bool:
+    """
+    Check if a registration already has been delivered in the past, if so return true.
+    This will also adjust the registration log accordingly to make sure it is not send to the BRO once more.
+    """
     if demo:
         return False
     
@@ -1013,7 +1036,11 @@ def gmw_check_existing_registrations(
 
     """
     # Get all the current registrations, order by event id so construction is handled first.
-    gmw_registrations = models.gmw_registration_log.objects.all().order_by('levering_type')
+    gmw_registrations = models.gmw_registration_log.objects.all().order_by(
+        'levering_type'
+    ).exclude(
+        process_status = 'delivery_approved'
+    )
 
     for registration in gmw_registrations:
 
@@ -1114,11 +1141,40 @@ def gmw_check_existing_registrations(
                     )
 
 
+def gmw_create_withhistory_sourcedocs():
+    """
+    Find if there are multiple registration requests, where the construction is not yet delivered.
+    If there are multiple registration docs AND the construction is not yet deliverd, combine all sourcedocs into one.
+
+    *This would probably also require me to delete the registration log of the incorporated sourcedocs to avoid confusion.
+    """
+    # Get all construction registrations that have not yet been delivered.
+    undelivered_construction_registrations = models.gmw_registration_log.objects.filter(
+        levering_type = 'Construction',
+        levering_id = None,
+    )
+
+    # For every undelivered construction log, check for more logs
+    for reg in undelivered_construction_registrations:
+        all_registrations_for_one_gmw = models.gmw_registration_log.objects.filter(
+
+        )
+
+
+    
+def update_delivered_events():
+    """
+    If an event has been delivered, update the event to match this.
+    This prevents future registration forms and deliveries to be made.
+    """
+
+
+
 class Command(BaseCommand):
-    help = """Custom command for import of GIS data."""
+    help = """Command to automatically register all new events and send them to the BRO."""
 
     def handle(self, *args, **options):
-
+        # Initialize settings
         demo = GMW_AANLEVERING_SETTINGS["demo"]
         if demo:
             bro_info = GMW_AANLEVERING_SETTINGS[
@@ -1136,7 +1192,10 @@ class Command(BaseCommand):
             registrations_dir,
         )
 
-        #print('check status')
+        # Consolidate registration requests into wells with history where possible
+        # gmw_create_withhistory_sourcedocs()
+
+        
         # Check existing registrations
         check = gmw_check_existing_registrations(
             bro_info, registrations_dir, demo
