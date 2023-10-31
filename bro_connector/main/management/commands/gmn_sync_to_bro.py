@@ -46,7 +46,8 @@ class Command(BaseCommand):
 
             if event.event_type == 'GMN_MeasuringPoint':
                 print(f"De toevoeging van {event.measuring_point} aan het {event.gmn} wordt geinitialiseerd of opgepakt")
-                MeasuringPointAddition(event, demo, acces_token_bro_portal)
+                addition = MeasuringPointAddition(event, demo, acces_token_bro_portal)
+                addition.handle()
 
             if event.event_type == 'GMN_MeasuringPointEndDate':
                 print(f"De verwijdering van {event.measuring_point} aan het {event.gmn} wordt geinitialiseerd of opgepakt")

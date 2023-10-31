@@ -208,7 +208,7 @@ ADMIN_REORDER = (
             "gmn_aanlevering.GroundwaterMonitoringNet",
             "gmn_aanlevering.MeasuringPoint",
             "gmn_aanlevering.IntermediateEvent",
-            "gmn_aanlevering.gmn_registration_log"
+            "gmn_aanlevering.gmn_bro_sync_log"
         ),
     },
     {

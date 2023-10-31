@@ -183,8 +183,14 @@ LEVERINGSTATUS_CHOICES = [
      ("4","Succesvol aangeleverd"),
 ]
 
-class gmn_registration_log(models.Model):
+class gmn_bro_sync_log(models.Model):
     date_modified = models.DateField(null=True, blank=True)
+    event_type = models.CharField(
+        choices=EVENT_TYPE_CHOICES,
+        blank=False,
+        null=True,
+        max_length = 25,
+    )
     gmn_bro_id = models.CharField(max_length=254, null=True, blank=True)
     object_id_accountable_party  = models.CharField(max_length=255, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
@@ -199,10 +205,11 @@ class gmn_registration_log(models.Model):
     file = models.CharField(max_length=254, null=True, blank=True)
     process_status = models.CharField(max_length=254, null=True, blank=True)
 
+
     def __str__(self):
         return f"{self.object_id_accountable_party}_log"
 
     class Meta:
-        db_table = 'gmn"."gmn_registration_log'
-        verbose_name = "GMN Registration Log"
-        verbose_name_plural = "GMN Registration Logs"
+        db_table = 'gmn"."gmn_bro_sync_log'
+        verbose_name = "GMN Bro Sync Log"
+        verbose_name_plural = "GMN Bro Sync Logs"

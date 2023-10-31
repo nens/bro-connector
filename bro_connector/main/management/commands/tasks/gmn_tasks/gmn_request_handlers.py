@@ -1,4 +1,4 @@
-from gmn_aanlevering.models import gmn_registration_log, IntermediateEvent, MeasuringPoint, GroundwaterMonitoringNet
+from gmn_aanlevering.models import gmn_bro_sync_log, IntermediateEvent, MeasuringPoint, GroundwaterMonitoringNet
 from datetime import datetime
 from main.settings.base import GMN_AANLEVERING_SETTINGS
 
@@ -15,27 +15,28 @@ class StartRegistrationGMN:
         self.demo = demo
         self.acces_token_bro_portal = acces_token_bro_portal
         self.monitoring_network = event.gmn
-        self.gmn_registration_log_obj = None
+        self.gmn_bro_register_log_obj = None
 
     def handle(self):
         """
         Main function to handle the startregistration of a GMN.
-        The status of the delivery is registered in a GMN_registration_log instance.
+        The status of the delivery is registered in a gmn_bro_sync_log instance.
         When the registration delivery has successfully been handled, the synced_to_bro of the event is set to True.
         As long as synced_to_bro is False, this function will be triggered, and the delivery process will be picked up, depending on the status found in the log.
         """
 
         # Check for an existing registration log.
-        gmn_registration_log_qs = gmn_registration_log.objects.filter(
+        gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
             gmn_bro_id=self.monitoring_network.gmn_bro_id,
             object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+            event_type = 'GMN_StartRegistration'
         )
 
 
         # Create startregistration xml file if required
         if (
-            not gmn_registration_log_qs.exists()
-            or gmn_registration_log_qs.first().process_status
+            not gmn_bro_sync_log_qs.exists()
+            or gmn_bro_sync_log_qs.first().process_status
             == "failed_to_generate_source_documents"
         ):
             print(
@@ -43,10 +44,10 @@ class StartRegistrationGMN:
             )
             self.create_registration_file()
         else:
-            self.gmn_registration_log_obj = gmn_registration_log_qs.first()
+            self.gmn_bro_register_log_obj = gmn_bro_sync_log_qs.first()
 
         # Validate startregistration if required
-        if self.gmn_registration_log_obj.process_status in [
+        if self.gmn_bro_register_log_obj.process_status in [
             "succesfully_generated_startregistration_request",
             "failed_to_validate_sourcedocument",
         ]:
@@ -56,13 +57,13 @@ class StartRegistrationGMN:
 
         # Deliver startregistration if validation succeeded, or previous deliveries failed (to a max of 3)
         if (
-            self.gmn_registration_log_obj.process_status
+            self.gmn_bro_register_log_obj.process_status
             == "source_document_validation_succesful"
-            and self.gmn_registration_log_obj.validation_status == "VALIDE"
+            and self.gmn_bro_register_log_obj.validation_status == "VALIDE"
         ) or (
-            self.gmn_registration_log_obj.process_status
+            self.gmn_bro_register_log_obj.process_status
             == "failed_to_deliver_sourcedocuments"
-            and self.gmn_registration_log_obj.levering_status in ["1", "2"]
+            and self.gmn_bro_register_log_obj.levering_status in ["1", "2"]
         ):
             print(f"De registratie van {self.monitoring_network} word aangeleverd.")
             self.deliver_registration()
@@ -70,9 +71,9 @@ class StartRegistrationGMN:
 
         # If delivery failed 3 times: break the process
         if (
-            self.gmn_registration_log_obj.process_status
+            self.gmn_bro_register_log_obj.process_status
             == "failed_to_deliver_sourcedocuments"
-            and self.gmn_registration_log_obj.levering_status == "3"
+            and self.gmn_bro_register_log_obj.levering_status == "3"
         ):
             print(
                 f'De registratie van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -81,10 +82,10 @@ class StartRegistrationGMN:
         
         # Check the delivery status
         if (
-            self.gmn_registration_log_obj.process_status
+            self.gmn_bro_register_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_registration_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_registration_log_obj.levering_id is not None
+            and self.gmn_bro_register_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_register_log_obj.levering_id is not None
         ):
             print(
                 f"De status van de levering van {self.monitoring_network} wordt gecontroleerd."
@@ -93,9 +94,7 @@ class StartRegistrationGMN:
 
     def create_registration_file(self):
         """
-        This function handles the start registration of a single monitoringnetwork.
-        It logs its results in a gmn_registration_log instance, with the monitoringnetwork_name as name.
-        Saves the xml file in gmn_aanlevering/registrations
+        Function to create registration xml file for a startregistration of a gmn
         """
         try:
             # Set default quality regime IMBRO if value is not filled in in GMN instance
@@ -160,10 +159,11 @@ class StartRegistrationGMN:
             )
 
             # Create a log instance for the request
-            self.gmn_registration_log_obj, created = gmn_registration_log.objects.update_or_create(
+            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
+                event_type = 'GMN_StartRegistration',
                 defaults=dict(
                     comments="Succesfully generated startregistration request",
                     date_modified=datetime.now(),
@@ -174,10 +174,11 @@ class StartRegistrationGMN:
             )
 
         except Exception as e:
-            self.gmn_registration_log_obj, created = gmn_registration_log.objects.update_or_create(
+            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
+                event_type = 'GMN_StartRegistration',
                 defaults=dict(
                     comments=f"Failed to create startregistration source document: {e}",
                     date_modified=datetime.now(),
@@ -191,7 +192,7 @@ class StartRegistrationGMN:
         This function validates new registrations, and registers its process in the log instance.
         """
         try:
-            filename = self.gmn_registration_log_obj.file
+            filename = self.gmn_bro_register_log_obj.file
             filepath = os.path.join(
                 GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
             )
@@ -221,8 +222,9 @@ class StartRegistrationGMN:
 
             print(comments)
 
-            self.gmn_registration_log_obj, created = gmn_registration_log.objects.update_or_create(
-                id=self.gmn_registration_log_obj.id,
+            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_register_log_obj.id,
+                event_type = 'GMN_StartRegistration',
                 defaults=dict(
                     comments=comments,
                     validation_status=validation_status,
@@ -232,8 +234,9 @@ class StartRegistrationGMN:
 
 
         except Exception as e:
-            self.gmn_registration_log_obj, created = gmn_registration_log.objects.update_or_create(
-                id=self.gmn_registration_log_obj.id,
+            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_register_log_obj.id,
+                event_type = 'GMN_StartRegistration',
                 defaults=dict(
                     comments=f"Exception occured during validation of sourcedocuments: {e}",
                     process_status="failed_to_validate_sourcedocument",
@@ -245,11 +248,11 @@ class StartRegistrationGMN:
         """
         Function to actually deliver the registration.
         """
-        current_delivery_status = int(self.gmn_registration_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_register_log_obj.levering_status)
 
         try:
             # Prepare and deliver registration
-            filename = self.gmn_registration_log_obj.file
+            filename = self.gmn_bro_register_log_obj.file
             filepath = os.path.join(
                 GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
             )
@@ -267,8 +270,9 @@ class StartRegistrationGMN:
                 print(
                     f"De aanlevering van {self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
                 )
-                self.gmn_registration_log_obj, created = gmn_registration_log.objects.update_or_create(
-                    id=self.gmn_registration_log_obj.id,
+                self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_register_log_obj.id,
+                    event_type = 'GMN_StartRegistration',
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
@@ -281,8 +285,9 @@ class StartRegistrationGMN:
                 print(
                     f"De levering van {self.monitoring_network} is geslaagd"
                 )
-                self.gmn_registration_log_obj, created = gmn_registration_log.objects.update_or_create(
-                    id=self.gmn_registration_log_obj.id,
+                self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_register_log_obj.id,
+                    event_type = 'GMN_StartRegistration',
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Succesfully delivered startregistration sourcedocument",
@@ -301,8 +306,9 @@ class StartRegistrationGMN:
                 f"De aanlevering van {self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
             )
 
-            self.gmn_registration_log_obj, created = gmn_registration_log.objects.update_or_create(
-                id=self.gmn_registration_log_obj.id,
+            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_register_log_obj.id,
+                event_type = 'GMN_StartRegistration',
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of startregistration sourcedocument: {e}",
@@ -318,7 +324,7 @@ class StartRegistrationGMN:
         """
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_registration_log_obj.levering_id,
+                self.gmn_bro_register_log_obj.levering_id,
                 self.acces_token_bro_portal,
                 demo =self.demo
             )
@@ -326,8 +332,9 @@ class StartRegistrationGMN:
             delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
             
             if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
-                self.gmn_registration_log_obj , created = gmn_registration_log.objects.update_or_create(
-                    id=self.gmn_registration_log_obj.id,
+                self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_register_log_obj.id,
+                    event_type = 'GMN_StartRegistration',
                     defaults=dict(
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
                         levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
@@ -367,7 +374,7 @@ class StartRegistrationGMN:
                     )
                     
                 # Remove the sourcedocument file if delivery is approved
-                filename = self.gmn_registration_log_obj.file
+                filename = self.gmn_bro_register_log_obj.file
                 filepath = os.path.join(
                     GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
                 )
@@ -376,8 +383,8 @@ class StartRegistrationGMN:
             
             elif delivery_errors:
                 
-                self.gmn_registration_log_obj , created = gmn_registration_log.objects.update_or_create(
-                    id=self.gmn_registration_log_obj.id,
+                self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_register_log_obj.id,
                     defaults=dict(
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments=f"Found errors during the check of {self.monitoring_network}: {delivery_errors}",
@@ -385,8 +392,9 @@ class StartRegistrationGMN:
                 )
             
             else:
-                self.gmn_registration_log_obj , created = gmn_registration_log.objects.update_or_create(
-                    id=self.gmn_registration_log_obj.id,
+                self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_register_log_obj.id,
+                    event_type = 'GMN_StartRegistration',
                     defaults=dict(
                         levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -396,8 +404,9 @@ class StartRegistrationGMN:
 
 
         except Exception as e:
-            self.gmn_registration_log_obj , created = gmn_registration_log.objects.update_or_create(
-                id=self.gmn_registration_log_obj.id,
+            self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_register_log_obj.id,
+                event_type = 'GMN_StartRegistration',
                 defaults={
                     "comments": f"Error occured during status check of delivery: {e}",
                 },
@@ -414,6 +423,113 @@ class MeasuringPointAddition:
         self.demo = demo
         self.acces_token_bro_portal = acces_token_bro_portal
         self.monitoring_network = event.gmn
+        self.measuringpoint = event.measuring_point
+        self.gmn_bro_addition_log_obj = None
+
+    def handle(self):
+        """
+        Main function to handle the addition of a GMN.
+        The status of the delivery is registered in a GMN_sync_log instance.
+        When the addition delivery has successfully been handled, the synced_to_bro of the event is set to True.
+        As long as synced_to_bro is False, this function will be triggered, and the delivery process will be picked up, depending on the status found in the log.
+        """
+
+        # Check for an existing addition log.
+        gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
+            gmn_bro_id=self.monitoring_network.gmn_bro_id,
+            object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+            event_type = 'GMN_MeasuringPoint'
+        )
+
+        # Create addition xml file if required
+        if (
+            not gmn_bro_sync_log_qs.exists()
+            or gmn_bro_sync_log_qs.first().process_status
+            == "failed_to_generate_source_documents"
+        ):
+            print(
+                f"Geen succesvolle addition gevonden voor {self.event.measuring_point}. Er wordt nu een addition bestand aangemaakt."
+            )
+            self.create_addition_file()
+        else:
+            self.gmn_bro_addition_log_obj = gmn_bro_sync_log_qs.first()
+
+    def create_addition_file(self):
+        """
+        Function to create the addition xml file
+        """
+        try:
+            # Set default quality regime IMBRO if value is not filled in in GMN instance
+            if self.monitoring_network.quality_regime == None:
+                quality_regime = "IMBRO"
+            else:
+                quality_regime = self.monitoring_network.quality_regime
+
+            measuringpoint = {
+                    "measuringPointCode": self.measuringpoint.code,
+                    "monitoringTube": {
+                        "broId": self.measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id,
+                        "tubeNumber": self.measuringpoint.groundwater_monitoring_tube.tube_number,
+                    },   
+                }
+            
+
+            # Create source docs
+            srcdocdata = {
+                "eventDate": [
+                    str(self.event.event_date),
+                    "date",
+                ],
+                "measuringPoint": measuringpoint,
+            }
+
+            # Initialize the gmn_registration_request instance
+            gmn_addition_request = brx.gmn_registration_request(
+                srcdoc="GMN_MeasuringPoint",
+                broId=self.monitoring_network.gmn_bro_id,
+                requestReference=f"add {self.measuringpoint} to {self.monitoring_network.name}",
+                deliveryAccountableParty=self.monitoring_network.delivery_accountable_party,
+                qualityRegime=quality_regime,
+                srcdocdata=srcdocdata,
+            )
+
+            # Generate the startregistration request
+            gmn_addition_request.generate()
+
+            # Write the request
+            xml_filename = f"addition {self.monitoring_network.name}.xml"
+            gmn_addition_request.write_request(
+                output_dir=GMN_AANLEVERING_SETTINGS["additions_dir"],
+                filename=xml_filename,
+            )
+
+            # Create a log instance for the request
+            self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+                gmn_bro_id=self.monitoring_network.gmn_bro_id,
+                quality_regime=self.monitoring_network.quality_regime,
+                event_type = 'GMN_MeasuringPoint',
+                defaults=dict(
+                    comments="Succesfully generated addition request",
+                    date_modified=datetime.now(),
+                    validation_status=None,
+                    process_status="succesfully_generated_addition_request",
+                    file=xml_filename,
+                ),
+            )
+
+        except Exception as e:
+            self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+                gmn_bro_id=self.monitoring_network.gmn_bro_id,
+                quality_regime=self.monitoring_network.quality_regime,
+                event_type = 'GMN_MeasuringPoint',
+                defaults=dict(
+                    comments=f"Failed to create addition source document: {e}",
+                    date_modified=datetime.now(),
+                    process_status="failed_to_generate_source_documents",
+                ),
+            )
 
 class MeasuringPointRemoval:
     """

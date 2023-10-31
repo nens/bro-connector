@@ -60,9 +60,10 @@ class IntermediateEventAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
-class gmn_registration_logAdmin(admin.ModelAdmin):
+class gmn_bro_sync_logAdmin(admin.ModelAdmin):
     list_display = (
         "object_id_accountable_party",
+        "event_type",
         "gmn_bro_id",
         "process_status",
     )
@@ -74,4 +75,4 @@ class gmn_registration_logAdmin(admin.ModelAdmin):
 _register(GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
 _register(MeasuringPoint, MeasuringPointAdmin)
 _register(IntermediateEvent, IntermediateEventAdmin)
-_register(gmn_registration_log, gmn_registration_logAdmin)
+_register(gmn_bro_sync_log, gmn_bro_sync_logAdmin)
