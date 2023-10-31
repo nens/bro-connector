@@ -75,6 +75,7 @@ class GroundwaterMonitoringNet(models.Model):
                 event_type='GMN_StartRegistration',
                 event_date=self.start_date_monitoring,
                 synced_to_bro=False,
+                deliver_to_bro = self.deliver_to_bro
             )
 
         # Create a GMN_Closure event if an enddate is filled in
@@ -84,6 +85,7 @@ class GroundwaterMonitoringNet(models.Model):
                 event_type='GMN_MeasuringPointEndDate',
                 event_date=self.end_date_monitoring,
                 synced_to_bro=False,
+                deliver_to_bro = self.deliver_to_bro
             )
 
     class Meta:
@@ -98,7 +100,7 @@ class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
     groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = False)
     code = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name="Meetpunt naam"
+        max_length=255, null=True, blank=True, verbose_name="Meetpunt naam", editable=False
     )
     added_to_gmn_date = models.DateField(blank=False, null=True)
     deleted_from_gmn_date = models.DateField(blank=True, null=True, help_text='Als een Meetpunt van een meetnet verwijderd moet worden, verwijder het object dan NIET uit de BRO-Connector, maar vul dit veld in!')
@@ -107,6 +109,7 @@ class MeasuringPoint(models.Model):
         return self.code
     
     def save(self, *args, **kwargs):
+        self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id}_{self.groundwater_monitoring_tube.tube_number}"
         is_new = self._state.adding  
         super().save(*args, **kwargs)  
         
@@ -117,7 +120,8 @@ class MeasuringPoint(models.Model):
                 event_type='GMN_MeasuringPoint',
                 event_date=self.added_to_gmn_date,
                 synced_to_bro=False,
-                measuring_point = self
+                measuring_point = self,
+                deliver_to_bro = self.gmn.deliver_to_bro
             )
 
         # Create GMN_MeasuringPointEndDate event if MP is deleted
@@ -127,7 +131,8 @@ class MeasuringPoint(models.Model):
                 event_type='GMN_MeasuringPointEndDate',
                 event_date=self.deleted_from_gmn_date,
                 synced_to_bro=False,
-                measuring_point = self
+                measuring_point = self,
+                deliver_to_bro = self.gmn.deliver_to_bro
             )
 
     
@@ -157,8 +162,8 @@ class IntermediateEvent(models.Model):
     )
     event_date = models.DateField(blank=False, null=True)
     synced_to_bro = models.BooleanField(blank=False, null=True, default=False)
-    measuring_point = models.ForeignKey(MeasuringPoint, blank=True, null=True, on_delete=models.SET_NULL)
-
+    measuring_point = models.ForeignKey(MeasuringPoint, blank=True, null=True, on_delete=models.CASCADE)
+    deliver_to_bro = models.BooleanField(blank=False, null=True, default=True)
 
     def __str__(self):
         return f"{self.gmn} - {self.event_type} - {self.event_date}"

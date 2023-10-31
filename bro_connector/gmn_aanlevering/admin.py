@@ -50,12 +50,14 @@ class IntermediateEventAdmin(admin.ModelAdmin):
         "event_type",
         "event_date",
         "synced_to_bro",
+        "deliver_to_bro",
     )
     list_filter = (
         "gmn",
         "event_type",
         "event_date",
         "synced_to_bro",
+        "deliver_to_bro",
     )
 
 class gmn_registration_logAdmin(admin.ModelAdmin):
