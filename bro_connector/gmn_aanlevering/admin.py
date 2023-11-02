@@ -35,7 +35,8 @@ class MeasuringPointAdmin(admin.ModelAdmin):
     list_display = (
         "code",
         "gmn",
-        "groundwater_monitoring_tube", 
+        "groundwater_monitoring_tube",
+        "synced_to_bro",
         
         
     )
@@ -66,6 +67,7 @@ class gmn_bro_sync_logAdmin(admin.ModelAdmin):
         "event_type",
         "gmn_bro_id",
         "process_status",
+        "measuringpoint",
     )
     list_filter = (
         "object_id_accountable_party",

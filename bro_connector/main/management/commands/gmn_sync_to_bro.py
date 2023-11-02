@@ -39,6 +39,12 @@ class Command(BaseCommand):
         events = IntermediateEvent.objects.filter(synced_to_bro=False, deliver_to_bro=True)
 
         for event in events:
+
+            event.refresh_from_db()
+            # Synced_to_bro might be updated during the handling of another event.
+            if event.synced_to_bro == True:
+                continue
+
             if event.event_type == 'GMN_StartRegistration':
                 print(f"De startregistratie van {event.gmn} wordt geinitialiseerd of opgepakt")
                 registration = StartRegistrationGMN(event, demo, acces_token_bro_portal)
@@ -51,7 +57,8 @@ class Command(BaseCommand):
 
             if event.event_type == 'GMN_MeasuringPointEndDate':
                 print(f"De verwijdering van {event.measuring_point} aan het {event.gmn} wordt geinitialiseerd of opgepakt")
-                MeasuringPointRemoval(event, demo, acces_token_bro_portal)
+                removal = MeasuringPointRemoval(event, demo, acces_token_bro_portal)
+                removal.handle()
 
             if event.event_type == 'GMN_Closure':
                 print(f"De eindregistratie van {event.gmn} wordt geinitialiseerd of opgepakt")

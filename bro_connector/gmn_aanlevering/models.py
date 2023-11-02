@@ -102,6 +102,7 @@ class MeasuringPoint(models.Model):
     code = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Meetpunt naam", editable=False
     )
+    synced_to_bro = models.BooleanField(blank=False, null=True, default=False)
     added_to_gmn_date = models.DateField(blank=False, null=True)
     deleted_from_gmn_date = models.DateField(blank=True, null=True, help_text='Als een Meetpunt van een meetnet verwijderd moet worden, verwijder het object dan NIET uit de BRO-Connector, maar vul dit veld in!')
     
@@ -148,7 +149,7 @@ class MeasuringPoint(models.Model):
 EVENT_TYPE_CHOICES = [
      ("GMN_StartRegistration","Start Registration"),
      ("GMN_MeasuringPoint","Add MeasuringPoint"),
-     ("GMN_MeasuringPointEndDate","Remove MeasuringPoints"),
+     ("GMN_MeasuringPointEndDate","Remove MeasuringPoint"),
      ("GMN_Closure","GMN Closure"),
 ]
 
@@ -204,7 +205,7 @@ class gmn_bro_sync_log(models.Model):
     quality_regime = models.CharField(max_length=254, null=True, blank=True)
     file = models.CharField(max_length=254, null=True, blank=True)
     process_status = models.CharField(max_length=254, null=True, blank=True)
-
+    measuringpoint = models.ForeignKey(MeasuringPoint, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.object_id_accountable_party}_log"
