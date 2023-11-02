@@ -105,7 +105,8 @@ class MeasuringPoint(models.Model):
     synced_to_bro = models.BooleanField(blank=False, null=True, default=False)
     added_to_gmn_date = models.DateField(blank=False, null=True)
     deleted_from_gmn_date = models.DateField(blank=True, null=True, help_text='Als een Meetpunt van een meetnet verwijderd moet worden, verwijder het object dan NIET uit de BRO-Connector, maar vul dit veld in!')
-    
+    removed_from_BRO_gmn = models.BooleanField(blank=False, null=True, default=False, editable=False)
+
     def __str__(self):
         return self.code
     
@@ -126,7 +127,7 @@ class MeasuringPoint(models.Model):
             )
 
         # Create GMN_MeasuringPointEndDate event if MP is deleted
-        if self.deleted_from_gmn_date != None:
+        if self.deleted_from_gmn_date != None and self.removed_from_BRO_gmn != True:
             IntermediateEvent.objects.create(
                 gmn=self.gmn,
                 event_type='GMN_MeasuringPointEndDate',

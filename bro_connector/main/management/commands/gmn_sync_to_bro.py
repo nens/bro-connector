@@ -62,4 +62,5 @@ class Command(BaseCommand):
 
             if event.event_type == 'GMN_Closure':
                 print(f"De eindregistratie van {event.gmn} wordt geinitialiseerd of opgepakt")
-                ClosureGMN(event, demo, acces_token_bro_portal)
+                closure = ClosureGMN(event, demo, acces_token_bro_portal)
+                closure.handle()

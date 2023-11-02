@@ -37,7 +37,7 @@ class MeasuringPointAdmin(admin.ModelAdmin):
         "gmn",
         "groundwater_monitoring_tube",
         "synced_to_bro",
-        
+        "removed_from_BRO_gmn",
         
     )
     list_filter = (
