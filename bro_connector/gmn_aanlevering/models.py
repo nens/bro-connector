@@ -52,6 +52,7 @@ class GroundwaterMonitoringNet(models.Model):
     )
     start_date_monitoring = models.DateField(blank=False, null=True)
     end_date_monitoring = models.DateField(blank=True, null=True, help_text='Als een Meetnet verwijderd moet worden uit de BRO, verwijder het dan NIET uit de BRO-Connector. Vul dit veld in om de verwijdering uit de BRO te realiseren.')
+    removed_from_BRO = models.BooleanField(blank=False, null=True, default=False, editable=False)
 
 
     def __str__(self):
@@ -79,7 +80,7 @@ class GroundwaterMonitoringNet(models.Model):
             )
 
         # Create a GMN_Closure event if an enddate is filled in
-        if self.end_date_monitoring != None:
+        if self.end_date_monitoring != None and self.removed_from_BRO != True:
             IntermediateEvent.objects.create(
                 gmn=self,
                 event_type='GMN_Closure',

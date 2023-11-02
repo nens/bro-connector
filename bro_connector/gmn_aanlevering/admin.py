@@ -18,6 +18,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "groundwater_aspect",
         "start_date_monitoring",
         "deliver_to_bro",
+        "removed_from_BRO"
     )
     list_filter = (
         "gmn_bro_id",

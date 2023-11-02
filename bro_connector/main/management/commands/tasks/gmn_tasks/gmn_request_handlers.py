@@ -269,7 +269,6 @@ class StartRegistrationGMN:
                 )
                 self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
-                    event_type = 'GMN_StartRegistration',
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
@@ -1200,6 +1199,52 @@ class ClosureGMN:
         else:
             self.gmn_bro_closure_log_obj = gmn_bro_sync_log_qs.first()
 
+        # Validate closure if required
+        if self.gmn_bro_closure_log_obj.process_status in [
+            "succesfully_generated_closure_request",
+            "failed_to_validate_sourcedocument",
+        ]:
+            print(f"{self.monitoring_network} word gevalideerd.")
+
+            self.validate_closure()
+
+        # Deliver closure if validation succeeded, or previous deliveries failed (to a max of 3)
+        if (
+            self.gmn_bro_closure_log_obj.process_status
+            == "source_document_validation_succesful"
+            and self.gmn_bro_closure_log_obj.validation_status == "VALIDE"
+        ) or (
+            self.gmn_bro_closure_log_obj.process_status
+            == "failed_to_deliver_sourcedocuments"
+            and self.gmn_bro_closure_log_obj.levering_status in ["1", "2"]
+        ):
+            print(f"De closure van {self.monitoring_network} word aangeleverd.")
+            self.deliver_closure()
+            
+
+        # If delivery failed 3 times: break the process
+        if (
+            self.gmn_bro_closure_log_obj.process_status
+            == "failed_to_deliver_sourcedocuments"
+            and self.gmn_bro_closure_log_obj.levering_status == "3"
+        ):
+            print(
+                f'De closure van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
+            )
+            return
+        
+        # Check the delivery status
+        if (
+            self.gmn_bro_closure_log_obj.process_status
+            == "succesfully_delivered_sourcedocuments"
+            and self.gmn_bro_closure_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_closure_log_obj.levering_id is not None
+        ):
+            print(
+                f"De status van de closure van {self.monitoring_network} wordt gecontroleerd."
+            )
+            self.check_delivery_status_levering()
+
     def create_closure_file(self):
         """
         Function to create closure xml file for a closure of a gmn
@@ -1265,4 +1310,209 @@ class ClosureGMN:
                     date_modified=datetime.now(),
                     process_status="failed_to_generate_source_documents",
                 ),
+            )
+
+    def validate_closure(self):
+
+        """
+        This function validates closure request files, and registers its process in the log instance.
+        """
+        try:
+            filename = self.gmn_bro_closure_log_obj.file
+            filepath = os.path.join(
+                GMN_AANLEVERING_SETTINGS["closures_dir"], filename
+            )
+            payload = open(filepath)
+            
+            validation_info = brx.validate_sourcedoc(
+                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+            )
+            
+            errors_count = len(validation_info['errors'])
+
+            validation_status = validation_info["status"]
+
+            if errors_count > 0 :
+                validation_errors = validation_info["errors"]
+                comments = f"Found errors during the validation of {self.monitoring_network}: {validation_errors}"
+                process_status = "failed_to_validate_sourcedocument"
+            elif validation_status == 500:
+                comments = f"BRO server is down. Please try again later"
+                process_status = "failed_to_validate_sourcedocument"
+            elif validation_status == 400:
+                comments = f"Something went wrong while validating. Try again."
+                process_status = "failed_to_validate_sourcedocument"
+            else:
+                comments = f"Succesfully validated sourcedocument for meetnet {self.monitoring_network}."
+                process_status = "source_document_validation_succesful"
+
+            print(comments)
+
+            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_closure_log_obj.id,
+                defaults=dict(
+                    comments=comments,
+                    validation_status=validation_status,
+                    process_status=process_status,
+                ),
+            )
+
+
+        except Exception as e:
+            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_closure_log_obj.id,
+                defaults=dict(
+                    comments=f"Exception occured during validation of sourcedocuments: {e}",
+                    process_status="failed_to_validate_sourcedocument",
+                ),
+            )
+
+    def deliver_closure(self):
+        """
+        Function to actually deliver the closure.
+        """
+        current_delivery_status = int(self.gmn_bro_closure_log_obj.levering_status)
+
+        try:
+            # Prepare and deliver registration
+            filename = self.gmn_bro_closure_log_obj.file
+            filepath = os.path.join(
+                GMN_AANLEVERING_SETTINGS["closures_dir"], filename
+            )
+            payload = open(filepath)
+            request = {filename: payload}
+
+            upload_info = brx.upload_sourcedocs_from_dict(
+                request, self.acces_token_bro_portal, demo=self.demo
+            )
+
+            # Log the result
+            if upload_info == "Error":
+                delivery_status = str(current_delivery_status + 1)
+
+                print(
+                    f"De closure van {self.monitoring_network} is niet gelukt. De closure is nu {delivery_status} keer gefaald."
+                )
+                self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_closure_log_obj.id,
+                    defaults={
+                        "date_modified": datetime.now(),
+                        "comments": "Error occured during delivery of sourcedocument",
+                        "levering_status": delivery_status,
+                        "process_status": "failed_to_deliver_sourcedocuments",
+                    },
+                )
+
+            else:
+                print(
+                    f"De closure van {self.monitoring_network} is geslaagd"
+                )
+                self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_closure_log_obj.id,
+                    defaults={
+                        "date_modified": datetime.now(),
+                        "comments": "Succesfully delivered closure sourcedocument",
+                        "levering_status": "4",
+                        "levering_status_info": upload_info.json()["status"],
+                        "lastchanged": upload_info.json()["lastChanged"],
+                        "levering_id": upload_info.json()["identifier"],
+                        "process_status": "succesfully_delivered_sourcedocuments",
+                    },
+                )
+                time.sleep(10)
+
+
+        except Exception as e:
+            delivery_status = str(current_delivery_status + 1)
+            print(
+                f"De closure van {self.monitoring_network} is niet gelukt. De closure is nu {delivery_status} keer gefaald."
+            )
+
+            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_closure_log_obj.id,
+                defaults={
+                    "date_modified": datetime.now(),
+                    "comments": f"Exception occured during delivery of closure sourcedocument: {e}",
+                    "levering_status": delivery_status,
+                    "process_status": "failed_to_deliver_sourcedocuments",
+                },
+            )
+
+    def check_delivery_status_levering(self):
+        """
+        Function to check and log the status of the delivery
+        """
+        try:
+            delivery_status_info = brx.check_delivery_status(
+                self.gmn_bro_closure_log_obj.levering_id,
+                self.acces_token_bro_portal,
+                demo = self.demo
+            )
+
+            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
+            
+            if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
+                self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_closure_log_obj.id,
+                    defaults=dict(
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
+                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        last_changed=delivery_status_info.json()["lastChanged"],
+                        comments="Startregistration request approved",
+                        process_status="delivery_approved",
+                    ),
+                )
+
+
+                # Set removed_from_BRO to True on GMN
+                GroundwaterMonitoringNet.objects.update_or_create(
+                    object_id_accountable_party = self.monitoring_network.object_id_accountable_party,
+                    defaults=dict(
+                        removed_from_BRO=True
+                    ),
+                )
+
+                # Set the synced_to_bro of the event that triggered this process tot True
+                IntermediateEvent.objects.update_or_create(
+                    id = self.event.id,
+                    defaults=dict(
+                        synced_to_bro=True,
+                    ),
+                )
+                    
+                # Remove the sourcedocument file if delivery is approved
+                filename = self.gmn_bro_closure_log_obj.file
+                filepath = os.path.join(
+                    GMN_AANLEVERING_SETTINGS["closures_dir"], filename
+                )
+                os.remove(filepath)
+
+            
+            elif delivery_errors:
+                
+                self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_closure_log_obj.id,
+                    defaults=dict(
+                        last_changed=delivery_status_info.json()["lastChanged"],
+                        comments=f"Found errors during the check of {self.monitoring_network}: {delivery_errors}",
+                    ),
+                )
+            
+            else:
+                self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                    id=self.gmn_bro_closure_log_obj.id,
+                    defaults=dict(
+                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        last_changed=delivery_status_info.json()["lastChanged"],
+                        comments="Startregistration request not yet approved",
+                    ),
+                )
+
+
+        except Exception as e:
+            self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                id=self.gmn_bro_closure_log_obj.id,
+                defaults={
+                    "comments": f"Error occured during status check of delivery: {e}",
+                },
             )
