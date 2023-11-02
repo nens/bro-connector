@@ -1168,5 +1168,101 @@ class ClosureGMN:
         self.measuringpoint = event.measuring_point
         self.gmn_bro_closure_log_obj = None
 
-    def handle():
-        print('hi')
+    def handle(self):
+        """
+        Main function to handle the Closure of a GMN.
+        The status of the delivery is registered in a GMN_sync_log instance.
+        When the Closure delivery has successfully been handled, the synced_to_bro of the event is set to True.
+        As long as synced_to_bro is False, this function will be triggered, and the delivery process will be picked up, depending on the status found in the log.
+        """
+
+        # If gmn bro id doesnt exist yet, the network hasnt been registered yet
+        if self.monitoring_network.gmn_bro_id is None:
+            return
+        
+        # Check for an existing Closure log.
+        gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
+            gmn_bro_id=self.monitoring_network.gmn_bro_id,
+            object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+            event_type = 'GMN_Closure',
+        )
+
+        # Create closure xml file if required
+        if (
+            not gmn_bro_sync_log_qs.exists()
+            or gmn_bro_sync_log_qs.first().process_status
+            == "failed_to_generate_source_documents"
+        ):
+            print(
+                f"Geen succesvolle closure gevonden voor {self.monitoring_network}. Er wordt nu een closure bestand aangemaakt."
+            )
+            self.create_closure_file()
+        else:
+            self.gmn_bro_closure_log_obj = gmn_bro_sync_log_qs.first()
+
+    def create_closure_file(self):
+        """
+        Function to create closure xml file for a closure of a gmn
+        """
+        try:
+            # Set default quality regime IMBRO if value is not filled in in GMN instance
+            if self.monitoring_network.quality_regime == None:
+                quality_regime = "IMBRO"
+            else:
+                quality_regime = self.monitoring_network.quality_regime
+
+            # Create source docs
+            srcdocdata = {
+                "endDateMonitoring": [
+                    str(self.event.event_date),
+                    "date",
+                ],
+            }
+
+            # Initialize the gmn_registration_request instance
+            gmn_removal_request = brx.gmn_registration_request(
+                srcdoc="GMN_Closure",
+                broId=self.monitoring_network.gmn_bro_id,
+                requestReference=f"close {self.monitoring_network.name}",
+                deliveryAccountableParty=self.monitoring_network.delivery_accountable_party,
+                qualityRegime=quality_regime,
+                srcdocdata=srcdocdata,
+            )
+
+            # Generate the startregistration request
+            gmn_removal_request.generate()
+
+            # Write the request
+            xml_filename = f"closure {self.monitoring_network.name}.xml"
+            gmn_removal_request.write_request(
+                output_dir=GMN_AANLEVERING_SETTINGS["closures_dir"],
+                filename=xml_filename,
+            )
+
+            # Create a log instance for the request
+            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+                gmn_bro_id=self.monitoring_network.gmn_bro_id,
+                quality_regime=self.monitoring_network.quality_regime,
+                event_type = 'GMN_Closure',
+                defaults=dict(
+                    comments="Succesfully generated closure request",
+                    date_modified=datetime.now(),
+                    validation_status=None,
+                    process_status="succesfully_generated_closure_request",
+                    file=xml_filename,
+                ),
+            )
+
+        except Exception as e:
+            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+                gmn_bro_id=self.monitoring_network.gmn_bro_id,
+                quality_regime=self.monitoring_network.quality_regime,
+                event_type = 'GMN_Closure',
+                defaults=dict(
+                    comments=f"Failed to create closure source document: {e}",
+                    date_modified=datetime.now(),
+                    process_status="failed_to_generate_source_documents",
+                ),
+            )

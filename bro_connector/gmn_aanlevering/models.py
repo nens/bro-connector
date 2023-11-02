@@ -82,7 +82,7 @@ class GroundwaterMonitoringNet(models.Model):
         if self.end_date_monitoring != None:
             IntermediateEvent.objects.create(
                 gmn=self,
-                event_type='GMN_MeasuringPointEndDate',
+                event_type='GMN_Closure',
                 event_date=self.end_date_monitoring,
                 synced_to_bro=False,
                 deliver_to_bro = self.deliver_to_bro

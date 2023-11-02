@@ -286,6 +286,7 @@ GMN_AANLEVERING_SETTINGS = {
         BASE_DIR, "gmn_aanlevering\\registrations"
     ),
     "removals_dir": os.path.join(BASE_DIR, "gmn_aanlevering/removals"),
+    "closures_dir": os.path.join(BASE_DIR, "gmn_aanlevering/closures"),
 }
 
 # Quick Scan SETTINGS
