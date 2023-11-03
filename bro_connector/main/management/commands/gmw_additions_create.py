@@ -604,4 +604,8 @@ class Command(BaseCommand):
             additions_dir, acces_token_bro_portal
         )
 
+<<<<<<< HEAD:bro_connector/gmw_aanlevering/management/commands/gmw_additions_create.py
         create_new_observations()
+=======
+        create_new_observations()
+>>>>>>> b47177d8d20a6e3896463e7083cda2e9b474cd1e:bro_connector/main/management/commands/gmw_additions_create.py

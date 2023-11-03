@@ -237,11 +237,11 @@ else:
 
 # # BROCONVERTER SETTINGS
 GLD_AANLEVERING_SETTINGS = {
-    "acces_token_bro_portal_demo": {
+    "bro_info_demo": {
         "user": bro_demo_user,
         "pass": bro_demo_password,
     },
-    "acces_token_bro_portal_bro_connector": {
+    "bro_info_bro_connector": {
         "user": bro_production_user,
         "pass": bro_production_password,
     },
@@ -251,23 +251,30 @@ GLD_AANLEVERING_SETTINGS = {
     "startregistrations_dir": os.path.join(
         BASE_DIR, "gld_aanlevering/startregistrations"
     ),
+    "api_version": "v1",
 }
 
 GMW_AANLEVERING_SETTINGS = {
-    "acces_token_bro_portal_demo": {
-        "user": bro_demo_user,
-        "pass": bro_demo_password,
+    "bro_info_demo": {
+        "token": {
+            "user": bro_demo_user,
+            "pass": bro_demo_password,
+        },
+        "kvk_nummer": 20168636,
     },
-    "acces_token_bro_portal_bro_connector": {
-        "user": bro_production_user,
-        "pass": bro_production_password,
+    "bro_info_bro_connector": {
+        "token": {
+            "user": bro_demo_user,
+            "pass": bro_demo_password,
+        },
+        "kvk_nummer": 20168636,
     },
-    "monitoringnetworks": None,
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gmw_aanlevering/additions"),
     "registrations_dir": os.path.join(
-        BASE_DIR, "gmw_aanlevering/registrations"
+        BASE_DIR, "gmw_aanlevering\\registrations"
     ),
+    "api_version": "v1",
 }
 
 GMN_AANLEVERING_SETTINGS = {

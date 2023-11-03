@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from psycopg2.extras import execute_values
 from pathlib import Path
+from icecream import *
 
 from gmw_aanlevering.models import (
     GroundwaterMonitoringWellStatic,
@@ -126,6 +127,9 @@ class GMWHandler:
     def __init__(self):
         self.number_of_events = 0
         self.number_of_tubes  = 0
+        self.number_of_geo_ohm_cables = 0
+        self.number_of_electrodes = 0
+        self.positions = 0
         self.dict = {}
 
     def get_data(self, id: str, full_history: bool):
@@ -154,18 +158,31 @@ class GMWHandler:
             if split[1] == "wellConstructionDate":
                 prefix = "construction_"
 
-            elif split[1] == "intermediateEvent":
+            if split[1] == "intermediateEvent":
                 number_of_events = number_of_events + 1
                 prefix = "event_" + str(number_of_events) + "_"
 
-            elif split[1] == "wellRemovalDate":
+            if split[1] == "wellRemovalDate":
                 prefix = "removal_"
 
-            elif split[1] == "monitoringTube":
+            if split[1] == "monitoringTube":
                 self.number_of_tubes = self.number_of_tubes + 1
                 prefix = "tube_" + str(self.number_of_tubes) + "_"
 
+            if split[1] == "geoOhmCable":
+                self.number_of_geo_ohm_cables = self.number_of_geo_ohm_cables + 1
+                prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_"
+
+            if split[1] == "electrode":
+                self.number_of_electrodes = self.number_of_electrodes + 1
+                prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_electrode_{str(self.number_of_electrodes)}_"
+            
             tag = str(prefix) + split[1]
+            
+            if split[1] == "pos":
+                self.positions = self.positions + 1
+                postfix = f"_{self.positions}"
+                tag = split[1] + postfix
 
             tags.append(tag)
             values.append(element.text)
@@ -177,6 +194,9 @@ class GMWHandler:
     def reset_values(self):
         self.number_of_events = 0
         self.number_of_tubes  = 0
+        self.number_of_geo_ohm_cables = 0
+        self.number_of_electrodes = 0
+        self.positions = 0
 
 
 def slice(sourcedict, string):
@@ -230,6 +250,9 @@ def get_mytimezone_date(original_datetime):
 class InitializeData:
 
     tube_number = 0
+    geo_ohm_number = 0
+    electrode_number = 0
+
     prefix = f"tube_{tube_number}_"
 
     def __init__(self, gmw_dict):
@@ -237,17 +260,31 @@ class InitializeData:
 
     def reset_tube_number(self):
         self.tube_number = 0
+    
+    def reset_geo_ohm_number(self):
+        self.geo_ohm_number = 0
+    
+    def reset_electrode_number(self):
+        self.electrode_number = 0
 
     def increment_tube_number(self):
         self.tube_number = self.tube_number + 1
         self.prefix =f"tube_{self.tube_number}_"
+
+    def increment_geo_ohm_number(self):
+        self.geo_ohm_number = self.geo_ohm_number + 1
+        self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_"
+
+    def increment_electrode_number(self):
+        self.electrode_number = self.electrode_number + 1
+        self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
     def well_static(self):
         self.gmws = GroundwaterMonitoringWellStatic.objects.create(
                     bro_id=self.gmw_dict.get("broId", None),
                     construction_standard=self.gmw_dict.get("constructionStandard", None),
                     coordinates=(
-                        f"POINT({self.gmw_dict.get('pos', None)})"
+                        f"POINT({self.gmw_dict.get('pos_1', None)})"
                     ),  # -> Has a delivered location and a standardized location, which do we want? Used std for now
                     delivery_accountable_party=self.gmw_dict.get(
                         "deliveryAccountableParty", None
@@ -282,7 +319,7 @@ class InitializeData:
                     ),  # -> Not in XML, maybe under review?
                     vertical_datum=self.gmw_dict.get("verticalDatum", None),
                     well_code=self.gmw_dict.get("wellCode", None),
-                    current_in_bro = True,
+                    deliver_gmw_to_bro = True
                     ## Have to readjust the methodology slightly because if there are multiple events they cannot all have the same names and dates...
                 )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)\
         self.gmws.save()
@@ -378,9 +415,10 @@ class InitializeData:
         self.gmtd.save()
 
     def geo_ohm(self):
+        ic(self.prefix)
         self.geoc = GeoOhmCable.objects.create(
                                     groundwater_monitoring_tube_static=self.gmts,
-                                    cable_number=self.gmw_dict.get(self.prefix + "cableNumber", None),
+                                    cable_number=ic(self.gmw_dict.get(self.prefix + "cableNumber", None)),
                                 )  # not in XML -> 0 cables)
         self.geoc.save()
 
@@ -412,14 +450,22 @@ class InitializeData:
 
 
 def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
+    if 'construction_date' in gmw_dict:
+        date = gmw_dict["construction_date"]
+        
+    elif 'construction_year' in gmw_dict:
+        date = gmw_dict["construction_year"]
+    
+    else:
+        raise Exception(f"date/year not found in dict: {gmw_dict}")
+    
     event = Event.objects.create(
                 event_name = "construction",
-                event_date = get_mytimezone_date(gmw_dict.get(
-                    "construction_date", None
-                )),
+                event_date = date,
                 groundwater_monitoring_well_static = groundwater_monitoring_well_static,
                 groundwater_monitoring_well_dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
                     groundwater_monitoring_well = groundwater_monitoring_well_static).first(),
+                delivered_to_bro = True
             )
     event.save()
 
@@ -446,7 +492,7 @@ def get_tube_static(groundwater_monitoring_well, tube_number):
     )
     return gmts_id
 
-def get_tube_dynamic_history(well_static, updates):
+def get_tube_dynamic_history(well_static: GroundwaterMonitoringWellStatic, updates):
     try:
         # Find which filter needs to be adjusted
         new_gmts = GroundwaterMonitoringTubesStatic.objects.get(
@@ -458,7 +504,7 @@ def get_tube_dynamic_history(well_static, updates):
         new_gmtds = GroundwaterMonitoringTubesDynamic.objects.filter(
             groundwater_monitoring_tube_static = new_gmts)
     except:
-        raise Exception("failed to create new tube: ", updates)
+        raise Exception("failed to create new tube: ", updates, well_static.groundwater_monitoring_well_static_id)
     
     return new_gmtds
 
@@ -482,22 +528,25 @@ class Updater:
         self.event_updates = slice(self.gmw_dict, self.prefix)
 
     def create_base(self):
+        if 'date' in self.event_updates:
+            date = self.event_updates["date"]
+        
+        elif 'year' in self.event_updates:
+            date = self.event_updates["year"]
+    
+        else:
+            raise Exception(f"date/year not found in dict: {self.event_updates}")
+
         try:
             self.event = Event.objects.create(
                 event_name = self.event_updates['eventName'],
-                event_date = get_mytimezone_date(self.event_updates['date']),
+                event_date = date,
                 groundwater_monitoring_well_static = self.groundwater_monitoring_well,
+                delivered_to_bro = True
             )
         except:
-            try:
-                self.event = Event.objects.create(
-                    event_name = self.event_updates['eventName'],
-                    event_date = get_mytimezone_date(str(self.event_updates['year']) + "-01-01"),
-                    groundwater_monitoring_well_static = self.groundwater_monitoring_well,
-                )
-            except:
-                print(self.event_updates)
-                exit()
+            print(self.event_updates)
+            exit()
     
     def intermediate_events(self):
         # Create a base event
@@ -629,6 +678,7 @@ def get_removal_event(gmw_dict, groundwater_monitoring_well_static):
                     groundwater_monitoring_well_static = groundwater_monitoring_well_static,
                     groundwater_monitoring_well_dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
                         groundwater_monitoring_well = groundwater_monitoring_well_static).first(),
+                    delivered_to_bro = True
             )
     event.save()
 

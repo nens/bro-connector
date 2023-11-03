@@ -44,9 +44,11 @@ class GroundwaterMonitoringWellStatic(models.Model):
     vertical_datum = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
+
     # Added for GMW delivery
-    current_in_bro = models.BooleanField(blank=True, default=False) # Is it in its current state in the BRO
+    deliver_gmw_to_bro = models.BooleanField(blank=True, default=False) # Should information of this well be delivered to the BRO
     complete_bro = models.BooleanField(blank=True, default=False) # Is the data in the table complete as required for the BRO
+    
 
     def x(self):
             return self.coordinates.x
@@ -191,6 +193,9 @@ class GeoOhmCable(models.Model):
     def __str__(self):
         return(str(self.geo_ohm_cable_id))
 
+    @property
+    def electrode_count(self):
+        return ElectrodeStatic.objects.filter(geo_ohm_cable = self).count()
 
     class Meta:
         managed = True
@@ -238,11 +243,12 @@ class Event(models.Model):
     event_name =  models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    event_date = models.DateTimeField(blank=True, null=True)
+    event_date = models.CharField(max_length=254, blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_tube_dynamic = models.ForeignKey('GroundwaterMonitoringTubesDynamic', on_delete = models.CASCADE, null = True, blank = True)   
     electrode_dynamic = models.ForeignKey('ElectrodeDynamic', on_delete = models.CASCADE, null = True, blank = True)
+    delivered_to_bro = models.BooleanField(blank = True, default = False)
 
 
     def __str__(self):
@@ -255,12 +261,12 @@ class Event(models.Model):
         verbose_name_plural = "Events"
 
 class gmw_registration_log(models.Model):
-    id = models.AutoField(primary_key=True)
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     bro_id = models.CharField(max_length=254, null=True, blank=True)
-    # filter_id = models.CharField(max_length=254, null=True, blank=True) -> Should we even add filters? Is it needed?
+    event_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
+    levering_type = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
@@ -268,6 +274,9 @@ class gmw_registration_log(models.Model):
     quality_regime = models.CharField(max_length=254, null=True, blank=True)
     file = models.CharField(max_length=254, null=True, blank=True)
     process_status = models.CharField(max_length=254, null=True, blank=True)
+
+    # Could possibly be removed later
+    object_id_accountable_party = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
         db_table = 'aanlevering"."gmw_registration_log'
