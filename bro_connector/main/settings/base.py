@@ -202,8 +202,18 @@ ADMIN_REORDER = (
         ),
     },
     {
+        "app": "gmn_aanlevering",
+        "label": "Grondwatermonitoringsnet (GMN) data", 
+        "models": (
+            "gmn_aanlevering.GroundwaterMonitoringNet",
+            "gmn_aanlevering.MeasuringPoint",
+            "gmn_aanlevering.IntermediateEvent",
+            "gmn_aanlevering.gmn_bro_sync_log"
+        ),
+    },
+    {
         "app": "gmw_aanlevering",
-        "label": "Grondwatermonitoring data - Statische Data",  # Provincie Zeeland GWM - Data
+        "label": "Grondwatermonitoring data",  # Provincie Zeeland GWM - Data
         "models": (
             "gmw_aanlevering.GroundwaterMonitoringWellStatic",
             "gmw_aanlevering.GroundwaterMonitoringWellDynamic",
@@ -258,6 +268,25 @@ GMW_AANLEVERING_SETTINGS = {
     "registrations_dir": os.path.join(
         BASE_DIR, "gmw_aanlevering/registrations"
     ),
+}
+
+GMN_AANLEVERING_SETTINGS = {
+    "acces_token_bro_portal_demo": {
+        "user": bro_demo_user,
+        "pass": bro_demo_password,
+    },
+    "acces_token_bro_portal_bro_connector": {
+        "user": bro_production_user,
+        "pass": bro_production_password,
+    },
+    "monitoringnetworks": None,
+    "demo": demo,
+    "additions_dir": os.path.join(BASE_DIR, "gmn_aanlevering/additions"),
+    "registrations_dir": os.path.join(
+        BASE_DIR, "gmn_aanlevering\\registrations"
+    ),
+    "removals_dir": os.path.join(BASE_DIR, "gmn_aanlevering/removals"),
+    "closures_dir": os.path.join(BASE_DIR, "gmn_aanlevering/closures"),
 }
 
 # Quick Scan SETTINGS

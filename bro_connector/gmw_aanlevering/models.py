@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.gis.db import models as geo_models
 
+
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
     registration_object_type = models.TextField(
