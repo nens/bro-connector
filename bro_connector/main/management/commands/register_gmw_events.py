@@ -4,9 +4,9 @@ from django.db.models import Q
 
 import bro_exchange as brx
 import os
-import datetime
+from datetime import *
 import bisect
-from icecream import *
+import reversion
 
 brx.gmw_replace_request
 from main.settings.base import GMW_AANLEVERING_SETTINGS
@@ -653,6 +653,9 @@ def handle_not_valid_or_error(registration_id, validation_info):
         )
 
         defaults.update({'comments': comments})
+        print(validation_errors)
+        if 'Dit registratieobject heeft de registratiestatus voltooid.' in validation_errors:
+            defaults.update({'levering_status': 'geleverd', 'levering_id': 'onbekend'})
 
         record, created = models.gmw_registration_log.objects.update_or_create(
             id=registration_id,
@@ -727,7 +730,6 @@ def deliver_sourcedocuments(
     try:
         file = gmw_registration.file
         source_doc_file = os.path.join(registrations_dir, file)
-        ic(source_doc_file)
         payload = open(source_doc_file)
         request = {file: payload}
 
@@ -738,7 +740,7 @@ def deliver_sourcedocuments(
             demo = demo,
             api = GMW_AANLEVERING_SETTINGS['api_version']
         )
-        ic(upload_info.json())
+
         if upload_info == "Error":
             comments = "Error occured during delivery of sourcedocument"
             models.gmw_registration_log.objects.update_or_create(
@@ -995,7 +997,7 @@ def has_been_delivered(registration: models.gmw_registration_log, demo) -> bool:
     event = models.Event.objects.get(
         change_id = registration.event_id
     )
-    if event.delivered_to_bro and registration.levering_id == None:
+    if event.delivered_to_bro == True and registration.levering_id == None:
         record, created = models.gmw_registration_log.objects.update_or_create(
                 id=registration.id,
                 defaults=dict(
@@ -1010,6 +1012,21 @@ def has_been_delivered(registration: models.gmw_registration_log, demo) -> bool:
         )
         return True
 
+    else:
+        return False
+
+def delivered_but_not_approved(registration):
+    """
+    Checks if a registration is delivered but not yet approved.
+    """
+    if (
+            get_registration_process_status(registration.id)
+            == "succesfully_delivered_sourcedocuments"
+            and registration.levering_status != "OPGENOMEN_LVBRO"
+            and registration.levering_id is not None
+        ):
+        return True
+    
     else:
         return False
 
@@ -1053,12 +1070,60 @@ def gmw_check_existing_registrations(
         # We check the status of the registration and either validate/deliver/check status/do nothing
         registration_id = registration.id
         source_doc_type = registration.levering_type
-
-        ic(registration, registration.levering_type)
         
         if has_been_delivered(registration, demo):
             continue
 
+        if delivered_but_not_approved(registration):
+            # The registration has been delivered, but not yet approved
+            status = check_delivery_status_levering(
+                registration_id, registrations_dir, bro_info, demo
+            )
+            continue
+
+
+        if (
+            get_registration_process_status(registration_id)
+            == f"succesfully_generated_{source_doc_type}_request"
+        ):
+            validation_status = validate_gmw_registration_request(
+                registration_id,
+                registrations_dir,
+                bro_info,
+                demo,
+            )
+
+        # If an error occured during validation, try again
+        # Failed to validate sourcedocument doesn't mean the document is valid/invalid
+        # It means something went wrong during validation (e.g BRO server error)
+        # Even if a document is invalid, the validation process has succeeded and won't be reattempted
+        elif (
+            get_registration_process_status(registration_id)
+            == "failed_to_validate_source_documents" or get_registration_validation_status(registration_id) != "VALIDE"
+        ):
+            # If we failed to validate the sourcedocument, try again
+            # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
+            validation_status = validate_gmw_registration_request(
+                registration_id,
+                registrations_dir,
+                bro_info,
+                demo,
+            )
+
+        # If validation is succesful and the document is valid, try a delivery
+        if (
+            get_registration_process_status(registration_id)
+            == "source_document_validation_succesful"
+            and get_registration_validation_status(registration_id) == "VALIDE"
+        ):
+            delivery_status = deliver_sourcedocuments(
+                registration_id,
+                registrations_dir,
+                bro_info,
+                demo,
+            )
+
+        # If delivery is succesful, check the status of the delivery
         if (
             get_registration_process_status(registration_id)
             == "succesfully_delivered_sourcedocuments"
@@ -1067,84 +1132,40 @@ def gmw_check_existing_registrations(
         ):
             # The registration has been delivered, but not yet approved
             status = check_delivery_status_levering(
-                registration_id, registrations_dir, bro_info, demo
+                registration_id,
+                registrations_dir,
+                bro_info,
+                demo,
             )
 
-        else:
-            # Succesfully generated a registration sourcedoc in the previous step
-            # Validate the created sourcedocument
-            if (
-                get_registration_process_status(registration_id)
-                == f"succesfully_generated_{source_doc_type}_request"
-            ):
-                validation_status = validate_gmw_registration_request(
-                    registration_id,
-                    registrations_dir,
-                    bro_info,
-                    demo,
-                )
-
-            # If an error occured during validation, try again
-            # Failed to validate sourcedocument doesn't mean the document is valid/invalid
-            # It means something went wrong during validation (e.g BRO server error)
-            # Even if a document is invalid, the validation process has succeeded and won't be reattempted
-            if (
-                get_registration_process_status(registration_id)
-                == "failed_to_validate_source_documents" or get_registration_validation_status(registration_id) != "VALIDE"
-            ):
-                # If we failed to validate the sourcedocument, try again
-                # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
-                validation_status = validate_gmw_registration_request(
-                    registration_id,
-                    registrations_dir,
-                    bro_info,
-                    demo,
-                )
-
-            # If validation is succesful and the document is valid, try a delivery
-            if (
-                get_registration_process_status(registration_id)
-                == "source_document_validation_succesful"
-                and get_registration_validation_status(registration_id) == "VALIDE"
-            ):
+        # If the delivery failed previously, we can retry
+        if (
+            get_registration_process_status(registration_id)
+            == "failed_to_deliver_sourcedocuments"
+        ):
+            # This will not be the case on the first try
+            if registration.levering_status == "failed_thrice":
+                # TODO report with mail?
+                continue
+            else:
                 delivery_status = deliver_sourcedocuments(
                     registration_id,
                     registrations_dir,
                     bro_info,
                     demo,
                 )
+        
+        # Make sure the event is adjusted correctly if the information is delivered to the BRO.
+        if registration.levering_status == 'OPGENOMEN_LVBRO':
+            event = models.Event.objects.get(
+                change_id = registration.event_id
+            )
+            
+            with reversion.create_revision():
+                event.delivered_to_bro = True
+                event.save(update_fields=['delivered_to_bro'])
 
-            # If delivery is succesful, check the status of the delivery
-            if (
-                get_registration_process_status(registration_id)
-                == "succesfully_delivered_sourcedocuments"
-                and registration.levering_status != "OPGENOMEN_LVBRO"
-                and registration.levering_id is not None
-            ):
-                # The registration has been delivered, but not yet approved
-                status = check_delivery_status_levering(
-                    registration_id,
-                    registrations_dir,
-                    bro_info,
-                    demo,
-                )
-
-            # If the delivery failed previously, we can retry
-            if (
-                get_registration_process_status(registration_id)
-                == "failed_to_deliver_sourcedocuments"
-            ):
-                # This will not be the case on the first try
-                if registration.levering_status == "failed_thrice":
-                    # TODO report with mail?
-                    continue
-                else:
-                    delivery_status = deliver_sourcedocuments(
-                        registration_id,
-                        registrations_dir,
-                        bro_info,
-                        demo,
-                    )
+                reversion.set_comment("Delivered the information to the BRO.")
 
 
 def gmw_create_withhistory_sourcedocs():
