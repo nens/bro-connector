@@ -128,13 +128,13 @@ class GetSourceDocData:
         }
         return material_used
 
-    def handle_individual_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic, tube_number):
+    def handle_individual_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic, tube_number: int, sourcedoctype: str) -> None:
         # Static
         static_tube_data = self.get_data.update_static_tube(dynamic_tube.groundwater_monitoring_tube_static)
         self.datafile['monitoringTubes'][tube_number] = static_tube_data
 
         # Dynamic
-        dynamic_tube_data = self.get_data.update_dynamic_tube(dynamic_tube)
+        dynamic_tube_data = self.get_data.update_dynamic_tube(dynamic_tube, sourcedoctype)
         self.datafile['monitoringTubes'][tube_number].update(dynamic_tube_data)
 
         # material used
@@ -236,7 +236,7 @@ class GetSourceDocData:
                 groundwater_monitoring_tube_static = tube    
             ).order_by('groundwater_monitoring_tube_dynamic_id').first()
 
-            self.handle_individual_tube(dynamic_tube=tube_dynamic, tube_number=tube_number)
+            self.handle_individual_tube(dynamic_tube=tube_dynamic, tube_number=tube_number, sourcedoctype ='construction')
             
             geo_ohm_number = 0
 
@@ -307,7 +307,7 @@ class GetSourceDocData:
 
         # Get tube information
         self.datafile['monitoringTubes'] = {}
-        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0)
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0, 'shortening')
 
         tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
 
@@ -339,7 +339,7 @@ class GetSourceDocData:
 
         # Get tube information
         self.datafile['monitoringTubes'] = {}
-        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0)
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0, 'lengthening')
 
         tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
 
@@ -367,7 +367,7 @@ class GetSourceDocData:
 
         try:
             self.datafile['monitoringTubes'] = {}
-            self.handle_individual_tube(dynamic_tube=tube_event.groundwater_monitoring_well_tube_dynamic, tube_number=0)
+            self.handle_individual_tube(dynamic_tube=tube_event.groundwater_monitoring_well_tube_dynamic, tube_number=0, sourcedoctype='positions_measuring')
         except:
             self.datafile.update({'numberOfMonitoringTubes': 0})
 
@@ -377,7 +377,7 @@ class GetSourceDocData:
         )
 
         self.datafile['monitoringTubes'] = {}
-        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0)
+        self.handle_individual_tube(event.groundwater_monitoring_well_tube_dynamic, 0, 'positions_measuring')
 
         # Get well event at same time
         well_event = models.Event.objects.filter(
@@ -533,7 +533,7 @@ def validate_source_doc_type(source_doc_type):
     if full_source_doc_type not in allowed_srcdocs:
         raise Exception(f"Invalid source document type: {source_doc_type}")
 
-def set_delivery_accountable_party(well: models.GroundwaterMonitoringWellStatic, demo: bool) -> str:
+def set_delivery_accountable_party(well: models.GroundwaterMonitoringWellStatic, demo: bool) -> int:
     if demo == True:
         delivery_accountable_party = 27376655
     else:
@@ -554,6 +554,7 @@ def create_sourcedocs(
     """
 
     validate_source_doc_type(source_doc_type)
+
     well = models.GroundwaterMonitoringWellStatic.objects.get(
         bro_id = event.groundwater_monitoring_well_static
     )
@@ -586,7 +587,7 @@ def create_sourcedocs(
             gmw_registration_request = brx.gmw_registration_request(
                 srcdoc=f"GMW_{source_doc_type}",
                 requestReference=request_reference,
-                deliveryAccountableParty=delivery_accountable_party,
+                deliveryAccountableParty=str(delivery_accountable_party),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
                 underPrivilege = 'ja',
@@ -596,9 +597,10 @@ def create_sourcedocs(
             gmw_registration_request = brx.gmw_registration_request(
                 srcdoc=f"GMW_{source_doc_type}",
                 requestReference=request_reference,
-                deliveryAccountableParty=delivery_accountable_party,
+                deliveryAccountableParty=str(delivery_accountable_party),
                 qualityRegime=quality_regime,
                 broId=srcdocdata['broId'],
+                underPrivilege = 'ja',
                 srcdocdata=srcdocdata,
             )
 
@@ -889,6 +891,7 @@ class EventsHandler:
         PositionsMeasuring, ConstructionWithHistory'
         
         """
+
         for event in events:
             well = models.GroundwaterMonitoringWellStatic.objects.get(
                     bro_id = event.groundwater_monitoring_well_static
@@ -1037,10 +1040,13 @@ def gmw_check_existing_registrations(
     """
     # Get all the current registrations, order by event id so construction is handled first.
     gmw_registrations = models.gmw_registration_log.objects.all().order_by(
-        'levering_type'
+        '-levering_type'
     ).exclude(
         process_status = 'delivery_approved'
     )
+
+    # Get BRO-IDs
+
 
     for registration in gmw_registrations:
 
@@ -1189,11 +1195,8 @@ class Command(BaseCommand):
 
         # Check the database for new wells/tubes and start a gmw registration for these objects if its it needed
         gmw_create_sourcedocs_wells(
-            registrations_dir,
+           registrations_dir,
         )
-
-        # Consolidate registration requests into wells with history where possible
-        # gmw_create_withhistory_sourcedocs()
 
         
         # Check existing registrations
