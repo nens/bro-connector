@@ -142,20 +142,40 @@ class DjangoTableToDict:
 
         return dynamic_well_data
 
-    def update_dynamic_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic) -> dict:
-        dynamic_tube_data = {
-            'tubeTopDiameter': dynamic_tube.tube_top_diameter,
-            'variableDiameter': dynamic_tube.variable_diameter,
-            'tubeStatus': dynamic_tube.tube_status,
-            'tubeTopPosition': dynamic_tube.tube_top_position,
-            'tubeTopPositioningMethod': dynamic_tube.tube_top_positioning_method,
-            'tubePackingMaterial': dynamic_tube.tube_packing_material,
-            'glue': dynamic_tube.glue,
-            'plainTubePart': {'plainTubePartLength': dynamic_tube.plain_tube_part_length},
-            'insertedPartDiameter': dynamic_tube.inserted_part_diameter,
-            'insertedPartLength': dynamic_tube.inserted_part_length,
-            'insertedPartMaterial': dynamic_tube.inserted_part_material,
-        }
+    def update_dynamic_tube(self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic, sourcedoctype) -> dict:
+        if sourcedoctype == 'construction' or 'construction_with_history':
+            dynamic_tube_data = {
+                'tubeTopDiameter': dynamic_tube.tube_top_diameter,
+                'variableDiameter': dynamic_tube.variable_diameter,
+                'tubeStatus': dynamic_tube.tube_status,
+                'tubeTopPosition': dynamic_tube.tube_top_position,
+                'tubeTopPositioningMethod': dynamic_tube.tube_top_positioning_method,
+                'tubePackingMaterial': dynamic_tube.tube_packing_material,
+                'glue': dynamic_tube.glue,
+                'plainTubePart': {'plainTubePartLength': dynamic_tube.plain_tube_part_length},
+                'insertedPartDiameter': dynamic_tube.inserted_part_diameter,
+                'insertedPartLength': dynamic_tube.inserted_part_length,
+                'insertedPartMaterial': dynamic_tube.inserted_part_material,
+            }
+
+        elif sourcedoctype == 'positions' or 'positions_measuring':
+            dynamic_tube_data = {
+                'tubeTopPosition': dynamic_tube.tube_top_position,
+                'tubeTopPositioningMethod': dynamic_tube.tube_top_positioning_method,
+            }
+
+        elif sourcedoctype == 'shortening' or 'lengthening':
+            dynamic_tube_data = {
+                'tubeTopPosition': dynamic_tube.tube_top_position,
+                'tubeTopPositioningMethod': dynamic_tube.tube_top_positioning_method,
+                'plainTubePart': {'plainTubePartLength': dynamic_tube.plain_tube_part_length},
+            }
+
+        elif sourcedoctype == 'tube_status':
+            dynamic_tube_data = {
+                'tubeStatus': dynamic_tube.tube_status,
+            }
+
         return dynamic_tube_data
 
     def update_dynamic_electrode(self, dynamic_electrode: models.ElectrodeDynamic) -> dict:
