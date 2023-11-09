@@ -43,12 +43,12 @@ class FormationResistanceDossier(models.Model):
     ##############################################
 
     # References to other tables
-    instrument_configuration = models.ForeignKey()
-    measurement_configuration = models.ForeignKey()
-    electromagnetic_measurement_method = models.ForeignKey()
+    instrument_configuration = models.ForeignKey('InstrumentConfiguration', on_delete = models.CASCADE, null = True, blank = False)
+    measurement_configuration = models.ForeignKey('MeasurementConfiguration', on_delete = models.CASCADE, null = True, blank = False)
+    electromagnetic_measurement_method = models.ForeignKey('ElectromagneticMeasurementMethod', on_delete = models.CASCADE, null = True, blank = False)
     gmw_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = False)
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, null = True, blank = False)
-    geo_ohm_measurement_method = models.ForeignKey()
+    geo_ohm_measurement_method = models.ForeignKey('GeoOhmMeasurementMethod', on_delete = models.CASCADE, null = True, blank = False)
 
     deliver_to_bro = models.BooleanField(blank=False, null=True)
 
@@ -75,7 +75,6 @@ class FormationResistanceDossier(models.Model):
             verbose_name = "Formation Resistance Dossier"
             verbose_name_plural = "Formation Resistance Dossier (2.4)"
             _admin_name = "BRO formation resistance dossier"
-            ordering = ("name",)
 
     
 
@@ -88,13 +87,15 @@ class InstrumentConfiguration(models.Model):
         max_digits=6, decimal_places=3, null = True, blank = True,
     )
     secondary_receive_coil = models.CharField(
-        choices=PRESENT
+        choices=PRESENT,
+        max_length=200, blank=True, null=True,
     )
     relative_position_secondary_coil = models.DecimalField(
         max_digits=6, decimal_places=3, null = True, blank = True,
     )
     coilfrequency_known = models.CharField(
-        choices=PRESENT
+        choices=PRESENT,
+        max_length=200, blank=True, null=True,
     )
     coilfrequency = models.DecimalField(
         max_digits=6, decimal_places=3, null = True, blank = True,
@@ -110,8 +111,8 @@ class InstrumentConfiguration(models.Model):
         verbose_name_plural = "Instrument Configurations"
 
 class ElectromagneticMeasurementMethod(models.Model):
-    measurement_date = models.DateField()
-    measuring_responsible_party = models.TextField()
+    measurement_date = models.DateField(null = False, blank = True)
+    measuring_responsible_party = models.TextField(max_length=200, null=False, blank=False)
     measuring_procedure = models.CharField(
         blank=False,
         max_length=235,
@@ -158,7 +159,7 @@ class GeoOhmMeasurementValue(models.Model):
         verbose_name_plural = "Geo Ohm Measurement Value"
 
 
-class GMWElectodeReference(models.Model):
+class GMWElectrodeReference(models.Model):
     cable_number = models.IntegerField(blank=True, null=True)
     electrode_number = models.IntegerField(blank=True, null=True)
 
@@ -169,8 +170,8 @@ class GMWElectodeReference(models.Model):
 class ElectrodePair(models.Model):
     id = models.AutoField(primary_key=True)
     # Static of dynamic electrode -> Ik denk static
-    elektrode1 = models.ForeignKey('GMWElectrodeReference', on_delete = models.CASCADE, null = True, blank = False)
-    elektrode2 = models.ForeignKey('GMWElectrodeReference', on_delete = models.CASCADE, null = True, blank = False)
+    elektrode1 = models.ForeignKey('GMWElectrodeReference', on_delete = models.CASCADE, null = True, blank = False, related_name="electrode_one")
+    elektrode2 = models.ForeignKey('GMWElectrodeReference', on_delete = models.CASCADE, null = True, blank = False, related_name="electrode_two")
 
     class Meta:
         db_table = 'frd"."electrode_pair'
@@ -180,8 +181,8 @@ class ElectrodePair(models.Model):
 class MeasurementConfiguration(models.Model):
     id = models.AutoField(primary_key=True)
     configuration_name = models.CharField(max_length=40, null = False, blank = False)
-    measurement_pair = models.ForeignKey('ElectrodePair', on_delete = models.CASCADE, null = True, blank = False)
-    flowcurrent_pair = models.ForeignKey('ElectrodePair', on_delete = models.CASCADE, null = True, blank = False)
+    measurement_pair = models.ForeignKey('ElectrodePair', on_delete = models.CASCADE, null = True, blank = False, related_name="measurement_pair")
+    flowcurrent_pair = models.ForeignKey('ElectrodePair', on_delete = models.CASCADE, null = True, blank = False, related_name="flowcurrent_pair")
 
     def clean(self):
         # Check if the config name is unique
