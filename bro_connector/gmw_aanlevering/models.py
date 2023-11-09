@@ -224,7 +224,7 @@ class ElectrodeStatic(models.Model):
 class ElectrodeDynamic(models.Model):
     electrode_dynamic_id = models.AutoField(primary_key=True)
     electrode_static = models.ForeignKey('ElectrodeStatic', on_delete = models.CASCADE, null = True, blank = True)
-    electrode_number = models.IntegerField(blank=True, null=True)
+    electrode_number = models.IntegerField(blank=True, null=True) # Is het niet gek dat dit nummer in de dynamic staat? Aanpassen zal voor problemen zorgen in de toekomst met FRD.
     electrode_status = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.

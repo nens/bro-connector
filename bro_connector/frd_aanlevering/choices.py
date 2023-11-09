@@ -1,3 +1,11 @@
+PRESENT = (
+    ("Indicatie", "Indicatie"),
+    ("Ja", "Ja"),
+    ("Nee", "Nee"),
+    ("Onbekend", "Onbekend"),
+)
+
+
 MEASURING_PROCEDURE = (
     ("geen", "geen"),
     ("werkinstructieWaternet", "werkinstructieWaternet"),
