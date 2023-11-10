@@ -224,7 +224,7 @@ class ElectrodeStatic(models.Model):
 class ElectrodeDynamic(models.Model):
     electrode_dynamic_id = models.AutoField(primary_key=True)
     electrode_static = models.ForeignKey('ElectrodeStatic', on_delete = models.CASCADE, null = True, blank = True)
-    electrode_number = models.IntegerField(blank=True, null=True)
+    electrode_number = models.IntegerField(blank=True, null=True) # Is het niet gek dat dit nummer in de dynamic staat? Aanpassen zal voor problemen zorgen in de toekomst met FRD.
     electrode_status = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
@@ -240,9 +240,10 @@ class ElectrodeDynamic(models.Model):
 
 class Event(models.Model):
     change_id = models.AutoField(primary_key=True)
-    event_name =  models.TextField(
+    event_name =  models.CharField(
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    )  # This field type is a guess. -> Keuzes maken zodat de exacte waardes worden gebruikt.
     event_date = models.CharField(max_length=254, blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)

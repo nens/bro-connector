@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "gld_aanlevering",
     "gmw_aanlevering",
     "gmn_aanlevering",
+    "frd_aanlevering",
     "admin_reorder",
     "django_extensions",
     "django.contrib.admin",
@@ -223,7 +224,24 @@ ADMIN_REORDER = (
             "gmw_aanlevering.ElectrodeStatic",
             "gmw_aanlevering.ElectrodeDynamic",
             "gmw_aanlevering.Event",
-
+        ),
+    },
+    {
+        "app": "frd_aanlevering",
+        "label": "Formationresistance (FRD) data", 
+        "models": (
+            "frd_aanlevering.FormationResistanceDossier",
+            "frd_aanlevering.InstrumentConfiguration",
+            "frd_aanlevering.ElectromagneticMeasurementMethod",
+            "frd_aanlevering.GeoOhmMeasurementMethod",
+            "frd_aanlevering.GeoOhmMeasurementValue",
+            "frd_aanlevering.GMWElectodeReference",
+            "frd_aanlevering.ElectrodePair",
+            "frd_aanlevering.MeasurementConfiguration",
+            "frd_aanlevering.ElectromagneticSeries",
+            "frd_aanlevering.FormationresistanceSeries",
+            "frd_aanlevering.ElectromagneticRecord",
+            "frd_aanlevering.FormationresistanceRecord",
         ),
     },
 )
