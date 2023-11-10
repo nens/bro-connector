@@ -6,7 +6,7 @@ import os
 
 from . import models
 
-from main.settings.base import GMW_AANLEVERING_SETTINGS
+from main.settings.base import gmw_SETTINGS
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)

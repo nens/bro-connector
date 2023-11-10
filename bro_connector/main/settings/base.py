@@ -41,10 +41,10 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "jazzmin",
     "main",
-    "gld_aanlevering",
-    "gmw_aanlevering",
-    "gmn_aanlevering",
-    "frd_aanlevering",
+    "gld",
+    "gmw",
+    "gmn",
+    "frd",
     "admin_reorder",
     "django_extensions",
     "django.contrib.admin",
@@ -163,85 +163,75 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 ADMIN_REORDER = (
-    # First group
+    
     {
-        "app": "gld_aanlevering",
-        "label": "Registratie aanlevering",  # GLD Registratie
+        "app": "gmn",
+        "label": "Grondwatermonitoringnet (GMN)", 
         "models": (
-            "gld_aanlevering.gld_registration_log",
-            "gld_aanlevering.gld_addition_log",
-        ),
-    },
-    # Second group: same app, but different label
-    {
-        "app": "gld_aanlevering",
-        "label": "Grondwaterstandsonderzoek data",  # Provincie Zeeland GLD - Data
-        "models": (
-            "gld_aanlevering.Observation",
-            "gld_aanlevering.GroundwaterLevelDossier",
-            "gld_aanlevering.MeasurementPointMetadata",
-            "gld_aanlevering.MeasurementTvp",
-            "gld_aanlevering.ObservationMetadata",
-            "gld_aanlevering.ObservationProcess",
-            "gld_aanlevering.ResponsibleParty",
+            "gmn.GroundwaterMonitoringNet",
+            "gmn.MeasuringPoint",
+            "gmn.IntermediateEvent",
+            "gmn.gmn_bro_sync_log"
         ),
     },
     {
-        "app": "gld_aanlevering",
-        "label": "Grondwaterstandsonderzoek typeringen",  # Provincie Zeeland GLD - Types
+        "app": "gmw",
+        "label": "Grondwatermonitoringput (GMW)",  # Provincie Zeeland GWM - Data
         "models": (
-            "gld_aanlevering.TypeAirPressureCompensation",
-            "gld_aanlevering.TypeCensoredReasonCode",
-            "gld_aanlevering.TypeEvaluationProcedure",
-            "gld_aanlevering.TypeInterpolationCode",
-            "gld_aanlevering.TypeMeasurementInstrumentType",
-            "gld_aanlevering.TypeObservationType",
-            "gld_aanlevering.TypeProcessReference",
-            "gld_aanlevering.TypeProcessType",
-            "gld_aanlevering.TypeStatusCode",
-            "gld_aanlevering.TypeStatusQualityControl",
+            "gmw.GroundwaterMonitoringWellStatic",
+            "gmw.GroundwaterMonitoringWellDynamic",
+            "gmw.GroundwaterMonitoringTubesStatic",
+            "gmw.GroundwaterMonitoringTubesDynamic",
+            "gmw.GeoOhmCable",
+            "gmw.ElectrodeStatic",
+            "gmw.ElectrodeDynamic",
+            "gmw.Event",
         ),
     },
     {
-        "app": "gmn_aanlevering",
-        "label": "Grondwatermonitoringsnet (GMN) data", 
+        "app": "gld",
+        "label": "Grondwaterstandsonderzoek (GLD)", 
         "models": (
-            "gmn_aanlevering.GroundwaterMonitoringNet",
-            "gmn_aanlevering.MeasuringPoint",
-            "gmn_aanlevering.IntermediateEvent",
-            "gmn_aanlevering.gmn_bro_sync_log"
+            "gld.Observation",
+            "gld.GroundwaterLevelDossier",
+            "gld.MeasurementPointMetadata",
+            "gld.MeasurementTvp",
+            "gld.ObservationMetadata",
+            "gld.ObservationProcess",
+            "gld.ResponsibleParty",
+            "gld.TypeAirPressureCompensation",
+            "gld.TypeCensoredReasonCode",
+            "gld.TypeEvaluationProcedure",
+            "gld.TypeInterpolationCode",
+            "gld.TypeMeasurementInstrumentType",
+            "gld.TypeObservationType",
+            "gld.TypeProcessReference",
+            "gld.TypeProcessType",
+            "gld.TypeStatusCode",
+            "gld.TypeStatusQualityControl",
+            "gld.gld_registration_log",
+            "gld.gld_addition_log",
+
         ),
     },
+
+    
     {
-        "app": "gmw_aanlevering",
-        "label": "Grondwatermonitoring data",  # Provincie Zeeland GWM - Data
+        "app": "frd",
+        "label": "Formatieweestand (FRD)",
         "models": (
-            "gmw_aanlevering.GroundwaterMonitoringWellStatic",
-            "gmw_aanlevering.GroundwaterMonitoringWellDynamic",
-            "gmw_aanlevering.GroundwaterMonitoringTubesStatic",
-            "gmw_aanlevering.GroundwaterMonitoringTubesDynamic",
-            "gmw_aanlevering.GeoOhmCable",
-            "gmw_aanlevering.ElectrodeStatic",
-            "gmw_aanlevering.ElectrodeDynamic",
-            "gmw_aanlevering.Event",
-        ),
-    },
-    {
-        "app": "frd_aanlevering",
-        "label": "Formationresistance (FRD) data", 
-        "models": (
-            "frd_aanlevering.FormationResistanceDossier",
-            "frd_aanlevering.InstrumentConfiguration",
-            "frd_aanlevering.ElectromagneticMeasurementMethod",
-            "frd_aanlevering.GeoOhmMeasurementMethod",
-            "frd_aanlevering.GeoOhmMeasurementValue",
-            "frd_aanlevering.GMWElectodeReference",
-            "frd_aanlevering.ElectrodePair",
-            "frd_aanlevering.MeasurementConfiguration",
-            "frd_aanlevering.ElectromagneticSeries",
-            "frd_aanlevering.FormationresistanceSeries",
-            "frd_aanlevering.ElectromagneticRecord",
-            "frd_aanlevering.FormationresistanceRecord",
+            "frd.FormationResistanceDossier",
+            "frd.InstrumentConfiguration",
+            "frd.ElectromagneticMeasurementMethod",
+            "frd.GeoOhmMeasurementMethod",
+            "frd.GeoOhmMeasurementValue",
+            "frd.GMWElectodeReference",
+            "frd.ElectrodePair",
+            "frd.MeasurementConfiguration",
+            "frd.ElectromagneticSeries",
+            "frd.FormationresistanceSeries",
+            "frd.ElectromagneticRecord",
+            "frd.FormationresistanceRecord",
         ),
     },
 )
@@ -254,7 +244,7 @@ else:
     welcome_sign = 'Inloggen (testomgeving)'
 
 # # BROCONVERTER SETTINGS
-GLD_AANLEVERING_SETTINGS = {
+gld_SETTINGS = {
     "bro_info_demo": {
         "user": bro_demo_user,
         "pass": bro_demo_password,
@@ -265,14 +255,14 @@ GLD_AANLEVERING_SETTINGS = {
     },
     "monitoringnetworks": None,
     "demo": demo,
-    "additions_dir": os.path.join(BASE_DIR, "gld_aanlevering/additions"),
+    "additions_dir": os.path.join(BASE_DIR, "gld/additions"),
     "startregistrations_dir": os.path.join(
-        BASE_DIR, "gld_aanlevering/startregistrations"
+        BASE_DIR, "gld/startregistrations"
     ),
     "api_version": "v1",
 }
 
-GMW_AANLEVERING_SETTINGS = {
+gmw_SETTINGS = {
     "bro_info_demo": {
         "token": {
             "user": bro_demo_user,
@@ -288,14 +278,14 @@ GMW_AANLEVERING_SETTINGS = {
         "kvk_nummer": 20168636,
     },
     "demo": demo,
-    "additions_dir": os.path.join(BASE_DIR, "gmw_aanlevering/additions"),
+    "additions_dir": os.path.join(BASE_DIR, "gmw/additions"),
     "registrations_dir": os.path.join(
-        BASE_DIR, "gmw_aanlevering\\registrations"
+        BASE_DIR, "gmw\\registrations"
     ),
     "api_version": "v1",
 }
 
-GMN_AANLEVERING_SETTINGS = {
+gmn_SETTINGS = {
     "acces_token_bro_portal_demo": {
         "user": bro_demo_user,
         "pass": bro_demo_password,
@@ -306,12 +296,12 @@ GMN_AANLEVERING_SETTINGS = {
     },
     "monitoringnetworks": None,
     "demo": demo,
-    "additions_dir": os.path.join(BASE_DIR, "gmn_aanlevering/additions"),
+    "additions_dir": os.path.join(BASE_DIR, "gmn/additions"),
     "registrations_dir": os.path.join(
-        BASE_DIR, "gmn_aanlevering\\registrations"
+        BASE_DIR, "gmn\\registrations"
     ),
-    "removals_dir": os.path.join(BASE_DIR, "gmn_aanlevering/removals"),
-    "closures_dir": os.path.join(BASE_DIR, "gmn_aanlevering/closures"),
+    "removals_dir": os.path.join(BASE_DIR, "gmn/removals"),
+    "closures_dir": os.path.join(BASE_DIR, "gmn/closures"),
 }
 
 # Quick Scan SETTINGS
@@ -326,57 +316,73 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": welcome_sign,
     "order_with_respect_to": [
         "auth",
-        "gld_aanlevering.gld_registration_log",
-        "gld_aanlevering.gld_addition_log",
-        "gld_aanlevering.GroundwaterLevelDossier",
-        "gld_aanlevering.Observation",
-        "gld_aanlevering.ObservationMetadata",
-        "gld_aanlevering.MeasurementTvp",
-        "gld_aanlevering.MeasurementPointMetadata",
+        "gld.gld_registration_log",
+        "gld.gld_addition_log",
+        "gld.GroundwaterLevelDossier",
+        "gld.Observation",
+        "gld.ObservationMetadata",
+        "gld.MeasurementTvp",
+        "gld.MeasurementPointMetadata",
     ],
-    # "hide_models":["gld_aanlevering.TypeAirPressureCompensation",'gld_aanlevering.TypeCensoredReasonCode',
-    # 'gld_aanlevering.TypeEvaluationProcedure',
-    # 'gld_aanlevering.TypeInterpolationCode',
-    # 'gld_aanlevering.TypeMeasurementInstrumentType',
-    # 'gld_aanlevering.TypeObservationType',
-    # 'gld_aanlevering.TypeProcessReference',
-    # 'gld_aanlevering.TypeProcessType',
-    # 'gld_aanlevering.TypeStatusCode',
-    # 'gld_aanlevering.TypeStatusQualityControl'],
+    # "hide_models":["gld.TypeAirPressureCompensation",'gld.TypeCensoredReasonCode',
+    # 'gld.TypeEvaluationProcedure',
+    # 'gld.TypeInterpolationCode',
+    # 'gld.TypeMeasurementInstrumentType',
+    # 'gld.TypeObservationType',
+    # 'gld.TypeProcessReference',
+    # 'gld.TypeProcessType',
+    # 'gld.TypeStatusCode',
+    # 'gld.TypeStatusQualityControl'],
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
-        "gld_aanlevering.gld_registration_log": "fas fa-solid fa-download",
-        "gld_aanlevering.gld_addition_log": "fas fa-solid fa-play",
-        "gld_aanlevering.Observation": "fas fa-search",
-        "gld_aanlevering.GroundwaterLevelDossier": "fas fa-solid fa-folder",
-        "gld_aanlevering.MeasurementPointMetadata": "fas fa-solid fa-list-ul",
-        "gld_aanlevering.MeasurementTvp": "fas fa-times",
-        "gld_aanlevering.ObservationMetadata": "fas fa-solid fa-list-ul",
-        # 'gld_aanlevering.ObservationProcess': "",
-        "gld_aanlevering.ResponsibleParty": "fas fa-solid fa-building",
-        "gld_aanlevering.TypeAirPressureCompensation": "fas fa-book-open",
-        "gld_aanlevering.TypeCensoredReasonCode": "fas fa-book-open",
-        "gld_aanlevering.TypeEvaluationProcedure": "fas fa-book-open",
-        "gld_aanlevering.TypeInterpolationCode": "fas fa-book-open",
-        "gld_aanlevering.TypeMeasurementInstrumentType": "fas fa-book-open",
-        "gld_aanlevering.TypeObservationType": "fas fa-book-open",
-        "gld_aanlevering.TypeProcessReference": "fas fa-book-open",
-        "gld_aanlevering.TypeProcessType": "fas fa-book-open",
-        "gld_aanlevering.TypeStatusCode": "fas fa-book-open",
-        "gld_aanlevering.TypeStatusQualityControl": "fas fa-book-open",
-        "gmw_aanlevering.GroundwaterMonitoringWellStatic": "fas fa-tint",
-        "gmw_aanlevering.GroundwaterMonitoringWellDynamic": "fas fa-tint",
-        "gmw_aanlevering.GroundwaterMonitoringTubesStatic": "fas fa-tint",
-        "gmw_aanlevering.GroundwaterMonitoringTubesDynamic": "fas fa-tint",
-        "gmw_aanlevering.GeoOhmCable": "fas fa-tint",
-        "gmw_aanlevering.ElectrodeStatic": "fas fa-tint",
-        "gmw_aanlevering.ElectrodeDynamic": "fas fa-tint",
-        "gmw_aanlevering.Event": "fas fa-book-open",
-        # "gmw_aanlevering.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
+        "gld.gld_registration_log": "fas fa-book",
+        "gld.gld_addition_log": "fas fa-book-medical",
+        "gld.Observation": "fas fa-search-location",
+        "gld.GroundwaterLevelDossier": "fas fa-solid fa-folder",
+        "gld.MeasurementPointMetadata": "fas fa-info",
+        "gld.MeasurementTvp": "fas fa-exchange-alt",
+        "gld.ObservationMetadata": "fas fa-info",
+        "gld.ResponsibleParty": "fas fa-solid fa-building",
+        "gld.TypeAirPressureCompensation": "fas fa-book-open",
+        "gld.TypeCensoredReasonCode": "fas fa-book-open",
+        "gld.TypeEvaluationProcedure": "fas fa-book-open",
+        "gld.TypeInterpolationCode": "fas fa-book-open",
+        "gld.TypeMeasurementInstrumentType": "fas fa-book-open",
+        "gld.TypeObservationType": "fas fa-book-open",
+        "gld.TypeProcessReference": "fas fa-book-open",
+        "gld.TypeProcessType": "fas fa-book-open",
+        "gld.TypeStatusCode": "fas fa-book-open",
+        "gld.TypeStatusQualityControl": "fas fa-book-open",
+        "gmw.GroundwaterMonitoringWellStatic": "fas fa-ruler-vertical",
+        "gmw.GroundwaterMonitoringWellDynamic": "fas fa-ruler-vertical",
+        "gmw.GroundwaterMonitoringTubesStatic": "fas fa-vials",
+        "gmw.GroundwaterMonitoringTubesDynamic": "fas fa-vials",
+        "gmw.GeoOhmCable": "fas fa-ethernet",
+        "gmw.ElectrodeStatic": "fas fa-bolt",
+        "gmw.ElectrodeDynamic": "fas fa-bolt",
+        "gmw.Event": "fas fa-book-open",
+        "gmn.GroundwaterMonitoringNet":"fas fa-project-diagram",
+        "gmn.MeasuringPoint":"fas fa-ruler-vertical",
+        "gmn.IntermediateEvent":"fas fa-calendar",
+        "gmn.gmn_bro_sync_log":"fas fa-sync",
+        "frd.FormationResistanceDossier":"fas fa-solid fa-folder",
+        "frd.InstrumentConfiguration":"fas fa-server",
+        "frd.ElectromagneticMeasurementMethod":"fas fa-book-open",
+        "frd.GeoOhmMeasurementMethod":"fas fa-book-open",
+        "frd.GeoOhmMeasurementValue":"fas fa-chart-line",
+        "frd.GMWElectrodeReference":"fas fa-external-link-alt",
+        "frd.ElectrodePair":"fas fa-vials",
+        "frd.MeasurementConfiguration":"fas fa-server",
+        "frd.ElectromagneticSeries":"fas fa-book-open",
+        "frd.FormationresistanceSeries":"fas fa-book-open",
+        "frd.ElectromagneticRecord":"fas fa-chart-line",
+        "frd.FormationresistanceRecord":"fas fa-chart-line",
+
+        # "gmw.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
     },
-    "changeform_format_overrides": {"gmw_aanlevering.GroundwaterMonitoringWellStatic": "single"}
+    "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"}
 }
 
 

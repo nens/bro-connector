@@ -6,7 +6,7 @@ import os
 
 from . import models
 
-from main.settings.base import GLD_AANLEVERING_SETTINGS
+from main.settings.base import gld_SETTINGS
 
 
 from main.management.commands.gld_registrations_create import (
@@ -351,8 +351,8 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             location_code = well.nitg_code
             delivery_accountable_party = str(well.delivery_accountable_party)
 
-            startregistrations_dir = GLD_AANLEVERING_SETTINGS["startregistrations_dir"]
-            monitoringnetworks = GLD_AANLEVERING_SETTINGS["monitoringnetworks"]
+            startregistrations_dir = gld_SETTINGS["startregistrations_dir"]
+            monitoringnetworks = gld_SETTINGS["monitoringnetworks"]
 
             if registration_log.levering_id is not None:
                 self.message_user(
@@ -379,17 +379,17 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     @admin.action(description="Validate startregistration sourcedocument")
     def validate_startregistration_sourcedocument(self, request, queryset):
 
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        startregistrations_dir = GLD_AANLEVERING_SETTINGS["startregistrations_dir"]
+        startregistrations_dir = gld_SETTINGS["startregistrations_dir"]
 
         for registration_log in queryset:
             sourcedoc_file = os.path.join(startregistrations_dir, registration_log.file)
@@ -427,17 +427,17 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
     @admin.action(description="Deliver startregistration sourcedocument")
     def deliver_startregistration_sourcedocument(self, request, queryset):
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        startregistrations_dir = GLD_AANLEVERING_SETTINGS["startregistrations_dir"]
+        startregistrations_dir = gld_SETTINGS["startregistrations_dir"]
 
         for registration_log in queryset:
 
@@ -476,17 +476,17 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     @admin.action(description="Check status of startregistration")
     def check_status_startregistration(self, request, queryset):
 
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        startregistrations_dir = GLD_AANLEVERING_SETTINGS["startregistrations_dir"]
+        startregistrations_dir = gld_SETTINGS["startregistrations_dir"]
 
         for registration_log in queryset:
 
@@ -558,7 +558,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 observation = models.Observation.objects.get(
                     observation_id=observation_id
                 )
-                additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]
+                additions_dir = gld_SETTINGS["additions_dir"]
                 (
                     observation_source_document_data,
                     addition_type,
@@ -580,20 +580,20 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     @admin.action(description="Validate sourcedocuments")
     def validate_sourcedocuments(self, request, queryset):
 
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
         for addition_log in queryset:
             observation_id = addition_log.observation_id
             observation = models.Observation.objects.get(observation_id=observation_id)
-            additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]
+            additions_dir = gld_SETTINGS["additions_dir"]
 
             filename = addition_log.file
             addition_file_path = os.path.join(additions_dir, filename)
@@ -621,13 +621,13 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     # Retry deliver sourcedocuments
     @admin.action(description="Deliver sourcedocuments")
     def deliver_sourcedocuments(self, request, queryset):
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
@@ -661,13 +661,13 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     # Check status of a delivery
     @admin.action(description="Check status delivery")
     def check_status_delivery(self, request, queryset):
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 

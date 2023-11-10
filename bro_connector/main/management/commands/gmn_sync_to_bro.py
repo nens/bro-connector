@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
-from main.settings.base import GMN_AANLEVERING_SETTINGS
-from gmn_aanlevering.models import IntermediateEvent
+from main.settings.base import gmn_SETTINGS
+from gmn.models import IntermediateEvent
 from main.management.commands.tasks.gmn_tasks.gmn_request_handlers import (
     StartRegistrationGMN, MeasuringPointAddition, MeasuringPointRemoval, ClosureGMN
 )
@@ -25,13 +25,13 @@ class Command(BaseCommand):
         
         ### SETUP ###
         # Check demo settings and define required acces token
-        demo = GMN_AANLEVERING_SETTINGS["demo"]
+        demo = gmn_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GMN_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gmn_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GMN_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gmn_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 

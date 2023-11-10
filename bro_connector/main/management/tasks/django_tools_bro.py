@@ -1,4 +1,4 @@
-from gmw_aanlevering import models
+from gmw import models
 
 class GetDjangoObjects:
     def get_all_tubes(well_static_id):

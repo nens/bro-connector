@@ -9,8 +9,8 @@ import bisect
 import reversion
 
 brx.gmw_replace_request
-from main.settings.base import GMW_AANLEVERING_SETTINGS
-from gmw_aanlevering import models
+from main.settings.base import gmw_SETTINGS
+from gmw import models
 from main.management.tasks.django_tools_bro import *
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
@@ -560,7 +560,7 @@ def create_sourcedocs(
     )
     quality_regime = well.quality_regime
 
-    delivery_accountable_party = set_delivery_accountable_party(well, GMW_AANLEVERING_SETTINGS["demo"])
+    delivery_accountable_party = set_delivery_accountable_party(well, gmw_SETTINGS["demo"])
 
     try:
         # Retrieve general static information of the well
@@ -738,7 +738,7 @@ def deliver_sourcedocuments(
             user = bro_info['token']['user'], 
             password=bro_info['token']['pass'], 
             demo = demo,
-            api = GMW_AANLEVERING_SETTINGS['api_version']
+            api = gmw_SETTINGS['api_version']
         )
 
         if upload_info == "Error":
@@ -1202,17 +1202,17 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Initialize settings
-        demo = GMW_AANLEVERING_SETTINGS["demo"]
+        demo = gmw_SETTINGS["demo"]
         if demo:
-            bro_info = GMW_AANLEVERING_SETTINGS[
+            bro_info = gmw_SETTINGS[
                 "bro_info_demo"
             ]
         else:
-            bro_info = GMW_AANLEVERING_SETTINGS[
+            bro_info = gmw_SETTINGS[
                 "bro_info_bro_connector"
             ]
 
-        registrations_dir = GMW_AANLEVERING_SETTINGS["registrations_dir"]
+        registrations_dir = gmw_SETTINGS["registrations_dir"]
 
         # Check the database for new wells/tubes and start a gmw registration for these objects if its it needed
         gmw_create_sourcedocs_wells(

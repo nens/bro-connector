@@ -12,7 +12,7 @@ from psycopg2.extras import execute_values
 from pathlib import Path
 from icecream import *
 
-from gmw_aanlevering.models import (
+from gmw.models import (
     GroundwaterMonitoringWellStatic,
     GroundwaterMonitoringWellDynamic,
     GroundwaterMonitoringTubesStatic,

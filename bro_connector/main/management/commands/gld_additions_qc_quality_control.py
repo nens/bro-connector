@@ -32,10 +32,10 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-from main.settings.base import GLD_AANLEVERING_SETTINGS
+from main.settings.base import gld_SETTINGS
 from main.settings import base as settings
-from gld_aanlevering import models
-from gld_aanlevering.management.commands.gld_additions_create import (
+from gld import models
+from gld.management.commands.gld_additions_create import (
     get_measurement_point_metadata_for_measurement,
 )
 

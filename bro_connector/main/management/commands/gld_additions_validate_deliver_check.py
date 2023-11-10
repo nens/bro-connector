@@ -9,9 +9,9 @@ from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
-from main.settings.base import GLD_AANLEVERING_SETTINGS
+from main.settings.base import gld_SETTINGS
 from main import settings
-from gld_aanlevering import models
+from gld import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
@@ -23,7 +23,7 @@ def validate_gld_addition_source_document(
     """
     Validate the generated GLD addition sourcedoc
     """
-    source_doc_file = os.path.join(GLD_AANLEVERING_SETTINGS["additions_dir"], filename)
+    source_doc_file = os.path.join(gld_SETTINGS["additions_dir"], filename)
     payload = open(source_doc_file)
 
     try:
@@ -84,7 +84,7 @@ def deliver_gld_addition_source_document(
     """
 
     gld_addition = models.gld_addition_log.objects.get(observation_id=observation_id)
-    source_doc_file = os.path.join(GLD_AANLEVERING_SETTINGS["additions_dir"], filename)
+    source_doc_file = os.path.join(gld_SETTINGS["additions_dir"], filename)
     payload = open(source_doc_file)
     request = {filename: payload}
 
@@ -284,7 +284,7 @@ def check_status_addition(observation, acces_token_bro_portal, demo):
     try:
         if new_delivery_status == "DOORGELEVERD":  # "OPGENOMEN_LVBRO":
             sourcedoc_filepath = os.path.join(
-                GLD_AANLEVERING_SETTINGS["additions_dir"], file_name
+                gld_SETTINGS["additions_dir"], file_name
             )
             os.remove(sourcedoc_filepath)
     except:
@@ -352,16 +352,16 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
 class Command(BaseCommand):
     def handle(self, *args, **options):
 
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]
+        additions_dir = gld_SETTINGS["additions_dir"]
 
         gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo)

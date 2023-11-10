@@ -1,6 +1,6 @@
 from django.db import models
 from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
-from gmw_aanlevering.models import GroundwaterMonitoringTubesStatic
+from gmw.models import GroundwaterMonitoringTubesStatic
 
 
 # Create your models here.
@@ -92,9 +92,9 @@ class GroundwaterMonitoringNet(models.Model):
     class Meta:
             managed = True
             db_table = 'gmn"."groundwater_monitoring_net'
-            verbose_name = "Groundwater Monitoring Network"
-            verbose_name_plural = "Groundwater Monitoring Networks (2.1)"
-            _admin_name = "BRO meetnet"
+            verbose_name = "Groundwatermonitoring Meetnet"
+            verbose_name_plural = "Groundwatermonitoring Meetnetten"
+            _admin_name = "Groundwatermonitoring Meetnet"
             ordering = ("name",)
 
 class MeasuringPoint(models.Model):
@@ -142,9 +142,9 @@ class MeasuringPoint(models.Model):
     class Meta:
             managed = True
             db_table = 'gmn"."measuring_point'
-            verbose_name = "GMN Meetpunt"
-            verbose_name_plural = "GMN Meetpunt (3.1)"
-            _admin_name = "BRO Meetpunt"
+            verbose_name = "Meetpunt"
+            verbose_name_plural = "Meetpunten"
+            _admin_name = "Meetpunt"
             ordering = ("code",)
 
 
@@ -174,8 +174,8 @@ class IntermediateEvent(models.Model):
     class Meta:
             managed = True
             db_table = 'gmn"."intermediate_event'
-            verbose_name = "GMN Intermediate Event"
-            _admin_name = "GMN Intermediate Event"
+            verbose_name = "Tussentijdse Gebeurtenis"
+            _admin_name = "Tussentijdse Gebeurtenissen"
             ordering = ("event_date",)
 
 LEVERINGSTATUS_CHOICES = [
@@ -214,5 +214,5 @@ class gmn_bro_sync_log(models.Model):
 
     class Meta:
         db_table = 'gmn"."gmn_bro_sync_log'
-        verbose_name = "GMN Bro Sync Log"
-        verbose_name_plural = "GMN Bro Sync Logs"
+        verbose_name = "GMN Synchronisatie Log"
+        verbose_name_plural = "GMN Synchronisatie Logs"

@@ -25,8 +25,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from bro_connector_gld.settings.base import GMW_AANLEVERING_SETTINGS
-from gmw_aanlevering import models
+from bro_connector_gld.settings.base import gmw_SETTINGS
+from gmw import models
 
 field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
 
@@ -588,23 +588,23 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # print(NENS_DEMO_SETTINGS)
 
-        demo = GMW_AANLEVERING_SETTINGS["demo"]
+        demo = gmw_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GMW_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gmw_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GMW_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gmw_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        additions_dir = GMW_AANLEVERING_SETTINGS["additions_dir"]
+        additions_dir = gmw_SETTINGS["additions_dir"]
 
         create_addition_sourcedocuments_for_observations(
             additions_dir, acces_token_bro_portal
         )
 
-<<<<<<< HEAD:bro_connector/gmw_aanlevering/management/commands/gmw_additions_create.py
+<<<<<<< HEAD:bro_connector/gmw/management/commands/gmw_additions_create.py
         create_new_observations()
 =======
         create_new_observations()

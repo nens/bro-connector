@@ -28,8 +28,8 @@ class GroundwaterLevelDossier(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."groundwater_level_dossier'
-        verbose_name = "Groundwaterlevel dossier"
-        verbose_name_plural = "Groundwaterlevel dossier"
+        verbose_name = "Grondwaterstand dossier"
+        verbose_name_plural = "Grondwaterstand dossiers"
 
 
 
@@ -47,10 +47,10 @@ class MeasurementPointMetadata(models.Model):
 
     class Meta:
         managed = True
-        app_label = "gld_aanlevering"
+        app_label = "gld"
         db_table = 'gld"."measurement_point_metadata'
-        verbose_name = "Measurement point metadata"
-        verbose_name_plural = "Measurement point metadata"
+        verbose_name = "Meetpunt Metadata"
+        verbose_name_plural = "Meetpunt Metadata"
 
 
 
@@ -116,8 +116,8 @@ class Observation(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."observation'
-        verbose_name = "Observation"
-        verbose_name_plural = "Observations"
+        verbose_name = "Observatie"
+        verbose_name_plural = "Observaties"
 
 class MeasurementTvp(models.Model):
     measurement_tvp_id = models.AutoField(primary_key=True)
@@ -142,8 +142,8 @@ class MeasurementTvp(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."measurement_tvp'
-        verbose_name = "Measurement time-value pairs"
-        verbose_name_plural = "Measurement time-value pairs"
+        verbose_name = "Metingen Tijd-Waarde paren"
+        verbose_name_plural = "Metingen Tijd-Waarde paren"
 
 class ObservationMetadata(models.Model):
     observation_metadata_id = models.AutoField(primary_key=True)
@@ -161,8 +161,8 @@ class ObservationMetadata(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."observation_metadata'
-        verbose_name = "Observation metadata"
-        verbose_name_plural = "Observation metadata"
+        verbose_name = "Observatie Metadata"
+        verbose_name_plural = "Observatie Metadata"
 
 
 class ObservationProcess(models.Model):
@@ -186,8 +186,8 @@ class ObservationProcess(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."observation_process'
-        verbose_name = "Observation process"
-        verbose_name_plural = "Observation process"
+        verbose_name = "Observatie Process"
+        verbose_name_plural = "Observatie Process"
 
 
 class ResponsibleParty(models.Model):
@@ -198,8 +198,8 @@ class ResponsibleParty(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."responsible_party'
-        verbose_name = "Responsible party"
-        verbose_name_plural = "Responsible party"
+        verbose_name = "Verantwoordelijke Partij"
+        verbose_name_plural = "Verantwoordelijke Partij"
 
     def __str__(self):
         return "{}".format(self.organisation_name)
@@ -214,7 +214,7 @@ class TypeAirPressureCompensation(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_air_pressure_compensation'
-        verbose_name_plural = "Air pressure compensation"
+        verbose_name_plural = "Luchtdruk Compensatie"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -229,7 +229,7 @@ class TypeCensoredReasonCode(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_censored_reason_code'
-        verbose_name_plural = "Censor reasons"
+        verbose_name_plural = "Sensor Redenen"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -244,7 +244,7 @@ class TypeEvaluationProcedure(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_evaluation_procedure'
-        verbose_name_plural = "Evaluation procedures"
+        verbose_name_plural = "Evaluatie Procedures"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -259,7 +259,7 @@ class TypeInterpolationCode(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_interpolation_code'
-        verbose_name_plural = "Interpolation codes"
+        verbose_name_plural = "Interpolatie Codes"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -274,7 +274,7 @@ class TypeMeasurementInstrumentType(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_measurement_instrument_type'
-        verbose_name_plural = "Measurement instrument types"
+        verbose_name_plural = "Meetinstrument Types"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -289,7 +289,7 @@ class TypeObservationType(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_observation_type'
-        verbose_name_plural = "Observation types"
+        verbose_name_plural = "Observatie Types"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -304,7 +304,7 @@ class TypeProcessReference(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_process_reference'
-        verbose_name_plural = "Process references"
+        verbose_name_plural = "Process Referenties"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -319,7 +319,7 @@ class TypeProcessType(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_process_type'
-        verbose_name_plural = "Process types"
+        verbose_name_plural = "Proces Types"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -349,7 +349,7 @@ class TypeStatusQualityControl(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."type_status_quality_control'
-        verbose_name_plural = "Quality control types"
+        verbose_name_plural = "Kwaliteitscontrole Types"
 
     def __str__(self):
         return "{}".format(self.value)
@@ -377,8 +377,8 @@ class gld_registration_log(models.Model):
 
     class Meta:
         db_table = 'aanlevering"."gld_registration_log'
-        verbose_name = "GLD registration logging"
-        verbose_name_plural = "GLD registration logging"
+        verbose_name = "GLD Registratie Log"
+        verbose_name_plural = "GLD Registratie logs"
 
 
 class gld_addition_log(models.Model):
@@ -398,5 +398,5 @@ class gld_addition_log(models.Model):
 
     class Meta:
         db_table = 'aanlevering"."gld_addition_log'
-        verbose_name = "GLD addition logging"
-        verbose_name_plural = "GLD addition logging"
+        verbose_name = "GLD Toevoeging Log"
+        verbose_name_plural = "GLD Toevoeging Logs"

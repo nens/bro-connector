@@ -12,8 +12,8 @@ import datetime
 import logging
 import bisect
 
-from main.settings.base import GLD_AANLEVERING_SETTINGS
-from gld_aanlevering import models
+from main.settings.base import gld_SETTINGS
+from gld import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
@@ -525,18 +525,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        monitoringnetworks = GLD_AANLEVERING_SETTINGS["monitoringnetworks"]
-        startregistrations_dir = GLD_AANLEVERING_SETTINGS["startregistrations_dir"]
+        monitoringnetworks = gld_SETTINGS["monitoringnetworks"]
+        startregistrations_dir = gld_SETTINGS["startregistrations_dir"]
 
         # print('start registrations')
         # Check the database for new wells/tubes and start a GLD registration for these objects if its it needed
