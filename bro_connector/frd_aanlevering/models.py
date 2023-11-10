@@ -73,7 +73,7 @@ class FormationResistanceDossier(models.Model):
             managed = True
             db_table = 'frd"."formation_resistance_dossier'
             verbose_name = "Formation Resistance Dossier"
-            verbose_name_plural = "Formation Resistance Dossier (2.4)"
+            verbose_name_plural = "Formation Resistance Dossier"
             _admin_name = "BRO formation resistance dossier"
 
     
@@ -107,6 +107,7 @@ class InstrumentConfiguration(models.Model):
     ) # Unit is cm (centimeter)
 
     class Meta:
+        managed = True
         db_table = 'frd"."instrument_configuration'
         verbose_name_plural = "Instrument Configurations"
 
@@ -125,6 +126,7 @@ class ElectromagneticMeasurementMethod(models.Model):
     )
 
     class Meta:
+        managed = True
         db_table = 'frd"."electromagnetic_measurement_method'
         verbose_name_plural = "Electromagnetic Measurement Method"
 
@@ -143,6 +145,7 @@ class GeoOhmMeasurementMethod(models.Model):
     )
 
     class Meta:
+        managed = True
         db_table = 'frd"."geo_ohm_measurement_method'
         verbose_name_plural = "Geo Ohm Measurement Method"
 
@@ -155,6 +158,7 @@ class GeoOhmMeasurementValue(models.Model):
     measurement_configuration = models.ForeignKey('GeoOhmMeasurementMethod', on_delete = models.CASCADE, null = True, blank = False)
 
     class Meta:
+        managed = True
         db_table = 'frd"."geo_ohm_measurement_value'
         verbose_name_plural = "Geo Ohm Measurement Value"
 
@@ -164,6 +168,7 @@ class GMWElectrodeReference(models.Model):
     electrode_number = models.IntegerField(blank=True, null=True)
 
     class Meta:
+        managed = True
         db_table = 'frd"."gmw_electrode_reference'
         verbose_name_plural = "GMW Electrode Reference"
 
@@ -174,6 +179,7 @@ class ElectrodePair(models.Model):
     elektrode2 = models.ForeignKey('GMWElectrodeReference', on_delete = models.CASCADE, null = True, blank = False, related_name="electrode_two")
 
     class Meta:
+        managed = True
         db_table = 'frd"."electrode_pair'
         verbose_name_plural = "Electrode Pair"
 
@@ -194,6 +200,7 @@ class MeasurementConfiguration(models.Model):
             raise ValidationError(f"Configuration name ({self.configuration_name}) already exists.")
         
     class Meta:
+        managed = True
         db_table = 'frd"."measurement_configuration'
         verbose_name_plural = "Measurement Configuration"
 
@@ -202,6 +209,7 @@ class ElectromagneticSeries(models.Model):
     id = models.AutoField(primary_key=True)
 
     class Meta:
+        managed = True
         db_table = 'frd"."electromagnetic_series'
         verbose_name_plural = "Electromagnetic Series"
 
@@ -210,6 +218,7 @@ class FormationresistanceSeries(models.Model):
     id = models.AutoField(primary_key=True)
 
     class Meta:
+        managed = True
         db_table = 'frd"."formationresistance_series'
         verbose_name_plural = "Formationresistance Series"
 
@@ -235,6 +244,7 @@ class ElectromagneticRecord(models.Model):
     ) # Unit = mS/m (milliSiemens/meter)
 
     class Meta:
+        managed = True
         db_table = 'frd"."electromagnetic_record'
         verbose_name_plural = "Electromagnetic Records"
 
@@ -260,5 +270,6 @@ class FormationresistanceRecord(models.Model):
     )
 
     class Meta:
+        managed = True
         db_table = 'frd"."formationresistance_record'
         verbose_name_plural = "Formationresistance Records"

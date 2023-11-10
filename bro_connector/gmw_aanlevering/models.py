@@ -240,9 +240,10 @@ class ElectrodeDynamic(models.Model):
 
 class Event(models.Model):
     change_id = models.AutoField(primary_key=True)
-    event_name =  models.TextField(
+    event_name =  models.CharField(
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    )  # This field type is a guess. -> Keuzes maken zodat de exacte waardes worden gebruikt.
     event_date = models.CharField(max_length=254, blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
