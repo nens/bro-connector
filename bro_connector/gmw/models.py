@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.gis.db import models as geo_models
+from .choices import *
 
 
 class GroundwaterMonitoringWellStatic(models.Model):
@@ -50,6 +51,11 @@ class GroundwaterMonitoringWellStatic(models.Model):
     complete_bro = models.BooleanField(blank=True, default=False) # Is the data in the table complete as required for the BRO
     
 
+    # Customization fields
+    last_horizontal_positioning_date = models.DateField(blank=True, null=True)
+    construction_coordinates = geo_models.PointField(srid=28992, blank=True, null=True, editable=False)  # This field type is a guess.
+    
+
     def x(self):
             return self.coordinates.x
 
@@ -88,6 +94,44 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     ground_level_positioning_method = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
+
+
+    # CUSTOMIZATION FIELDS
+    well_head_protector_subtype = models.CharField(
+        max_length=254, 
+        choices=WELLHEADPROTECTOR_SUBTYPES,
+        null=True,
+        blank=True
+    )
+    lock = models.CharField(
+        max_length=254, 
+        choices=LOCKS,
+        null=True,
+        blank=True
+    )
+    key = models.CharField(max_length=254, blank=True, null=True)
+    place = models.CharField(max_length=254, null=True, blank=True)
+    street = models.CharField(max_length=254, null=True, blank=True)
+    location_description = models.CharField(max_length=254, null=True, blank=True)
+    label = models.CharField(
+        max_length=254, 
+        choices=LABELS,
+        null=True,
+        blank=True
+    )
+    foundation = models.CharField(
+        max_length=254, 
+        choices=FOUNDATIONS,
+        null=True,
+        blank=True
+    )
+    collision_protection = models.CharField(
+        max_length=254, 
+        choices=COLLISION_PROTECTION_TYPES,
+        null=True,
+        blank=True
+    )
+    remark = models.CharField(max_length=254, null=True, blank=True)
 
     def __str__(self):
         return(str(self.groundwater_monitoring_well.bro_id))
@@ -291,3 +335,53 @@ class gmw_registration_log(models.Model):
         db_table = 'aanlevering"."gmw_registration_log'
         verbose_name = "GMW Synchronisatie Log"
         verbose_name_plural = "GMW Synchronisatie Logs"
+
+
+class Picture(models.Model):
+    picture_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
+    recording_date = models.DateField(blank=True, null=True)
+    picture = models.CharField(max_length=254, null=True, blank=True)
+    description = models.CharField(max_length=254, null=True, blank=True)
+
+    class Meta:
+        db_table = 'gmw"."pictures'
+        verbose_name = "Foto"
+        verbose_name_plural = "Fotos"
+
+class MaintenanceParty(models.Model):
+    maintenance_party_id = models.AutoField(primary_key=True)
+    surname = models.CharField(max_length=100, null=True, blank=True)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    function = models.CharField(max_length=100, null=True, blank=True)
+    organisation = models.CharField(max_length=100, null=True, blank=True)
+    adress = models.CharField(max_length=254, null=True, blank=True)
+    postal_code = models.CharField(max_length=50, null=True, blank=True)
+    place = models.CharField(max_length=254, null=True, blank=True)
+    phone = models.IntegerField(blank=True, null=True)
+    mobilephone = models.IntegerField(null=True, blank=True)
+    email = models.CharField(max_length=254, null=True, blank=True)
+
+    class Meta:
+        db_table = 'gmw"."maintenance_party'
+        verbose_name = 'Onderhoudsteam'
+        verbose_name_plural = 'Onderhoudsteams'
+
+class Maintenance(models.Model):
+    maintenance_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
+    groundwater_monitoring_tube = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
+    notification_date = models.DateField(blank=True, null=True)
+    kind_of_maintenance = models.CharField(
+        max_length=254, choices=''
+    )
+    description = models.CharField(max_length=254, null=True, blank=True)
+    picture = models.ForeignKey('Picture', on_delete = models.CASCADE, null = True, blank = True)
+    reporter = models.IntegerField(blank=True, null=True) # Maintenance_party_id 
+    execution_date = models.DateField(blank=True, null=True)
+    execution_by = models.IntegerField(blank=True, null=True) # Maintenance_party_id
+
+    class Meta:
+        db_table = 'gmw"."maintenance'
+        verbose_name = 'Onderhoudsmoment'
+        verbose_name_plural = 'Onderhoudsmomenten'
