@@ -1,9 +1,9 @@
 from django.core.management.base import BaseCommand
-from gmn_aanlevering.models import (
+from gmn.models import (
     GroundwaterMonitoringNet,
     MeasuringPoint,
 )
-from gmw_aanlevering.models import GroundwaterMonitoringTubesStatic
+from gmw.models import GroundwaterMonitoringTubesStatic
 from datetime import date
 
 

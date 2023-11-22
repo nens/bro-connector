@@ -10,7 +10,7 @@ from django.db.models import Count
 from django.db.models.functions import Lower, Upper
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
-from gld_aanlevering import models
+from gld import models
 
 
 def start_registrations(request):

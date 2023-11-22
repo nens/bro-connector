@@ -63,7 +63,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_static'
-        verbose_name_plural = "Groundwater monitoring wells (Static)"
+        verbose_name = "Grondwatermonitoring Put - Statische gegevens"
+        verbose_name_plural = "Grondwatermonitoring Putten - Statische gegevens"
 
 class GroundwaterMonitoringWellDynamic(models.Model):
     groundwater_monitoring_well_dynamic_id = models.AutoField(primary_key=True)
@@ -95,7 +96,8 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_dynamic'
-        verbose_name_plural = "Groundwater monitoring wells (Dynamic)"
+        verbose_name = "Grondwatermonitoring Put - Dynamische gegevens"
+        verbose_name_plural = "Grondwatermonitoring Putten - Dynamische gegevens"
 
 
 
@@ -137,7 +139,8 @@ class GroundwaterMonitoringTubesStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tubes_static'
-        verbose_name_plural = "Groundwater monitoring tubes (Static)"
+        verbose_name = "Grondwatermonitoring Filter - Statische gegevens"
+        verbose_name_plural = "Grondwatermonitoring Filters - Statische gegevens"
 
 
 class GroundwaterMonitoringTubesDynamic(models.Model):
@@ -191,7 +194,8 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tubes_dynamic'
-        verbose_name_plural = "Groundwater monitoring tubes (Dynamic)"
+        verbose_name = "Grondwatermonitoring Filter - Dynamische gegevens"
+        verbose_name_plural = "Grondwatermonitoring Filters - Dynamische gegevens"
 
 class GeoOhmCable(models.Model):
     geo_ohm_cable_id = models.AutoField(primary_key=True)
@@ -208,7 +212,8 @@ class GeoOhmCable(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."geo_ohm_cable_static'
-        verbose_name_plural = "Geo Ohm Cable"
+        verbose_name = "Geo Ohm Kabel"
+        verbose_name_plural = "Geo Ohm Kabels"
 
 class ElectrodeStatic(models.Model):
     electrode_static_id = models.AutoField(primary_key=True)
@@ -227,7 +232,8 @@ class ElectrodeStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."electrodes_static'
-        verbose_name_plural = "Electrodes (Static)"
+        verbose_name = "Electrode - Statische gegevens"
+        verbose_name_plural = "Electrodes - Statische gegevens"
 
 class ElectrodeDynamic(models.Model):
     electrode_dynamic_id = models.AutoField(primary_key=True)
@@ -244,7 +250,8 @@ class ElectrodeDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."electrodes_dynamic'
-        verbose_name_plural = "Electrodes (Dynamic)"
+        verbose_name = "Electrode - Dynamische gegevens"
+        verbose_name_plural = "Electrodes - Dynamische gegevens"
 
 class Event(models.Model):
     change_id = models.AutoField(primary_key=True)
@@ -267,7 +274,8 @@ class Event(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."event'
-        verbose_name_plural = "Events"
+        verbose_name = "Tussentijdse Gebeurtenis"
+        verbose_name_plural = "Tussentijdse Gebeurtenissen"
 
 class gmw_registration_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
@@ -289,5 +297,5 @@ class gmw_registration_log(models.Model):
 
     class Meta:
         db_table = 'aanlevering"."gmw_registration_log'
-        verbose_name = "GMW registration logging"
-        verbose_name_plural = "GMW registration logging"
+        verbose_name = "GMW Synchronisatie Log"
+        verbose_name_plural = "GMW Synchronisatie Logs"

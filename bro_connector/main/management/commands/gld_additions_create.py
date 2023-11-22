@@ -24,8 +24,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from main.settings.base import GLD_AANLEVERING_SETTINGS
-from gld_aanlevering import models
+from main.settings.base import gld_SETTINGS
+from gld import models
 
 field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
 
@@ -588,17 +588,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # print(NENS_DEMO_SETTINGS)
 
-        demo = GLD_AANLEVERING_SETTINGS["demo"]
+        demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_demo"
             ]
         else:
-            acces_token_bro_portal = GLD_AANLEVERING_SETTINGS[
+            acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
 
-        additions_dir = GLD_AANLEVERING_SETTINGS["additions_dir"]
+        additions_dir = gld_SETTINGS["additions_dir"]
 
         create_addition_sourcedocuments_for_observations(
             additions_dir, acces_token_bro_portal

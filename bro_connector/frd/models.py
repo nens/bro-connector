@@ -2,8 +2,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from .choices import *
 from django.core.validators import MaxValueValidator, MinValueValidator
-from gmw_aanlevering.models import GroundwaterMonitoringTubesStatic
-from gmn_aanlevering.models import GroundwaterMonitoringNet
+from gmw.models import GroundwaterMonitoringTubesStatic
+from gmn.models import GroundwaterMonitoringNet
 
 # Create your models here.
 class FormationResistanceDossier(models.Model):

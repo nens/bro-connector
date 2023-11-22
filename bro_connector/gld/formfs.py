@@ -1,5 +1,5 @@
 from django import forms
-from gld_aanlevering.models import DeliveredLocations
+from gld.models import DeliveredLocations
 from django.contrib.gis.geos import Point
 
 

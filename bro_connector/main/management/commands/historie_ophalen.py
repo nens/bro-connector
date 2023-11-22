@@ -9,7 +9,7 @@ from ..tasks import bro_uitgifte as bro
 from icecream import *
 
 
-from gmw_aanlevering.models import (
+from gmw.models import (
     GroundwaterMonitoringWellStatic,
 )
 

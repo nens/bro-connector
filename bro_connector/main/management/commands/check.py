@@ -12,8 +12,8 @@ import datetime
 import logging
 import bisect
 
-from main.settings.base import GLD_AANLEVERING_SETTINGS
-from gld_aanlevering import models
+from main.settings.base import gld_SETTINGS
+from gld import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 

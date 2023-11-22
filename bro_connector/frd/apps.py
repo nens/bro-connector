@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class GmwAanleveringConfig(AppConfig):
+class FrdAanleveringConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'gmw_aanlevering'
+    name = 'frd'

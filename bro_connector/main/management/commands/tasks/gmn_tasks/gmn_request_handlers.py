@@ -1,6 +1,6 @@
-from gmn_aanlevering.models import gmn_bro_sync_log, IntermediateEvent, MeasuringPoint, GroundwaterMonitoringNet
+from gmn.models import gmn_bro_sync_log, IntermediateEvent, MeasuringPoint, GroundwaterMonitoringNet
 from datetime import datetime
-from main.settings.base import GMN_AANLEVERING_SETTINGS
+from main.settings.base import gmn_SETTINGS
 
 import bro_exchange as brx
 import os
@@ -155,7 +155,7 @@ class StartRegistrationGMN:
             # Write the request
             xml_filename = f"register {self.monitoring_network.name}.xml"
             gmn_startregistration_request.write_request(
-                output_dir=GMN_AANLEVERING_SETTINGS["registrations_dir"],
+                output_dir=gmn_SETTINGS["registrations_dir"],
                 filename=xml_filename,
             )
 
@@ -194,7 +194,7 @@ class StartRegistrationGMN:
         try:
             filename = self.gmn_bro_register_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
+                gmn_SETTINGS["registrations_dir"], filename
             )
             payload = open(filepath)
             
@@ -251,7 +251,7 @@ class StartRegistrationGMN:
             # Prepare and deliver registration
             filename = self.gmn_bro_register_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
+                gmn_SETTINGS["registrations_dir"], filename
             )
             payload = open(filepath)
             request = {filename: payload}
@@ -375,7 +375,7 @@ class StartRegistrationGMN:
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_register_log_obj.file
                 filepath = os.path.join(
-                    GMN_AANLEVERING_SETTINGS["registrations_dir"], filename
+                    gmn_SETTINGS["registrations_dir"], filename
                 )
                 os.remove(filepath)
 
@@ -546,7 +546,7 @@ class MeasuringPointAddition:
             # Write the request
             xml_filename = f"addition {self.monitoring_network.name}.xml"
             gmn_addition_request.write_request(
-                output_dir=GMN_AANLEVERING_SETTINGS["additions_dir"],
+                output_dir=gmn_SETTINGS["additions_dir"],
                 filename=xml_filename,
             )
 
@@ -587,7 +587,7 @@ class MeasuringPointAddition:
         try:
             filename = self.gmn_bro_addition_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["additions_dir"], filename
+                gmn_SETTINGS["additions_dir"], filename
             )
             payload = open(filepath)
             
@@ -644,7 +644,7 @@ class MeasuringPointAddition:
             # Prepare and deliver registration
             filename = self.gmn_bro_addition_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["additions_dir"], filename
+                gmn_SETTINGS["additions_dir"], filename
             )
             payload = open(filepath)
             request = {filename: payload}
@@ -749,7 +749,7 @@ class MeasuringPointAddition:
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_addition_log_obj.file
                 filepath = os.path.join(
-                    GMN_AANLEVERING_SETTINGS["additions_dir"], filename
+                    gmn_SETTINGS["additions_dir"], filename
                 )
                 os.remove(filepath)
 
@@ -917,7 +917,7 @@ class MeasuringPointRemoval:
             # Write the request
             xml_filename = f"remove {self.monitoring_network.name}.xml"
             gmn_removal_request.write_request(
-                output_dir=GMN_AANLEVERING_SETTINGS["removals_dir"],
+                output_dir=gmn_SETTINGS["removals_dir"],
                 filename=xml_filename,
             )
 
@@ -958,7 +958,7 @@ class MeasuringPointRemoval:
         try:
             filename = self.gmn_bro_removal_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["removals_dir"], filename
+                gmn_SETTINGS["removals_dir"], filename
             )
             payload = open(filepath)
             
@@ -1015,7 +1015,7 @@ class MeasuringPointRemoval:
             # Prepare and deliver registration
             filename = self.gmn_bro_removal_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["removals_dir"], filename
+                gmn_SETTINGS["removals_dir"], filename
             )
             payload = open(filepath)
             request = {filename: payload}
@@ -1120,7 +1120,7 @@ class MeasuringPointRemoval:
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_removal_log_obj.file
                 filepath = os.path.join(
-                    GMN_AANLEVERING_SETTINGS["removals_dir"], filename
+                    gmn_SETTINGS["removals_dir"], filename
                 )
                 os.remove(filepath)
 
@@ -1280,7 +1280,7 @@ class ClosureGMN:
             # Write the request
             xml_filename = f"closure {self.monitoring_network.name}.xml"
             gmn_removal_request.write_request(
-                output_dir=GMN_AANLEVERING_SETTINGS["closures_dir"],
+                output_dir=gmn_SETTINGS["closures_dir"],
                 filename=xml_filename,
             )
 
@@ -1320,7 +1320,7 @@ class ClosureGMN:
         try:
             filename = self.gmn_bro_closure_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["closures_dir"], filename
+                gmn_SETTINGS["closures_dir"], filename
             )
             payload = open(filepath)
             
@@ -1377,7 +1377,7 @@ class ClosureGMN:
             # Prepare and deliver registration
             filename = self.gmn_bro_closure_log_obj.file
             filepath = os.path.join(
-                GMN_AANLEVERING_SETTINGS["closures_dir"], filename
+                gmn_SETTINGS["closures_dir"], filename
             )
             payload = open(filepath)
             request = {filename: payload}
@@ -1483,7 +1483,7 @@ class ClosureGMN:
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_closure_log_obj.file
                 filepath = os.path.join(
-                    GMN_AANLEVERING_SETTINGS["closures_dir"], filename
+                    gmn_SETTINGS["closures_dir"], filename
                 )
                 os.remove(filepath)
 
