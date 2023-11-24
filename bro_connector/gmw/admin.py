@@ -7,29 +7,14 @@ import os
 from . import models
 
 from main.settings.base import gmw_SETTINGS
+from . import forms
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
-class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
-    x = forms.CharField(required=True)
-    y = forms.CharField(required=True)
-
-    class Meta:
-        model = models.GroundwaterMonitoringWellStatic
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Wijs de waarde toe aan het initial attribuut van het veld
-        if self.instance.coordinates:
-            self.fields['x'].initial = self.instance.x
-            self.fields['y'].initial =  self.instance.y
-
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
-    form = GroundwaterMonitoringWellStaticForm
+    form = forms.GroundwaterMonitoringWellStaticForm
 
     list_display = (
         "groundwater_monitoring_well_static_id",
@@ -53,6 +38,9 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "local_vertical_reference_point",
         "well_offset",
         "vertical_datum",
+        "last_horizontal_positioning_date",
+        "construction_coordinates",
+        "in_management",
     )
 
     fieldsets = [
@@ -75,11 +63,16 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 "horizontal_positioning_method",
                 "local_vertical_reference_point",
                 "well_offset",
-                "vertical_datum",              
+                "vertical_datum",
+                "last_horizontal_positioning_date",
+                "in_management",
                         ],
         }),
         ('Coordinates', {
             'fields': ['x', 'y'],
+        }),
+        ('Construction Coordinates', {
+            'fields': ['cx', 'cy'],
         }),
     ]
 
@@ -88,13 +81,20 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         x = form.cleaned_data['x']
         y = form.cleaned_data['y']
 
+        cx = form.cleaned_data['cx']
+        cy = form.cleaned_data['cy']
+
         # Werk de waarden van de afgeleide attributen bij in het model
         obj.coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
+        if cx != '' and cy != '':
+            obj.construction_coordinates = GEOSGeometry(f"POINT ({cx} {cy})", srid=28992)
 
         # Sla het model op
         obj.save()
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
+
+    form = forms.GroundwaterMonitoringWellDynamicForm
 
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
@@ -114,6 +114,8 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
+    form = forms.GroundwaterMonitoringTubesStaticForm
+    
     list_display = (
         "groundwater_monitoring_tube_static_id",
         "groundwater_monitoring_well",
@@ -132,6 +134,8 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
+    form = forms.GroundwaterMonitoringTubesDynamicForm
+    
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static_id",
@@ -151,6 +155,8 @@ class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
 class GeoOhmCableAdmin(admin.ModelAdmin):
 
+    form = forms.GeoOhmCableForm
+    
     list_display = (
         "geo_ohm_cable_id",
         "groundwater_monitoring_tube_static_id",
@@ -160,6 +166,8 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
 
 class ElectrodeStaticAdmin(admin.ModelAdmin):
 
+    form = forms.ElectrodeStaticForm
+    
     list_display = (
         "electrode_static_id",
         "geo_ohm_cable_id",
@@ -170,6 +178,8 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
+    form = forms.ElectrodeDynamicForm
+    
     list_display = (
         "electrode_dynamic_id",
         "electrode_static_id",
@@ -180,6 +190,8 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
 class EventAdmin(admin.ModelAdmin):
 
+    form = forms.EventForm
+    
     list_display = (
         "change_id",
         "event_name",
@@ -190,7 +202,38 @@ class EventAdmin(admin.ModelAdmin):
     )
     list_filter = ("change_id",)
 
+class PictureAdmin(admin.ModelAdmin):
 
+    list_display = (
+
+    )
+    list_filter = (
+        "groundwater_monitoring_well",
+        "recording_date",
+    )
+
+class MaintenancePartyAdmin(admin.ModelAdmin):
+
+    list_display = (
+
+    )
+    list_filter = (
+        'organisation',
+        'postal_code',
+        'function',
+    )
+
+class MaintenanceAdmin(admin.ModelAdmin):
+
+    list_display = (
+
+    )
+    list_filter = (
+        'kind_of_maintenance',
+        'groundwater_monitoring_well',
+        'execution_date',
+        'reporter',
+    )
 
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
 _register(models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
@@ -201,3 +244,6 @@ _register(models.GeoOhmCable, GeoOhmCableAdmin)
 _register(models.ElectrodeStatic, ElectrodeStaticAdmin)
 _register(models.ElectrodeDynamic, ElectrodeDynamicAdmin)
 _register(models.Event, EventAdmin)
+_register(models.Picture, PictureAdmin)
+_register(models.MaintenanceParty, MaintenancePartyAdmin)
+_register(models.Maintenance, MaintenanceAdmin)
