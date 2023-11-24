@@ -43,6 +43,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "in_management",
     )
 
+    list_filter = ("delivery_accountable_party", "nitg_code", "in_management")
+
     fieldsets = [
         ('', {
             'fields': [        
@@ -109,7 +111,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "ground_level_position",
         "ground_level_positioning_method",
     )
-    list_filter = ("groundwater_monitoring_well", "deliver_gld_to_bro",)
+    list_filter = ("groundwater_monitoring_well", "deliver_gld_to_bro", "owner")
 
 
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
