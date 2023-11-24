@@ -4,13 +4,12 @@ from __future__ import absolute_import
 from __future__ import division
 
 from django.core.management.base import BaseCommand
-
-from ..tasks import bro_uitgifte as bro
-from icecream import *
-
-
-from gmw.models import (
-    GroundwaterMonitoringWellStatic,
+from ..tasks import (
+    retrieve_historic_gmw,
+    retrieve_historic_frd,
+    retrieve_historic_gld,
+    retrieve_historic_gmn,
+    retrieve_historic_gar,
 )
 
 
@@ -24,82 +23,29 @@ class Command(BaseCommand):
             "--csv_file",
             type=str,
             help="Gebruik een csv bestand met putinformatie om data in te spoelen")
+        parser.add_argument(
+            "--type",
+            type=str,
+            help="Type BRO bericht: gmw, gld, gar, gmn, frd")
 
     def handle(self, *args, **options):
-        progressor = bro.Progress()
-        gmw        = bro.GMWHandler()
-
         kvk_number = options["kvk_number"]
         csv_file   = options["csv_file"]
+        bro_type   = options["type"]
 
-        if kvk_number != None:
-            DR = bro.DataRetrieverKVK(kvk_number)
-            DR.get_ids_kvk()
-            gmw_ids = DR.gmw_ids
-            gmw_ids_ini_count = len(gmw_ids)
+        if bro_type == 'gmw':
+            retrieve_historic_gmw.run(kvk_number = kvk_number)
+
+        elif bro_type == 'gld':
+            retrieve_historic_gld.run(kvk_number = kvk_number)
+
+        elif bro_type == 'gar':
+            retrieve_historic_gar.run()
+
+        elif bro_type == 'gmn':
+            retrieve_historic_gmn.run()
+
+        elif bro_type == 'frd':
+            retrieve_historic_frd.run()
+
         
-        elif csv_file != None:
-            DR = bro.DataRetrieverFile(csv_file)
-            DR.retrieve()
-            exit()
-
-
-
-        print(f"{gmw_ids_ini_count} bro ids found for organisation.")
-
-        for well in GroundwaterMonitoringWellStatic.objects.all():
-            if well.bro_id in gmw_ids:
-                gmw_ids.remove(well.bro_id)
-
-        gmw_ids_count = len(gmw_ids)
-        print(f"{gmw_ids_count} not in database.")
-
-        progressor.calibrate(gmw_ids, 25)
-
-        # Import the well data
-        for id in range(gmw_ids_count):
-            gmw.get_data(gmw_ids[id], True)
-            gmw.make_dict()
-            gmw_dict = gmw.dict
-
-            # Invullen initiële waarden.
-            ini = bro.InitializeData(gmw_dict)
-            ini.well_static()
-            gmws = ini.gmws
-            ini.well_dynamic()
-
-
-            try:
-                for tube_number in range(gmw.number_of_tubes):
-                    ini.increment_tube_number()
-                    ini.tube_static()
-                    ini.tube_dynamic()
-
-                    try:
-                        for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
-                            ini.increment_geo_ohm_number()
-                            ini.geo_ohm()
-
-                            for electrode in range(int(gmw.number_of_electrodes)):
-                                ini.increment_electrode_number()
-                                ini.electrode_static()
-                                ini.electrode_dynamic()
-                            
-                            ini.reset_electrode_number()
-                        ini.reset_geo_ohm_number()
-                    except:
-                        raise Exception("Failed")
-            except:
-                raise Exception("Failed")
-
-            bro.get_construction_event(gmw_dict, gmws)
-
-            # Update based on the events
-            for nr in range(int(gmw.number_of_events)):
-                updater = bro.Updater(gmw.dict, gmws)
-                updater.intermediate_events()
-
-            gmw.reset_values()
-            ini.reset_tube_number()
-            progressor.next()
-            progressor.progress()
