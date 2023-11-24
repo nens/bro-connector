@@ -5,46 +5,29 @@ from .choices import *
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
-    registration_object_type = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
+    registration_object_type = models.CharField(max_length=256, blank=True, null=True)
     bro_id = models.CharField(max_length=15, blank=True, null=True)
     request_reference = models.CharField(max_length=255, blank=True, null=True)
     delivery_accountable_party = models.IntegerField(blank=True, null=True)
     delivery_responsible_party = models.IntegerField(blank=True, null=True)
-    quality_regime = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
-    under_privilege = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
-    delivery_context = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
-    construction_standard = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
-    initial_function = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
+    quality_regime = models.CharField(max_length=256, blank=True, null=True)
+    under_privilege = models.CharField(max_length=256, blank=True, null=True)
+    delivery_context = models.CharField(max_length=256, blank=True, null=True)
+    construction_standard = models.CharField(max_length=256, blank=True, null=True)
+    initial_function = models.CharField(max_length=256, blank=True, null=True)
     nitg_code = models.CharField(max_length=256, blank=True, null=True)
     olga_code = models.CharField(max_length=256, blank=True, null=True)
     well_code = models.CharField(max_length=256, blank=True, null=True)
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     coordinates = geo_models.PointField(srid=28992, blank=True, null=True, editable=False)  # This field type is a guess.
-    reference_system = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
-    horizontal_positioning_method = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
-    local_vertical_reference_point = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
+    reference_system = models.CharField(max_length=256, blank=True, null=True)
+    horizontal_positioning_method = models.CharField(max_length=256, blank=True, null=True)
+    local_vertical_reference_point = models.CharField(max_length=256, blank=True, null=True)
     well_offset = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
-    vertical_datum = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
+    vertical_datum = models.CharField(max_length=256, blank=True, null=True)
+
+    # Added for additional wells that are not owned by the user
+    in_management = models.BooleanField(null=True, blank=True, default=True, editable=True)
 
     # Added for GMW delivery
     deliver_gmw_to_bro = models.BooleanField(blank=True, default=False) # Should information of this well be delivered to the BRO
@@ -55,16 +38,20 @@ class GroundwaterMonitoringWellStatic(models.Model):
     last_horizontal_positioning_date = models.DateField(blank=True, null=True)
     construction_coordinates = geo_models.PointField(srid=28992, blank=True, null=True, editable=False)  # This field type is a guess.
     
-
     def x(self):
             return self.coordinates.x
 
     def y(self):
         return self.coordinates.y
     
+    def cx(self):
+        return self.construction_coordinates.x
+    
+    def cy(self):
+        return self.construction_coordinates.y
+    
     def __str__(self):
         return(str(self.bro_id))
-
 
     class Meta:
         managed = True
@@ -76,24 +63,16 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     groundwater_monitoring_well_dynamic_id = models.AutoField(primary_key=True)
     groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     number_of_standpipes = models.IntegerField(blank=True, null=True)
-    ground_level_stable = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
-    well_stability = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
+    ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
+    well_stability = models.CharField(max_length=254, null=True, blank=True)
     owner = models.IntegerField(blank=True, null=True)
     maintenance_responsible_party = models.IntegerField(blank=True, null=True)
-    well_head_protector = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
+    well_head_protector = models.CharField(max_length=254, null=True, blank=True)
     deliver_gld_to_bro = models.BooleanField(blank=False, default=False)
     ground_level_position = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
-    ground_level_positioning_method = models.TextField(
-        blank=True, null=True
-    )  # This field type is a guess.
+    ground_level_positioning_method = models.CharField(max_length=254, null=True, blank=True)
 
 
     # CUSTOMIZATION FIELDS
@@ -131,7 +110,9 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         null=True,
         blank=True
     )
-    remark = models.CharField(max_length=254, null=True, blank=True)
+    remark = models.TextField(
+        blank=True, null=True
+    )
 
     def __str__(self):
         return(str(self.groundwater_monitoring_well.bro_id))
