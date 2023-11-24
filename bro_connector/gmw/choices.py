@@ -6,14 +6,14 @@ WELLHEADPROTECTOR_SUBTYPES = (
 
 LOCKS = (
     ("sleutel", "sleutel"),
-    ("inbus", "inbus")
+    ("inbus", "inbus"),
     ("onbekend", "onbekend"),
 )
 
 LABELS = (
     ("geen", "geen"),
     ("sticker", "sticker"),
-    ("aluplaatje", "aluplaatje")
+    ("aluplaatje", "aluplaatje"),
     ("onbekend", "onbekend"),
 )
 
@@ -26,6 +26,6 @@ FOUNDATIONS = (
 COLLISION_PROTECTION_TYPES = (
     ("geen", "geen"),
     ("palen", "palen"),
-    ("hekwerk", "hekwerk")
+    ("hekwerk", "hekwerk"),
     ("onbekend", "onbekend"),
 )
