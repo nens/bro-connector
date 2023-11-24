@@ -1,15 +1,12 @@
 import requests
 import requests.auth
+from abc import ABC, abstractmethod
 import xml.etree.ElementTree as ET
-import psycopg2
-import psycopg2.sql
 import pandas as pd
 import json
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.utils import timezone
 from psycopg2.extras import execute_values
-from pathlib import Path
 from icecream import *
 
 from gmw.models import (
@@ -53,15 +50,23 @@ class DataRetrieverKVK:
         self.kvk_nummer = kvk_nummer
         self.bro_ids = []
 
-    def request_bro_ids(self):
+    def request_bro_ids(self, type):
+        options = ['gmw', 'frd', 'gar', 'gmn', 'gld']
+        if type.lower() not in options:
+            raise Exception(f"Unknown type: {type}. Use a correct option: {options}.")
+
         basis_url = "https://publiek.broservices.nl"
         kvk_verzoek = requests.get(
-            basis_url + "/gm/gmw/v1/bro-ids?bronhouder=" + str(self.kvk_nummer)
+             f"{basis_url}/gm/{type}/v1/bro-ids?bronhouder={str(self.kvk_nummer)}"
         )
         self.bro_ids = json.loads(kvk_verzoek.text)["broIds"]
 
     def get_ids_kvk(self):
         self.gmw_ids = []
+        self.gld_ids = []
+        self.frd_ids = []
+        self.gar_ids = []
+        self.gmn_ids = []
         self.other_ids = []
 
         self.request_bro_ids()
@@ -69,8 +74,22 @@ class DataRetrieverKVK:
         for id in self.bro_ids:
             if id.startswith("GMW"):
                 self.gmw_ids.append(id)
+
+            elif id.startswith("GLD"):
+                self.gld_ids.append(id)
+
+            elif id.startswith("FRD"):
+                self.frd_ids.append(id)
+
+            elif id.startswith("GAR"):
+                self.gar_ids.append(id)
+
+            elif id.startswith("GMN"):
+                self.gmn_ids.append(id)
+
             else:
                 self.other_ids.append(id)
+
 
 class DataRetrieverFile:
     def __init__(self, file_path):
@@ -123,7 +142,27 @@ class DataRetrieverFile:
         return map(str.lower, self.df.columns)
 
 
-class GMWHandler:
+def slice(sourcedict, string):
+    newdict = {}
+    for key in sourcedict.keys():
+        if key.startswith(string):
+            newdict[key.split(string)[1]] = sourcedict[key]
+    return newdict
+
+class BROHandler(ABC):
+    @abstractmethod
+    def get_data(self, id: str, full_history: bool) -> None:
+        pass
+
+    @abstractmethod
+    def root_data_to_dictionary(self):
+        pass
+    
+    @abstractmethod
+    def reset_values(self):
+        pass
+
+class GMWHandler(BROHandler):
     def __init__(self):
         self.number_of_events = 0
         self.number_of_tubes  = 0
@@ -145,7 +184,7 @@ class GMWHandler:
         self.root = ET.fromstring(gmw_verzoek.content)
 
 
-    def make_dict(self):
+    def root_data_to_dictionary(self):
         tags = []
         values = []
         prefix = ""
@@ -198,13 +237,6 @@ class GMWHandler:
         self.number_of_electrodes = 0
         self.positions = 0
 
-
-def slice(sourcedict, string):
-    newdict = {}
-    for key in sourcedict.keys():
-        if key.startswith(string):
-            newdict[key.split(string)[1]] = sourcedict[key]
-    return newdict
 
 # class Updater:
 def well_dynamic(gmwd, updates_dict):
