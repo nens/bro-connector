@@ -11,6 +11,14 @@ from gmw.models import (
     Event,
 )
 
+# FORMULAS USED IN HISTORIE_OPHALEN COMMAND DJANGO ZEELAND
+def slice(sourcedict, string):
+    newdict = {}
+    for key in sourcedict.keys():
+        if key.startswith(string):
+            newdict[key.split(string)[1]] = sourcedict[key]
+    return newdict
+
 
 def well_dynamic(gmwd, updates_dict):
     gmwd.number_of_standpipes = updates_dict.get('numberOfStandpipes', gmwd.number_of_standpipes)
@@ -60,7 +68,7 @@ def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
         date = gmw_dict["construction_year"]
     
     else:
-        raise Exception(f"date/year not found in dict: {gmw_dict}")
+        date = None
     
     event = Event.objects.create(
                 event_name = "construction",
