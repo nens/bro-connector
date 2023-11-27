@@ -10,14 +10,6 @@ DB_HOST = "localhost"
 DB_PORT = "5432"
 
 
-# FORMULAS USED IN HISTORIE_OPHALEN COMMAND DJANGO ZEELAND
-def slice(sourcedict, string):
-    newdict = {}
-    for key in sourcedict.keys():
-        if key.startswith(string):
-            newdict[key.split(string)[1]] = sourcedict[key]
-    return newdict
-
 class BROHandler(ABC):
     @abstractmethod
     def get_data(self, id: str, full_history: bool) -> None:
