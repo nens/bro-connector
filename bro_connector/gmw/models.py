@@ -152,6 +152,14 @@ class GroundwaterMonitoringTubesStatic(models.Model):
         max_digits=6, decimal_places=3, blank=True, null=True
     )
 
+    @property
+    def screen_top_position(self):
+        return self.tube_top_position - self.plain_tube_part_length
+    
+    @property
+    def screen_bottom_position(self):
+        return self.tube_top_position - (self.plain_tube_part_length + self.groundwater_monitoring_tube_static.screen_length)
+
     def __str__(self):
 
         try:
