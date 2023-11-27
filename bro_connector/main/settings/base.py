@@ -272,13 +272,12 @@ gmw_SETTINGS = {
     },
     "bro_info_bro_connector": {
         "token": {
-            "user": bro_demo_user,
-            "pass": bro_demo_password,
+            "user": bro_production_user,
+            "pass": bro_production_password,
         },
         "kvk_nummer": 20168636,
     },
     "demo": demo,
-    "additions_dir": os.path.join(BASE_DIR, "gmw/additions"),
     "registrations_dir": os.path.join(
         BASE_DIR, "gmw\\registrations"
     ),
