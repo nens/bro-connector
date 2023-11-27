@@ -60,6 +60,10 @@ def run(kvk_number=None, csv_file=None, bro_type:str = 'gmw'):
         gmw_dict = gmw.dict
         print(gmw_dict)
 
+        # For now don't handle deregistered GMWs
+        if gmw_dict.get("deregistered", None) == "ja":
+            continue
+
         # Invullen initiële waarden.
         ini = InitializeData(gmw_dict)
         ini.well_static()
