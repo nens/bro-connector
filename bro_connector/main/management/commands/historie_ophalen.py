@@ -40,7 +40,8 @@ class Command(BaseCommand):
             retrieve_historic_gld.run(kvk_number = kvk_number)
 
         elif bro_type == 'gar':
-            retrieve_historic_gar.run(kvk_number = kvk_number)
+            pass
+            # retrieve_historic_gar.run(kvk_number = kvk_number)
 
         elif bro_type == 'gmn':
             retrieve_historic_gmn.run(kvk_number = kvk_number)
