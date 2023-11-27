@@ -1,8 +1,6 @@
 from ..tasks.bro_handlers import FRDHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
-from icecream import *
-
 
 from frd.models import (
     FormationResistanceDossier

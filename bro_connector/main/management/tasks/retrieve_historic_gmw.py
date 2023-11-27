@@ -2,7 +2,6 @@ from ..tasks.bro_handlers import GMWHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
 from ..tasks import events_handler
-from icecream import *
 
 
 from gmw.models import (
@@ -286,10 +285,9 @@ class InitializeData:
         self.gmtd.save()
 
     def geo_ohm(self):
-        ic(self.prefix)
         self.geoc = GeoOhmCable.objects.create(
                                     groundwater_monitoring_tube_static=self.gmts,
-                                    cable_number=ic(self.gmw_dict.get(self.prefix + "cableNumber", None)),
+                                    cable_number=(self.gmw_dict.get(self.prefix + "cableNumber", None)),
                                 )  # not in XML -> 0 cables)
         self.geoc.save()
 

@@ -1,12 +1,9 @@
 from ..tasks.bro_handlers import GARHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
-from icecream import *
 
 
-from gar.models import (
-    garmodel
-)
+
 
 # BBOX VALUES ZEELAND
 XMIN=10000
