@@ -109,17 +109,18 @@ class GMWHandler(BROHandler):
 
 class GLDHandler(BROHandler):
     def __init__(self):
+        self.number_of_points = 0 
         self.dict = {}
 
-    def get_data(self, id: str, full_history: bool):
+    def get_data(self, id: str, filtered: bool):
         basis_url = "https://publiek.broservices.nl/gm/gld/v1/objects/"
 
-        if full_history:
-            fh = "ja"
+        if filtered:
+            f = "JA"
         else:
-            fh = "nee"
+            f = "NEE"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={f}")
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
@@ -127,21 +128,53 @@ class GLDHandler(BROHandler):
     def root_data_to_dictionary(self):
         tags = []
         values = []
+        point_value = []
+        time = []
+        qualifier = []
+        bro_ids = [] 
         prefix = ""
+        
+        number_of_points = self.number_of_points
 
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
+            if split[1] == "point":
+                number_of_points = number_of_points + 1
+                prefix = f"point_"
+
+            if split[1] == "qualifier":
+                prefix = f"point_qualifier_"
+
             tag = str(prefix) + split[1]
 
+            values_value = element.text
+
+            if tag.startswith("point_"):
+                if tag == f"point_time":
+                    time.append(element.text)
+                    values_value = time
+                    
+                if tag == f"point_value":
+                    point_value.append(element.text)
+                    values_value = point_value
+
+                if tag == f"point_qualifier_value":
+                    qualifier.append(element.text)
+                    values_value = qualifier
+
+            if tag == "broId":
+                bro_ids.append(element.text)
+                values_value = bro_ids
+
             tags.append(tag)
-            values.append(element.text)
+            values.append(values_value)
 
         self.dict = dict(zip(tags, values))
 
     def reset_values(self):
-        pass
+        self.number_of_points = 0
 
 class GMNHandler(BROHandler):
     def __init__(self):
