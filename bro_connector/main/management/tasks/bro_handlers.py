@@ -2,7 +2,6 @@ import requests
 import requests.auth
 from abc import ABC, abstractmethod
 import xml.etree.ElementTree as ET
-from icecream import *
 
 DB_NAME = "grondwatermeetnet"
 DB_USER = "postgres"
