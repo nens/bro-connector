@@ -116,6 +116,11 @@ def run(kvk_number=None, csv_file=None, bro_type:str = 'gmw'):
 
 
 class InitializeData:
+    """
+    Function that allow you to create initial data when reading data from the BRO.
+    The xml converted to dictionary is read into the database.
+    """
+    
     tube_number = 0
     geo_ohm_number = 0
     electrode_number = 0
