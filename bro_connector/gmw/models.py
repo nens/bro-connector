@@ -12,19 +12,43 @@ class GroundwaterMonitoringWellStatic(models.Model):
     delivery_responsible_party = models.IntegerField(blank=True, null=True)
     quality_regime = models.CharField(max_length=256, blank=True, null=True)
     under_privilege = models.CharField(max_length=256, blank=True, null=True)
-    delivery_context = models.CharField(max_length=256, blank=True, null=True)
-    construction_standard = models.CharField(max_length=256, blank=True, null=True)
-    initial_function = models.CharField(max_length=256, blank=True, null=True)
+    delivery_context = models.CharField(
+        choices=DELIVERYCONTEXT,
+        max_length=200,
+        blank=True, null=True
+    ) 
+    construction_standard = models.CharField(
+        choices=CONSTRUCTIONSTANDARD,
+        max_length=200,
+        blank=True, null=True
+    ) 
+    initial_function = models.CharField(
+        choices=INITIALFUNCTION,
+        max_length=200,
+        blank=True, null=True
+    ) 
     nitg_code = models.CharField(max_length=256, blank=True, null=True)
     olga_code = models.CharField(max_length=256, blank=True, null=True)
     well_code = models.CharField(max_length=256, blank=True, null=True)
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     coordinates = geo_models.PointField(srid=28992, blank=True, null=True, editable=False)  # This field type is a guess.
     reference_system = models.CharField(max_length=256, blank=True, null=True)
-    horizontal_positioning_method = models.CharField(max_length=256, blank=True, null=True)
-    local_vertical_reference_point = models.CharField(max_length=256, blank=True, null=True)
+    horizontal_positioning_method = models.CharField(
+        choices=HORIZONTALPOSITIONINGMETHOD,
+        max_length=200,
+        blank=True, null=True
+    ) 
+    local_vertical_reference_point = models.CharField(
+        choices=LOCALVERTICALREFERENCEPOINT,
+        max_length=200,
+        blank=True, null=True
+    ) 
     well_offset = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
-    vertical_datum = models.CharField(max_length=256, blank=True, null=True)
+    vertical_datum = models.CharField(
+        choices=VERTICALDATUM,
+        max_length=200,
+        blank=True, null=True
+    ) 
 
     # Added for additional wells that are not owned by the user
     in_management = models.BooleanField(null=True, blank=True, default=True, editable=True)
@@ -64,15 +88,27 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     number_of_standpipes = models.IntegerField(blank=True, null=True)
     ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
-    well_stability = models.CharField(max_length=254, null=True, blank=True)
+    well_stability = models.CharField(
+        choices=WELLSTABILITY,
+        max_length=200,
+        blank=True, null=True
+    ) 
     owner = models.IntegerField(blank=True, null=True)
     maintenance_responsible_party = models.IntegerField(blank=True, null=True)
-    well_head_protector = models.CharField(max_length=254, null=True, blank=True)
+    well_head_protector = models.CharField(
+        choices=WELLHEADPROTECTOR,
+        max_length=200,
+        blank=True, null=True
+    ) 
     deliver_gld_to_bro = models.BooleanField(blank=False, default=False)
     ground_level_position = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
-    ground_level_positioning_method = models.CharField(max_length=254, null=True, blank=True)
+    ground_level_positioning_method = models.CharField(
+        choices=GROUNDLEVELPOSITIONINGMETHOD,
+        max_length=200,
+        blank=True, null=True
+    ) 
 
 
     # CUSTOMIZATION FIELDS
@@ -131,7 +167,11 @@ class GroundwaterMonitoringTubesStatic(models.Model):
     groundwater_monitoring_well = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(blank=True, null=True)
-    tube_type = models.TextField(blank=True, null=True)  # This field type is a guess.
+    tube_type = models.CharField(
+        choices=TUBETYPE,
+        max_length=200,
+        blank=True, null=True
+    ) 
     artesian_well_cap_present = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
@@ -139,15 +179,19 @@ class GroundwaterMonitoringTubesStatic(models.Model):
         blank=True, null=True
     )  # This field type is a guess.
     number_of_geo_ohm_cables = models.IntegerField(blank=True, null=True)
-    tube_material = models.TextField(
+    tube_material = models.CharField(
+        choices=TUBEMATERIAL,
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    ) 
     screen_length = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
-    sock_material = models.TextField(
+    sock_material = models.CharField(
+        choices=SOCKMATERIAL,
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    ) 
     sediment_sump_length = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
@@ -183,17 +227,29 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
     variable_diameter = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
-    tube_status = models.TextField(blank=True, null=True)  # This field type is a guess.
+    tube_status = models.CharField(
+        choices=TUBESTATUS,
+        max_length=200,
+        blank=True, null=True
+    ) 
     tube_top_position = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
-    tube_top_positioning_method = models.TextField(
+    tube_top_positioning_method = models.CharField(
+        choices=TUBETOPPOSITIONINGMETHOD,
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
-    tube_packing_material = models.TextField(
+    ) 
+    tube_packing_material = models.CharField(
+        choices=TUBEPACKINGMATERIAL,
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
-    glue = models.TextField(blank=True, null=True)  # This field type is a guess.
+    ) 
+    glue = models.CharField(
+        choices=GLUE,
+        max_length=200,
+        blank=True, null=True
+    ) 
     plain_tube_part_length = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
@@ -203,9 +259,10 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
     inserted_part_length =  models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     ) # This field type is a guess.
-    inserted_part_material = models.TextField(
+    inserted_part_material = models.CharField(
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    ) 
 
     def __str__(self):
 
@@ -243,12 +300,15 @@ class GeoOhmCable(models.Model):
 class ElectrodeStatic(models.Model):
     electrode_static_id = models.AutoField(primary_key=True)
     geo_ohm_cable = models.ForeignKey('GeoOhmCable', on_delete = models.CASCADE, null = True, blank = True)
-    electrode_packing_material = models.TextField(
+    electrode_packing_material = models.CharField(
+        choices=ELECTRODEPACKINGMATERIAL,
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
-    electrode_position = models.TextField(
+    ) 
+    electrode_position = models.CharField(
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    ) 
 
     def __str__(self):
         return(str(self.electrode_static_id))
@@ -264,9 +324,11 @@ class ElectrodeDynamic(models.Model):
     electrode_dynamic_id = models.AutoField(primary_key=True)
     electrode_static = models.ForeignKey('ElectrodeStatic', on_delete = models.CASCADE, null = True, blank = True)
     electrode_number = models.IntegerField(blank=True, null=True) # Is het niet gek dat dit nummer in de dynamic staat? Aanpassen zal voor problemen zorgen in de toekomst met FRD.
-    electrode_status = models.TextField(
+    electrode_status = models.CharField(
+        choices=ELECTRODESTATUS,
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    ) 
 
     def __str__(self):
         return(str(self.electrode_static.electrode_static_id))
@@ -281,9 +343,10 @@ class ElectrodeDynamic(models.Model):
 class Event(models.Model):
     change_id = models.AutoField(primary_key=True)
     event_name =  models.CharField(
+        choices=EVENTNAME,
         max_length=200,
         blank=True, null=True
-    )  # This field type is a guess. -> Keuzes maken zodat de exacte waardes worden gebruikt.
+    ) 
     event_date = models.CharField(max_length=254, blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey('GroundwaterMonitoringWellStatic', on_delete = models.CASCADE, null = True, blank = True)
     groundwater_monitoring_well_dynamic = models.ForeignKey('GroundwaterMonitoringWellDynamic', on_delete = models.CASCADE, null = True, blank = True)
