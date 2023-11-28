@@ -58,7 +58,6 @@ def run(kvk_number=None, csv_file=None, bro_type:str = 'gmw'):
         gmw.get_data(gmw_ids[id], True)
         gmw.root_data_to_dictionary()
         gmw_dict = gmw.dict
-        print(gmw_dict)
 
         # For now don't handle deregistered GMWs
         if gmw_dict.get("deregistered", None) == "ja":
@@ -99,9 +98,9 @@ def run(kvk_number=None, csv_file=None, bro_type:str = 'gmw'):
                         ini.reset_electrode_number()
                     ini.reset_geo_ohm_number()
                 except:
-                    raise Exception("Failed")
+                    raise Exception(f"Failed, {gmw_dict}")
         except:
-            raise Exception("Failed")
+            raise Exception(f"Failed, {gmw_dict}")
 
         events_handler.get_construction_event(gmw_dict, gmws)
 
