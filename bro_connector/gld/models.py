@@ -17,6 +17,7 @@ class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_id = models.IntegerField(blank=True, null=True)
     gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
+    tube_number = models.IntegerField(blank=True, null=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
@@ -220,7 +221,9 @@ class gld_registration_log(models.Model):
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
     timestamp_end_registration = models.DateTimeField(blank=True, null=True)
-    quality_regime = models.CharField(max_length=254, null=True, blank=True)
+    quality_regime = models.CharField(
+        choices=QUALITYREGIME, max_length=254, null=True, blank=True
+    )
     file = models.CharField(max_length=254, null=True, blank=True)
     process_status = models.CharField(max_length=254, null=True, blank=True)
 
