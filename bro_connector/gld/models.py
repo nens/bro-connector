@@ -31,37 +31,6 @@ class GroundwaterLevelDossier(models.Model):
         verbose_name = "Grondwaterstand dossier"
         verbose_name_plural = "Grondwaterstand dossiers"
 
-
-
-class MeasurementPointMetadata(models.Model):
-    measurement_point_metadata_id = models.AutoField(primary_key=True)
-    qualifier_by_category = models.CharField(
-        choices=STATUSQUALITYCONTROL,
-        max_length=200,
-        blank=True, null=True
-    ) 
-    censored_reason = models.CharField(
-        choices=CENSORREASON,
-        max_length=200,
-        blank=True, null=True
-    ) 
-    qualifier_by_quantity = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    interpolation_code = models.CharField(
-        choices=INTERPOLATIONTYPE,
-        max_length=200,
-        blank=True, null=True
-    )     
-
-    class Meta:
-        managed = True
-        app_label = "gld"
-        db_table = 'gld"."measurement_point_metadata'
-        verbose_name = "Meetpunt Metadata"
-        verbose_name_plural = "Meetpunt Metadata"
-
-
 class Observation(models.Model):
     observation_id=models.AutoField(primary_key=True, null=False,blank=False)
     observationperiod = models.DurationField(blank=True, null=True)
@@ -103,30 +72,6 @@ class Observation(models.Model):
         db_table = 'gld"."observation'
         verbose_name = "Observatie"
         verbose_name_plural = "Observaties"
-
-class MeasurementTvp(models.Model):
-    measurement_tvp_id = models.AutoField(primary_key=True)
-    observation = models.ForeignKey(Observation, on_delete=models.CASCADE, null = True, blank = True)
-    measurement_time = models.DateTimeField(blank=True, null=True)
-    field_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    field_value_unit = models.CharField(max_length=255, blank=True, null=True)
-    calculated_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    corrected_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    correction_time = models.DateTimeField(blank=True, null=True) 
-    correction_reason = models.CharField(max_length=255, blank=True, null=True)
-    measurement_point_metadata = models.ForeignKey('MeasurementPointMetadata', on_delete = models.CASCADE, null = True, blank = True)
-
-    class Meta:
-        managed = True
-        db_table = 'gld"."measurement_tvp'
-        verbose_name = "Metingen Tijd-Waarde paren"
-        verbose_name_plural = "Metingen Tijd-Waarde paren"
 
 class ObservationMetadata(models.Model):
     observation_metadata_id = models.AutoField(primary_key=True)
@@ -189,6 +134,59 @@ class ObservationProcess(models.Model):
         db_table = 'gld"."observation_process'
         verbose_name = "Observatie Process"
         verbose_name_plural = "Observatie Process"
+
+# MEASUREMENT TIME VALUE PAIR
+class MeasurementTvp(models.Model):
+    measurement_tvp_id = models.AutoField(primary_key=True)
+    observation = models.ForeignKey(Observation, on_delete=models.CASCADE, null = True, blank = True)
+    measurement_time = models.DateTimeField(blank=True, null=True)
+    field_value = models.DecimalField(
+        max_digits=100, decimal_places=10, blank=True, null=True
+    )
+    field_value_unit = models.CharField(max_length=255, blank=True, null=True)
+    calculated_value = models.DecimalField(
+        max_digits=100, decimal_places=10, blank=True, null=True
+    )
+    corrected_value = models.DecimalField(
+        max_digits=100, decimal_places=10, blank=True, null=True
+    )
+    correction_time = models.DateTimeField(blank=True, null=True) 
+    correction_reason = models.CharField(max_length=255, blank=True, null=True)
+    measurement_point_metadata = models.ForeignKey('MeasurementPointMetadata', on_delete = models.CASCADE, null = True, blank = True)
+
+    class Meta:
+        managed = True
+        db_table = 'gld"."measurement_tvp'
+        verbose_name = "Metingen Tijd-Waarde paren"
+        verbose_name_plural = "Metingen Tijd-Waarde paren"
+
+class MeasurementPointMetadata(models.Model):
+    measurement_point_metadata_id = models.AutoField(primary_key=True)
+    qualifier_by_category = models.CharField(
+        choices=STATUSQUALITYCONTROL,
+        max_length=200,
+        blank=True, null=True
+    ) 
+    censored_reason = models.CharField(
+        choices=CENSORREASON,
+        max_length=200,
+        blank=True, null=True
+    ) 
+    qualifier_by_quantity = models.DecimalField(
+        max_digits=100, decimal_places=10, blank=True, null=True
+    )
+    interpolation_code = models.CharField(
+        choices=INTERPOLATIONTYPE,
+        max_length=200,
+        blank=True, null=True
+    )     
+
+    class Meta:
+        managed = True
+        app_label = "gld"
+        db_table = 'gld"."measurement_point_metadata'
+        verbose_name = "Meetpunt Metadata"
+        verbose_name_plural = "Meetpunt Metadata"
 
 
 class ResponsibleParty(models.Model):
