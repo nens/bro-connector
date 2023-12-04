@@ -2,8 +2,6 @@ from django.contrib import admin
 from django import forms
 from django.contrib.gis.geos import GEOSGeometry
 
-import os
-
 from . import models
 
 from main.settings.base import gmw_SETTINGS
