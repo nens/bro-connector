@@ -124,7 +124,7 @@ class GLDHandler(BROHandler):
             f = "NEE"
 
         gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={f}")
-
+        print(gmw_verzoek)
         self.root = ET.fromstring(gmw_verzoek.content)
 
 
@@ -153,12 +153,9 @@ class GLDHandler(BROHandler):
 
             # If point, add prefix
             if split[1] == f"point":
-                # Have to deal with situations where no censorred value is given
-                if len(self.censoring_limit_value) != self.number_of_points:
-                    self.append_censoring()
-
                 self.number_of_points = self.number_of_points + 1
                 prefix = f"{self.number_of_observations}_point_"
+                self.append_censoring()
 
             if split[1] == f"NamedValue":
                 prefix = f"{self.number_of_observations}_nv_"
@@ -212,34 +209,27 @@ class GLDHandler(BROHandler):
                         self.units.append(element.attrib["uom"])
                         self.dict.update({f"{self.number_of_observations}_unit": self.units})
 
-
                 if tag == f"{self.number_of_observations}_point_qualifier_value":
                     self.qualifier.append(element.text)
                     values_value = self.qualifier
 
                 if tag == f"{self.number_of_observations}_point_censoring_value":
-                    self.censoring_limit_value.append(element.text)
+                    self.censoring_limit_value[self.number_of_points - 1] = (element.text)
                     values_value = self.censoring_limit_value
 
                 if tag == f"{self.number_of_observations}_point_censoring_uom":
                     censor_unit = element.attrib["code"]
-                    self.censoring_limit_unit.append(censor_unit)
+                    self.censoring_limit_unit[self.number_of_points - 1] = (censor_unit)
                     values_value = self.censoring_limit_unit
 
 
                 if tag == f"{self.number_of_observations}_point_censoring_censoredReason":
                     censor_reason = element.attrib["{http://www.w3.org/1999/xlink}href"].split("/")[-1]
-                    self.censoring_limit_reason.append(censor_reason)
+                    self.censoring_limit_reason[self.number_of_points - 1] = (censor_reason)
                     values_value = self.censoring_limit_reason
             
             self.dict.update({tag: values_value})
-
-
-
-        if len(self.censoring_limit_reason) != len(self.point_value):
-            self.append_censoring()
             
-        print(self.dict)
 
     def reset_values(self):
         self.number_of_points = 0
