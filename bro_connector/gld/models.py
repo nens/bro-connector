@@ -90,7 +90,7 @@ class ObservationMetadata(models.Model):
     responsible_party = models.ForeignKey('ResponsibleParty', on_delete = models.CASCADE, null = True, blank = True)
 
     def __str__(self):
-        return('{}, {}, {}'.format(str(self.date_stamp),str(self.status.value),self.responsible_party.organisation_name))
+        return('{}, {}, {}'.format(str(self.date_stamp),str(self.status),self.responsible_party.organisation_name))
 
     class Meta:
         managed = True
@@ -142,14 +142,14 @@ class MeasurementTvp(models.Model):
     observation = models.ForeignKey(Observation, on_delete=models.CASCADE, null = True, blank = True)
     measurement_time = models.DateTimeField(blank=True, null=True)
     field_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
+        max_digits=25, decimal_places=3, blank=True, null=True
     )
     field_value_unit = models.CharField(max_length=255, blank=True, null=True)
     calculated_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
+        max_digits=25, decimal_places=5, blank=True, null=True
     )
     corrected_value = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
+        max_digits=25, decimal_places=5, blank=True, null=True
     )
     correction_time = models.DateTimeField(blank=True, null=True) 
     correction_reason = models.CharField(max_length=255, blank=True, null=True)
