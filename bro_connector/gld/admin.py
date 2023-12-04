@@ -138,7 +138,7 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
     list_display = (
         "observation_metadata_id",
         "date_stamp",
-        "parameter_measurement_serie_type",
+        "observation_type",
         "status",
         "responsible_party_id",
     )
@@ -146,7 +146,7 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "date_stamp",
         "observation_metadata_id",
         "date_stamp",
-        "parameter_measurement_serie_type",
+        "observation_type",
         "status",
         "responsible_party_id",
     )
@@ -157,18 +157,18 @@ class ObservationProcessAdmin(admin.ModelAdmin):
     list_display = (
         "observation_process_id",
         "process_reference",
-        "parameter_measurement_instrument_type",
-        "parameter_air_pressure_compensation_type",
+        "measurement_instrument_type",
+        "air_pressure_compensation_type",
         "process_type",
-        "parameter_evaluation_procedure",
+        "evaluation_procedure",
     )
     list_filter = (
         "observation_process_id",
         "process_reference",
-        "parameter_measurement_instrument_type",
-        "parameter_air_pressure_compensation_type",
+        "measurement_instrument_type",
+        "air_pressure_compensation_type",
         "process_type",
-        "parameter_evaluation_procedure",
+        "evaluation_procedure",
     )
 
 
@@ -184,152 +184,6 @@ class ResponsiblePartyAdmin(admin.ModelAdmin):
         "identification",
         "organisation_name",
     )
-
-
-class TypeAirPressureCompensationAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeCensoredReasonCodeAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeEvaluationProcedureAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeInterpolationCodeAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeMeasurementInstrumentTypeAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeObservationTypeAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeProcessReferenceAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeProcessTypeAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeStatusCodeAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-class TypeStatusQualityControlAdmin(admin.ModelAdmin):
-
-    list_display = ("id", "value", "definition_nl", "imbro", "imbro_a")
-    list_filter = (
-        "imbro",
-        "imbro_a",
-        "id",
-        "value",
-        "definition_nl",
-        "imbro",
-        "imbro_a",
-    )
-
-
-
-
-
-#%% Aanlevering models registration
 
 
 class gld_registration_logAdmin(admin.ModelAdmin):
@@ -716,16 +570,6 @@ _register(models.MeasurementTvp, MeasurementTvpAdmin)
 _register(models.ObservationMetadata, ObservationMetadataAdmin)
 _register(models.ObservationProcess, ObservationProcessAdmin)
 _register(models.ResponsibleParty, ResponsiblePartyAdmin)
-_register(models.TypeAirPressureCompensation, TypeAirPressureCompensationAdmin)
-_register(models.TypeCensoredReasonCode, TypeCensoredReasonCodeAdmin)
-_register(models.TypeEvaluationProcedure, TypeEvaluationProcedureAdmin)
-_register(models.TypeInterpolationCode, TypeInterpolationCodeAdmin)
-_register(models.TypeMeasurementInstrumentType, TypeMeasurementInstrumentTypeAdmin)
-_register(models.TypeObservationType, TypeObservationTypeAdmin)
-_register(models.TypeProcessReference, TypeProcessReferenceAdmin)
-_register(models.TypeProcessType, TypeProcessTypeAdmin)
-_register(models.TypeStatusCode, TypeStatusCodeAdmin)
-_register(models.TypeStatusQualityControl, TypeStatusQualityControlAdmin)
 
 _register(models.Observation, ObservationAdmin)
 
