@@ -1,3 +1,8 @@
+QUALITYREGIME = (
+    ("IMBRO", "IMBRO"),
+    ("IMBRO/A", "IMBRO/A"),
+)
+
 REGISTRATIONSTATUS = (
     ("geregistreerd", "geregistreerd"),
     ("aangevuld", "aangevuld"),
