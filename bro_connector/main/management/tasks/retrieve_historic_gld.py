@@ -21,6 +21,21 @@ XMAX=80000
 YMIN=355000
 YMAX=420000
 
+def gmw_get_or_none(bro_id: str):
+    try:
+        return GroundwaterMonitoringWellStatic.objects.get(
+            bro_id = bro_id,
+        )
+    
+    # In some cases the bro_id might not yet be in the GMW database
+    # In the future this should retrieve the GMW information and create an object before continueing.
+    except GroundwaterMonitoringWellStatic.DoesNotExist:
+        return None
+    
+    # If the bro_id = None, multiple might be returned.
+    except GroundwaterMonitoringWellStatic.MultipleObjectsReturned:
+        return None
+
 def within_bbox(coordinates) -> bool:
     print(f"x: {coordinates.x}, y: {coordinates.y}")
     if (
@@ -61,12 +76,22 @@ def run(kvk_number:str=None, csv_file:str=None, bro_type:str = 'gld'):
         # To debug the error
         gld.root_data_to_dictionary()
         gmw_dict = gld.dict
-        print(gmw_dict)
 
         # Start at observation 1
         ini = InitializeData(gmw_dict)
         ini.groundwater_level_dossier()
         ini.responsible_party()
+
+        # Check for GMW or create
+        gmw = gmw_get_or_none(ini.groundwater_level_dossier_instance.gmw_bro_id)
+
+        if not within_bbox(gmw.coordinates):
+            ini.groundwater_level_dossier_instance.delete()
+            ini.reset_values()
+            gld.reset_values()
+            progressor.next()
+            progressor.progress()
+            continue
 
         for observation_number in range(1, (1 + gld.number_of_observations)):
             ini.increment_observation_number()
@@ -79,6 +104,9 @@ def run(kvk_number:str=None, csv_file:str=None, bro_type:str = 'gld'):
                 ini.measurement_tvp(measurement_number)
         
         gld.reset_values()
+        ini.reset_values()
+        progressor.next()
+        progressor.progress()
 
 def get_censor_reason(dict: dict, observation_number: int, measurement_number: int) -> str:
     censor_reasons = dict.get(f"{observation_number}_point_censoring_censoredReason", None)
@@ -214,3 +242,6 @@ class InitializeData:
             # correction_time = self.gmw_dict.get("", None),            # nvt
             # correction_reason = self.gmw_dict.get("", None),          # nvt
         )
+
+    def reset_values(self) -> None:
+        self.observation_number = 0 
