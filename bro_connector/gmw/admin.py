@@ -2,6 +2,10 @@ from django.contrib import admin
 from django import forms
 from django.contrib.gis.geos import GEOSGeometry
 
+from main.management.tasks.xml_import import xml_import
+from zipfile import ZipFile
+import os
+
 from . import models
 
 from main.settings.base import gmw_SETTINGS
@@ -235,6 +239,78 @@ class MaintenanceAdmin(admin.ModelAdmin):
         'reporter',
     )
 
+class XMLImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "created",
+        "file",
+        "checked",
+        "imported",
+    )
+
+    actions = [
+        "update_database",
+    ]
+
+    def save_model(self, request, obj, form, change):
+        try:
+            originele_constructie_import = models.XMLImport.objects.get(id=obj.id)
+            file = originele_constructie_import.file
+        except models.XMLImport.DoesNotExist:
+            originele_constructie_import = None
+            file = None
+
+        if obj.file != file and file is not None:
+            # If a new csv is set into the ConstructieImport row.
+            obj.imported = False
+            obj.checked = False
+            obj.report = obj.report + f"\nswitched the csv file from {file} to {obj.file}."
+            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+
+        else:        
+            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+
+    def update_database(self, request, QuerySet):
+        for object in QuerySet:
+            if str(object.file).endswith('xml'):
+                print("Handling XML file")
+                (completed, message) = xml_import.import_xml(object.file, ".")
+                object.checked = True
+                object.imported = completed
+                object.report += message
+                object.save()
+            
+            elif str(object.file).endswith('zip'):
+                print("Handling ZIP file")
+                # First unpack the zip
+                with ZipFile(object.file, 'r') as zip:
+                    zip.printdir()
+                    zip.extractall(path=f"./{object.name}/")
+                
+                # Remove constructies/ and .zip from the filename
+                file_name = str(object.file)[13:-4] 
+                print(file_name)
+                
+                path = f"."
+
+                for file in os.listdir(path):
+                    if file.endswith('csv'):
+                        print(f"Bulk import of filetype of {file} not yet supported not yet supported.")
+                        object.report += f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                        object.save()
+                        pass
+
+                    elif file.endswith('xml'):
+                        (completed, message) = xml_import.import_xml(file, path)
+                        object.checked = True
+                        object.imported = completed
+                        object.report += message
+                        object.save()
+
+                    else:
+                        object.report += f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                        object.save()
+
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
 _register(models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
 _register(models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin)
@@ -247,3 +323,4 @@ _register(models.Event, EventAdmin)
 _register(models.Picture, PictureAdmin)
 _register(models.MaintenanceParty, MaintenancePartyAdmin)
 _register(models.Maintenance, MaintenanceAdmin)
+_register(models.XMLImport, XMLImportAdmin)
