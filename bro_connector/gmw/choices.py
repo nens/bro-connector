@@ -199,6 +199,7 @@ GROUNDLEVELPOSITIONINGMETHOD = (
 )
 
 EVENTNAME = (
+    ("constructie", "constructie"),
     ("beschermconstructieVeranderd", "beschermconstructieVeranderd"),
     ("buisdeelIngeplaatst", "buisdeelIngeplaatst"),
     ("buisIngekort", "buisIngekort"),
