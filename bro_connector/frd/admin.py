@@ -9,9 +9,13 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "frd_bro_id",
+        "object_id_accountable_party",
+        "quality_regime",
     )
     list_filter = (
-
+        "id",
+        "object_id_accountable_party",
     )
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):
