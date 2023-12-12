@@ -67,6 +67,8 @@ class ElectrodePairAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "elektrode1",
+        "elektrode2",
     )
     list_filter = (
 
