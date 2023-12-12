@@ -9,29 +9,29 @@ from gmn.models import GroundwaterMonitoringNet
 class FormationResistanceDossier(models.Model):
     id = models.AutoField(primary_key=True)
     frd_bro_id = models.CharField(
-        max_length=200, null=True, blank=True, editable=False, verbose_name="Broid FRD"
+        max_length=200, null=True, blank=True, editable=False, verbose_name="Bro-ID FRD"
     )
     delivery_accountable_party = models.CharField(
-        max_length=200, null=True, blank=False,
+        max_length=200, null=True, blank=True,
     )
     object_id_accountable_party = models.CharField(
-        max_length=200, null=True, blank=False,
+        max_length=200, null=True, blank=True,
     )
     delivery_responsible_party = models.CharField(
-        max_length=255, null=True, blank=False,
+        max_length=255, null=True, blank=True,
     )
     quality_regime = models.CharField(
         choices=(
             ("IMBRO", "IMBRO"),
             ("IMBRO/A", "IMBRO/A"),
         ),
-        max_length=255, null=True, blank=False,
+        max_length=255, null=True, blank=True,
     )
 
     # Data not required, but returned by the BRO.
     assessment_type = models.CharField(
         choices=ASSESSMENT_TYPE,
-        max_length=255, null=True, blank=False,
+        max_length=255, null=True, blank=True,
     )
 
     ### DO WE WANT TO ADD THESE?  NOT REQUIRED ###
@@ -43,12 +43,12 @@ class FormationResistanceDossier(models.Model):
     ##############################################
 
     # References to other tables
-    instrument_configuration = models.ForeignKey('InstrumentConfiguration', on_delete = models.CASCADE, null = True, blank = False)
-    measurement_configuration = models.ForeignKey('MeasurementConfiguration', on_delete = models.CASCADE, null = True, blank = False)
-    electromagnetic_measurement_method = models.ForeignKey('ElectromagneticMeasurementMethod', on_delete = models.CASCADE, null = True, blank = False)
-    gmw_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = False)
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, null = True, blank = False)
-    geo_ohm_measurement_method = models.ForeignKey('GeoOhmMeasurementMethod', on_delete = models.CASCADE, null = True, blank = False)
+    instrument_configuration = models.ForeignKey('InstrumentConfiguration', on_delete = models.CASCADE, null = True, blank = True)
+    measurement_configuration = models.ForeignKey('MeasurementConfiguration', on_delete = models.CASCADE, null = True, blank = True)
+    electromagnetic_measurement_method = models.ForeignKey('ElectromagneticMeasurementMethod', on_delete = models.CASCADE, null = True, blank = True)
+    gmw_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = True)
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, null = True, blank = True)
+    geo_ohm_measurement_method = models.ForeignKey('GeoOhmMeasurementMethod', on_delete = models.CASCADE, null = True, blank = True)
 
     deliver_to_bro = models.BooleanField(blank=False, null=True)
 
@@ -60,8 +60,8 @@ class FormationResistanceDossier(models.Model):
     
     @property
     def name(self):
-        nitg_code = self.filter.groundwater_monitoring_well.nitg_code
-        name = f"FRD_{nitg_code}_{self.filter.tube_number}"
+        nitg_code = self.gmw_tube.groundwater_monitoring_well.nitg_code
+        name = f"FRD_{nitg_code}_{self.gmw_tube.tube_number}"
         return name
     
     def save(self, *args, **kwargs):
@@ -113,7 +113,7 @@ class InstrumentConfiguration(models.Model):
 
 class ElectromagneticMeasurementMethod(models.Model):
     measurement_date = models.DateField(null = False, blank = True)
-    measuring_responsible_party = models.TextField(max_length=200, null=False, blank=False)
+    measuring_responsible_party = models.TextField(max_length=200, null=False, blank=True)
     measuring_procedure = models.CharField(
         blank=False,
         max_length=235,
@@ -132,7 +132,10 @@ class ElectromagneticMeasurementMethod(models.Model):
 
 class GeoOhmMeasurementMethod(models.Model):
     measuring_date = models.DateField()
-    measuring_responsible_party = models.TextField()
+    measuring_responsible_party = models.CharField(
+        blank=False,
+        max_length=235,
+    )
     measuring_procedure = models.CharField(
         blank=False,
         max_length=235,
