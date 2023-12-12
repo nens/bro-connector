@@ -82,16 +82,7 @@ def run(kvk_number:str=None, csv_file:str=None, bro_type:str = 'gld'):
         ini.groundwater_level_dossier()
         ini.responsible_party()
 
-        # Check for GMW or create
-        gmw = gmw_get_or_none(ini.groundwater_level_dossier_instance.gmw_bro_id)
-
-        if not within_bbox(gmw.coordinates):
-            ini.groundwater_level_dossier_instance.delete()
-            ini.reset_values()
-            gld.reset_values()
-            progressor.next()
-            progressor.progress()
-            continue
+        print("total points: ", gld.number_of_points)
 
         for observation_number in range(1, (1 + gld.number_of_observations)):
             ini.increment_observation_number()
@@ -100,6 +91,8 @@ def run(kvk_number:str=None, csv_file:str=None, bro_type:str = 'gld'):
             ini.observation()
 
             for measurement_number in range(gld.number_of_points):
+                if measurement_number % 100 == 0:
+                    print(measurement_number)
                 ini.metadata_measurement_tvp(measurement_number)
                 ini.measurement_tvp(measurement_number)
         
