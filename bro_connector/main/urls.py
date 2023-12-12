@@ -14,10 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, reverse_lazy
+from django.urls import path, reverse_lazy, include
 from django.views.generic.base import RedirectView
+from gmw.views import gmw_map_context
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("gmw/gmw-map/", gmw_map_context, name="gmw_map"),
     path('', RedirectView.as_view(url=reverse_lazy('admin:index'))),
 ]
