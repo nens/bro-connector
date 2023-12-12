@@ -172,12 +172,14 @@ class GroundwaterMonitoringTubesStatic(models.Model):
         max_length=200,
         blank=True, null=True
     ) 
-    artesian_well_cap_present = models.TextField(
+    artesian_well_cap_present = models.CharField(
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
-    sediment_sump_present = models.TextField(
+    ) 
+    sediment_sump_present = models.CharField(
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    ) 
     number_of_geo_ohm_cables = models.IntegerField(blank=True, null=True)
     tube_material = models.CharField(
         choices=TUBEMATERIAL,
@@ -224,9 +226,10 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_static = models.ForeignKey('GroundwaterMonitoringTubesStatic', on_delete = models.CASCADE, null = True, blank = True)
     tube_top_diameter = models.IntegerField(blank=True, null=True)
-    variable_diameter = models.TextField(
+    variable_diameter = models.CharField(
+        max_length=200,
         blank=True, null=True
-    )  # This field type is a guess.
+    ) 
     tube_status = models.CharField(
         choices=TUBESTATUS,
         max_length=200,
@@ -437,3 +440,29 @@ class Maintenance(models.Model):
         db_table = 'gmw"."maintenance'
         verbose_name = 'Onderhoudsmoment'
         verbose_name_plural = 'Onderhoudsmomenten'
+
+class XMLImport(models.Model):
+    id = models.AutoField(primary_key=True)
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    file = models.FileField(
+        upload_to=f"bulk", validators=[]
+    )
+    report = models.TextField(
+        help_text="process description",
+        blank=True,
+        null=True,
+    )
+    checked = models.BooleanField(
+        help_text="checked", editable=False, default=False,
+        blank=True,
+        null=True,
+    )
+    imported = models.BooleanField(
+        verbose_name="fully imported", default=False, editable=False,
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = "XML import"
+        verbose_name_plural = "XML imports"
