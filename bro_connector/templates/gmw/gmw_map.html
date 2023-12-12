@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+{% load leaflet_tags %}
+
+{% block content %}
+
+    <div id="map" style="height: 800px; width: 1000px;"></div>
+    <div id="legend" class="leaflet-control leaflet-control-custom"></div>
+
+    <!-- Include Leaflet CSS and JS files -->
+    {% leaflet_css %}
+    {% leaflet_js %}
+
+    {{ wells|json_script:"wells_json" }}
+
+    <script>
+
+    var map = L.map('map').setView([51.522601,3.945697], 9);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    let wells = JSON.parse(document.getElementById('wells_json').textContent)
+
+    // Mapping object to store color assignments based on accountable party id
+    var colorMapping = {};
+
+    // Function to get or generate a color based on the accountable party id
+    function getMarkerColor(accountablePartyId) {
+        if (!colorMapping.hasOwnProperty(accountablePartyId)) {
+            // If color not assigned, generate and assign a new color
+            colorMapping[accountablePartyId] = getRandomColor();
+        }
+        return colorMapping[accountablePartyId];
+    }
+
+    // Function to generate a random color (for initial color assignment)
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+
+    // Initialize legend when creating the map
+    var legend = L.control({ position: 'bottomright' });
+
+    legend.onAdd = function(map) {
+        var div = L.DomUtil.create('div', 'info legend');
+
+        // Loop through the colorMapping object and add legend items
+        for (var accountId in colorMapping) {
+            var color = colorMapping[accountId];
+            div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background:' + color + ';"></div> Accountable Party ' + accountId + '</div>';
+        }
+
+        return div;
+    };
+
+    legend.addTo(map);
+
+    // For each well add a marker
+    // For each well, add a marker and popup
+    wells.forEach(well => {
+        // Check the current zoom level
+        if (map.getZoom() >= 10) {
+            var markerColor = getMarkerColor(well.accountable_party);
+
+            var customIcon = L.divIcon({
+                className: 'custom-marker',
+                iconSize: [15, 30],
+                iconAnchor: [7, 30],
+                html: `<div style="background-color: ${markerColor}; border-radius: 50%; width: 10px; height: 10px;"></div>`
+            });
+
+            var marker = L.marker([well.latitude, well.longitude], { icon: customIcon }).addTo(map);
+
+            var objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.object_id}`;
+
+            // Create a popup with well information and a link to the object page
+            var popupContent = `
+                <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
+                Latitude: ${well.latitude}<br>
+                Longitude: ${well.longitude}<br>
+                Quality regime: ${well.quality_regime}<br>
+                Accountable party: ${well.accountable_party}<br>
+            `;
+
+            marker.bindPopup(popupContent);
+            legend.addTo(map)
+        }
+    });
+
+    // Event listener to reload markers when the zoom level changes
+    map.on('zoomend', function() {
+        // Clear existing markers
+        map.eachLayer(function(layer) {
+            if (layer instanceof L.Marker) {
+                map.removeLayer(layer);
+            }
+        });
+
+        // Add markers based on the new zoom level
+        wells.forEach(well => {
+            if (map.getZoom() >= 12) {
+                var markerColor = getMarkerColor(well.accountable_party);
+                var customIcon = L.divIcon({
+                    className: 'custom-marker',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10],
+                    html: `<div style="background-color: ${markerColor}; border-radius: 50%; width: 20px; height: 20px;"></div>`
+                });
+
+                var marker = L.marker([well.latitude, well.longitude], { icon: customIcon }).addTo(map);
+
+                var objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.object_id}`;
+                var popupContent = `
+                    <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
+                    Latitude: ${well.latitude}<br>
+                    Longitude: ${well.longitude}<br>
+                    Quality regime: ${well.quality_regime}<br>
+                    Accountable party: ${well.accountable_party}<br>
+                `;
+
+                marker.bindPopup(popupContent);
+                legend.addTo(map)
+            }
+        });
+    });
+
+    </script>
+
+{% endblock %}
