@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.contrib.gis.geos import GEOSGeometry
-
+from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
 from zipfile import ZipFile
 import os
@@ -13,6 +13,13 @@ from . import forms
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
+
+def get_searchable_fields(model_class):
+    return [
+        f.name
+        for f in model_class._meta.fields
+        if isinstance(f, (fields.CharField, fields.AutoField))
+    ]
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
