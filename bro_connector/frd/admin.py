@@ -1,9 +1,17 @@
 from django.contrib import admin
+from django.db.models import fields
 from .models import *
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
+
+def get_searchable_fields(model_class):
+    return [
+        f.name
+        for f in model_class._meta.fields
+        if isinstance(f, (fields.CharField, fields.AutoField))
+    ]
 
 class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
@@ -40,18 +48,29 @@ class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "measurement_date",
+        "measuring_responsible_party",
+        "measuring_procedure",
+        "assessment_procedure",
     )
-    list_filter = (
 
+    list_filter = (
+        "measuring_responsible_party",
+        "measuring_procedure",
+        "assessment_procedure",
     )
+
+    search_fields = get_searchable_fields(GeoOhmMeasurementMethod)
 
 class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "resistance",
+        "measurement_configuration",
     )
     list_filter = (
-
+        "measurement_configuration",
     )
 
 class GMWElectrodeReferenceAdmin(admin.ModelAdmin):
@@ -71,16 +90,22 @@ class ElectrodePairAdmin(admin.ModelAdmin):
         "elektrode2",
     )
     list_filter = (
-
+        "elektrode1",
+        "elektrode2",
     )
 
 class MeasurementConfigurationAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "configuration_name",
+        "measurement_pair",
+        "flowcurrent_pair",
     )
     list_filter = (
-
+        "configuration_name",
+        "measurement_pair",
+        "flowcurrent_pair",
     )
 
 class ElectromagneticSeriesAdmin(admin.ModelAdmin):
