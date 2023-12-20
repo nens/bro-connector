@@ -125,13 +125,16 @@ class ElectromagneticMeasurementMethod(models.Model):
         choices=ASSESSMENT_PROCEDURE
     )
 
+    def __str__(self):
+        return f"{self.measuring_responsible_party} {self.measurement_date}"
+
     class Meta:
         managed = True
         db_table = 'frd"."electromagnetic_measurement_method'
         verbose_name_plural = "Electromagnetic Measurement Method"
 
 class GeoOhmMeasurementMethod(models.Model):
-    measuring_date = models.DateField()
+    measurement_date = models.DateField()
     measuring_responsible_party = models.CharField(
         blank=False,
         max_length=235,
@@ -146,6 +149,9 @@ class GeoOhmMeasurementMethod(models.Model):
         max_length=235,
         choices=ASSESSMENT_PROCEDURE
     )
+
+    def __str__(self):
+        return f"{self.measuring_responsible_party} {self.measurement_date}"
 
     class Meta:
         managed = True
@@ -170,6 +176,9 @@ class GMWElectrodeReference(models.Model):
     cable_number = models.IntegerField(blank=True, null=True)
     electrode_number = models.IntegerField(blank=True, null=True)
 
+    def __str__(self) -> str:
+        return f"C{self.cable_number}E{self.electrode_number}"
+
     class Meta:
         managed = True
         db_table = 'frd"."gmw_electrode_reference'
@@ -181,6 +190,9 @@ class ElectrodePair(models.Model):
     elektrode1 = models.ForeignKey('GMWElectrodeReference', on_delete = models.CASCADE, null = True, blank = False, related_name="electrode_one")
     elektrode2 = models.ForeignKey('GMWElectrodeReference', on_delete = models.CASCADE, null = True, blank = False, related_name="electrode_two")
 
+    def __str__(self):
+        return f"{self.elektrode1} - {self.elektrode2}"
+
     class Meta:
         managed = True
         db_table = 'frd"."electrode_pair'
@@ -189,18 +201,15 @@ class ElectrodePair(models.Model):
 
 class MeasurementConfiguration(models.Model):
     id = models.AutoField(primary_key=True)
-    configuration_name = models.CharField(max_length=40, null = False, blank = False)
+    configuration_name = models.CharField(max_length=40, null = False, blank = False, unique = True)
     measurement_pair = models.ForeignKey('ElectrodePair', on_delete = models.CASCADE, null = True, blank = False, related_name="measurement_pair")
     flowcurrent_pair = models.ForeignKey('ElectrodePair', on_delete = models.CASCADE, null = True, blank = False, related_name="flowcurrent_pair")
 
-    def clean(self):
-        # Check if the config name is unique
-        if len(
-            MeasurementConfiguration.objects.filter(
-                configuration_name = self.configuration_name
-            )
-        ) > 0:
-            raise ValidationError(f"Configuration name ({self.configuration_name}) already exists.")
+    def __str__(self):
+        if self.configuration_name != None:
+            return f"{self.configuration_name}"
+        else:
+            return f"{self.id}: {self.flowcurrent_pair}-{self.measurement_pair}"
         
     class Meta:
         managed = True
