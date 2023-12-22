@@ -163,7 +163,7 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
     glue = models.TextField(blank=True, null=True)  # This field type is a guess.
     plain_tube_part_length = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
-    )
+    ) # Lengte stijbuisdeel
     inserted_part_diameter =  models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     ) # This field type is a guess.
@@ -173,6 +173,14 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
     inserted_part_material = models.TextField(
         blank=True, null=True
     )  # This field type is a guess.
+
+    @property
+    def screen_top_position(self):
+        return self.tube_top_position - self.plain_tube_part_length
+    
+    @property
+    def screen_bottom_position(self):
+        return self.tube_top_position - (self.plain_tube_part_length + self.groundwater_monitoring_tube_static.screen_length)
 
     def __str__(self):
 
