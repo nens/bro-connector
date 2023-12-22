@@ -354,6 +354,7 @@ JAZZMIN_SETTINGS = {
         "gld.TypeProcessReference": "fas fa-book-open",
         "gld.TypeProcessType": "fas fa-book-open",
         "gld.TypeStatusCode": "fas fa-book-open",
+        "gld.ObservationProcess": "fas fa-book-open",
         "gld.TypeStatusQualityControl": "fas fa-book-open",
         "gmw.GroundwaterMonitoringWellStatic": "fas fa-ruler-vertical",
         "gmw.GroundwaterMonitoringWellDynamic": "fas fa-ruler-vertical",

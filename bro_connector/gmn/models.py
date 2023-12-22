@@ -103,7 +103,7 @@ class MeasuringPoint(models.Model):
     code = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Meetpunt naam", editable=False
     )
-    synced_to_bro = models.BooleanField(blank=False, null=True, default=False)
+    synced_to_bro = models.BooleanField(blank=False, null=True, default=False, editable=False)
     added_to_gmn_date = models.DateField(blank=False, null=True)
     deleted_from_gmn_date = models.DateField(blank=True, null=True, help_text='Als een Meetpunt van een meetnet verwijderd moet worden, verwijder het object dan NIET uit de BRO-Connector, maar vul dit veld in!')
     removed_from_BRO_gmn = models.BooleanField(blank=False, null=True, default=False, editable=False)

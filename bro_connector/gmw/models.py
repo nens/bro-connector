@@ -63,8 +63,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_static'
-        verbose_name = "Grondwatermonitoring Put - Statische gegevens"
-        verbose_name_plural = "Grondwatermonitoring Putten - Statische gegevens"
+        verbose_name = "Grondwatermonitoring Put"
+        verbose_name_plural = "Grondwatermonitoring Putten"
 
 class GroundwaterMonitoringWellDynamic(models.Model):
     groundwater_monitoring_well_dynamic_id = models.AutoField(primary_key=True)
@@ -96,8 +96,8 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_dynamic'
-        verbose_name = "Grondwatermonitoring Put - Dynamische gegevens"
-        verbose_name_plural = "Grondwatermonitoring Putten - Dynamische gegevens"
+        verbose_name = "Grondwatermonitoring Put - Data Aanpassing"
+        verbose_name_plural = "Grondwatermonitoring Putten - Data Aanpassingen"
 
 
 
@@ -139,8 +139,8 @@ class GroundwaterMonitoringTubesStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tubes_static'
-        verbose_name = "Grondwatermonitoring Filter - Statische gegevens"
-        verbose_name_plural = "Grondwatermonitoring Filters - Statische gegevens"
+        verbose_name = "Grondwatermonitoring Filter"
+        verbose_name_plural = "Grondwatermonitoring Filters"
 
 
 class GroundwaterMonitoringTubesDynamic(models.Model):
@@ -186,8 +186,8 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tubes_dynamic'
-        verbose_name = "Grondwatermonitoring Filter - Dynamische gegevens"
-        verbose_name_plural = "Grondwatermonitoring Filters - Dynamische gegevens"
+        verbose_name = "Grondwatermonitoring Filter - Data Aanpassingen"
+        verbose_name_plural = "Grondwatermonitoring Filters - Data Aanpassingen"
 
 class GeoOhmCable(models.Model):
     geo_ohm_cable_id = models.AutoField(primary_key=True)

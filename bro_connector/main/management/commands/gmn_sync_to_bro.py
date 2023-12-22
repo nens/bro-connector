@@ -7,8 +7,7 @@ from main.management.commands.tasks.gmn_tasks.gmn_request_handlers import (
 
 
 class Command(BaseCommand):
-    """
-    This command handles all 4 type of registrations for GMN's
+    """ This command handles all 4 type of registrations for GMN's
     It uses the IntermediateEvents table as input.
     In this table, the event_type column holds the information for which BRO request to handle.
     The synced_to_bro column is the administration for whether the information is allready sent to the BRO.
