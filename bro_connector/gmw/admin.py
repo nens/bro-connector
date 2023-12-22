@@ -1,35 +1,29 @@
 from django.contrib import admin
 from django import forms
 from django.contrib.gis.geos import GEOSGeometry
-
+from django.db.models import fields
+from main.management.tasks.xml_import import xml_import
+from zipfile import ZipFile
 import os
 
 from . import models
 
 from main.settings.base import gmw_SETTINGS
+from . import forms
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
-class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
-    x = forms.CharField(required=True)
-    y = forms.CharField(required=True)
-
-    class Meta:
-        model = models.GroundwaterMonitoringWellStatic
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Wijs de waarde toe aan het initial attribuut van het veld
-        if self.instance.coordinates:
-            self.fields['x'].initial = self.instance.x
-            self.fields['y'].initial =  self.instance.y
+def get_searchable_fields(model_class):
+    return [
+        f.name
+        for f in model_class._meta.fields
+        if isinstance(f, (fields.CharField, fields.AutoField))
+    ]
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
-    form = GroundwaterMonitoringWellStaticForm
+    form = forms.GroundwaterMonitoringWellStaticForm
 
     list_display = (
         "groundwater_monitoring_well_static_id",
@@ -53,7 +47,12 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "local_vertical_reference_point",
         "well_offset",
         "vertical_datum",
+        "last_horizontal_positioning_date",
+        "construction_coordinates",
+        "in_management",
     )
+
+    list_filter = ("delivery_accountable_party", "nitg_code", "in_management")
 
     fieldsets = [
         ('', {
@@ -75,11 +74,16 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 "horizontal_positioning_method",
                 "local_vertical_reference_point",
                 "well_offset",
-                "vertical_datum",              
+                "vertical_datum",
+                "last_horizontal_positioning_date",
+                "in_management",
                         ],
         }),
         ('Coordinates', {
             'fields': ['x', 'y'],
+        }),
+        ('Construction Coordinates', {
+            'fields': ['cx', 'cy'],
         }),
     ]
 
@@ -88,13 +92,20 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         x = form.cleaned_data['x']
         y = form.cleaned_data['y']
 
+        cx = form.cleaned_data['cx']
+        cy = form.cleaned_data['cy']
+
         # Werk de waarden van de afgeleide attributen bij in het model
         obj.coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
+        if cx != '' and cy != '':
+            obj.construction_coordinates = GEOSGeometry(f"POINT ({cx} {cy})", srid=28992)
 
         # Sla het model op
         obj.save()
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
+
+    form = forms.GroundwaterMonitoringWellDynamicForm
 
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
@@ -109,11 +120,13 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "ground_level_position",
         "ground_level_positioning_method",
     )
-    list_filter = ("groundwater_monitoring_well", "deliver_gld_to_bro",)
+    list_filter = ("groundwater_monitoring_well", "deliver_gld_to_bro", "owner")
 
 
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
+    form = forms.GroundwaterMonitoringTubesStaticForm
+    
     list_display = (
         "groundwater_monitoring_tube_static_id",
         "groundwater_monitoring_well",
@@ -132,6 +145,8 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
+    form = forms.GroundwaterMonitoringTubesDynamicForm
+    
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static_id",
@@ -151,6 +166,8 @@ class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
 class GeoOhmCableAdmin(admin.ModelAdmin):
 
+    form = forms.GeoOhmCableForm
+    
     list_display = (
         "geo_ohm_cable_id",
         "groundwater_monitoring_tube_static_id",
@@ -160,6 +177,8 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
 
 class ElectrodeStaticAdmin(admin.ModelAdmin):
 
+    form = forms.ElectrodeStaticForm
+    
     list_display = (
         "electrode_static_id",
         "geo_ohm_cable_id",
@@ -170,6 +189,8 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
+    form = forms.ElectrodeDynamicForm
+    
     list_display = (
         "electrode_dynamic_id",
         "electrode_static_id",
@@ -180,6 +201,8 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
 class EventAdmin(admin.ModelAdmin):
 
+    form = forms.EventForm
+    
     list_display = (
         "change_id",
         "event_name",
@@ -190,7 +213,110 @@ class EventAdmin(admin.ModelAdmin):
     )
     list_filter = ("change_id",)
 
+class PictureAdmin(admin.ModelAdmin):
 
+    list_display = (
+
+    )
+    list_filter = (
+        "groundwater_monitoring_well",
+        "recording_date",
+    )
+
+class MaintenancePartyAdmin(admin.ModelAdmin):
+
+    list_display = (
+
+    )
+    list_filter = (
+        'organisation',
+        'postal_code',
+        'function',
+    )
+
+class MaintenanceAdmin(admin.ModelAdmin):
+
+    list_display = (
+
+    )
+    list_filter = (
+        'kind_of_maintenance',
+        'groundwater_monitoring_well',
+        'execution_date',
+        'reporter',
+    )
+
+class XMLImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "created",
+        "file",
+        "checked",
+        "imported",
+    )
+
+    actions = [
+        "update_database",
+    ]
+
+    def save_model(self, request, obj, form, change):
+        try:
+            originele_constructie_import = models.XMLImport.objects.get(id=obj.id)
+            file = originele_constructie_import.file
+        except models.XMLImport.DoesNotExist:
+            originele_constructie_import = None
+            file = None
+
+        if obj.file != file and file is not None:
+            # If a new csv is set into the ConstructieImport row.
+            obj.imported = False
+            obj.checked = False
+            obj.report = obj.report + f"\nswitched the csv file from {file} to {obj.file}."
+            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+
+        else:        
+            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+
+    def update_database(self, request, QuerySet):
+        for object in QuerySet:
+            if str(object.file).endswith('xml'):
+                print("Handling XML file")
+                (completed, message) = xml_import.import_xml(object.file, ".")
+                object.checked = True
+                object.imported = completed
+                object.report += message
+                object.save()
+            
+            elif str(object.file).endswith('zip'):
+                print("Handling ZIP file")
+                # First unpack the zip
+                with ZipFile(object.file, 'r') as zip:
+                    zip.printdir()
+                    zip.extractall(path=f"./{object.name}/")
+                
+                # Remove constructies/ and .zip from the filename
+                file_name = str(object.file)[13:-4] 
+                print(file_name)
+                
+                path = f"."
+
+                for file in os.listdir(path):
+                    if file.endswith('csv'):
+                        print(f"Bulk import of filetype of {file} not yet supported not yet supported.")
+                        object.report += f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                        object.save()
+                        pass
+
+                    elif file.endswith('xml'):
+                        (completed, message) = xml_import.import_xml(file, path)
+                        object.checked = True
+                        object.imported = completed
+                        object.report += message
+                        object.save()
+
+                    else:
+                        object.report += f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                        object.save()
 
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
 _register(models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
@@ -201,3 +327,7 @@ _register(models.GeoOhmCable, GeoOhmCableAdmin)
 _register(models.ElectrodeStatic, ElectrodeStaticAdmin)
 _register(models.ElectrodeDynamic, ElectrodeDynamicAdmin)
 _register(models.Event, EventAdmin)
+_register(models.Picture, PictureAdmin)
+_register(models.MaintenanceParty, MaintenancePartyAdmin)
+_register(models.Maintenance, MaintenanceAdmin)
+_register(models.XMLImport, XMLImportAdmin)

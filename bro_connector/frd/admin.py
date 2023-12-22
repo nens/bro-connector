@@ -1,17 +1,29 @@
 from django.contrib import admin
+from django.db.models import fields
 from .models import *
 
-def _register(model, admin_class):
+def _register(model: models.Model, admin_class: admin.ModelAdmin):
     admin.site.register(model, admin_class)
 
+
+def get_searchable_fields(model_class):
+    return [
+        f.name
+        for f in model_class._meta.fields
+        if isinstance(f, (fields.CharField, fields.AutoField))
+    ]
 
 class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "frd_bro_id",
+        "object_id_accountable_party",
+        "quality_regime",
     )
     list_filter = (
-
+        "id",
+        "object_id_accountable_party",
     )
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):
@@ -36,18 +48,29 @@ class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "measurement_date",
+        "measuring_responsible_party",
+        "measuring_procedure",
+        "assessment_procedure",
     )
-    list_filter = (
 
+    list_filter = (
+        "measuring_responsible_party",
+        "measuring_procedure",
+        "assessment_procedure",
     )
+
+    search_fields = get_searchable_fields(GeoOhmMeasurementMethod)
 
 class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "formationresistance",
+        "measurement_configuration",
     )
     list_filter = (
-
+        "measurement_configuration",
     )
 
 class GMWElectrodeReferenceAdmin(admin.ModelAdmin):
@@ -63,18 +86,26 @@ class ElectrodePairAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "elektrode1",
+        "elektrode2",
     )
     list_filter = (
-
+        "elektrode1",
+        "elektrode2",
     )
 
 class MeasurementConfigurationAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "configuration_name",
+        "measurement_pair",
+        "flowcurrent_pair",
     )
     list_filter = (
-
+        "configuration_name",
+        "measurement_pair",
+        "flowcurrent_pair",
     )
 
 class ElectromagneticSeriesAdmin(admin.ModelAdmin):
@@ -108,9 +139,16 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "series",
+        "vertical_position",
+        "formationresistance",
+        "status_qualitycontrol",
     )
     list_filter = (
-
+        "series",
+        "vertical_position",
+        "formationresistance",
+        "status_qualitycontrol",
     )
 
 _register(FormationResistanceDossier, FormationResistanceDossierAdmin)
