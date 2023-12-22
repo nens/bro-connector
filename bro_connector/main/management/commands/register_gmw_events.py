@@ -1,10 +1,9 @@
 from django.core.management.base import BaseCommand
-from django.db import transaction, models
-from django.db.models import Q
+from django.db import models
 
 import bro_exchange as brx
 import os
-from datetime import *
+import datetime
 import bisect
 import reversion
 
@@ -618,7 +617,7 @@ def create_sourcedocs(
             quality_regime=quality_regime,
             defaults=dict(
                 comments=f"succesfully generated {source_doc_type} request",
-                date_modified=datetime.now(),
+                date_modified=datetime.datetime.now(),
                 validation_status=None,
                 process_status=process_status,
                 file=filename,
@@ -635,7 +634,7 @@ def create_sourcedocs(
             quality_regime=quality_regime,
             defaults=dict(
                 comments=f"Failed to create {source_doc_type} source document: {e}",
-                date_modified=datetime.now(),
+                date_modified=datetime.datetime.now(),
                 process_status=process_status,
             ),
         )
@@ -695,7 +694,7 @@ def validate_gmw_registration_request(
         record, created = models.gmw_registration_log.objects.update_or_create(
             id=registration_id,
             defaults=dict(
-                date_modified = datetime.now(),
+                date_modified = datetime.datetime.now(),
                 comments=comments,
                 validation_status=validation_status,
                 process_status="source_document_validation_succesful",
@@ -746,7 +745,7 @@ def deliver_sourcedocuments(
             models.gmw_registration_log.objects.update_or_create(
                 id=registration_id,
                 defaults={
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.datetime.now(),
                     "comments": comments,
                     "levering_status": delivery_status_update,
                     "process_status": "failed_to_deliver_sourcedocuments",
@@ -761,7 +760,7 @@ def deliver_sourcedocuments(
             models.gmw_registration_log.objects.update_or_create(
                 id=registration_id,
                 defaults={
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.datetime.now(),
                     "comments": comments,
                     "levering_status": delivery_status,
                     "lastchanged": lastchanged,
@@ -777,7 +776,7 @@ def deliver_sourcedocuments(
         models.gmw_registration_log.objects.update_or_create(
             id=registration_id,
             defaults={
-                "date_modified": datetime.now(),
+                "date_modified": datetime.datetime.now(),
                 "comments": comments,
                 "levering_status": delivery_status_update,
                 "process_status": "failed_to_deliver_sourcedocuments",
@@ -986,35 +985,6 @@ def gmw_create_sourcedocs_wells(registrations_dir):
     wellHeadProtector_events = GetEvents.wellHeadProtector()
     events_handler.create_sourcedocs_events(events=wellHeadProtector_events, event_type='WellHeadProtector')
 
-def has_been_delivered(registration: models.gmw_registration_log, demo) -> bool:
-    """
-    Check if a registration already has been delivered in the past, if so return true.
-    This will also adjust the registration log accordingly to make sure it is not send to the BRO once more.
-    """
-    if demo:
-        return False
-    
-    event = models.Event.objects.get(
-        change_id = registration.event_id
-    )
-    if event.delivered_to_bro == True and registration.levering_id == None:
-        record, created = models.gmw_registration_log.objects.update_or_create(
-                id=registration.id,
-                defaults=dict(
-                    date_modified = datetime.now(),
-                    comments="In het verleden al geleverd en vervolgens ingespoeld in de database",
-                    validation_status="VALIDE",
-                    levering_id="onbekend",
-                    levering_status="delivered succesfully",
-                    process_status="succesfully_processed",
-                    last_change = datetime.now()
-            )
-        )
-        return True
-
-    else:
-        return False
-
 def delivered_but_not_approved(registration):
     """
     Checks if a registration is delivered but not yet approved.
@@ -1057,7 +1027,7 @@ def gmw_check_existing_registrations(
     """
     # Get all the current registrations, order by event id so construction is handled first.
     gmw_registrations = models.gmw_registration_log.objects.all().order_by(
-        '-levering_type'
+        'event_id'
     ).exclude(
         process_status = 'delivery_approved'
     )
@@ -1070,9 +1040,6 @@ def gmw_check_existing_registrations(
         # We check the status of the registration and either validate/deliver/check status/do nothing
         registration_id = registration.id
         source_doc_type = registration.levering_type
-        
-        if has_been_delivered(registration, demo):
-            continue
 
         if delivered_but_not_approved(registration):
             # The registration has been delivered, but not yet approved

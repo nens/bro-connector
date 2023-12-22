@@ -40,6 +40,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "jazzmin",
+    "leaflet",
     "main",
     "gld",
     "gmw",
@@ -178,6 +179,7 @@ ADMIN_REORDER = (
         "app": "gmw",
         "label": "Grondwatermonitoringput (GMW)",  # Provincie Zeeland GWM - Data
         "models": (
+            "gmw.Map",
             "gmw.GroundwaterMonitoringWellStatic",
             "gmw.GroundwaterMonitoringWellDynamic",
             "gmw.GroundwaterMonitoringTubesStatic",
@@ -272,13 +274,12 @@ gmw_SETTINGS = {
     },
     "bro_info_bro_connector": {
         "token": {
-            "user": bro_demo_user,
-            "pass": bro_demo_password,
+            "user": bro_production_user,
+            "pass": bro_production_password,
         },
         "kvk_nummer": 20168636,
     },
     "demo": demo,
-    "additions_dir": os.path.join(BASE_DIR, "gmw/additions"),
     "registrations_dir": os.path.join(
         BASE_DIR, "gmw\\registrations"
     ),
@@ -324,15 +325,6 @@ JAZZMIN_SETTINGS = {
         "gld.MeasurementTvp",
         "gld.MeasurementPointMetadata",
     ],
-    # "hide_models":["gld.TypeAirPressureCompensation",'gld.TypeCensoredReasonCode',
-    # 'gld.TypeEvaluationProcedure',
-    # 'gld.TypeInterpolationCode',
-    # 'gld.TypeMeasurementInstrumentType',
-    # 'gld.TypeObservationType',
-    # 'gld.TypeProcessReference',
-    # 'gld.TypeProcessType',
-    # 'gld.TypeStatusCode',
-    # 'gld.TypeStatusQualityControl'],
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
@@ -355,6 +347,7 @@ JAZZMIN_SETTINGS = {
         "gld.TypeProcessType": "fas fa-book-open",
         "gld.TypeStatusCode": "fas fa-book-open",
         "gld.TypeStatusQualityControl": "fas fa-book-open",
+        "gmw.Map: fas fa-book-open"
         "gmw.GroundwaterMonitoringWellStatic": "fas fa-ruler-vertical",
         "gmw.GroundwaterMonitoringWellDynamic": "fas fa-ruler-vertical",
         "gmw.GroundwaterMonitoringTubesStatic": "fas fa-vials",
