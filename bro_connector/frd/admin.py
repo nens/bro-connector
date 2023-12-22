@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import fields
 from .models import *
 
-def _register(model, admin_class):
+def _register(model: models.Model, admin_class: admin.ModelAdmin):
     admin.site.register(model, admin_class)
 
 
@@ -66,7 +66,7 @@ class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
-        "resistance",
+        "formationresistance",
         "measurement_configuration",
     )
     list_filter = (
@@ -139,9 +139,16 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "series",
+        "vertical_position",
+        "formationresistance",
+        "status_qualitycontrol",
     )
     list_filter = (
-
+        "series",
+        "vertical_position",
+        "formationresistance",
+        "status_qualitycontrol",
     )
 
 _register(FormationResistanceDossier, FormationResistanceDossierAdmin)

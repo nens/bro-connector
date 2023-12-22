@@ -44,7 +44,6 @@ class FormationResistanceDossier(models.Model):
 
     # References to other tables
     instrument_configuration = models.ForeignKey('InstrumentConfiguration', on_delete = models.CASCADE, null = True, blank = True)
-    measurement_configuration = models.ForeignKey('MeasurementConfiguration', on_delete = models.CASCADE, null = True, blank = True)
     electromagnetic_measurement_method = models.ForeignKey('ElectromagneticMeasurementMethod', on_delete = models.CASCADE, null = True, blank = True)
     gmw_tube = models.ForeignKey(GroundwaterMonitoringTubesStatic, on_delete = models.CASCADE, null = True, blank = True)
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, null = True, blank = True)
@@ -159,19 +158,6 @@ class GeoOhmMeasurementMethod(models.Model):
         verbose_name_plural = "Geo Ohm Measurement Method"
 
 
-class GeoOhmMeasurementValue(models.Model):
-    resistance = models.DecimalField(
-        max_digits=6, decimal_places=3,
-        validators=[MinValueValidator(0)]
-    )
-    measurement_configuration = models.ForeignKey('GeoOhmMeasurementMethod', on_delete = models.CASCADE, null = True, blank = False)
-
-    class Meta:
-        managed = True
-        db_table = 'frd"."geo_ohm_measurement_value'
-        verbose_name_plural = "Geo Ohm Measurement Value"
-
-
 class GMWElectrodeReference(models.Model):
     cable_number = models.IntegerField(blank=True, null=True)
     electrode_number = models.IntegerField(blank=True, null=True)
@@ -235,10 +221,23 @@ class FormationresistanceSeries(models.Model):
         verbose_name_plural = "Formationresistance Series"
 
 
-class ElectromagneticRecord(models.Model):
-    id = models.AutoField(primary_key=True)
+class FRDRecord(models.Model):
+    pass
+
+class GeoOhmMeasurementValue(FRDRecord):
+    formationresistance = models.DecimalField(
+        max_digits=6, decimal_places=3,
+        validators=[MinValueValidator(0)]
+    )
+    measurement_configuration = models.ForeignKey('MeasurementConfiguration', on_delete = models.CASCADE, null = True, blank = False)
+
+    class Meta:
+        managed = True
+        db_table = 'frd"."geo_ohm_measurement_value'
+        verbose_name_plural = "Geo Ohm Measurement Value"
+
+class ElectromagneticRecord(FRDRecord):
     series = models.ForeignKey('ElectromagneticSeries', on_delete = models.CASCADE, null = True, blank = False)
-    measurement_datetime = models.DateTimeField(blank=True, null=True)
 
     vertical_position = models.DecimalField(
         max_digits=6, decimal_places=3,
@@ -255,16 +254,23 @@ class ElectromagneticRecord(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(3000)]
     ) # Unit = mS/m (milliSiemens/meter)
 
+    @property
+    def formationresistance(self):
+        if self.primary_measurement != None:
+            return self.primary_measurement
+        elif self.secondary_measurement != None:
+            return self.secondary_measurement
+        else:
+            return None
+
     class Meta:
         managed = True
         db_table = 'frd"."electromagnetic_record'
         verbose_name_plural = "Electromagnetic Records"
 
 
-class FormationresistanceRecord(models.Model):
-    id = models.AutoField(primary_key=True)
+class FormationresistanceRecord(FRDRecord):
     series = models.ForeignKey('FormationresistanceSeries', on_delete = models.CASCADE, null = True, blank = False)
-    measurement_datetime = models.DateTimeField(blank=True, null=True)
     vertical_position = models.DecimalField(
         max_digits=6, decimal_places=3,
         validators=[MinValueValidator(-750), MaxValueValidator(325)]
