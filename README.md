@@ -39,3 +39,12 @@
 <img src=bro_connector/static/img/bro_connector_dashboard.PNG>
 
 <img src=bro_connector/static/img/bro_connector_gld_log.PNG>
+
+## Data Importeren vanuit de BRO uitgifte service
+
+Het is mogelijk om data uit de BRO te importeren naar je lokale database. <br>
+Hiervoor is een script ontwikkeld wat aangestuurd kan worden met het .bat bestandje 'bro_gegevens_ophalen.bat'. <br>
+Het script kan als volgt gebruikt worden: bro_gegevens_ophalen.bat [kvk_nummer] [type_bericht]
+
+- kvk_nummer: het kvk nummer van de organisatie waaronder de gegevens staan.
+- type_bericht: het type BRO bericht, zoals gmw of gld.
