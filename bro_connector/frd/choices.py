@@ -43,3 +43,8 @@ QUALITY_CONTROL = (
     ("onbeslist", "onbeslist"),
     ("onbekend", "onbekend")
 )
+
+
+EVENT_TYPE_CHOICES = (
+    ("FRD_StartRegistration", "FRD_StartRegistration"),
+)

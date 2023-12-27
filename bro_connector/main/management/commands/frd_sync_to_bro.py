@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
-import bro_exchange as brx
-from frd.models import FormationResistanceDossier
+from bro_exchange.broxml.frd.requests import FrdStartregistrationTool
+from frd.models import FormationResistanceDossier, FrdSyncLog
 
 
 class Command(BaseCommand):
@@ -8,7 +8,8 @@ class Command(BaseCommand):
     Handles the sync between the bro-connector and the BRO.
     Runs daily as cronjob.
     """
-    help = 'Syncs the FRD data to the BRO'
+
+    help = "Syncs the FRD data to the BRO"
 
     def handle(self, *args, **kwargs):
         sync = FrdSync()
@@ -29,23 +30,62 @@ class FrdSync:
         if len(new_dossiers_qs) != 0:
             for new_dossier in new_dossiers_qs:
                 startregistration = FrdStartregistration(new_dossier)
-                startregistration.handle()
+                startregistration.sync()
 
         # Handle measurements
 
     def lookup_new_dossiers(self):
         return FormationResistanceDossier.objects.filter(frd_bro_id=None)
-    
-        
+
+
 class FrdStartregistration:
     """
     Handles the startregistration of a new FRD in the system,
     based on the qs obj_id.
     """
+
     def __init__(self, frd_obj):
         self.frd_obj = frd_obj
 
-    def handle(self):
-        print('Handle startregistration here')
+    def sync(self):
+        self.frd_startregistration_log, created = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_StartRegistration", frd=self.frd_obj
+        )
 
+        if self.frd_startregistration_log.process_status in [
+            None,
+            "failed_to_generate_source_documents",
+        ]:
+            self.create_startregistration_xml()
+
+    def create_startregistration_xml(self):
+        """
+        Setup the data for the startregistration xml file.
+        Then creates the file and saves it in the assigned folder.
+        """
+        # prepare data
+        quality_regime = self.frd_obj.quality_regime or 'IMBRO'
+        gmn_bro_id = getattr(self.frd_obj.gmn, 'gmn_bro_id', None)
+        gmw_bro_id = getattr(getattr(self.frd_obj.gmw_tube, 'groundwater_monitoring_well', None), 'bro_id', None)
+        gmw_tube_number = getattr(self.frd_obj.gmw_tube, 'tube_number', None)
+
+        srcdocdata = {
+            "delivery_accountable_party":self.frd_obj.delivery_accountable_party,
+            "objectIdAccountableParty":self.frd_obj.object_id_accountable_party,
+            "quality_regime":quality_regime,
+            "gmn_bro_id":gmn_bro_id,
+            "gmw_bro_id":gmw_bro_id,
+            "gmw_tube_number":gmw_tube_number,
+        }
+
+        startregistration_tool = FrdStartregistrationTool(srcdocdata)
+        startregistration_xml_file = startregistration_tool.generate_xml_file()
+        
+        
+
+
+
+        
+        
+        
 

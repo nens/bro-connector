@@ -12,20 +12,20 @@ class FormationResistanceDossier(models.Model):
         max_length=200, null=True, blank=True, editable=False, verbose_name="Bro-ID FRD"
     )
     delivery_accountable_party = models.CharField(
-        max_length=200, null=True, blank=True,
+        max_length=200, null=True, blank=False,
     )
     object_id_accountable_party = models.CharField(
-        max_length=200, null=True, blank=True,
+        max_length=200, null=True, blank=False,
     )
     delivery_responsible_party = models.CharField(
-        max_length=255, null=True, blank=True,
+        max_length=255, null=True, blank=False,
     )
     quality_regime = models.CharField(
         choices=(
             ("IMBRO", "IMBRO"),
             ("IMBRO/A", "IMBRO/A"),
         ),
-        max_length=255, null=True, blank=True,
+        max_length=255, null=True, blank=False,
     )
 
     # Data not required, but returned by the BRO.
@@ -221,10 +221,10 @@ class FormationresistanceSeries(models.Model):
         verbose_name_plural = "Formationresistance Series"
 
 
-class FRDRecord(models.Model):
-    pass
+# class FRDRecord(models.Model):
+#     pass
 
-class GeoOhmMeasurementValue(FRDRecord):
+class GeoOhmMeasurementValue(models.Model):
     formationresistance = models.DecimalField(
         max_digits=6, decimal_places=3,
         validators=[MinValueValidator(0)]
@@ -236,7 +236,7 @@ class GeoOhmMeasurementValue(FRDRecord):
         db_table = 'frd"."geo_ohm_measurement_value'
         verbose_name_plural = "Geo Ohm Measurement Value"
 
-class ElectromagneticRecord(FRDRecord):
+class ElectromagneticRecord(models.Model):
     series = models.ForeignKey('ElectromagneticSeries', on_delete = models.CASCADE, null = True, blank = False)
 
     vertical_position = models.DecimalField(
@@ -269,7 +269,7 @@ class ElectromagneticRecord(FRDRecord):
         verbose_name_plural = "Electromagnetic Records"
 
 
-class FormationresistanceRecord(FRDRecord):
+class FormationresistanceRecord(models.Model):
     series = models.ForeignKey('FormationresistanceSeries', on_delete = models.CASCADE, null = True, blank = False)
     vertical_position = models.DecimalField(
         max_digits=6, decimal_places=3,
@@ -291,3 +291,24 @@ class FormationresistanceRecord(FRDRecord):
         managed = True
         db_table = 'frd"."formationresistance_record'
         verbose_name_plural = "Formationresistance Records"
+
+class FrdSyncLog(models.Model):
+    date_modified = models.DateField(null=True, blank=True)
+    event_type = models.CharField(
+        choices=EVENT_TYPE_CHOICES,
+        blank=False,
+        null=True,
+        max_length = 25,
+    )
+    frd = models.ForeignKey(FormationResistanceDossier, on_delete = models.CASCADE, null = True, blank = True)
+    frd_bro_id = models.CharField(max_length=254, null=True, blank=True)
+    process_status = models.CharField(max_length=254, null=True, blank=True)
+    
+        
+    def __str__(self):
+        return f"{self.event_type}_{self.frd.object_id_accountable_party}_log"
+
+    class Meta:
+        db_table = 'frd"."frd_sync_log'
+        verbose_name = "FRD Synchronisatie Log"
+        verbose_name_plural = "FRD Synchronisatie Logs"
