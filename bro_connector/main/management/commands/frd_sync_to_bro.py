@@ -70,6 +70,7 @@ class FrdStartregistration:
         gmw_tube_number = getattr(self.frd_obj.gmw_tube, 'tube_number', None)
 
         srcdocdata = {
+            "request_reference":f"startregistration_{self.frd_obj.object_id_accountable_party}",
             "delivery_accountable_party":self.frd_obj.delivery_accountable_party,
             "objectIdAccountableParty":self.frd_obj.object_id_accountable_party,
             "quality_regime":quality_regime,
