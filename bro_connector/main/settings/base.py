@@ -288,8 +288,11 @@ gmw_SETTINGS = {
 
 gmn_SETTINGS = {
     "acces_token_bro_portal_demo": {
-        "user": bro_demo_user,
-        "pass": bro_demo_password,
+        "token": {
+            "user": bro_demo_user,
+            "pass": bro_demo_password,
+        },
+        "projectnummer":None,
     },
     "acces_token_bro_portal_bro_connector": {
         "user": bro_production_user,

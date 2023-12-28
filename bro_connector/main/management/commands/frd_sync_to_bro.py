@@ -1,3 +1,5 @@
+import os
+
 from django.core.management.base import BaseCommand
 from bro_exchange.broxml.frd.requests import FrdStartregistrationTool
 from frd.models import FormationResistanceDossier, FrdSyncLog
@@ -45,7 +47,9 @@ class FrdStartregistration:
     """
 
     def __init__(self, frd_obj):
+        self.output_dir = r"frd/xml_files/"
         self.frd_obj = frd_obj
+        self.startregistration_xml_file = None
 
     def sync(self):
         self.frd_startregistration_log, created = FrdSyncLog.objects.update_or_create(
@@ -58,6 +62,10 @@ class FrdStartregistration:
         ]:
             self.create_startregistration_xml()
 
+        self.save_xml_file()
+
+        
+
     def create_startregistration_xml(self):
         """
         Setup the data for the startregistration xml file.
@@ -67,12 +75,12 @@ class FrdStartregistration:
         quality_regime = self.frd_obj.quality_regime or 'IMBRO'
         gmn_bro_id = getattr(self.frd_obj.gmn, 'gmn_bro_id', None)
         gmw_bro_id = getattr(getattr(self.frd_obj.gmw_tube, 'groundwater_monitoring_well', None), 'bro_id', None)
-        gmw_tube_number = getattr(self.frd_obj.gmw_tube, 'tube_number', None)
+        gmw_tube_number = str(getattr(self.frd_obj.gmw_tube, 'tube_number', None))
 
         srcdocdata = {
             "request_reference":f"startregistration_{self.frd_obj.object_id_accountable_party}",
             "delivery_accountable_party":self.frd_obj.delivery_accountable_party,
-            "objectIdAccountableParty":self.frd_obj.object_id_accountable_party,
+            "object_id_accountable_party":self.frd_obj.object_id_accountable_party,
             "quality_regime":quality_regime,
             "gmn_bro_id":gmn_bro_id,
             "gmw_bro_id":gmw_bro_id,
@@ -80,13 +88,10 @@ class FrdStartregistration:
         }
 
         startregistration_tool = FrdStartregistrationTool(srcdocdata)
-        startregistration_xml_file = startregistration_tool.generate_xml_file()
+        self.startregistration_xml_file = startregistration_tool.generate_xml_file()
         
-        
-
-
-
-        
-        
-        
-
+    def save_xml_file(self):
+        filename = f"startregistration_{self.frd_obj.object_id_accountable_party}.xml"
+        self.startregistration_xml_file.write(
+            os.path.join(self.output_dir, filename), pretty_print=True
+        )

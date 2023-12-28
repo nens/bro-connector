@@ -55,7 +55,7 @@ class StartRegistrationGMN:
             print(f"{self.monitoring_network} word gevalideerd.")
 
             self.validate_registration()
-
+    
         # Deliver startregistration if validation succeeded, or previous deliveries failed (to a max of 3)
         if (
             self.gmn_bro_register_log_obj.process_status
@@ -199,7 +199,7 @@ class StartRegistrationGMN:
             payload = open(filepath)
             
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, bro_info=self.acces_token_bro_portal, demo=self.demo
             )
             
             errors_count = len(validation_info['errors'])
@@ -257,7 +257,7 @@ class StartRegistrationGMN:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
@@ -319,7 +319,7 @@ class StartRegistrationGMN:
         try:
             delivery_status_info = brx.check_delivery_status(
                 self.gmn_bro_register_log_obj.levering_id,
-                self.acces_token_bro_portal,
+                self.acces_token_bro_portal["token"],
                 demo = self.demo
             )
 
@@ -592,7 +592,7 @@ class MeasuringPointAddition:
             payload = open(filepath)
             
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, self.acces_token_bro_portal, self.demo
             )
             
             errors_count = len(validation_info['errors'])
@@ -648,9 +648,9 @@ class MeasuringPointAddition:
             )
             payload = open(filepath)
             request = {filename: payload}
-
+            print(self.acces_token_bro_portal["token"])
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
@@ -692,7 +692,7 @@ class MeasuringPointAddition:
         except Exception as e:
             delivery_status = str(current_delivery_status + 1)
             print(
-                f"De additino van {self.measuringpoint} aan{self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
+                f"De addition van {self.measuringpoint} aan{self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
             )
 
             self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
@@ -963,7 +963,7 @@ class MeasuringPointRemoval:
             payload = open(filepath)
             
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, self.acces_token_bro_portal, self.demo
             )
             
             errors_count = len(validation_info['errors'])
@@ -1021,7 +1021,7 @@ class MeasuringPointRemoval:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
@@ -1325,7 +1325,7 @@ class ClosureGMN:
             payload = open(filepath)
             
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, self.acces_token_bro_portal, self.demo
             )
             
             errors_count = len(validation_info['errors'])
@@ -1383,7 +1383,7 @@ class ClosureGMN:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
