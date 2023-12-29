@@ -3,7 +3,7 @@ import time
 
 from django.core.management.base import BaseCommand
 from bro_exchange.broxml.frd.requests import FrdStartregistrationTool
-from bro_exchange.bhp.connector import validate_sourcedoc, upload_sourcedocs_from_dict
+from bro_exchange.bhp.connector import validate_sourcedoc, upload_sourcedocs_from_dict, check_delivery_status
 from frd.models import FormationResistanceDossier, FrdSyncLog
 from datetime import datetime
 from main.settings.base import FRD_SETTINGS
@@ -244,7 +244,7 @@ class FrdStartregistration:
                         "comment": "Succesfully delivered startregistration xml file",
                         "delivery_status": 4,
                         "delivery_status_info": upload_info.json()["status"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                     },
                 )
                 time.sleep(10)
@@ -252,7 +252,47 @@ class FrdStartregistration:
                 self.check_delivery()
 
     def check_delivery(self):
-        print("Just Checking")
+        """
+        Checks the delivery status based on the delivery id.
+        Updates the log of the frd, based on the return of the BRO webservice
+        """
+
+        try:
+            delivery_status_info = check_delivery_status(
+                identifier = self.frd_startregistration_log.delivery_id,
+                token = self.bro_info["token"],
+                demo = self.demo,
+                api = self.api_version,
+            )
+        except Exception as e:
+            update_log_obj(
+                    self.frd_startregistration_log,
+                    {
+                        "comment": f"Error occured during status check of delivery: {e}",
+                    },
+                )
+        else:
+            delivery_status = delivery_status_info.json()['status']
+            delivery_brondocument_status = delivery_status_info.json()["brondocuments"][0]["status"]
+            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
+            
+            if delivery_status == "DOORGELEVERD" and delivery_brondocument_status == "OPGENOMEN_LVBRO":
+                self.finish_startregistration(delivery_status_info)
+            elif delivery_errors:
+                update_log_obj(
+                    self.frd_startregistration_log,
+                    {
+                        "comment": f"Found errors during the delivery check: {delivery_errors}",
+                    },
+                )
+            else:
+                update_log_obj(
+                    self.frd_startregistration_log,
+                    {
+                        "delivery_status_info": delivery_status_info.json()["brondocuments"][0]["status"],
+                        "comments":"Startregistration request not yet approved",
+                    },
+                )
 
     def construct_xml_tree(self):
         """
@@ -295,6 +335,42 @@ class FrdStartregistration:
         Creates a payload of the xml file, based on the filepath
         """
         filepath = self.frd_startregistration_log.xml_filepath
-        xml_payload = open(filepath)
+        with open(filepath) as file:
+            xml_payload = file.read()
 
         return xml_payload
+    
+    def finish_startregistration(self, delivery_status_info):
+        """
+        Updates the log, saves the bro_id to the frd, and removes the xml file.
+        """
+        update_log_obj(
+            self.frd_startregistration_log,
+            {
+                "gmn_bro_id": delivery_status_info.json()["brondocuments"][0]["broId"],
+                "delivery_status_info":delivery_status_info.json()["brondocuments"][0]["status"],
+                "comments":"Startregistration request approved",
+                "process_status":"delivery_approved",
+            },
+        )
+
+        self.save_bro_id(delivery_status_info)
+        self.remove_xml_file()
+
+    def save_bro_id(self, delivery_status_info):
+        """
+        Save the BRO Id to the FRD
+        """
+        self.frd_obj.frd_bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
+        self.frd_obj.save()
+
+    def remove_xml_file(self):
+        """
+        Removes the succesfully delivered xml file.
+        """
+        os.remove(self.frd_startregistration_log.xml_filepath)
+
+
+
+
+    
