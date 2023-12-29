@@ -122,14 +122,6 @@ class FrdStartregistration:
         try:
             self.construct_xml_tree()
             self.save_xml_file()
-            update_log_obj(
-                self.frd_startregistration_log,
-                {
-                    "process_status": "succesfully_generated_startregistration_xml",
-                    "comment": "Succesfully generated startregistration request",
-                    "xml_filepath": self.filepath,
-                },
-            )
 
         except Exception as e:
             update_log_obj(
@@ -141,6 +133,15 @@ class FrdStartregistration:
             )
 
         else:
+            update_log_obj(
+                self.frd_startregistration_log,
+                {
+                    "process_status": "succesfully_generated_startregistration_xml",
+                    "comment": "Succesfully generated startregistration request",
+                    "xml_filepath": self.filepath,
+                },
+            )
+
             self.validate_xml_file()
 
     def validate_xml_file(self):
@@ -192,6 +193,11 @@ class FrdStartregistration:
                 )
 
     def deliver_xml_file(self):
+        """
+        Delivers the xml file after it has succesfully been validated.
+        If the delivery status is OK, the check_delivery method is called to check for further details.
+        """
+
         delivery_status = self.frd_startregistration_log.delivery_status
 
         if delivery_status == 3:
@@ -254,7 +260,8 @@ class FrdStartregistration:
     def check_delivery(self):
         """
         Checks the delivery status based on the delivery id.
-        Updates the log of the frd, based on the return of the BRO webservice
+        Updates the log of the frd, based on the return of the BRO webservice.
+        If the delivery is fully succesfull, the finish_startregistration method is called.
         """
 
         try:
@@ -278,6 +285,7 @@ class FrdStartregistration:
             
             if delivery_status == "DOORGELEVERD" and delivery_brondocument_status == "OPGENOMEN_LVBRO":
                 self.finish_startregistration(delivery_status_info)
+
             elif delivery_errors:
                 update_log_obj(
                     self.frd_startregistration_log,
@@ -285,6 +293,7 @@ class FrdStartregistration:
                         "comment": f"Found errors during the delivery check: {delivery_errors}",
                     },
                 )
+
             else:
                 update_log_obj(
                     self.frd_startregistration_log,
@@ -297,9 +306,8 @@ class FrdStartregistration:
     def construct_xml_tree(self):
         """
         Setup the data for the startregistration xml file.
-        Then creates the file and saves it in the assigned folder.
+        Then creates the file and saves the xml tree to self.
         """
-        # prepare data
         quality_regime = self.frd_obj.quality_regime or "IMBRO"
         gmn_bro_id = getattr(self.frd_obj.gmn, "gmn_bro_id", None)
         gmw_bro_id = getattr(
@@ -324,7 +332,7 @@ class FrdStartregistration:
 
     def save_xml_file(self):
         """
-        Saves the xml file after creation
+        Saves the xmltree as xml file in the filepath as defined in self.
         """
         filename = f"startregistration_{self.frd_obj.object_id_accountable_party}.xml"
         self.filepath = os.path.join(self.output_dir, filename)
@@ -361,7 +369,7 @@ class FrdStartregistration:
 
     def save_bro_id(self, delivery_status_info):
         """
-        Save the BRO Id to the FRD
+        Save the Bro_Id to the FRD object
         """
         self.frd_obj.frd_bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
         self.frd_obj.save()
