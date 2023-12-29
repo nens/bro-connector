@@ -155,10 +155,15 @@ class FrdSyncLogAdmin(admin.ModelAdmin):
 
     list_display = (
         "event_type",
+        "synced",
         "frd",
+        "process_status",
+        "delivery_id"
     )
     list_filter = (
         "event_type",
+        "synced",
+        "process_status",
         "frd",
     )
 

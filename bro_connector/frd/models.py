@@ -9,7 +9,7 @@ from gmn.models import GroundwaterMonitoringNet
 class FormationResistanceDossier(models.Model):
     id = models.AutoField(primary_key=True)
     frd_bro_id = models.CharField(
-        max_length=200, null=True, blank=True, editable=True, verbose_name="Bro-ID FRD"
+        max_length=200, null=True, blank=True, editable=False, verbose_name="Bro-ID FRD"
     )
     delivery_accountable_party = models.CharField(
         max_length=200, null=True, blank=False,
@@ -293,6 +293,7 @@ class FormationresistanceRecord(models.Model):
         verbose_name_plural = "Formationresistance Records"
 
 class FrdSyncLog(models.Model):
+    synced = models.BooleanField(default=False)
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
@@ -308,6 +309,7 @@ class FrdSyncLog(models.Model):
     delivery_status = models.IntegerField(choices=LEVERINGSTATUS_CHOICES, null=True, blank=True, default = 0)
     delivery_status_info = models.CharField(max_length=254, null=True, blank=True)
     delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    
         
     def __str__(self):
         return f"{self.event_type}_{self.frd.object_id_accountable_party}_log"

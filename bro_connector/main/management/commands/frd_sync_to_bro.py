@@ -351,6 +351,8 @@ class FrdStartregistration:
                 "delivery_status_info":delivery_status_info.json()["brondocuments"][0]["status"],
                 "comments":"Startregistration request approved",
                 "process_status":"delivery_approved",
+                "bro_id":delivery_status_info.json()["brondocuments"][0]["broId"],
+                "synced":True,
             },
         )
 
