@@ -3,7 +3,11 @@ import time
 
 from django.core.management.base import BaseCommand
 from bro_exchange.broxml.frd.requests import FrdStartregistrationTool
-from bro_exchange.bhp.connector import validate_sourcedoc, upload_sourcedocs_from_dict, check_delivery_status
+from bro_exchange.bhp.connector import (
+    validate_sourcedoc,
+    upload_sourcedocs_from_dict,
+    check_delivery_status,
+)
 from frd.models import FormationResistanceDossier, FrdSyncLog
 from datetime import datetime
 from main.settings.base import FRD_SETTINGS
@@ -102,9 +106,9 @@ class FrdStartregistration:
         status_function_mapping = {
             None: self.generate_xml_file,
             "failed_to_generate_startregistration_xml": self.generate_xml_file,
-            "failed_to_validate_sourcedocument":self.validate_xml_file,
+            "failed_to_validate_sourcedocument": self.validate_xml_file,
             "succesfully_generated_startregistration_xml": self.validate_xml_file,
-            "failed_to_deliver_sourcedocuments":self.deliver_xml_file,
+            "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
             "source_document_validation_succesful": self.deliver_xml_file,
             "succesfully_delivered_sourcedocuments": self.check_delivery,
         }
@@ -208,7 +212,7 @@ class FrdStartregistration:
                 },
             )
             return
-        
+
         xml_payload = self.get_xml_payload()
         xml_filename = self.frd_startregistration_log.xml_filepath.rsplit("/", 1)[-1]
         request_dict = {xml_filename: xml_payload}
@@ -266,24 +270,29 @@ class FrdStartregistration:
 
         try:
             delivery_status_info = check_delivery_status(
-                identifier = self.frd_startregistration_log.delivery_id,
-                token = self.bro_info["token"],
-                demo = self.demo,
-                api = self.api_version,
+                identifier=self.frd_startregistration_log.delivery_id,
+                token=self.bro_info["token"],
+                demo=self.demo,
+                api=self.api_version,
             )
         except Exception as e:
             update_log_obj(
-                    self.frd_startregistration_log,
-                    {
-                        "comment": f"Error occured during status check of delivery: {e}",
-                    },
-                )
+                self.frd_startregistration_log,
+                {
+                    "comment": f"Error occured during status check of delivery: {e}",
+                },
+            )
         else:
-            delivery_status = delivery_status_info.json()['status']
-            delivery_brondocument_status = delivery_status_info.json()["brondocuments"][0]["status"]
-            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
-            
-            if delivery_status == "DOORGELEVERD" and delivery_brondocument_status == "OPGENOMEN_LVBRO":
+            delivery_status = delivery_status_info.json()["status"]
+            delivery_brondocument_status = delivery_status_info.json()["brondocuments"][
+                0
+            ]["status"]
+            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
+
+            if (
+                delivery_status == "DOORGELEVERD"
+                and delivery_brondocument_status == "OPGENOMEN_LVBRO"
+            ):
                 self.finish_startregistration(delivery_status_info)
 
             elif delivery_errors:
@@ -298,8 +307,10 @@ class FrdStartregistration:
                 update_log_obj(
                     self.frd_startregistration_log,
                     {
-                        "delivery_status_info": delivery_status_info.json()["brondocuments"][0]["status"],
-                        "comments":"Startregistration request not yet approved",
+                        "delivery_status_info": delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
+                        "comments": "Startregistration request not yet approved",
                     },
                 )
 
@@ -347,7 +358,7 @@ class FrdStartregistration:
             xml_payload = file.read()
 
         return xml_payload
-    
+
     def finish_startregistration(self, delivery_status_info):
         """
         Updates the log, saves the bro_id to the frd, and removes the xml file.
@@ -356,11 +367,13 @@ class FrdStartregistration:
             self.frd_startregistration_log,
             {
                 "gmn_bro_id": delivery_status_info.json()["brondocuments"][0]["broId"],
-                "delivery_status_info":delivery_status_info.json()["brondocuments"][0]["status"],
-                "comments":"Startregistration request approved",
-                "process_status":"delivery_approved",
-                "bro_id":delivery_status_info.json()["brondocuments"][0]["broId"],
-                "synced":True,
+                "delivery_status_info": delivery_status_info.json()["brondocuments"][0][
+                    "status"
+                ],
+                "comments": "Startregistration request approved",
+                "process_status": "delivery_approved",
+                "bro_id": delivery_status_info.json()["brondocuments"][0]["broId"],
+                "synced": True,
             },
         )
 
@@ -371,7 +384,9 @@ class FrdStartregistration:
         """
         Save the Bro_Id to the FRD object
         """
-        self.frd_obj.frd_bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
+        self.frd_obj.frd_bro_id = delivery_status_info.json()["brondocuments"][0][
+            "broId"
+        ]
         self.frd_obj.save()
 
     def remove_xml_file(self):
@@ -379,8 +394,3 @@ class FrdStartregistration:
         Removes the succesfully delivered xml file.
         """
         os.remove(self.frd_startregistration_log.xml_filepath)
-
-
-
-
-    
