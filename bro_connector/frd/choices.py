@@ -48,3 +48,11 @@ QUALITY_CONTROL = (
 EVENT_TYPE_CHOICES = (
     ("FRD_StartRegistration", "FRD_StartRegistration"),
 )
+
+LEVERINGSTATUS_CHOICES = [
+     (0,"Nog niet aangeleverd"),
+     (1,"1 keer gefaald"),
+     (2,"2 keer gefaald"),
+     (3,"3 keer gefaald"),
+     (4,"Succesvol aangeleverd"),
+]

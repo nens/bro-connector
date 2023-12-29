@@ -293,7 +293,7 @@ class FormationresistanceRecord(models.Model):
         verbose_name_plural = "Formationresistance Records"
 
 class FrdSyncLog(models.Model):
-    date_modified = models.DateField(null=True, blank=True)
+    date_modified = models.CharField(max_length=254, null=True, blank=True)
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
@@ -305,7 +305,9 @@ class FrdSyncLog(models.Model):
     process_status = models.CharField(max_length=254, null=True, blank=True)
     comment = models.CharField(max_length=10000, null=True, blank=True)
     xml_filepath = models.CharField(max_length=254, null=True, blank=True)
-    
+    delivery_status = models.IntegerField(choices=LEVERINGSTATUS_CHOICES, null=True, blank=True, default = 0)
+    delivery_status_info = models.CharField(max_length=254, null=True, blank=True)
+    levering_id = models.CharField(max_length=254, null=True, blank=True)
         
     def __str__(self):
         return f"{self.event_type}_{self.frd.object_id_accountable_party}_log"
