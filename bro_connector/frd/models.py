@@ -304,6 +304,7 @@ class FrdSyncLog(models.Model):
     frd_bro_id = models.CharField(max_length=254, null=True, blank=True)
     process_status = models.CharField(max_length=254, null=True, blank=True)
     comment = models.CharField(max_length=10000, null=True, blank=True)
+    xml_filepath = models.CharField(max_length=254, null=True, blank=True)
     
         
     def __str__(self):

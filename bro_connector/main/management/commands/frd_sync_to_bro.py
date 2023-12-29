@@ -2,8 +2,10 @@ import os
 
 from django.core.management.base import BaseCommand
 from bro_exchange.broxml.frd.requests import FrdStartregistrationTool
+from bro_exchange.bhp.connector import validate_sourcedoc
 from frd.models import FormationResistanceDossier, FrdSyncLog
 from datetime import datetime
+from main.settings.base import FRD_SETTINGS
 
 #############
 ## Command ##
@@ -70,10 +72,17 @@ class FrdStartregistration:
     """
 
     def __init__(self, frd_obj):
-        self.output_dir = r"frd/xml_files/"
+        self.output_dir = "frd/xml_files/"
         self.frd_obj = frd_obj
         self.startregistration_xml_file = None
         self.frd_startregistration_log = None
+        self.demo = FRD_SETTINGS["demo"]
+        self.api_version = FRD_SETTINGS["api_version"]
+        
+        if self.demo:
+            self.bro_info = FRD_SETTINGS["bro_info_demo"]
+        else:
+            self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
 
     def sync(self):
         """
@@ -88,7 +97,8 @@ class FrdStartregistration:
         status_function_mapping = {
             None:self.generate_xml_file,
             "failed_to_generate_startregistration_xml":self.generate_xml_file,
-            "succesfully_generated_startregistration_xml":self.validate_startregistration_xml,
+            "succesfully_generated_startregistration_xml":self.validate_xml_file,
+            "source_document_validation_succesful":self.deliver_xml_file,
         }
 
         current_status = self.frd_startregistration_log.process_status
@@ -108,7 +118,9 @@ class FrdStartregistration:
             update_log_obj(
                 self.frd_startregistration_log,
                 {"process_status": "succesfully_generated_startregistration_xml",
-                    "comment":"Succesfully generated startregistration request"},
+                "comment":"Succesfully generated startregistration request",
+                "xml_filepath":self.filepath,
+                },
             )
 
         except Exception as e:
@@ -119,20 +131,53 @@ class FrdStartregistration:
             )
         
         else:
-            self.validate_startregistration_xml()
+            self.validate_xml_file()
 
-    def validate_startregistration_xml(self):
-        print('validating')
+    def validate_xml_file(self):
+        """
+        Validates the xml file, using the BRO validations service. 
+        If the xml file is VALIDE, the deliver_xml_file method is called
+        """
+        filepath = self.frd_startregistration_log.xml_filepath
+        xml_payload = open(filepath)
 
+        try:
+            validation_info = validate_sourcedoc(
+                payload = xml_payload,
+                bro_info = self.bro_info,
+                demo = self.demo,
+                api = self.api_version,
+            )
 
+        except Exception as e:
+            update_log_obj(
+                self.frd_startregistration_log,
+                {"process_status": "failed_to_validate_sourcedocument",
+                    "comment":f"Error message: {e}"},
+            )
 
+        else:
+            validation_status = validation_info["status"]
+            validation_errors = validation_info["errors"]
+            
+            if validation_status == "VALIDE":
+                update_log_obj(
+                    self.frd_startregistration_log,
+                    {"process_status": "source_document_validation_succesful",
+                        "comment":"Succesfully validated sourcedocument"},
+                )
 
+                self.deliver_xml_file()
 
+            else:
+                update_log_obj(
+                    self.frd_startregistration_log,
+                    {"process_status": "failed_to_validate_sourcedocument",
+                        "comment":f"Validation Status: {validation_status}, errors: {validation_errors}"},
+                )
 
-
-
-
-
+    def deliver_xml_file(self):
+        print('u heeft post!!')
 
     def construct_xml_tree(self):
         """
@@ -164,6 +209,7 @@ class FrdStartregistration:
 
     def save_xml_file(self):
         filename = f"startregistration_{self.frd_obj.object_id_accountable_party}.xml"
+        self.filepath = os.path.join(self.output_dir, filename)
         self.startregistration_xml_file.write(
-            os.path.join(self.output_dir, filename), pretty_print=True
+            self.filepath, pretty_print=True
         )

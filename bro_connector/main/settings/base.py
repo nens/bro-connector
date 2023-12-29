@@ -308,6 +308,26 @@ gmn_SETTINGS = {
     "closures_dir": os.path.join(BASE_DIR, "gmn/closures"),
 }
 
+FRD_SETTINGS = {
+    "bro_info_demo": {
+        "token": {
+            "user": bro_demo_user,
+            "pass": bro_demo_password,
+        },
+        "kvk_nummer": 20168636,
+    },
+    "bro_info_bro_connector": {
+        "token": {
+            "user": bro_production_user,
+            "pass": bro_production_password,
+        },
+        "kvk_nummer": None,
+    },
+    "demo": demo,
+    "api_version": "v1",
+}
+
+
 # Quick Scan SETTINGS
 QUICK_SCAN_SETTINGS = {
     "jump_slope_limit": 1 / (60 * 60),  # m/s (1/3600 m/s = 1 m/h)
