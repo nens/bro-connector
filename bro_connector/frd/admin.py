@@ -179,4 +179,4 @@ _register(FormationresistanceSeries, FormationresistanceSeriesAdmin)
 _register(ElectromagneticSeries, ElectromagneticSeriesAdmin)
 _register(ElectromagneticRecord, ElectromagneticRecordAdmin)
 _register(FormationresistanceRecord, FormationresistanceRecordAdmin)
-_register(FrdSyncLog,FrdSyncLogAdmin)ru
+_register(FrdSyncLog,FrdSyncLogAdmin)

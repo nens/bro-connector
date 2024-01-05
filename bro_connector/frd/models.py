@@ -373,7 +373,7 @@ class FormationresistanceRecord(models.Model):
 
 class FrdSyncLog(models.Model):
     synced = models.BooleanField(default=False)
-    date_modified = models.CharField(max_length=254, null=True, blank=True)
+    date_modified = models.DateTimeField(auto_now=True)
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
