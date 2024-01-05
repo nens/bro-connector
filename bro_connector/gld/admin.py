@@ -74,7 +74,6 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
     )
 
 
-
 class MeasurementTvpAdmin(admin.ModelAdmin):
 
     list_display = (
@@ -87,8 +86,8 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "corrected_value",
         "correction_time",
         "correction_reason",
-        #"measurement_point_metadata_id",
-        "measurement_point_metadata"
+        # "measurement_point_metadata_id",
+        "measurement_point_metadata",
     )
     list_filter = (
         "measurement_time",
@@ -102,8 +101,8 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "corrected_value",
         "correction_time",
         "correction_reason",
-        #"measurement_point_metadata_id",
-        "measurement_point_metadata"
+        # "measurement_point_metadata_id",
+        "measurement_point_metadata",
     )
 
 
@@ -115,7 +114,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_starttime",
         "observation_endtime",
         "observation_metadata_id",
-        "observation_process",#
+        "observation_process",  #
         "groundwater_level_dossier_id",
         "result_time",
         "status",
@@ -126,7 +125,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_starttime",
         "observation_endtime",
         "observation_metadata_id",
-        "observation_process",#
+        "observation_process",  #
         "groundwater_level_dossier_id",
         "result_time",
         "status",
@@ -235,9 +234,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
@@ -283,9 +280,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     def deliver_startregistration_sourcedocument(self, request, queryset):
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
@@ -332,9 +327,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
@@ -436,9 +429,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
 
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
@@ -477,9 +468,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     def deliver_sourcedocuments(self, request, queryset):
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
@@ -517,9 +506,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     def check_status_delivery(self, request, queryset):
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
@@ -576,7 +563,6 @@ _register(models.Observation, ObservationAdmin)
 
 _register(models.gld_registration_log, gld_registration_logAdmin)
 _register(models.gld_addition_log, gld_addition_log_Admin)
-
 
 
 admin.site.site_header = "BRO connector"

@@ -9,7 +9,6 @@ from django.db import models
 from .choices import *
 
 
-
 #%% GLD Models
 
 
@@ -24,7 +23,7 @@ class GroundwaterLevelDossier(models.Model):
     research_last_correction = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return('{}'.format(str(self.gld_bro_id)))
+        return "{}".format(str(self.gld_bro_id))
 
     class Meta:
         managed = True
@@ -32,15 +31,22 @@ class GroundwaterLevelDossier(models.Model):
         verbose_name = "Grondwaterstand dossier"
         verbose_name_plural = "Grondwaterstand dossiers"
 
+
 class Observation(models.Model):
-    observation_id=models.AutoField(primary_key=True, null=False,blank=False)
+    observation_id = models.AutoField(primary_key=True, null=False, blank=False)
     observationperiod = models.DurationField(blank=True, null=True)
     observation_starttime = models.DateTimeField(blank=True, null=True)
     result_time = models.DateTimeField(blank=True, null=True)
     observation_endtime = models.DateTimeField(blank=True, null=True)
-    observation_metadata = models.ForeignKey('ObservationMetadata' , on_delete = models.CASCADE, null = True, blank = True)
-    observation_process = models.ForeignKey('ObservationProcess', on_delete = models.CASCADE, null = True, blank = True)
-    groundwater_level_dossier = models.ForeignKey('GroundwaterLevelDossier', on_delete = models.CASCADE, null = True, blank = True)
+    observation_metadata = models.ForeignKey(
+        "ObservationMetadata", on_delete=models.CASCADE, null=True, blank=True
+    )
+    observation_process = models.ForeignKey(
+        "ObservationProcess", on_delete=models.CASCADE, null=True, blank=True
+    )
+    groundwater_level_dossier = models.ForeignKey(
+        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
+    )
     status = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
@@ -48,25 +54,24 @@ class Observation(models.Model):
         try:
             starttime = str(self.observation_starttime.date())
         except:
-            starttime = '?'
+            starttime = "?"
 
         try:
             endtime = str(self.observation_endtime.date())
         except:
-            endtime = '?'
+            endtime = "?"
 
         try:
             dossier = str(self.groundwater_level_dossier.gld_bro_id)
         except:
-            dossier = 'Registratie onbekend'
+            dossier = "Registratie onbekend"
 
         try:
             status = str(self.observation_metadata.status)
         except:
-            status = 'Status onbekend'
+            status = "Status onbekend"
 
-        return('{}, {}, {} - {}'.format(dossier, status, starttime, endtime))
-
+        return "{}, {}, {} - {}".format(dossier, status, starttime, endtime)
 
     class Meta:
         managed = True
@@ -74,23 +79,24 @@ class Observation(models.Model):
         verbose_name = "Observatie"
         verbose_name_plural = "Observaties"
 
+
 class ObservationMetadata(models.Model):
     observation_metadata_id = models.AutoField(primary_key=True)
     date_stamp = models.DateField(blank=True, null=True)
     observation_type = models.CharField(
-        choices=OBSERVATIONTYPE,
-        max_length=200,
-        blank=True, null=True
-    )     
-    status = models.CharField(
-        choices=STATUSCODE,
-        max_length=200,
-        blank=True, null=True
+        choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True
     )
-    responsible_party = models.ForeignKey('ResponsibleParty', on_delete = models.CASCADE, null = True, blank = True)
+    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True)
+    responsible_party = models.ForeignKey(
+        "ResponsibleParty", on_delete=models.CASCADE, null=True, blank=True
+    )
 
     def __str__(self):
-        return('{}, {}, {}'.format(str(self.date_stamp),str(self.status),self.responsible_party.organisation_name))
+        return "{}, {}, {}".format(
+            str(self.date_stamp),
+            str(self.status),
+            self.responsible_party.organisation_name,
+        )
 
     class Meta:
         managed = True
@@ -102,33 +108,23 @@ class ObservationMetadata(models.Model):
 class ObservationProcess(models.Model):
     observation_process_id = models.AutoField(primary_key=True)
     process_reference = models.CharField(
-        choices=PROCESSREFERENCE,
-        max_length=200,
-        blank=True, null=True
-    )     
+        choices=PROCESSREFERENCE, max_length=200, blank=True, null=True
+    )
     measurement_instrument_type = models.CharField(
-        choices=MEASUREMENTINSTRUMENTTYPE,
-        max_length=200,
-        blank=True, null=True
-    )     
+        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=True, null=True
+    )
     air_pressure_compensation_type = models.CharField(
-        choices=AIRPRESSURECOMPENSATIONTYPE,
-        max_length=200,
-        blank=True, null=True
-    )     
+        choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True
+    )
     process_type = models.CharField(
-        choices=PROCESSTYPE,
-        max_length=200,
-        blank=True, null=True
-    )     
+        choices=PROCESSTYPE, max_length=200, blank=True, null=True
+    )
     evaluation_procedure = models.CharField(
-        choices=EVALUATIONPROCEDURE,
-        max_length=200,
-        blank=True, null=True
-    )     
+        choices=EVALUATIONPROCEDURE, max_length=200, blank=True, null=True
+    )
 
     def __str__(self):
-        return(str(self.observation_process_id))
+        return str(self.observation_process_id)
 
     class Meta:
         managed = True
@@ -136,10 +132,13 @@ class ObservationProcess(models.Model):
         verbose_name = "Observatie Process"
         verbose_name_plural = "Observatie Process"
 
+
 # MEASUREMENT TIME VALUE PAIR
 class MeasurementTvp(models.Model):
     measurement_tvp_id = models.AutoField(primary_key=True)
-    observation = models.ForeignKey(Observation, on_delete=models.CASCADE, null = True, blank = True)
+    observation = models.ForeignKey(
+        Observation, on_delete=models.CASCADE, null=True, blank=True
+    )
     measurement_time = models.DateTimeField(blank=True, null=True)
     field_value = models.DecimalField(
         max_digits=25, decimal_places=3, blank=True, null=True
@@ -151,9 +150,11 @@ class MeasurementTvp(models.Model):
     corrected_value = models.DecimalField(
         max_digits=25, decimal_places=5, blank=True, null=True
     )
-    correction_time = models.DateTimeField(blank=True, null=True) 
+    correction_time = models.DateTimeField(blank=True, null=True)
     correction_reason = models.CharField(max_length=255, blank=True, null=True)
-    measurement_point_metadata = models.ForeignKey('MeasurementPointMetadata', on_delete = models.CASCADE, null = True, blank = True)
+    measurement_point_metadata = models.ForeignKey(
+        "MeasurementPointMetadata", on_delete=models.CASCADE, null=True, blank=True
+    )
 
     class Meta:
         managed = True
@@ -161,26 +162,21 @@ class MeasurementTvp(models.Model):
         verbose_name = "Metingen Tijd-Waarde paren"
         verbose_name_plural = "Metingen Tijd-Waarde paren"
 
+
 class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
     qualifier_by_category = models.CharField(
-        choices=STATUSQUALITYCONTROL,
-        max_length=200,
-        blank=True, null=True
-    ) 
+        choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True
+    )
     censored_reason = models.CharField(
-        choices=CENSORREASON,
-        max_length=200,
-        blank=True, null=True
-    ) 
+        choices=CENSORREASON, max_length=200, blank=True, null=True
+    )
     qualifier_by_quantity = models.DecimalField(
         max_digits=100, decimal_places=10, blank=True, null=True
     )
     interpolation_code = models.CharField(
-        choices=INTERPOLATIONTYPE,
-        max_length=200,
-        blank=True, null=True
-    )     
+        choices=INTERPOLATIONTYPE, max_length=200, blank=True, null=True
+    )
 
     class Meta:
         managed = True
@@ -192,7 +188,7 @@ class MeasurementPointMetadata(models.Model):
 
 class ResponsibleParty(models.Model):
     responsible_party_id = models.AutoField(primary_key=True)
-    identification = models.IntegerField(blank=True, null=True) 
+    identification = models.IntegerField(blank=True, null=True)
     organisation_name = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:

@@ -61,11 +61,14 @@ INSTALLED_APPS = [
 MAP_WIDGETS = {
     "GooglePointFieldWidget": (
         ("zoom", 15),
-        #("mapCenterLocationName", "london"),
-        ("GooglePlaceAutocompleteOptions", {'componentRestrictions': {'country': 'netherlands'}}),
+        # ("mapCenterLocationName", "london"),
+        (
+            "GooglePlaceAutocompleteOptions",
+            {"componentRestrictions": {"country": "netherlands"}},
+        ),
         ("markerFitZoom", 12),
     ),
-    "GOOGLE_MAP_API_KEY": "<google-api-key>"
+    "GOOGLE_MAP_API_KEY": "<google-api-key>",
 }
 
 MIDDLEWARE = [
@@ -164,15 +167,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 ADMIN_REORDER = (
-    
     {
         "app": "gmn",
-        "label": "Grondwatermonitoringnet (GMN)", 
+        "label": "Grondwatermonitoringnet (GMN)",
         "models": (
             "gmn.GroundwaterMonitoringNet",
             "gmn.MeasuringPoint",
             "gmn.IntermediateEvent",
-            "gmn.gmn_bro_sync_log"
+            "gmn.gmn_bro_sync_log",
         ),
     },
     {
@@ -192,7 +194,7 @@ ADMIN_REORDER = (
     },
     {
         "app": "gld",
-        "label": "Grondwaterstandsonderzoek (GLD)", 
+        "label": "Grondwaterstandsonderzoek (GLD)",
         "models": (
             "gld.Observation",
             "gld.GroundwaterLevelDossier",
@@ -213,11 +215,8 @@ ADMIN_REORDER = (
             "gld.TypeStatusQualityControl",
             "gld.gld_registration_log",
             "gld.gld_addition_log",
-
         ),
     },
-
-    
     {
         "app": "frd",
         "label": "Formatieweestand (FRD)",
@@ -240,10 +239,10 @@ ADMIN_REORDER = (
 
 if ENVIRONMENT == "production":
     demo = False
-    welcome_sign = 'Inloggen'
+    welcome_sign = "Inloggen"
 else:
     demo = True
-    welcome_sign = 'Inloggen (testomgeving)'
+    welcome_sign = "Inloggen (testomgeving)"
 
 # # BROCONVERTER SETTINGS
 gld_SETTINGS = {
@@ -258,9 +257,7 @@ gld_SETTINGS = {
     "monitoringnetworks": None,
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gld/additions"),
-    "startregistrations_dir": os.path.join(
-        BASE_DIR, "gld/startregistrations"
-    ),
+    "startregistrations_dir": os.path.join(BASE_DIR, "gld/startregistrations"),
     "api_version": "v1",
 }
 
@@ -280,9 +277,7 @@ gmw_SETTINGS = {
         "kvk_nummer": 20168636,
     },
     "demo": demo,
-    "registrations_dir": os.path.join(
-        BASE_DIR, "gmw\\registrations"
-    ),
+    "registrations_dir": os.path.join(BASE_DIR, "gmw\\registrations"),
     "api_version": "v1",
 }
 
@@ -292,7 +287,7 @@ gmn_SETTINGS = {
             "user": bro_demo_user,
             "pass": bro_demo_password,
         },
-        "projectnummer":None,
+        "projectnummer": None,
     },
     "acces_token_bro_portal_bro_connector": {
         "user": bro_production_user,
@@ -301,9 +296,7 @@ gmn_SETTINGS = {
     "monitoringnetworks": None,
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gmn/additions"),
-    "registrations_dir": os.path.join(
-        BASE_DIR, "gmn\\registrations"
-    ),
+    "registrations_dir": os.path.join(BASE_DIR, "gmn\\registrations"),
     "removals_dir": os.path.join(BASE_DIR, "gmn/removals"),
     "closures_dir": os.path.join(BASE_DIR, "gmn/closures"),
 }
@@ -380,26 +373,25 @@ JAZZMIN_SETTINGS = {
         "gmw.ElectrodeStatic": "fas fa-bolt",
         "gmw.ElectrodeDynamic": "fas fa-bolt",
         "gmw.Event": "fas fa-book-open",
-        "gmn.GroundwaterMonitoringNet":"fas fa-project-diagram",
-        "gmn.MeasuringPoint":"fas fa-ruler-vertical",
-        "gmn.IntermediateEvent":"fas fa-calendar",
-        "gmn.gmn_bro_sync_log":"fas fa-sync",
-        "frd.FormationResistanceDossier":"fas fa-solid fa-folder",
-        "frd.InstrumentConfiguration":"fas fa-server",
-        "frd.ElectromagneticMeasurementMethod":"fas fa-book-open",
-        "frd.GeoOhmMeasurementMethod":"fas fa-book-open",
-        "frd.GeoOhmMeasurementValue":"fas fa-chart-line",
-        "frd.GMWElectrodeReference":"fas fa-external-link-alt",
-        "frd.ElectrodePair":"fas fa-vials",
-        "frd.MeasurementConfiguration":"fas fa-server",
-        "frd.ElectromagneticSeries":"fas fa-book-open",
-        "frd.FormationresistanceSeries":"fas fa-book-open",
-        "frd.ElectromagneticRecord":"fas fa-chart-line",
-        "frd.FormationresistanceRecord":"fas fa-chart-line",
-
+        "gmn.GroundwaterMonitoringNet": "fas fa-project-diagram",
+        "gmn.MeasuringPoint": "fas fa-ruler-vertical",
+        "gmn.IntermediateEvent": "fas fa-calendar",
+        "gmn.gmn_bro_sync_log": "fas fa-sync",
+        "frd.FormationResistanceDossier": "fas fa-solid fa-folder",
+        "frd.InstrumentConfiguration": "fas fa-server",
+        "frd.ElectromagneticMeasurementMethod": "fas fa-book-open",
+        "frd.GeoOhmMeasurementMethod": "fas fa-book-open",
+        "frd.GeoOhmMeasurementValue": "fas fa-chart-line",
+        "frd.GMWElectrodeReference": "fas fa-external-link-alt",
+        "frd.ElectrodePair": "fas fa-vials",
+        "frd.MeasurementConfiguration": "fas fa-server",
+        "frd.ElectromagneticSeries": "fas fa-book-open",
+        "frd.FormationresistanceSeries": "fas fa-book-open",
+        "frd.ElectromagneticRecord": "fas fa-chart-line",
+        "frd.FormationresistanceRecord": "fas fa-chart-line",
         # "gmw.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
     },
-    "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"}
+    "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
 }
 
 

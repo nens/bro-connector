@@ -527,9 +527,7 @@ class Command(BaseCommand):
 
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"

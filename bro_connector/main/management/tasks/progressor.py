@@ -1,6 +1,6 @@
 class Progress:
     start = 0
-    end   = 0
+    end = 0
     update_interval = 25
     timer = start
 

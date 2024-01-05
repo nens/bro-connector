@@ -32,7 +32,9 @@ class Command(BaseCommand):
             return
         else:
             print(f"Het meetnet {meetnet_naam} wordt aangemaakt.")
-            new_gmn_obj = GroundwaterMonitoringNet(name=meetnet_naam, deliver_to_bro=True)
+            new_gmn_obj = GroundwaterMonitoringNet(
+                name=meetnet_naam, deliver_to_bro=True
+            )
             new_gmn_obj.save()
 
         # Haal all Filters op en maak hiervoor Measuring points aan
@@ -46,7 +48,7 @@ class Command(BaseCommand):
             measuring_point = MeasuringPoint(
                 gmn=new_gmn_obj,
                 groundwater_monitoring_tube=tube,
-                added_to_gmn_date=date.today()
+                added_to_gmn_date=date.today(),
             )
             measuring_point.save()
 

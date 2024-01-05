@@ -30,4 +30,3 @@ DATABASES = {
         "OPTIONS": {"options": "-c search_path=django_admin"},
     }
 }
-

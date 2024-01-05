@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 from main.settings.base import gld_SETTINGS
 from gld import models
 
-field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
+field_value_division_dict = {"cm": 100, "mm": 1000, "m": 1}
 
 
 def grouper(n, iterable):
@@ -185,12 +185,17 @@ def get_observation_metadata(observation_metadata_id):
         observation_type_data.value
     )  # value = reguliereMeting or controlemeting
 
-    type_status_data = models.TypeStatusCode.objects.get(id=observation_metadata.status_id)
+    type_status_data = models.TypeStatusCode.objects.get(
+        id=observation_metadata.status_id
+    )
     status = type_status_data.value  # value = onbekend, voorlopig or volledigBeoordeeld
 
     date_stamp = observation_metadata.date_stamp.isoformat()
 
-    observation_metadata = {"observationType": observation_type_value, 'principalInvestigator':investigator_identification}
+    observation_metadata = {
+        "observationType": observation_type_value,
+        "principalInvestigator": investigator_identification,
+    }
 
     return observation_metadata, status, date_stamp, investigator_identification
 
@@ -273,7 +278,6 @@ def get_observation_gld_source_document_data(observation):
     # Get the GLD registration id for this measurement timeseries
     # Check which parts of the observation have already been succesfully delivered
 
-
     # Get the observation metadata and procedure data
     (
         observation_metadata,
@@ -340,7 +344,7 @@ def get_gld_registration_data_for_observation(observation):
     # Get the quality regime for the well
     # TODO quality regime changes, new well in database?
     gmw_well = models.GroundwaterMonitoringWells.objects.get(bro_id=gmw_bro_id)
-    quality_regime = 'IMBRO' #gmw_well.quality_regime
+    quality_regime = "IMBRO"  # gmw_well.quality_regime
 
     return gld_bro_id, quality_regime
 
@@ -498,8 +502,6 @@ def create_addition_sourcedocuments_for_observations(
         ).exists():
             continue
 
-
-
         # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
         if not models.GroundwaterLevelDossier.objects.get(
             groundwater_level_dossier_id=gld_id_database
@@ -512,7 +514,6 @@ def create_addition_sourcedocuments_for_observations(
         if not observation_tvps:  # if there are no tvps in the observation
             continue  # then do nothing
 
-        
         # observation contains tvps, check observation status and type
         # Get the observation metadata
         observation_metadata_id = observation.observation_metadata_id
@@ -590,9 +591,7 @@ class Command(BaseCommand):
 
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"

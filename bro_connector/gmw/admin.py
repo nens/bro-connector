@@ -11,8 +11,10 @@ from . import models
 from main.settings.base import gmw_SETTINGS
 from . import forms
 
+
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
+
 
 def get_searchable_fields(model_class):
     return [
@@ -20,6 +22,7 @@ def get_searchable_fields(model_class):
         for f in model_class._meta.fields
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
+
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
@@ -55,53 +58,65 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     list_filter = ("delivery_accountable_party", "nitg_code", "in_management")
 
     fieldsets = [
-        ('', {
-            'fields': [        
-                "registration_object_type",
-                "bro_id",
-                "request_reference",
-                "delivery_accountable_party",
-                "delivery_responsible_party",
-                "quality_regime",
-                "under_privilege",
-                "delivery_context",
-                "construction_standard",
-                "initial_function",
-                "nitg_code",
-                "olga_code",
-                "well_code",
-                "monitoring_pdok_id",
-                "horizontal_positioning_method",
-                "local_vertical_reference_point",
-                "well_offset",
-                "vertical_datum",
-                "last_horizontal_positioning_date",
-                "in_management",
-                        ],
-        }),
-        ('Coordinates', {
-            'fields': ['x', 'y'],
-        }),
-        ('Construction Coordinates', {
-            'fields': ['cx', 'cy'],
-        }),
+        (
+            "",
+            {
+                "fields": [
+                    "registration_object_type",
+                    "bro_id",
+                    "request_reference",
+                    "delivery_accountable_party",
+                    "delivery_responsible_party",
+                    "quality_regime",
+                    "under_privilege",
+                    "delivery_context",
+                    "construction_standard",
+                    "initial_function",
+                    "nitg_code",
+                    "olga_code",
+                    "well_code",
+                    "monitoring_pdok_id",
+                    "horizontal_positioning_method",
+                    "local_vertical_reference_point",
+                    "well_offset",
+                    "vertical_datum",
+                    "last_horizontal_positioning_date",
+                    "in_management",
+                ],
+            },
+        ),
+        (
+            "Coordinates",
+            {
+                "fields": ["x", "y"],
+            },
+        ),
+        (
+            "Construction Coordinates",
+            {
+                "fields": ["cx", "cy"],
+            },
+        ),
     ]
 
     def save_model(self, request, obj, form, change):
         # Haal de waarden van de afgeleide attributen op uit het formulier
-        x = form.cleaned_data['x']
-        y = form.cleaned_data['y']
+        x = form.cleaned_data["x"]
+        y = form.cleaned_data["y"]
 
-        cx = form.cleaned_data['cx']
-        cy = form.cleaned_data['cy']
+        cx = form.cleaned_data["cx"]
+        cy = form.cleaned_data["cy"]
 
         # Werk de waarden van de afgeleide attributen bij in het model
         obj.coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
-        if cx != '' and cy != '':
-            obj.construction_coordinates = GEOSGeometry(f"POINT ({cx} {cy})", srid=28992)
+        if cx != "" and cy != "":
+            obj.construction_coordinates = GEOSGeometry(
+                f"POINT ({cx} {cy})", srid=28992
+            )
 
         # Sla het model op
         obj.save()
+
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
@@ -126,7 +141,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
     form = forms.GroundwaterMonitoringTubesStaticForm
-    
+
     list_display = (
         "groundwater_monitoring_tube_static_id",
         "groundwater_monitoring_well",
@@ -143,10 +158,11 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
     )
     list_filter = ("deliver_gld_to_bro",)
 
+
 class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
     form = forms.GroundwaterMonitoringTubesDynamicForm
-    
+
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static_id",
@@ -164,10 +180,11 @@ class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
     )
     list_filter = ("groundwater_monitoring_tube_static_id",)
 
+
 class GeoOhmCableAdmin(admin.ModelAdmin):
 
     form = forms.GeoOhmCableForm
-    
+
     list_display = (
         "geo_ohm_cable_id",
         "groundwater_monitoring_tube_static_id",
@@ -175,10 +192,11 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
     )
     list_filter = ("groundwater_monitoring_tube_static_id",)
 
+
 class ElectrodeStaticAdmin(admin.ModelAdmin):
 
     form = forms.ElectrodeStaticForm
-    
+
     list_display = (
         "electrode_static_id",
         "geo_ohm_cable_id",
@@ -187,10 +205,11 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
     )
     list_filter = ("electrode_static_id",)
 
+
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
     form = forms.ElectrodeDynamicForm
-    
+
     list_display = (
         "electrode_dynamic_id",
         "electrode_static_id",
@@ -199,10 +218,11 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
     )
     list_filter = ("electrode_dynamic_id",)
 
+
 class EventAdmin(admin.ModelAdmin):
 
     form = forms.EventForm
-    
+
     list_display = (
         "change_id",
         "event_name",
@@ -213,38 +233,36 @@ class EventAdmin(admin.ModelAdmin):
     )
     list_filter = ("change_id",)
 
+
 class PictureAdmin(admin.ModelAdmin):
 
-    list_display = (
-
-    )
+    list_display = ()
     list_filter = (
         "groundwater_monitoring_well",
         "recording_date",
     )
 
+
 class MaintenancePartyAdmin(admin.ModelAdmin):
 
-    list_display = (
-
-    )
+    list_display = ()
     list_filter = (
-        'organisation',
-        'postal_code',
-        'function',
+        "organisation",
+        "postal_code",
+        "function",
     )
+
 
 class MaintenanceAdmin(admin.ModelAdmin):
 
-    list_display = (
-
-    )
+    list_display = ()
     list_filter = (
-        'kind_of_maintenance',
-        'groundwater_monitoring_well',
-        'execution_date',
-        'reporter',
+        "kind_of_maintenance",
+        "groundwater_monitoring_well",
+        "execution_date",
+        "reporter",
     )
+
 
 class XMLImportAdmin(admin.ModelAdmin):
     list_display = (
@@ -271,43 +289,49 @@ class XMLImportAdmin(admin.ModelAdmin):
             # If a new csv is set into the ConstructieImport row.
             obj.imported = False
             obj.checked = False
-            obj.report = obj.report + f"\nswitched the csv file from {file} to {obj.file}."
+            obj.report = (
+                obj.report + f"\nswitched the csv file from {file} to {obj.file}."
+            )
             super(XMLImportAdmin, self).save_model(request, obj, form, change)
 
-        else:        
+        else:
             super(XMLImportAdmin, self).save_model(request, obj, form, change)
 
     def update_database(self, request, QuerySet):
         for object in QuerySet:
-            if str(object.file).endswith('xml'):
+            if str(object.file).endswith("xml"):
                 print("Handling XML file")
                 (completed, message) = xml_import.import_xml(object.file, ".")
                 object.checked = True
                 object.imported = completed
                 object.report += message
                 object.save()
-            
-            elif str(object.file).endswith('zip'):
+
+            elif str(object.file).endswith("zip"):
                 print("Handling ZIP file")
                 # First unpack the zip
-                with ZipFile(object.file, 'r') as zip:
+                with ZipFile(object.file, "r") as zip:
                     zip.printdir()
                     zip.extractall(path=f"./{object.name}/")
-                
+
                 # Remove constructies/ and .zip from the filename
-                file_name = str(object.file)[13:-4] 
+                file_name = str(object.file)[13:-4]
                 print(file_name)
-                
+
                 path = f"."
 
                 for file in os.listdir(path):
-                    if file.endswith('csv'):
-                        print(f"Bulk import of filetype of {file} not yet supported not yet supported.")
-                        object.report += f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                    if file.endswith("csv"):
+                        print(
+                            f"Bulk import of filetype of {file} not yet supported not yet supported."
+                        )
+                        object.report += (
+                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                        )
                         object.save()
                         pass
 
-                    elif file.endswith('xml'):
+                    elif file.endswith("xml"):
                         (completed, message) = xml_import.import_xml(file, path)
                         object.checked = True
                         object.imported = completed
@@ -315,14 +339,23 @@ class XMLImportAdmin(admin.ModelAdmin):
                         object.save()
 
                     else:
-                        object.report += f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                        object.report += (
+                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
+                        )
                         object.save()
+
 
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
 _register(models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
-_register(models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin)
-_register(models.GroundwaterMonitoringTubesStatic, GroundwaterMonitoringTubesStaticAdmin)
-_register(models.GroundwaterMonitoringTubesDynamic, GroundwaterMonitoringTubesDynamicAdmin)
+_register(
+    models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
+)
+_register(
+    models.GroundwaterMonitoringTubesStatic, GroundwaterMonitoringTubesStaticAdmin
+)
+_register(
+    models.GroundwaterMonitoringTubesDynamic, GroundwaterMonitoringTubesDynamicAdmin
+)
 _register(models.GeoOhmCable, GeoOhmCableAdmin)
 _register(models.ElectrodeStatic, ElectrodeStaticAdmin)
 _register(models.ElectrodeDynamic, ElectrodeDynamicAdmin)

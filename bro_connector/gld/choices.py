@@ -43,19 +43,23 @@ AIRPRESSURECOMPENSATIONTYPE = (
     ("onbekend", "onbekend"),
 )
 
-PROCESSTYPE = (
-    ("algoritme", "algoritme"),
-)
+PROCESSTYPE = (("algoritme", "algoritme"),)
 
 EVALUATIONPROCEDURE = (
     ("brabantWater2013", "brabantWater2013"),
     ("eijkelkampDataValidatiev0.0.9", "eijkelkampDataValidatiev0.0.9"),
     ("oordeelDeskundige", "oordeelDeskundige"),
-    ("PMBProtocolDatakwaliteitscontroleQC2018v2.0", "PMBProtocolDatakwaliteitscontroleQC2018v2.0"),
+    (
+        "PMBProtocolDatakwaliteitscontroleQC2018v2.0",
+        "PMBProtocolDatakwaliteitscontroleQC2018v2.0",
+    ),
     ("RWSAATGrondwaterv1.0", "RWSAATGrondwaterv1.0"),
     ("validatieprocedureEvidesWaterbedrijf", "validatieprocedureEvidesWaterbedrijf"),
     ("vitensBeoordelingsprotocolGrondwater", "vitensBeoordelingsprotocolGrondwater"),
-    ("warecoWaterDataValidatieProtocolv20200219", "warecoWaterDataValidatieProtocolv20200219"),
+    (
+        "warecoWaterDataValidatieProtocolv20200219",
+        "warecoWaterDataValidatieProtocolv20200219",
+    ),
     ("waternetBeoordelingsprocedure", "waternetBeoordelingsprocedure"),
     ("onbekend", "onbekend"),
 )
@@ -85,6 +89,4 @@ CENSORREASON = (
     ("onbekend", "onbekend"),
 )
 
-INTERPOLATIONTYPE = (
-    ("discontinu", "discontinu"),
-)
+INTERPOLATIONTYPE = (("discontinu", "discontinu"),)
