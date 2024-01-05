@@ -208,7 +208,7 @@ class FrdStartregistration:
             update_log_obj(
                 self.frd_startregistration_log,
                 {
-                    "comment": f"The delivery of the xml file has failed 3 times. Please check manually what's going on, and reset the delivery status on 'Nog niet aangeleverd'",
+                    "comment": "The delivery of the xml file has failed 3 times. Please check manually what's going on, and reset the delivery status on 'Nog niet aangeleverd'",
                 },
             )
             return

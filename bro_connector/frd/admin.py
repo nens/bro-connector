@@ -164,7 +164,6 @@ class FrdSyncLogAdmin(admin.ModelAdmin):
         "event_type",
         "synced",
         "process_status",
-        "frd",
     )
 
 
