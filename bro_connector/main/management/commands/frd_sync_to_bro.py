@@ -100,14 +100,14 @@ class FrdStartregistration:
             self.save_xml_file()
 
         except Exception as e:
-            self.frd_startregistration_log["process_status"] = "failed_to_generate_startregistration_xml"
-            self.frd_startregistration_log["comment"] = f"Error message: {e}",
+            self.frd_startregistration_log.process_status = "failed_to_generate_startregistration_xml"
+            self.frd_startregistration_log.comment = f"Error message: {e}",
             self.frd_startregistration_log.save()
 
         else:
-            self.frd_startregistration_log["process_status"] = "succesfully_generated_startregistration_xml"
-            self.frd_startregistration_log["comment"] = "Succesfully generated startregistration request"
-            self.frd_startregistration_log["xml_filepath"] = self.filepath
+            self.frd_startregistration_log.process_status = "succesfully_generated_startregistration_xml"
+            self.frd_startregistration_log.comment = "Succesfully generated startregistration request"
+            self.frd_startregistration_log.xml_filepath = self.filepath
             self.frd_startregistration_log.save()
 
             self.validate_xml_file()
@@ -128,8 +128,8 @@ class FrdStartregistration:
             )
 
         except Exception as e:
-            self.frd_startregistration_log["process_status"] = "failed_to_validate_sourcedocument"
-            self.frd_startregistration_log["comment"] = f"Error message: {e}"
+            self.frd_startregistration_log.process_status = "failed_to_validate_sourcedocument"
+            self.frd_startregistration_log.comment = f"Error message: {e}"
             self.frd_startregistration_log.save()
 
         else:
@@ -137,15 +137,15 @@ class FrdStartregistration:
             validation_errors = validation_info["errors"]
 
             if validation_status == "VALIDE":
-                self.frd_startregistration_log["process_status"] = "source_document_validation_succesful"
-                self.frd_startregistration_log["comment"] = "Succesfully validated sourcedocument"
+                self.frd_startregistration_log.process_status = "source_document_validation_succesful"
+                self.frd_startregistration_log.comment = "Succesfully validated sourcedocument"
                 self.frd_startregistration_log.save()
 
                 self.deliver_xml_file()
 
             else:
-                self.frd_startregistration_log["process_status"] = "failed_to_validate_sourcedocument"
-                self.frd_startregistration_log["comment"] = f"Validation Status: {validation_status}, errors: {validation_errors}"
+                self.frd_startregistration_log.process_status = "failed_to_validate_sourcedocument"
+                self.frd_startregistration_log.comment = f"Validation Status: {validation_status}, errors: {validation_errors}"
                 self.frd_startregistration_log.save()
 
 
@@ -158,7 +158,7 @@ class FrdStartregistration:
         delivery_status = self.frd_startregistration_log.delivery_status
 
         if delivery_status == 3:
-            self.frd_startregistration_log["process_status"] = "The delivery of the xml file has failed 3 times. Please check manually what's going on, and reset the delivery status on 'Nog niet aangeleverd"
+            self.frd_startregistration_log.process_status = "The delivery of the xml file has failed 3 times. Please check manually what's going on, and reset the delivery status on 'Nog niet aangeleverd"
             self.frd_startregistration_log.save()
             return
 
@@ -176,25 +176,25 @@ class FrdStartregistration:
 
         except Exception as e:
             delivery_status += 1
-            self.frd_startregistration_log["process_status"] = "failed_to_deliver_sourcedocuments"
-            self.frd_startregistration_log["comment"] = f"Error message: {e}"
-            self.frd_startregistration_log["delivery_status"] = delivery_status
+            self.frd_startregistration_log.process_status = "failed_to_deliver_sourcedocuments"
+            self.frd_startregistration_log.comment = f"Error message: {e}"
+            self.frd_startregistration_log.delivery_status = delivery_status
             self.frd_startregistration_log.save()
 
         else:
             if upload_info == "Error":
                 delivery_status += 1
-                self.frd_startregistration_log["process_status"] = "failed_to_deliver_sourcedocuments"
-                self.frd_startregistration_log["comment"] = f"Error message: {upload_info}"
-                self.frd_startregistration_log["delivery_status"] = delivery_status
+                self.frd_startregistration_log.process_status = "failed_to_deliver_sourcedocuments"
+                self.frd_startregistration_log.comment = f"Error message: {upload_info}"
+                self.frd_startregistration_log.delivery_status = delivery_status
                 self.frd_startregistration_log.save()
 
             else:
-                self.frd_startregistration_log["process_status"] = "succesfully_delivered_sourcedocuments"
-                self.frd_startregistration_log["comment"] = "Succesfully delivered startregistration xml file"
-                self.frd_startregistration_log["delivery_status"] = 4
-                self.frd_startregistration_log["delivery_status_info"] = upload_info.json()["status"]
-                self.frd_startregistration_log["delivery_id"] = upload_info.json()["identifier"]
+                self.frd_startregistration_log.process_status = "succesfully_delivered_sourcedocuments"
+                self.frd_startregistration_log.comment = "Succesfully delivered startregistration xml file"
+                self.frd_startregistration_log.delivery_status = 4
+                self.frd_startregistration_log.delivery_status_info = upload_info.json()["status"]
+                self.frd_startregistration_log.delivery_id = upload_info.json()["identifier"]
                 self.frd_startregistration_log.save()
 
                 time.sleep(10)
@@ -216,7 +216,7 @@ class FrdStartregistration:
                 api=self.api_version,
             )
         except Exception as e:
-            self.frd_startregistration_log["comment"] = f"Error occured during status check of delivery: {e}"
+            self.frd_startregistration_log.comment = f"Error occured during status check of delivery: {e}"
             self.frd_startregistration_log.save()
         else:
             delivery_status = delivery_status_info.json()["status"]
@@ -232,14 +232,14 @@ class FrdStartregistration:
                 self.finish_startregistration(delivery_status_info)
 
             elif delivery_errors:
-                self.frd_startregistration_log["comment"] = f"Found errors during the delivery check: {delivery_errors}"
+                self.frd_startregistration_log.comment = f"Found errors during the delivery check: {delivery_errors}"
                 self.frd_startregistration_log.save()
 
             else:
-                self.frd_startregistration_log["delivery_status_info"] = delivery_status_info.json()[
+                self.frd_startregistration_log.delivery_status_info = delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"]
-                self.frd_startregistration_log["comment"] = "Startregistration request not yet approved"
+                self.frd_startregistration_log.comment = "Startregistration request not yet approved"
                 self.frd_startregistration_log.save()
 
     def construct_xml_tree(self):
@@ -291,14 +291,14 @@ class FrdStartregistration:
         """
         Updates the log, saves the bro_id to the frd, and removes the xml file.
         """
-        self.frd_startregistration_log["gmn_bro_id"] = delivery_status_info.json()["brondocuments"][0]["broId"]
-        self.frd_startregistration_log["delivery_status_info"] = delivery_status_info.json()["brondocuments"][0][
+        self.frd_startregistration_log.gmn_bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
+        self.frd_startregistration_log.delivery_status_info = delivery_status_info.json()["brondocuments"][0][
                     "status"
                 ]
-        self.frd_startregistration_log["comments"] = "Startregistration request approved"
-        self.frd_startregistration_log["process_status"] = "delivery_approved"
-        self.frd_startregistration_log["bro_id"] = delivery_status_info.json()["brondocuments"][0]["broId"]
-        self.frd_startregistration_log["synced"] = True
+        self.frd_startregistration_log.comments = "Startregistration request approved"
+        self.frd_startregistration_log.process_status = "delivery_approved"
+        self.frd_startregistration_log.bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
+        self.frd_startregistration_log.synced = True
         self.frd_startregistration_log.save()
         
         self.save_bro_id(delivery_status_info)
