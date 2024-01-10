@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import *
 
+
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
@@ -18,7 +19,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "groundwater_aspect",
         "start_date_monitoring",
         "deliver_to_bro",
-        "removed_from_BRO"
+        "removed_from_BRO",
     )
     list_filter = (
         "gmn_bro_id",
@@ -39,12 +40,12 @@ class MeasuringPointAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube",
         "synced_to_bro",
         "removed_from_BRO_gmn",
-        
     )
     list_filter = (
         "gmn",
         "code",
     )
+
 
 class IntermediateEventAdmin(admin.ModelAdmin):
     list_display = (
@@ -62,6 +63,7 @@ class IntermediateEventAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
+
 class gmn_bro_sync_logAdmin(admin.ModelAdmin):
     list_display = (
         "object_id_accountable_party",
@@ -72,8 +74,9 @@ class gmn_bro_sync_logAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "object_id_accountable_party",
-        "gmn_bro_id",  
+        "gmn_bro_id",
     )
+
 
 _register(GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
 _register(MeasuringPoint, MeasuringPointAdmin)

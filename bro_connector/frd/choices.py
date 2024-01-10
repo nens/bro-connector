@@ -10,14 +10,17 @@ MEASURING_PROCEDURE = (
     ("geen", "geen"),
     ("werkinstructieWaternet", "werkinstructieWaternet"),
     ("manualOpnameZoutwachterOasen", "manualOpnameZoutwachterOasen"),
-    ("onbekend", "onbekend")
+    ("onbekend", "onbekend"),
 )
 
 ASSESSMENT_PROCEDURE = (
-    ("QCProtocolFormatieweerstandonderzoek2021", "QCProtocolFormatieweerstandonderzoek2021"),
+    (
+        "QCProtocolFormatieweerstandonderzoek2021",
+        "QCProtocolFormatieweerstandonderzoek2021",
+    ),
     ("oordeelDeskundige", "oordeelDeskundige"),
     ("vergelijkVoorgaandeMetingen", "vergelijkVoorgaandeMetingen"),
-    ("onbekend", "onbekend")
+    ("onbekend", "onbekend"),
 )
 
 ELECTRODE_STATUS = (
@@ -29,7 +32,7 @@ ELECTRODE_STATUS = (
 REGISTRATION_STATUS = (
     ("geregistreerd", "geregistreerd"),
     ("aangevuld", "aangevuld"),
-    ("voltooid", "voltooid")
+    ("voltooid", "voltooid"),
 )
 
 ASSESSMENT_TYPE = (
@@ -41,5 +44,16 @@ QUALITY_CONTROL = (
     ("afgekeurd", "afgekeurd"),
     ("goedgekeurd", "goedgekeurd"),
     ("onbeslist", "onbeslist"),
-    ("onbekend", "onbekend")
+    ("onbekend", "onbekend"),
 )
+
+
+EVENT_TYPE_CHOICES = (("FRD_StartRegistration", "FRD_StartRegistration"),)
+
+LEVERINGSTATUS_CHOICES = [
+    (0, "Nog niet aangeleverd"),
+    (1, "1 keer gefaald"),
+    (2, "2 keer gefaald"),
+    (3, "3 keer gefaald"),
+    (4, "Succesvol aangeleverd"),
+]

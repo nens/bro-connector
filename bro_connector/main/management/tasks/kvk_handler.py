@@ -1,19 +1,20 @@
 import requests
 import json
 
+
 class DataRetrieverKVK:
     def __init__(self, kvk_nummer):
         self.kvk_nummer = kvk_nummer
         self.bro_ids = []
 
     def request_bro_ids(self, type):
-        options = ['gmw', 'frd', 'gar', 'gmn', 'gld']
+        options = ["gmw", "frd", "gar", "gmn", "gld"]
         if type.lower() not in options:
             raise Exception(f"Unknown type: {type}. Use a correct option: {options}.")
 
         basis_url = "https://publiek.broservices.nl"
         kvk_verzoek = requests.get(
-             f"{basis_url}/gm/{type}/v1/bro-ids?bronhouder={str(self.kvk_nummer)}"
+            f"{basis_url}/gm/{type}/v1/bro-ids?bronhouder={str(self.kvk_nummer)}"
         )
         self.bro_ids = json.loads(kvk_verzoek.text)["broIds"]
 

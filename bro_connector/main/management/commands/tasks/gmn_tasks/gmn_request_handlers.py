@@ -1,10 +1,16 @@
-from gmn.models import gmn_bro_sync_log, IntermediateEvent, MeasuringPoint, GroundwaterMonitoringNet
+from gmn.models import (
+    gmn_bro_sync_log,
+    IntermediateEvent,
+    MeasuringPoint,
+    GroundwaterMonitoringNet,
+)
 from datetime import datetime
 from main.settings.base import gmn_SETTINGS
 
 import bro_exchange as brx
 import os
 import time
+
 
 class StartRegistrationGMN:
     """
@@ -30,9 +36,8 @@ class StartRegistrationGMN:
         gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
             gmn_bro_id=self.monitoring_network.gmn_bro_id,
             object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
-            event_type = 'GMN_StartRegistration'
+            event_type="GMN_StartRegistration",
         )
-
 
         # Create startregistration xml file if required
         if (
@@ -68,7 +73,6 @@ class StartRegistrationGMN:
         ):
             print(f"De registratie van {self.monitoring_network} word aangeleverd.")
             self.deliver_registration()
-            
 
         # If delivery failed 3 times: break the process
         if (
@@ -80,7 +84,7 @@ class StartRegistrationGMN:
                 f'De registratie van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
             )
             return
-        
+
         # Check the delivery status
         if (
             self.gmn_bro_register_log_obj.process_status
@@ -105,11 +109,15 @@ class StartRegistrationGMN:
                 quality_regime = self.monitoring_network.quality_regime
 
             # Creating measuringpoints list
-            measuringpoint_objs = MeasuringPoint.objects.filter(gmn=self.monitoring_network)
+            measuringpoint_objs = MeasuringPoint.objects.filter(
+                gmn=self.monitoring_network
+            )
 
             if not measuringpoint_objs.exists():
-                print(f"Er zijn geen meetpunten gevonden in het {self.monitoring_network}. Voeg er minimaal 1 toe, zodat de startregistratie kan starten")
-                raise Exception("No Measuringpoints found in GMN")  
+                print(
+                    f"Er zijn geen meetpunten gevonden in het {self.monitoring_network}. Voeg er minimaal 1 toe, zodat de startregistratie kan starten"
+                )
+                raise Exception("No Measuringpoints found in GMN")
 
             measuringpoints = []
 
@@ -160,11 +168,14 @@ class StartRegistrationGMN:
             )
 
             # Create a log instance for the request
-            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_register_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                event_type = 'GMN_StartRegistration',
+                event_type="GMN_StartRegistration",
                 defaults=dict(
                     comments="Succesfully generated startregistration request",
                     date_modified=datetime.now(),
@@ -175,11 +186,14 @@ class StartRegistrationGMN:
             )
 
         except Exception as e:
-            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_register_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                event_type = 'GMN_StartRegistration',
+                event_type="GMN_StartRegistration",
                 defaults=dict(
                     comments=f"Failed to create startregistration source document: {e}",
                     date_modified=datetime.now(),
@@ -193,20 +207,18 @@ class StartRegistrationGMN:
         """
         try:
             filename = self.gmn_bro_register_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["registrations_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["registrations_dir"], filename)
             payload = open(filepath)
-            
+
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, bro_info=self.acces_token_bro_portal, demo=self.demo
             )
-            
-            errors_count = len(validation_info['errors'])
+
+            errors_count = len(validation_info["errors"])
 
             validation_status = validation_info["status"]
 
-            if errors_count > 0 :
+            if errors_count > 0:
                 validation_errors = validation_info["errors"]
                 comments = f"Found errors during the validation of {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
@@ -222,7 +234,10 @@ class StartRegistrationGMN:
 
             print(comments)
 
-            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_register_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_register_log_obj.id,
                 defaults=dict(
                     comments=comments,
@@ -231,9 +246,11 @@ class StartRegistrationGMN:
                 ),
             )
 
-
         except Exception as e:
-            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_register_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_register_log_obj.id,
                 defaults=dict(
                     comments=f"Exception occured during validation of sourcedocuments: {e}",
@@ -250,14 +267,12 @@ class StartRegistrationGMN:
         try:
             # Prepare and deliver registration
             filename = self.gmn_bro_register_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["registrations_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["registrations_dir"], filename)
             payload = open(filepath)
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
@@ -267,7 +282,10 @@ class StartRegistrationGMN:
                 print(
                     f"De aanlevering van {self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
                 )
-                self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_register_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -278,10 +296,11 @@ class StartRegistrationGMN:
                 )
 
             else:
-                print(
-                    f"De levering van {self.monitoring_network} is geslaagd"
-                )
-                self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                print(f"De levering van {self.monitoring_network} is geslaagd")
+                (
+                    self.gmn_bro_register_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -295,14 +314,16 @@ class StartRegistrationGMN:
                 )
                 time.sleep(10)
 
-
         except Exception as e:
             delivery_status = str(current_delivery_status + 1)
             print(
                 f"De aanlevering van {self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
             )
 
-            self.gmn_bro_register_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_register_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_register_log_obj.id,
                 defaults={
                     "date_modified": datetime.now(),
@@ -319,18 +340,29 @@ class StartRegistrationGMN:
         try:
             delivery_status_info = brx.check_delivery_status(
                 self.gmn_bro_register_log_obj.levering_id,
-                self.acces_token_bro_portal,
-                demo = self.demo
+                self.acces_token_bro_portal["token"],
+                demo=self.demo,
             )
 
-            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
-            
-            if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
-                self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
+
+            if (
+                delivery_status_info.json()["status"] == "DOORGELEVERD"
+                and delivery_status_info.json()["brondocuments"][0]["status"]
+                == "OPGENOMEN_LVBRO"
+            ):
+                (
+                    self.gmn_bro_register_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults=dict(
-                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
+                            "broId"
+                        ],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Startregistration request approved",
                         process_status="delivery_approved",
@@ -339,70 +371,81 @@ class StartRegistrationGMN:
 
                 # Save the BRO ID to the GMN
                 GroundwaterMonitoringNet.objects.update_or_create(
-                    object_id_accountable_party = self.monitoring_network.object_id_accountable_party,
+                    object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                     defaults=dict(
-                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
+                            "broId"
+                        ],
                     ),
                 )
 
                 # Set the synced_to_bro of the event that triggered this process tot True
                 IntermediateEvent.objects.update_or_create(
-                    id = self.event.id,
+                    id=self.event.id,
                     defaults=dict(
                         synced_to_bro=True,
                     ),
                 )
 
                 # Set the synced_to_bro of all events of GMN_MeasuringPoint to True, because these measuringpoints were handled with the startregistration
-                added_measuringpoints = MeasuringPoint.objects.filter(gmn=self.monitoring_network)
+                added_measuringpoints = MeasuringPoint.objects.filter(
+                    gmn=self.monitoring_network
+                )
 
                 for added_measuringpoint in added_measuringpoints:
                     IntermediateEvent.objects.update_or_create(
-                        gmn = self.monitoring_network,
-                        measuring_point = added_measuringpoint,
+                        gmn=self.monitoring_network,
+                        measuring_point=added_measuringpoint,
                         defaults=dict(
                             synced_to_bro=True,
                         ),
                     )
 
                     MeasuringPoint.objects.update_or_create(
-                        id = added_measuringpoint.id,
+                        id=added_measuringpoint.id,
                         defaults=dict(
                             synced_to_bro=True,
                         ),
                     )
-                    
+
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_register_log_obj.file
-                filepath = os.path.join(
-                    gmn_SETTINGS["registrations_dir"], filename
-                )
+                filepath = os.path.join(gmn_SETTINGS["registrations_dir"], filename)
                 os.remove(filepath)
 
-            
             elif delivery_errors:
-                
-                self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+
+                (
+                    self.gmn_bro_register_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults=dict(
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments=f"Found errors during the check of {self.monitoring_network}: {delivery_errors}",
                     ),
                 )
-            
+
             else:
-                self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_register_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Startregistration request not yet approved",
                     ),
                 )
 
-
         except Exception as e:
-            self.gmn_bro_register_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_register_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_register_log_obj.id,
                 defaults={
                     "comments": f"Error occured during status check of delivery: {e}",
@@ -414,6 +457,7 @@ class MeasuringPointAddition:
     """
     Class to handle the addition of a Measuringpoint to a GMN.
     """
+
     def __init__(self, event, demo, acces_token_bro_portal):
         self.event = event
         self.demo = demo
@@ -438,8 +482,8 @@ class MeasuringPointAddition:
         gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
             gmn_bro_id=self.monitoring_network.gmn_bro_id,
             object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
-            event_type = 'GMN_MeasuringPoint',
-            measuringpoint = self.measuringpoint
+            event_type="GMN_MeasuringPoint",
+            measuringpoint=self.measuringpoint,
         )
 
         # Create addition xml file if required
@@ -460,7 +504,9 @@ class MeasuringPointAddition:
             "succesfully_generated_addition_request",
             "failed_to_validate_sourcedocument",
         ]:
-            print(f"De toevoeging van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd.")
+            print(
+                f"De toevoeging van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd."
+            )
 
             self.validate_registration()
 
@@ -474,9 +520,10 @@ class MeasuringPointAddition:
             == "failed_to_deliver_sourcedocuments"
             and self.gmn_bro_addition_log_obj.levering_status in ["1", "2"]
         ):
-            print(f"De registratie van de addition aan {self.monitoring_network} word aangeleverd.")
+            print(
+                f"De registratie van de addition aan {self.monitoring_network} word aangeleverd."
+            )
             self.deliver_registration()
-            
 
         # If delivery failed 3 times: break the process
         if (
@@ -488,7 +535,7 @@ class MeasuringPointAddition:
                 f'De registratie van de addition aan  {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
             )
             return
-        
+
         # Check the delivery status
         if (
             self.gmn_bro_addition_log_obj.process_status
@@ -513,13 +560,12 @@ class MeasuringPointAddition:
                 quality_regime = self.monitoring_network.quality_regime
 
             measuringpoint = {
-                    "measuringPointCode": self.measuringpoint.code,
-                    "monitoringTube": {
-                        "broId": self.measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id,
-                        "tubeNumber": self.measuringpoint.groundwater_monitoring_tube.tube_number,
-                    },   
-                }
-            
+                "measuringPointCode": self.measuringpoint.code,
+                "monitoringTube": {
+                    "broId": self.measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id,
+                    "tubeNumber": self.measuringpoint.groundwater_monitoring_tube.tube_number,
+                },
+            }
 
             # Create source docs
             srcdocdata = {
@@ -551,12 +597,15 @@ class MeasuringPointAddition:
             )
 
             # Create a log instance for the request
-            self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_addition_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                measuringpoint = self.measuringpoint,
-                event_type = 'GMN_MeasuringPoint',
+                measuringpoint=self.measuringpoint,
+                event_type="GMN_MeasuringPoint",
                 defaults=dict(
                     comments="Succesfully generated addition request",
                     date_modified=datetime.now(),
@@ -567,12 +616,15 @@ class MeasuringPointAddition:
             )
 
         except Exception as e:
-            self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_addition_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                event_type = 'GMN_MeasuringPoint',
-                measuringpoint = self.measuringpoint,
+                event_type="GMN_MeasuringPoint",
+                measuringpoint=self.measuringpoint,
                 defaults=dict(
                     comments=f"Failed to create addition source document: {e}",
                     date_modified=datetime.now(),
@@ -586,20 +638,18 @@ class MeasuringPointAddition:
         """
         try:
             filename = self.gmn_bro_addition_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["additions_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["additions_dir"], filename)
             payload = open(filepath)
-            
+
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, self.acces_token_bro_portal, self.demo
             )
-            
-            errors_count = len(validation_info['errors'])
+
+            errors_count = len(validation_info["errors"])
 
             validation_status = validation_info["status"]
 
-            if errors_count > 0 :
+            if errors_count > 0:
                 validation_errors = validation_info["errors"]
                 comments = f"Found errors during the validation of the addition to {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
@@ -615,7 +665,10 @@ class MeasuringPointAddition:
 
             print(comments)
 
-            self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_addition_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_addition_log_obj.id,
                 defaults=dict(
                     comments=comments,
@@ -624,9 +677,11 @@ class MeasuringPointAddition:
                 ),
             )
 
-
         except Exception as e:
-            self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_addition_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_addition_log_obj.id,
                 defaults=dict(
                     comments=f"Exception occured during validation of sourcedocuments: {e}",
@@ -643,14 +698,12 @@ class MeasuringPointAddition:
         try:
             # Prepare and deliver registration
             filename = self.gmn_bro_addition_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["additions_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["additions_dir"], filename)
             payload = open(filepath)
             request = {filename: payload}
-
+            print(self.acces_token_bro_portal["token"])
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
@@ -660,7 +713,10 @@ class MeasuringPointAddition:
                 print(
                     f"De addition van {self.measuringpoint} aan het {self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
                 )
-                self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_addition_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -674,7 +730,10 @@ class MeasuringPointAddition:
                 print(
                     f"De levering van de addition van {self.measuringpoint} aan het {self.monitoring_network} is geslaagd"
                 )
-                self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_addition_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -688,14 +747,16 @@ class MeasuringPointAddition:
                 )
                 time.sleep(10)
 
-
         except Exception as e:
             delivery_status = str(current_delivery_status + 1)
             print(
-                f"De additino van {self.measuringpoint} aan{self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
+                f"De addition van {self.measuringpoint} aan{self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
             )
 
-            self.gmn_bro_addition_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_addition_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_addition_log_obj.id,
                 defaults={
                     "date_modified": datetime.now(),
@@ -713,17 +774,28 @@ class MeasuringPointAddition:
             delivery_status_info = brx.check_delivery_status(
                 self.gmn_bro_addition_log_obj.levering_id,
                 self.acces_token_bro_portal,
-                demo = self.demo
+                demo=self.demo,
             )
 
-            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
-            
-            if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
-                self.gmn_bro_addition_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
+
+            if (
+                delivery_status_info.json()["status"] == "DOORGELEVERD"
+                and delivery_status_info.json()["brondocuments"][0]["status"]
+                == "OPGENOMEN_LVBRO"
+            ):
+                (
+                    self.gmn_bro_addition_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults=dict(
-                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
+                            "broId"
+                        ],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Addition request approved",
                         process_status="delivery_approved",
@@ -732,7 +804,7 @@ class MeasuringPointAddition:
 
                 # Set the synced_to_bro of the event that triggered this process to True
                 IntermediateEvent.objects.update_or_create(
-                    id = self.event.id,
+                    id=self.event.id,
                     defaults=dict(
                         synced_to_bro=True,
                     ),
@@ -740,7 +812,7 @@ class MeasuringPointAddition:
 
                 # Set measuringpoint.synced_to_bro to True
                 MeasuringPoint.objects.update_or_create(
-                    id = self.measuringpoint.id,
+                    id=self.measuringpoint.id,
                     defaults=dict(
                         synced_to_bro=True,
                     ),
@@ -748,35 +820,42 @@ class MeasuringPointAddition:
 
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_addition_log_obj.file
-                filepath = os.path.join(
-                    gmn_SETTINGS["additions_dir"], filename
-                )
+                filepath = os.path.join(gmn_SETTINGS["additions_dir"], filename)
                 os.remove(filepath)
 
-            
             elif delivery_errors:
-                
-                self.gmn_bro_addition_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+
+                (
+                    self.gmn_bro_addition_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults=dict(
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments=f"Found errors during the check of {self.monitoring_network}: {delivery_errors}",
                     ),
                 )
-            
+
             else:
-                self.gmn_bro_addition_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_addition_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Addition request not yet approved",
                     ),
                 )
 
-
         except Exception as e:
-            self.gmn_bro_addition_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_addition_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_addition_log_obj.id,
                 defaults={
                     "comments": f"Error occured during status check of delivery: {e}",
@@ -788,6 +867,7 @@ class MeasuringPointRemoval:
     """
     Class to handle the removal of a Measuringpoint from a GMN.
     """
+
     def __init__(self, event, demo, acces_token_bro_portal):
         self.event = event
         self.demo = demo
@@ -807,9 +887,13 @@ class MeasuringPointRemoval:
         # If gmn bro id doesnt exist yet, the network hasnt been registered yet
         if self.monitoring_network.gmn_bro_id is None:
             return
-        
+
         # Check if measuring point has allready been added to the network
-        addition_event = IntermediateEvent.objects.filter(gmn=self.monitoring_network, measuring_point=self.measuringpoint, event_type="GMN_MeasuringPoint").first()
+        addition_event = IntermediateEvent.objects.filter(
+            gmn=self.monitoring_network,
+            measuring_point=self.measuringpoint,
+            event_type="GMN_MeasuringPoint",
+        ).first()
         if not addition_event or addition_event.synced_to_bro is False:
             return
 
@@ -817,8 +901,8 @@ class MeasuringPointRemoval:
         gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
             gmn_bro_id=self.monitoring_network.gmn_bro_id,
             object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
-            event_type = 'GMN_MeasuringPointEndDate',
-            measuringpoint = self.measuringpoint
+            event_type="GMN_MeasuringPointEndDate",
+            measuringpoint=self.measuringpoint,
         )
 
         # Create removal xml file if required
@@ -839,7 +923,9 @@ class MeasuringPointRemoval:
             "succesfully_generated_removal_request",
             "failed_to_validate_sourcedocument",
         ]:
-            print(f"De verwijdering van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd.")
+            print(
+                f"De verwijdering van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd."
+            )
 
             self.validate_registration()
 
@@ -853,9 +939,10 @@ class MeasuringPointRemoval:
             == "failed_to_deliver_sourcedocuments"
             and self.gmn_bro_removal_log_obj.levering_status in ["1", "2"]
         ):
-            print(f"De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} word aangeleverd.")
+            print(
+                f"De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} word aangeleverd."
+            )
             self.deliver_registration()
-            
 
         # If delivery failed 3 times: break the process
         if (
@@ -867,7 +954,7 @@ class MeasuringPointRemoval:
                 f'De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
             )
             return
-        
+
         # Check the delivery status
         if (
             self.gmn_bro_removal_log_obj.process_status
@@ -898,7 +985,6 @@ class MeasuringPointRemoval:
                     "date",
                 ],
                 "measuringPoint": self.measuringpoint.code,
-
             }
 
             # Initialize the gmn_registration_request instance
@@ -922,12 +1008,15 @@ class MeasuringPointRemoval:
             )
 
             # Create a log instance for the request
-            self.gmn_bro_removal_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_removal_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                measuringpoint = self.measuringpoint,
-                event_type = 'GMN_MeasuringPointEndDate',
+                measuringpoint=self.measuringpoint,
+                event_type="GMN_MeasuringPointEndDate",
                 defaults=dict(
                     comments="Succesfully generated removal request",
                     date_modified=datetime.now(),
@@ -938,12 +1027,15 @@ class MeasuringPointRemoval:
             )
 
         except Exception as e:
-            self.gmn_bro_removal_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_removal_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                event_type = 'GMN_MeasuringPointEndDate',
-                measuringpoint = self.measuringpoint,
+                event_type="GMN_MeasuringPointEndDate",
+                measuringpoint=self.measuringpoint,
                 defaults=dict(
                     comments=f"Failed to create removal source document: {e}",
                     date_modified=datetime.now(),
@@ -957,20 +1049,18 @@ class MeasuringPointRemoval:
         """
         try:
             filename = self.gmn_bro_removal_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["removals_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["removals_dir"], filename)
             payload = open(filepath)
-            
+
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, self.acces_token_bro_portal, self.demo
             )
-            
-            errors_count = len(validation_info['errors'])
+
+            errors_count = len(validation_info["errors"])
 
             validation_status = validation_info["status"]
 
-            if errors_count > 0 :
+            if errors_count > 0:
                 validation_errors = validation_info["errors"]
                 comments = f"Found errors during the validation of the removal from {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
@@ -986,7 +1076,10 @@ class MeasuringPointRemoval:
 
             print(comments)
 
-            self.gmn_bro_removal_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_removal_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_removal_log_obj.id,
                 defaults=dict(
                     comments=comments,
@@ -995,9 +1088,11 @@ class MeasuringPointRemoval:
                 ),
             )
 
-
         except Exception as e:
-            self.gmn_bro_removal_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_removal_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_removal_log_obj.id,
                 defaults=dict(
                     comments=f"Exception occured during validation of sourcedocuments: {e}",
@@ -1014,14 +1109,12 @@ class MeasuringPointRemoval:
         try:
             # Prepare and deliver registration
             filename = self.gmn_bro_removal_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["removals_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["removals_dir"], filename)
             payload = open(filepath)
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
@@ -1031,7 +1124,10 @@ class MeasuringPointRemoval:
                 print(
                     f"De removan van {self.measuringpoint} uit het {self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
                 )
-                self.gmn_bro_removal_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_removal_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -1045,7 +1141,10 @@ class MeasuringPointRemoval:
                 print(
                     f"De levering van de removal van {self.measuringpoint} uit het {self.monitoring_network} is geslaagd"
                 )
-                self.gmn_bro_removal_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_removal_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -1059,14 +1158,16 @@ class MeasuringPointRemoval:
                 )
                 time.sleep(10)
 
-
         except Exception as e:
             delivery_status = str(current_delivery_status + 1)
             print(
                 f"De removal van {self.measuringpoint} uit het {self.monitoring_network} is niet gelukt. De levering is nu {delivery_status} keer gefaald."
             )
 
-            self.gmn_bro_removal_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_removal_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_removal_log_obj.id,
                 defaults={
                     "date_modified": datetime.now(),
@@ -1084,17 +1185,28 @@ class MeasuringPointRemoval:
             delivery_status_info = brx.check_delivery_status(
                 self.gmn_bro_removal_log_obj.levering_id,
                 self.acces_token_bro_portal,
-                demo = self.demo
+                demo=self.demo,
             )
 
-            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
-            
-            if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
-                self.gmn_bro_removal_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
+
+            if (
+                delivery_status_info.json()["status"] == "DOORGELEVERD"
+                and delivery_status_info.json()["brondocuments"][0]["status"]
+                == "OPGENOMEN_LVBRO"
+            ):
+                (
+                    self.gmn_bro_removal_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults=dict(
-                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
+                            "broId"
+                        ],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Removal request approved",
                         process_status="delivery_approved",
@@ -1103,7 +1215,7 @@ class MeasuringPointRemoval:
 
                 # Set the synced_to_bro of the event that triggered this process to True
                 IntermediateEvent.objects.update_or_create(
-                    id = self.event.id,
+                    id=self.event.id,
                     defaults=dict(
                         synced_to_bro=True,
                     ),
@@ -1111,43 +1223,48 @@ class MeasuringPointRemoval:
 
                 # Set measuringpoint.synced_to_bro to True
                 MeasuringPoint.objects.update_or_create(
-                    id = self.measuringpoint.id,
-                    defaults=dict(
-                        removed_from_BRO_gmn = True
-                    ),
+                    id=self.measuringpoint.id,
+                    defaults=dict(removed_from_BRO_gmn=True),
                 )
 
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_removal_log_obj.file
-                filepath = os.path.join(
-                    gmn_SETTINGS["removals_dir"], filename
-                )
+                filepath = os.path.join(gmn_SETTINGS["removals_dir"], filename)
                 os.remove(filepath)
 
-            
             elif delivery_errors:
-                
-                self.gmn_bro_removal_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+
+                (
+                    self.gmn_bro_removal_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults=dict(
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments=f"Found errors during the check of {self.monitoring_network}: {delivery_errors}",
                     ),
                 )
-            
+
             else:
-                self.gmn_bro_removal_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_removal_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Removal request not yet approved",
                     ),
                 )
 
-
         except Exception as e:
-            self.gmn_bro_removal_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_removal_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_removal_log_obj.id,
                 defaults={
                     "comments": f"Error occured during status check of delivery: {e}",
@@ -1159,6 +1276,7 @@ class ClosureGMN:
     """
     Class to handle the closure of a GMN.
     """
+
     def __init__(self, event, demo, acces_token_bro_portal):
         self.event = event
         self.demo = demo
@@ -1178,12 +1296,12 @@ class ClosureGMN:
         # If gmn bro id doesnt exist yet, the network hasnt been registered yet
         if self.monitoring_network.gmn_bro_id is None:
             return
-        
+
         # Check for an existing Closure log.
         gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
             gmn_bro_id=self.monitoring_network.gmn_bro_id,
             object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
-            event_type = 'GMN_Closure',
+            event_type="GMN_Closure",
         )
 
         # Create closure xml file if required
@@ -1220,7 +1338,6 @@ class ClosureGMN:
         ):
             print(f"De closure van {self.monitoring_network} word aangeleverd.")
             self.deliver_closure()
-            
 
         # If delivery failed 3 times: break the process
         if (
@@ -1232,7 +1349,7 @@ class ClosureGMN:
                 f'De closure van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
             )
             return
-        
+
         # Check the delivery status
         if (
             self.gmn_bro_closure_log_obj.process_status
@@ -1285,11 +1402,14 @@ class ClosureGMN:
             )
 
             # Create a log instance for the request
-            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_closure_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                event_type = 'GMN_Closure',
+                event_type="GMN_Closure",
                 defaults=dict(
                     comments="Succesfully generated closure request",
                     date_modified=datetime.now(),
@@ -1300,11 +1420,14 @@ class ClosureGMN:
             )
 
         except Exception as e:
-            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_closure_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
                 gmn_bro_id=self.monitoring_network.gmn_bro_id,
                 quality_regime=self.monitoring_network.quality_regime,
-                event_type = 'GMN_Closure',
+                event_type="GMN_Closure",
                 defaults=dict(
                     comments=f"Failed to create closure source document: {e}",
                     date_modified=datetime.now(),
@@ -1319,20 +1442,18 @@ class ClosureGMN:
         """
         try:
             filename = self.gmn_bro_closure_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["closures_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["closures_dir"], filename)
             payload = open(filepath)
-            
+
             validation_info = brx.validate_sourcedoc(
-                payload = payload, token = self.acces_token_bro_portal, demo=self.demo
+                payload, self.acces_token_bro_portal, self.demo
             )
-            
-            errors_count = len(validation_info['errors'])
+
+            errors_count = len(validation_info["errors"])
 
             validation_status = validation_info["status"]
 
-            if errors_count > 0 :
+            if errors_count > 0:
                 validation_errors = validation_info["errors"]
                 comments = f"Found errors during the validation of {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
@@ -1348,7 +1469,10 @@ class ClosureGMN:
 
             print(comments)
 
-            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_closure_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_closure_log_obj.id,
                 defaults=dict(
                     comments=comments,
@@ -1357,9 +1481,11 @@ class ClosureGMN:
                 ),
             )
 
-
         except Exception as e:
-            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_closure_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_closure_log_obj.id,
                 defaults=dict(
                     comments=f"Exception occured during validation of sourcedocuments: {e}",
@@ -1376,14 +1502,12 @@ class ClosureGMN:
         try:
             # Prepare and deliver registration
             filename = self.gmn_bro_closure_log_obj.file
-            filepath = os.path.join(
-                gmn_SETTINGS["closures_dir"], filename
-            )
+            filepath = os.path.join(gmn_SETTINGS["closures_dir"], filename)
             payload = open(filepath)
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.acces_token_bro_portal, demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo
             )
 
             # Log the result
@@ -1393,7 +1517,10 @@ class ClosureGMN:
                 print(
                     f"De closure van {self.monitoring_network} is niet gelukt. De closure is nu {delivery_status} keer gefaald."
                 )
-                self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_closure_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -1404,10 +1531,11 @@ class ClosureGMN:
                 )
 
             else:
-                print(
-                    f"De closure van {self.monitoring_network} is geslaagd"
-                )
-                self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+                print(f"De closure van {self.monitoring_network} is geslaagd")
+                (
+                    self.gmn_bro_closure_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults={
                         "date_modified": datetime.now(),
@@ -1421,14 +1549,16 @@ class ClosureGMN:
                 )
                 time.sleep(10)
 
-
         except Exception as e:
             delivery_status = str(current_delivery_status + 1)
             print(
                 f"De closure van {self.monitoring_network} is niet gelukt. De closure is nu {delivery_status} keer gefaald."
             )
 
-            self.gmn_bro_closure_log_obj, created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_closure_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_closure_log_obj.id,
                 defaults={
                     "date_modified": datetime.now(),
@@ -1446,71 +1576,86 @@ class ClosureGMN:
             delivery_status_info = brx.check_delivery_status(
                 self.gmn_bro_closure_log_obj.levering_id,
                 self.acces_token_bro_portal,
-                demo = self.demo
+                demo=self.demo,
             )
 
-            delivery_errors = delivery_status_info.json()['brondocuments'][0]['errors']
-            
-            if delivery_status_info.json()['status'] == "DOORGELEVERD" and delivery_status_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO":
-                self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
+
+            if (
+                delivery_status_info.json()["status"] == "DOORGELEVERD"
+                and delivery_status_info.json()["brondocuments"][0]["status"]
+                == "OPGENOMEN_LVBRO"
+            ):
+                (
+                    self.gmn_bro_closure_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults=dict(
-                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0]["broId"],
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
+                            "broId"
+                        ],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Startregistration request approved",
                         process_status="delivery_approved",
                     ),
                 )
 
-
                 # Set removed_from_BRO to True on GMN
                 GroundwaterMonitoringNet.objects.update_or_create(
-                    object_id_accountable_party = self.monitoring_network.object_id_accountable_party,
-                    defaults=dict(
-                        removed_from_BRO=True
-                    ),
+                    object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+                    defaults=dict(removed_from_BRO=True),
                 )
 
                 # Set the synced_to_bro of the event that triggered this process tot True
                 IntermediateEvent.objects.update_or_create(
-                    id = self.event.id,
+                    id=self.event.id,
                     defaults=dict(
                         synced_to_bro=True,
                     ),
                 )
-                    
+
                 # Remove the sourcedocument file if delivery is approved
                 filename = self.gmn_bro_closure_log_obj.file
-                filepath = os.path.join(
-                    gmn_SETTINGS["closures_dir"], filename
-                )
+                filepath = os.path.join(gmn_SETTINGS["closures_dir"], filename)
                 os.remove(filepath)
 
-            
             elif delivery_errors:
-                
-                self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+
+                (
+                    self.gmn_bro_closure_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults=dict(
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments=f"Found errors during the check of {self.monitoring_network}: {delivery_errors}",
                     ),
                 )
-            
+
             else:
-                self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+                (
+                    self.gmn_bro_closure_log_obj,
+                    created,
+                ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()["brondocuments"][0]["status"],
+                        levering_status_info=delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
                         comments="Startregistration request not yet approved",
                     ),
                 )
 
-
         except Exception as e:
-            self.gmn_bro_closure_log_obj , created = gmn_bro_sync_log.objects.update_or_create(
+            (
+                self.gmn_bro_closure_log_obj,
+                created,
+            ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_closure_log_obj.id,
                 defaults={
                     "comments": f"Error occured during status check of delivery: {e}",

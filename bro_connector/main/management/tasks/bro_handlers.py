@@ -18,15 +18,16 @@ class BROHandler(ABC):
     @abstractmethod
     def root_data_to_dictionary(self):
         pass
-    
+
     @abstractmethod
     def reset_values(self):
         pass
 
+
 class GMWHandler(BROHandler):
     def __init__(self):
         self.number_of_events = 0
-        self.number_of_tubes  = 0
+        self.number_of_tubes = 0
         self.number_of_geo_ohm_cables = 0
         self.number_of_electrodes = 0
         self.positions = 0
@@ -41,9 +42,8 @@ class GMWHandler(BROHandler):
             fh = "nee"
 
         gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
-        
-        self.root = ET.fromstring(gmw_verzoek.content)
 
+        self.root = ET.fromstring(gmw_verzoek.content)
 
     def root_data_to_dictionary(self):
         tags = []
@@ -76,9 +76,9 @@ class GMWHandler(BROHandler):
             if split[1] == "electrode":
                 self.number_of_electrodes = self.number_of_electrodes + 1
                 prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_electrode_{str(self.number_of_electrodes)}_"
-            
+
             tag = str(prefix) + split[1]
-            
+
             if split[1] == "pos":
                 self.positions = self.positions + 1
                 postfix = f"_{self.positions}"
@@ -86,14 +86,14 @@ class GMWHandler(BROHandler):
 
             tags.append(tag)
             values.append(element.text)
-        
+
         self.number_of_events = number_of_events
 
         self.dict = dict(zip(tags, values))
 
     def reset_values(self):
         self.number_of_events = 0
-        self.number_of_tubes  = 0
+        self.number_of_tubes = 0
         self.number_of_geo_ohm_cables = 0
         self.number_of_electrodes = 0
         self.positions = 0
@@ -102,14 +102,14 @@ class GMWHandler(BROHandler):
 class GLDHandler(BROHandler):
     def __init__(self):
         self.number_of_points = 0
-        self.number_of_observations = 0 
+        self.number_of_observations = 0
         self.dict = {}
 
         # Initializing list to use in the dictionary making process.
         self.point_value = []
         self.time = []
         self.qualifier = []
-        self.bro_ids = [] 
+        self.bro_ids = []
         self.units = []
         self.censoring_limit_value = []
         self.censoring_limit_reason = []
@@ -127,15 +127,17 @@ class GLDHandler(BROHandler):
         print(gmw_verzoek)
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def append_censoring(self) -> None:
-        self.censoring_limit_value.append('None')
-        self.censoring_limit_reason.append('None')
+        self.censoring_limit_value.append("None")
+        self.censoring_limit_reason.append("None")
         self.censoring_limit_unit.append("None")
-        self.dict.update({f"{self.number_of_observations}_point_censoring_censoredReason":self.censoring_limit_reason,
-                        f"{self.number_of_observations}_point_censoring_uom":self.censoring_limit_unit,
-                        f"{self.number_of_observations}_point_censoring_value":self.censoring_limit_value,
-                        })
+        self.dict.update(
+            {
+                f"{self.number_of_observations}_point_censoring_censoredReason": self.censoring_limit_reason,
+                f"{self.number_of_observations}_point_censoring_uom": self.censoring_limit_unit,
+                f"{self.number_of_observations}_point_censoring_value": self.censoring_limit_value,
+            }
+        )
 
     def root_data_to_dictionary(self):
         prefix = f"{self.number_of_observations}_"
@@ -143,7 +145,7 @@ class GLDHandler(BROHandler):
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             if split[1] == f"observation":
                 self.number_of_observations = self.number_of_observations + 1
                 prefix = f"{self.number_of_observations}_"
@@ -179,15 +181,19 @@ class GLDHandler(BROHandler):
                 # E.g. = {codeSpace: 'urn:bro:gld:ObservationType'}
                 tag = f"{self.number_of_observations}_{element.attrib['codeSpace'].split(sep=':')[-1]}"
                 prefix = f"{self.number_of_observations}_"
-            
+
             values_value = element.text
 
             if tag == f"{self.number_of_observations}_processReference":
-                values_value = element.attrib["{http://www.w3.org/1999/xlink}href"].split(sep=":")[-1]
+                values_value = element.attrib[
+                    "{http://www.w3.org/1999/xlink}href"
+                ].split(sep=":")[-1]
 
             if tag == f"{self.number_of_observations}_status":
-                values_value = element.attrib["{http://www.w3.org/1999/xlink}href"].split(sep=":")[-1]
-            
+                values_value = element.attrib[
+                    "{http://www.w3.org/1999/xlink}href"
+                ].split(sep=":")[-1]
+
             if tag == f"{self.number_of_observations}_broId":
                 values_value = self.bro_ids
 
@@ -195,7 +201,7 @@ class GLDHandler(BROHandler):
                 if tag == f"{self.number_of_observations}_point_time":
                     self.time.append(element.text)
                     values_value = self.time
-                    
+
                 if tag == f"{self.number_of_observations}_point_value":
                     self.point_value.append(element.text)
                     values_value = self.point_value
@@ -203,33 +209,42 @@ class GLDHandler(BROHandler):
                     # Add the unit
                     if element.text is None:
                         self.units.append("-")
-                        self.dict.update({f"{self.number_of_observations}_unit": self.units})
+                        self.dict.update(
+                            {f"{self.number_of_observations}_unit": self.units}
+                        )
 
                     else:
                         self.units.append(element.attrib["uom"])
-                        self.dict.update({f"{self.number_of_observations}_unit": self.units})
+                        self.dict.update(
+                            {f"{self.number_of_observations}_unit": self.units}
+                        )
 
                 if tag == f"{self.number_of_observations}_point_qualifier_value":
                     self.qualifier.append(element.text)
                     values_value = self.qualifier
 
                 if tag == f"{self.number_of_observations}_point_censoring_value":
-                    self.censoring_limit_value[self.number_of_points - 1] = (element.text)
+                    self.censoring_limit_value[self.number_of_points - 1] = element.text
                     values_value = self.censoring_limit_value
 
                 if tag == f"{self.number_of_observations}_point_censoring_uom":
                     censor_unit = element.attrib["code"]
-                    self.censoring_limit_unit[self.number_of_points - 1] = (censor_unit)
+                    self.censoring_limit_unit[self.number_of_points - 1] = censor_unit
                     values_value = self.censoring_limit_unit
 
-
-                if tag == f"{self.number_of_observations}_point_censoring_censoredReason":
-                    censor_reason = element.attrib["{http://www.w3.org/1999/xlink}href"].split("/")[-1]
-                    self.censoring_limit_reason[self.number_of_points - 1] = (censor_reason)
+                if (
+                    tag
+                    == f"{self.number_of_observations}_point_censoring_censoredReason"
+                ):
+                    censor_reason = element.attrib[
+                        "{http://www.w3.org/1999/xlink}href"
+                    ].split("/")[-1]
+                    self.censoring_limit_reason[
+                        self.number_of_points - 1
+                    ] = censor_reason
                     values_value = self.censoring_limit_reason
-            
+
             self.dict.update({tag: values_value})
-            
 
     def reset_values(self):
         self.number_of_points = 0
@@ -237,11 +252,12 @@ class GLDHandler(BROHandler):
         self.point_value = []
         self.time = []
         self.qualifier = []
-        self.bro_ids = [] 
+        self.bro_ids = []
         self.units = []
         self.censoring_limit_value = []
         self.censoring_limit_reason = []
         self.censoring_limit_unit = []
+
 
 class GMNHandler(BROHandler):
     def __init__(self):
@@ -259,7 +275,6 @@ class GMNHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def root_data_to_dictionary(self):
         tags = []
         values = []
@@ -268,7 +283,7 @@ class GMNHandler(BROHandler):
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             tag = str(prefix) + split[1]
 
             tags.append(tag)
@@ -278,6 +293,7 @@ class GMNHandler(BROHandler):
 
     def reset_values(self):
         pass
+
 
 class GARHandler(BROHandler):
     def __init__(self):
@@ -295,7 +311,6 @@ class GARHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def root_data_to_dictionary(self):
         tags = []
         values = []
@@ -304,7 +319,7 @@ class GARHandler(BROHandler):
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             tag = str(prefix) + split[1]
 
             tags.append(tag)
@@ -314,6 +329,7 @@ class GARHandler(BROHandler):
 
     def reset_values(self):
         pass
+
 
 class FRDHandler(BROHandler):
     def __init__(self):
@@ -331,7 +347,6 @@ class FRDHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def root_data_to_dictionary(self):
         tags = []
         values = []
@@ -340,7 +355,7 @@ class FRDHandler(BROHandler):
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             tag = str(prefix) + split[1]
 
             tags.append(tag)

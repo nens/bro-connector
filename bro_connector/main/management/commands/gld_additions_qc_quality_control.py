@@ -41,7 +41,7 @@ from gld.management.commands.gld_additions_create import (
 
 # from create_addition_sourcedocs import get_measurement_point_metadata_for_measurement, get_timeseries_tvp_for_measurement_time_series_id
 
-field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
+field_value_division_dict = {"cm": 100, "mm": 1000, "m": 1}
 
 status_quality_control_values = {
     1: "afgekeurd",
@@ -106,7 +106,7 @@ def QC_check_main(observation, qc_settings):
     timeseries_set = models.MeasurementTvp.objects.filter(
         observation_id=observation.observation_id
     )
-    field_value_division_dict = {"cm": 100, "mm": 1000, "m":1}
+    field_value_division_dict = {"cm": 100, "mm": 1000, "m": 1}
 
     # Create measurement list with all values of the timeseriesset
     measurements_list = []
@@ -302,4 +302,3 @@ class Command(BaseCommand):
         # delvertpos = models.DeliveredVerticalPositions()
         # hoogte = delvertpos.ground_level_position
         # hoogte_id = delvertpos.registration_object_id
-

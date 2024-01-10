@@ -10,7 +10,9 @@ import datetime
 import functools
 
 
-def print_timer(start_message: str = "", end_message: str = "", show_times: bool = False):
+def print_timer(
+    start_message: str = "", end_message: str = "", show_times: bool = False
+):
     """
     Decorator to print ellapsed time of a function call.
     @param start_message:   The message to show when the timer starts.
@@ -18,10 +20,17 @@ def print_timer(start_message: str = "", end_message: str = "", show_times: bool
     @param show_times:      Display the actual current times.
     @return:
     """
+
     def decorator_log_timer(func):
         @functools.wraps(func)
         def wrapper_decorator(*args, **kwargs):
-            print(__message_with_time(start_message) if show_times else start_message if start_message else "")
+            print(
+                __message_with_time(start_message)
+                if show_times
+                else start_message
+                if start_message
+                else ""
+            )
             start_time = datetime.datetime.now()
             value = func(*args, **kwargs)
             end_time = datetime.datetime.now()
@@ -31,12 +40,14 @@ def print_timer(start_message: str = "", end_message: str = "", show_times: bool
             else:
                 print(f"{end_message} {msg_elapsed}\n" if end_message else msg_elapsed)
             return value
+
         return wrapper_decorator
+
     return decorator_log_timer
 
 
 def __message_elsapsed_time(start: datetime.datetime, end: datetime.datetime):
-    run_time = end-start
+    run_time = end - start
     return f"---- Elapsed time: {run_time.total_seconds():.2f} seconds\n"
 
 

@@ -2,30 +2,30 @@ from ..tasks.bro_handlers import FRDHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
 
-from frd.models import (
-    FormationResistanceDossier
-)
+from frd.models import FormationResistanceDossier
 
 # BBOX VALUES ZEELAND
-XMIN=10000
-XMAX=80000
-YMIN=355000
-YMAX=420000
+XMIN = 10000
+XMAX = 80000
+YMIN = 355000
+YMAX = 420000
+
 
 def within_bbox(coordinates) -> bool:
     print(f"x: {coordinates.x}, y: {coordinates.y}")
     if (
-        coordinates.x > XMIN and
-        coordinates.x < XMAX and
-        coordinates.y > YMIN and
-        coordinates.y < YMAX
+        coordinates.x > XMIN
+        and coordinates.x < XMAX
+        and coordinates.y > YMIN
+        and coordinates.y < YMAX
     ):
         return True
     return False
 
-def run(kvk_number:str=None, csv_file:str=None, bro_type:str = 'gld'):
+
+def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
     progressor = Progress()
-    frd        = FRDHandler()
+    frd = FRDHandler()
 
     if kvk_number != None:
         DR = DataRetrieverKVK(kvk_number)

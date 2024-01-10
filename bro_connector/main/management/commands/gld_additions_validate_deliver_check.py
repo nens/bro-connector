@@ -27,7 +27,9 @@ def validate_gld_addition_source_document(
     payload = open(source_doc_file)
 
     try:
-        validation_info = brx.validate_sourcedoc(payload, acces_token_bro_portal, demo = demo)
+        validation_info = brx.validate_sourcedoc(
+            payload, acces_token_bro_portal, demo=demo
+        )
         validation_status = validation_info["status"]
 
         if "errors" in validation_info:
@@ -273,7 +275,7 @@ def check_status_addition(observation, acces_token_bro_portal, demo):
             observation_id=observation.observation_id
         )
     except:
-        return(None)
+        return None
     file_name = gld_addition.file
     levering_id = gld_addition.levering_id
     delivery_status = gld_addition.levering_status
@@ -283,9 +285,7 @@ def check_status_addition(observation, acces_token_bro_portal, demo):
     )
     try:
         if new_delivery_status == "DOORGELEVERD":  # "OPGENOMEN_LVBRO":
-            sourcedoc_filepath = os.path.join(
-                gld_SETTINGS["additions_dir"], file_name
-            )
+            sourcedoc_filepath = os.path.join(gld_SETTINGS["additions_dir"], file_name)
             os.remove(sourcedoc_filepath)
     except:
         pass  # no file to remove
@@ -354,9 +354,7 @@ class Command(BaseCommand):
 
         demo = gld_SETTINGS["demo"]
         if demo:
-            acces_token_bro_portal = gld_SETTINGS[
-                "acces_token_bro_portal_demo"
-            ]
+            acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
         else:
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"

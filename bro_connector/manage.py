@@ -8,17 +8,11 @@ from main.settings.base import ENVIRONMENT
 def main():
     """Run administrative tasks."""
     if ENVIRONMENT == "production":
-        os.environ.setdefault(
-            "DJANGO_SETTINGS_MODULE", "main.settings.production"
-        )
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.production")
     elif ENVIRONMENT == "staging":
-        os.environ.setdefault(
-            "DJANGO_SETTINGS_MODULE", "main.settings.staging"
-        )
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.staging")
     elif ENVIRONMENT == "test":
-        os.environ.setdefault(
-            "DJANGO_SETTINGS_MODULE", "main.settings.test"
-        )
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.test")
 
     try:
         from django.core.management import execute_from_command_line

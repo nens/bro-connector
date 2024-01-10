@@ -140,9 +140,7 @@ GLUE = (
     ("onbekend", "onbekend"),
 )
 
-LOCALVERTICALREFERENCEPOINT = (
-    ("NAP", "NAP"),
-)
+LOCALVERTICALREFERENCEPOINT = (("NAP", "NAP"),)
 
 HORIZONTALPOSITIONINGMETHOD = (
     ("DGPS50tot200cm", "DGPS50tot200cm"),
@@ -233,9 +231,7 @@ REGISTRATIONSTATUS = (
     ("voltooid", "voltooid"),
 )
 
-VERTICALDATUM = (
-    ("NAP", "NAP"),
-)
+VERTICALDATUM = (("NAP", "NAP"),)
 
 WELLHEADPROTECTOR_SUBTYPES = (
     ("DNS", "DNS"),

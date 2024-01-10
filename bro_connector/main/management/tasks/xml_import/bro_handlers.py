@@ -19,25 +19,25 @@ class BROHandler(ABC):
     @abstractmethod
     def root_data_to_dictionary(self):
         pass
-    
+
     @abstractmethod
     def reset_values(self):
         pass
 
+
 class GMWHandler(BROHandler):
     def __init__(self):
         self.number_of_events = 0
-        self.number_of_tubes  = 0
+        self.number_of_tubes = 0
         self.number_of_geo_ohm_cables = 0
         self.number_of_electrodes = 0
         self.positions = 0
         self.dict = {}
 
     def get_data(self, file: str) -> None:
-        with open(file, 'r') as xml_file:
+        with open(file, "r") as xml_file:
             data = xml_file.read()
             self.root = ET.fromstring(data)
-
 
     def root_data_to_dictionary(self):
         tags = []
@@ -73,9 +73,9 @@ class GMWHandler(BROHandler):
             if split[1] == "electrode":
                 self.number_of_electrodes = self.number_of_electrodes + 1
                 prefix = f"tube_{self.number_of_tubes}_geo_ohm_{str(self.number_of_geo_ohm_cables)}_electrode_{str(self.number_of_electrodes)}_"
-            
+
             tag = str(prefix) + split[1]
-            
+
             if split[1] == "pos":
                 self.positions = self.positions + 1
                 postfix = f"_{self.positions}"
@@ -83,22 +83,23 @@ class GMWHandler(BROHandler):
 
             tags.append(tag)
             values.append(element.text)
-        
+
         self.number_of_events = number_of_events
 
         self.dict = dict(zip(tags, values))
 
     def reset_values(self):
         self.number_of_events = 0
-        self.number_of_tubes  = 0
+        self.number_of_tubes = 0
         self.number_of_geo_ohm_cables = 0
         self.number_of_electrodes = 0
         self.positions = 0
 
+
 class GLDHandler(BROHandler):
     def __init__(self):
         self.number_of_points = 0
-        self.number_of_observations = 0 
+        self.number_of_observations = 0
         self.dict = {}
 
     def get_data(self, id: str, filtered: bool):
@@ -113,25 +114,24 @@ class GLDHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def root_data_to_dictionary(self):
         tags = []
         values = []
         point_value = []
         time = []
         qualifier = []
-        bro_ids = [] 
+        bro_ids = []
         units = []
         number_of_observations = self.number_of_observations
         prefix = f"{number_of_observations}_"
-        
+
         number_of_points = self.number_of_points
         number_of_observations = self.number_of_observations
 
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             if split[1] == "observation":
                 number_of_observations = number_of_observations + 1
                 prefix = f"{number_of_observations}_"
@@ -151,7 +151,6 @@ class GLDHandler(BROHandler):
             if split[1] == "qualifier":
                 prefix = f"{number_of_observations}_point_qualifier_"
 
-
             tag = str(prefix) + split[1]
 
             # Once the last property of qualifier has been itererated (value), reset prefix.
@@ -168,11 +167,15 @@ class GLDHandler(BROHandler):
             values_value = element.text
 
             if tag == f"{number_of_observations}_processReference":
-                values_value = element.attrib["{http://www.w3.org/1999/xlink}href"].split(sep=":")[-1]
+                values_value = element.attrib[
+                    "{http://www.w3.org/1999/xlink}href"
+                ].split(sep=":")[-1]
 
             if tag == f"{number_of_observations}_status":
-                values_value = element.attrib["{http://www.w3.org/1999/xlink}href"].split(sep=":")[-1]
-            
+                values_value = element.attrib[
+                    "{http://www.w3.org/1999/xlink}href"
+                ].split(sep=":")[-1]
+
             if tag == f"{number_of_observations}_broId":
                 values_value = bro_ids
 
@@ -180,7 +183,7 @@ class GLDHandler(BROHandler):
                 if tag == f"{number_of_observations}_point_time":
                     time.append(element.text)
                     values_value = time
-                    
+
                 if tag == f"{number_of_observations}_point_value":
                     point_value.append(element.text)
                     values_value = point_value
@@ -192,7 +195,6 @@ class GLDHandler(BROHandler):
                         values.append(units)
                     except:
                         print(element.attrib, element.text)
-
 
                 if tag == f"{number_of_observations}_point_qualifier_value":
                     qualifier.append(element.text)
@@ -207,7 +209,8 @@ class GLDHandler(BROHandler):
 
     def reset_values(self):
         self.number_of_points = 0
-        self.number_of_observations = 0 
+        self.number_of_observations = 0
+
 
 class GMNHandler(BROHandler):
     def __init__(self):
@@ -225,7 +228,6 @@ class GMNHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def root_data_to_dictionary(self):
         tags = []
         values = []
@@ -234,7 +236,7 @@ class GMNHandler(BROHandler):
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             tag = str(prefix) + split[1]
 
             tags.append(tag)
@@ -244,6 +246,7 @@ class GMNHandler(BROHandler):
 
     def reset_values(self):
         pass
+
 
 class GARHandler(BROHandler):
     def __init__(self):
@@ -261,7 +264,6 @@ class GARHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def root_data_to_dictionary(self):
         tags = []
         values = []
@@ -270,7 +272,7 @@ class GARHandler(BROHandler):
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             tag = str(prefix) + split[1]
 
             tags.append(tag)
@@ -280,6 +282,7 @@ class GARHandler(BROHandler):
 
     def reset_values(self):
         pass
+
 
 class FRDHandler(BROHandler):
     def __init__(self):
@@ -297,7 +300,6 @@ class FRDHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-
     def root_data_to_dictionary(self):
         tags = []
         values = []
@@ -306,7 +308,7 @@ class FRDHandler(BROHandler):
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            
+
             tag = str(prefix) + split[1]
 
             tags.append(tag)

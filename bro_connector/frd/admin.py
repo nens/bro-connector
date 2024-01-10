@@ -151,6 +151,22 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
         "status_qualitycontrol",
     )
 
+class FrdSyncLogAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "event_type",
+        "synced",
+        "frd",
+        "process_status",
+        "delivery_id"
+    )
+    list_filter = (
+        "event_type",
+        "synced",
+        "process_status",
+    )
+
+
 _register(FormationResistanceDossier, FormationResistanceDossierAdmin)
 _register(InstrumentConfiguration, InstrumentConfigurationAdmin)
 _register(ElectromagneticMeasurementMethod, ElectromagneticMeasurementMethodAdmin)
@@ -163,3 +179,4 @@ _register(FormationresistanceSeries, FormationresistanceSeriesAdmin)
 _register(ElectromagneticSeries, ElectromagneticSeriesAdmin)
 _register(ElectromagneticRecord, ElectromagneticRecordAdmin)
 _register(FormationresistanceRecord, FormationresistanceRecordAdmin)
+_register(FrdSyncLog,FrdSyncLogAdmin)
