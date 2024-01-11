@@ -22,7 +22,6 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
         "quality_regime",
     )
     list_filter = (
-        "id",
         "object_id_accountable_party",
     )
 
@@ -111,8 +110,8 @@ class MeasurementConfigurationAdmin(admin.ModelAdmin):
 class ElectromagneticSeriesAdmin(admin.ModelAdmin):
 
     list_display = (
-        "id",
-    )
+    "id",)
+    
     list_filter = (
 
     )
@@ -154,6 +153,7 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
 class FrdSyncLogAdmin(admin.ModelAdmin):
 
     list_display = (
+        "id",
         "event_type",
         "synced",
         "frd",

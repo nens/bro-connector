@@ -48,7 +48,7 @@ QUALITY_CONTROL = (
 )
 
 
-EVENT_TYPE_CHOICES = (("FRD_StartRegistration", "FRD_StartRegistration"),)
+EVENT_TYPE_CHOICES = (("FRD_StartRegistration", "FRD_GEM_MeasurementConfiguration"),)
 
 LEVERINGSTATUS_CHOICES = [
     (0, "Nog niet aangeleverd"),
