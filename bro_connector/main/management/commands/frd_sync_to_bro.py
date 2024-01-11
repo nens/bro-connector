@@ -8,7 +8,7 @@ from bro_exchange.bhp.connector import (
     upload_sourcedocs_from_dict,
     check_delivery_status,
 )
-from frd.models import FormationResistanceDossier, FrdSyncLog
+from frd.models import FormationResistanceDossier, FrdSyncLog, MeasurementConfiguration
 from datetime import datetime
 from main.settings.base import FRD_SETTINGS
 
@@ -23,27 +23,42 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.handle_startregistrations()
+        self.handle_configurations()
         self.handle_measurements()
 
     def handle_startregistrations(self):
         """
         Handles the startregistrations for all FRD's without bro_id.
+        For each unsynced FRD, the FrdStartregistration class is used to handle the registration
+        """
+        unsynced_startregistration_dossiers = self.get_unsynced_dossiers()
+
+        for dossier in unsynced_startregistration_dossiers:
+            startregistration = FrdStartregistration(dossier)
+            startregistration.sync()
+    
+    def handle_configurations(self):
+        """
+        Handles the measurement configurations for all configurations without bro_id.
         For each new FRD, the FrdStartregistration class is used to hande the registration
         """
-        new_dossiers = self.get_unsynced_dossiers()
+        unsynced_configurations = self.get_unsynced_configurations()
 
-        for new_dossier in new_dossiers:
-            startregistration = FrdStartregistration(new_dossier)
-            startregistration.sync()
-
-    def get_unsynced_dossiers(self):
-        return FormationResistanceDossier.objects.filter(frd_bro_id=None)
+        for measurement_configuration in unsynced_configurations:
+            configuration_registration = ConfigurationRegistration(measurement_configuration)
+            configuration_registration.sync()
 
     def handle_measurements(self):
         """
-        Develop when startregistrations are done
+        Develop when startregistrations and configurations are done
         """
         pass
+
+    def get_unsynced_dossiers(self):
+        return FormationResistanceDossier.objects.filter(frd_bro_id=None)
+    
+    def get_unsynced_configurations(self):
+        return MeasurementConfiguration.objects.filter(bro_id=None)
 
 
 class FrdStartregistration:
@@ -318,3 +333,91 @@ class FrdStartregistration:
         Removes the succesfully delivered xml file.
         """
         os.remove(self.frd_startregistration_log.xml_filepath)
+
+class ConfigurationRegistration:
+    """
+    Handles the sync of of a new measurement configuration in the BRO-Connector.
+    The sync method is the main function which should always be called
+    """
+
+    def __init__(self, measurement_configuration):
+        self.output_dir = "frd/xml_files/"
+        self.measurement_configuration = measurement_configuration
+        self.xml_file = None
+        self.registration_log = None
+        self.demo = FRD_SETTINGS["demo"]
+        self.api_version = FRD_SETTINGS["api_version"]
+
+        if self.demo:
+            self.bro_info = FRD_SETTINGS["bro_info_demo"]
+        else:
+            self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
+
+    def sync(self):
+        """
+        Checks if a log on the configuratino allready exists.
+        If not, creates one and handles the complete registration.
+        If so, checks the status, and picks up the registration process where it was left.
+        """
+        self.registration_log, created = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_GEM_MeasurementConfiguration", frd=self.frd_obj
+        )
+
+        status_function_mapping = {
+            None: self.generate_xml_file,
+            "failed_to_generate_xml": self.generate_xml_file,
+            "failed_to_validate_sourcedocument": self.validate_xml_file,
+            "succesfully_generated_xml": self.validate_xml_file,
+            "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
+            "source_document_validation_succesful": self.deliver_xml_file,
+            "succesfully_delivered_sourcedocuments": self.check_delivery,
+        }
+
+        current_status = self.frd_startregistration_log.process_status
+        method_to_call = status_function_mapping.get(current_status)
+
+        method_to_call()
+
+    def generate_xml_file(self):
+        """
+        Handles the generation of the startregistration xlm file.
+        If it is succesfull, it calls the validate_startregistration_xml to continue the startregistration process.
+        """
+        try:
+            self.construct_xml_tree()
+            self.save_xml_file()
+
+        except Exception as e:
+            self.registration_log.process_status = "failed_to_generate_xml"
+            self.registration_log.comment = f"Error message: {e}",
+            self.registration_log.save()
+
+        else:
+            self.registration_log.process_status = "succesfully_generated_xml"
+            self.registration_log.comment = "Succesfully generated request"
+            self.registration_log.xml_filepath = self.filepath
+            self.registration_log.save()
+
+            self.validate_xml_file()
+
+    def construct_xml_tree(self):
+        """
+        Setup the data for the xml file.
+        Then creates the file and saves the xml tree to self.
+        """     
+
+        srcdocdata = {
+            "request_reference": f"registration_{self.measurement_configuration.configuration_name}",
+            "measurement_configuration_id": self.measurement_configuration.configuration_name,
+        }
+
+        startregistration_tool = FrdStartregistrationTool(srcdocdata)
+        self.startregistration_xml_file = startregistration_tool.generate_xml_file()
+
+    def save_xml_file(self):
+        """
+        Saves the xmltree as xml file in the filepath as defined in self.
+        """
+        filename = f"startregistration_{self.frd_obj.object_id_accountable_party}.xml"
+        self.filepath = os.path.join(self.output_dir, filename)
+        self.startregistration_xml_file.write(self.filepath, pretty_print=True)

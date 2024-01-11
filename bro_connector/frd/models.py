@@ -7,7 +7,6 @@ from gmn.models import GroundwaterMonitoringNet
 
 # Create your models here.
 class FormationResistanceDossier(models.Model):
-    id = models.AutoField(primary_key=True)
     frd_bro_id = models.CharField(
         max_length=200, null=True, blank=True, editable=False, verbose_name="Bro-ID FRD"
     )
@@ -211,7 +210,6 @@ class GMWElectrodeReference(models.Model):
 
 
 class ElectrodePair(models.Model):
-    id = models.AutoField(primary_key=True)
     # Static of dynamic electrode -> Ik denk static
     elektrode1 = models.ForeignKey(
         "GMWElectrodeReference",
@@ -238,7 +236,7 @@ class ElectrodePair(models.Model):
 
 
 class MeasurementConfiguration(models.Model):
-    id = models.AutoField(primary_key=True)
+    bro_id = models.CharField(max_length=254, null=True, blank=True)
     configuration_name = models.CharField(
         max_length=40, null=False, blank=False, unique=True
     )
@@ -270,7 +268,6 @@ class MeasurementConfiguration(models.Model):
 
 
 class ElectromagneticSeries(models.Model):
-    id = models.AutoField(primary_key=True)
 
     class Meta:
         managed = True
@@ -279,7 +276,6 @@ class ElectromagneticSeries(models.Model):
 
 
 class FormationresistanceSeries(models.Model):
-    id = models.AutoField(primary_key=True)
 
     class Meta:
         managed = True
@@ -380,9 +376,11 @@ class FrdSyncLog(models.Model):
         max_length=25,
     )
     frd = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, blank=False
+        FormationResistanceDossier, on_delete=models.CASCADE, blank=True, null=True
     )
-    frd_bro_id = models.CharField(max_length=254, null=True, blank=True)
+    configuration = models.ForeignKey(
+        MeasurementConfiguration, on_delete=models.CASCADE, blank=True, null=True
+    )
     process_status = models.CharField(max_length=254, null=True, blank=True)
     comment = models.CharField(max_length=10000, null=True, blank=True)
     xml_filepath = models.CharField(max_length=254, null=True, blank=True)
