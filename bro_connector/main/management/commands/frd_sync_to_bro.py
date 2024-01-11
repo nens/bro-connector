@@ -2,7 +2,7 @@ import os
 import time
 
 from django.core.management.base import BaseCommand
-from bro_exchange.broxml.frd.requests import FrdStartregistrationTool
+from bro_exchange.broxml.frd.requests import FrdStartregistrationTool, ConfigurationRegistrationTool
 from bro_exchange.bhp.connector import (
     validate_sourcedoc,
     upload_sourcedocs_from_dict,
@@ -360,7 +360,7 @@ class ConfigurationRegistration:
         If so, checks the status, and picks up the registration process where it was left.
         """
         self.registration_log, created = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_GEM_MeasurementConfiguration", frd=self.frd_obj
+            event_type="FRD_GEM_MeasurementConfiguration", configuration=self.measurement_configuration
         )
 
         status_function_mapping = {
@@ -368,12 +368,12 @@ class ConfigurationRegistration:
             "failed_to_generate_xml": self.generate_xml_file,
             "failed_to_validate_sourcedocument": self.validate_xml_file,
             "succesfully_generated_xml": self.validate_xml_file,
-            "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
-            "source_document_validation_succesful": self.deliver_xml_file,
-            "succesfully_delivered_sourcedocuments": self.check_delivery,
+            # "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
+            # "source_document_validation_succesful": self.deliver_xml_file,
+            # "succesfully_delivered_sourcedocuments": self.check_delivery,
         }
 
-        current_status = self.frd_startregistration_log.process_status
+        current_status = self.registration_log.process_status
         method_to_call = status_function_mapping.get(current_status)
 
         method_to_call()
@@ -400,6 +400,9 @@ class ConfigurationRegistration:
 
             self.validate_xml_file()
 
+    def validate_xml_file(self):
+        pass
+
     def construct_xml_tree(self):
         """
         Setup the data for the xml file.
@@ -409,10 +412,12 @@ class ConfigurationRegistration:
         srcdocdata = {
             "request_reference": f"registration_{self.measurement_configuration.configuration_name}",
             "measurement_configuration_id": self.measurement_configuration.configuration_name,
+            "measurement_pair":self.measurement_configuration.measurement_pair,
+            "flowcurrent_pair":self.measurement_configuration.flowcurrent_pair,
         }
 
-        startregistration_tool = FrdStartregistrationTool(srcdocdata)
-        self.startregistration_xml_file = startregistration_tool.generate_xml_file()
+        configuration_registration_tool = ConfigurationRegistrationTool(srcdocdata)
+        self.startregistration_xml_file = configuration_registration_tool.generate_xml_file()
 
     def save_xml_file(self):
         """

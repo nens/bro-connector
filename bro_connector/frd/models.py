@@ -373,7 +373,7 @@ class FrdSyncLog(models.Model):
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
-        max_length=25,
+        max_length=40,
     )
     frd = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, blank=True, null=True
