@@ -283,9 +283,6 @@ class FormationresistanceSeries(models.Model):
         verbose_name_plural = "Formationresistance Series"
 
 
-# class FRDRecord(models.Model):
-#     pass
-
 
 class GeoOhmMeasurementValue(models.Model):
     formationresistance = models.DecimalField(
@@ -294,6 +291,7 @@ class GeoOhmMeasurementValue(models.Model):
     measurement_configuration = models.ForeignKey(
         "MeasurementConfiguration", on_delete=models.CASCADE, null=True, blank=False
     )
+    datetime = models.DateTimeField(blank = False, null = False)
 
     class Meta:
         managed = True
