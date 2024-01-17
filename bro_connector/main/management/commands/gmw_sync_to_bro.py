@@ -269,7 +269,9 @@ class GetSourceDocData:
         """
         Retrieve all the data from the Django database to make it available for construction generation.
         """
-        test = False
+        well_construction_date = get_event_date(event)
+        self.datafile.update({"wellConstructionDate": well_construction_date})
+
         well = models.GroundwaterMonitoringWellStatic.objects.get(
             bro_id=str(event.groundwater_monitoring_well_static)
         )
@@ -674,49 +676,38 @@ def create_sourcedocs(
         well, gmw_SETTINGS["demo"]
     )
 
+    
+    # Retrieve general static information of the well
+    get_srcdoc_data = GetSourceDocData()
+
+    get_srcdoc_data.execute_for_type(source_doc_type=source_doc_type, event=event)
+    srcdocdata = get_srcdoc_data.datafile
+
+    objectIdAccountableParty = get_object_id_accountable_party(well)
+    srcdocdata.update(objectIdAccountableParty)
+
+    # Add event date
+    event_date = get_event_date(event)
+    srcdocdata.update({"eventDate": event_date})
+
+    # How many records are already registered -> change the reference
+    records_in_register = records_in_registrations(srcdocdata["broId"])
+
+    request_reference = (
+        f"{srcdocdata['broId']}_{source_doc_type}_{records_in_register}"
+    )
+    # Check what kind of request is required and make as followed.
+    # Registrate with history
     try:
-        # Retrieve general static information of the well
-        get_srcdoc_data = GetSourceDocData()
-
-        get_srcdoc_data.execute_for_type(source_doc_type=source_doc_type, event=event)
-        srcdocdata = get_srcdoc_data.datafile
-
-        objectIdAccountableParty = get_object_id_accountable_party(well)
-        srcdocdata.update(objectIdAccountableParty)
-
-        # Add event date
-        event_date = get_event_date(event)
-        srcdocdata.update({"eventDate": event_date})
-
-        # How many records are already registered -> change the reference
-        records_in_register = records_in_registrations(srcdocdata["broId"])
-
-        request_reference = (
-            f"{srcdocdata['broId']}_{source_doc_type}_{records_in_register}"
+        gmw_registration_request = brx.gmw_registration_request(
+            srcdoc=f"GMW_{source_doc_type}",
+            requestReference=request_reference,
+            deliveryAccountableParty=str(delivery_accountable_party),
+            qualityRegime=quality_regime,
+            broId=srcdocdata["broId"],
+            underPrivilege="ja",
+            srcdocdata=srcdocdata,
         )
-        # Check what kind of request is required and make as followed.
-        # Registrate with history
-
-        if source_doc_type == "Construction":
-            gmw_registration_request = brx.gmw_registration_request(
-                srcdoc=f"GMW_{source_doc_type}",
-                requestReference=request_reference,
-                deliveryAccountableParty=str(delivery_accountable_party),
-                qualityRegime=quality_regime,
-                srcdocdata=srcdocdata,
-                underPrivilege="ja",
-            )
-
-        else:
-            gmw_registration_request = brx.gmw_registration_request(
-                srcdoc=f"GMW_{source_doc_type}",
-                requestReference=request_reference,
-                deliveryAccountableParty=str(delivery_accountable_party),
-                qualityRegime=quality_regime,
-                broId=srcdocdata["broId"],
-                underPrivilege="ja",
-                srcdocdata=srcdocdata,
-            )
 
         filename = request_reference + ".xml"
         gmw_registration_request.generate()
@@ -754,6 +745,90 @@ def create_sourcedocs(
             ),
         )
 
+def create_construction_sourcedocs(
+    event: models.Event,
+    registrations_dir,
+):
+    """
+    Try to create registration sourcedocuments for a well/tube/quality regime
+    Registration requests are saved to .xml file in registrations folder
+    """
+
+    well = models.GroundwaterMonitoringWellStatic.objects.get(
+        bro_id=event.groundwater_monitoring_well_static
+    )
+
+    delivery_accountable_party = set_delivery_accountable_party(
+        well, gmw_SETTINGS["demo"]
+    )
+
+    # Retrieve general static information of the well
+    get_srcdoc_data = GetSourceDocData()
+
+    get_srcdoc_data.construction(event)
+    srcdocdata = get_srcdoc_data.datafile
+
+    objectIdAccountableParty = get_object_id_accountable_party(well)
+    srcdocdata.update(objectIdAccountableParty)
+
+    # Add event date
+    event_date = get_event_date(event)
+    srcdocdata.update({"eventDate": event_date})
+
+    # How many records are already registered -> change the reference
+    records_in_register = records_in_registrations(srcdocdata["broId"])
+
+    request_reference = (
+        f"{srcdocdata['broId']}_Construction_{records_in_register}"
+    )
+    # Check what kind of request is required and make as followed.
+    # Registrate with history
+    try:
+        construction_request = brx.gmw_registration_request(
+            srcdoc=f"GMW_Construction",
+            requestReference=request_reference,
+            deliveryAccountableParty=str(delivery_accountable_party),
+            qualityRegime=well.quality_regime,
+            srcdocdata=srcdocdata,
+            underPrivilege="ja",
+        )
+
+        filename = request_reference + ".xml"
+        construction_request.generate()
+        construction_request.write_request(
+            output_dir=registrations_dir, filename=filename
+        )
+
+        process_status = f"succesfully_generated_Construction_request"
+        record, created = models.gmw_registration_log.objects.update_or_create(
+            bro_id=srcdocdata["broId"],
+            event_id=event.change_id,
+            levering_type="Construction",
+            quality_regime=well.quality_regime,
+            defaults=dict(
+                comments=f"succesfully generated Construction request",
+                date_modified=datetime.datetime.now(),
+                validation_status=None,
+                process_status=process_status,
+                file=filename,
+            ),
+            object_id_accountable_party=srcdocdata["objectIdAccountableParty"],
+        )
+
+    except Exception as e:
+        record, created = models.gmw_registration_log.objects.update_or_create(
+            bro_id=srcdocdata["broId"],
+            event_id=event.change_id,
+            levering_type="Construction",
+            quality_regime=well.quality_regime,
+            defaults=dict(
+                comments=f"Failed to create Construction source document: {e}",
+                date_modified=datetime.datetime.now(),
+                process_status="failed_to_generate_source_documents",
+            ),
+        )
+
+    
 
 def handle_not_valid_or_error(registration_id, validation_info):
     defaults = dict(
@@ -992,62 +1067,62 @@ def get_registration_validation_status(registration_id):
     return validation_status
 
 
+def delete_existing_failed_registrations(event: models.Event, quality_regime: str):
+    if (
+        models.gmw_registration_log.objects.filter(
+            event_id=event.change_id, quality_regime=quality_regime
+        ).exists()
+        == True
+    ):
+        reg = models.gmw_registration_log.objects.get(
+            event_id=event.change_id, quality_regime=quality_regime
+        )
+
+        if reg.process_status == "failed_to_generate_source_documents":
+            reg.delete()
+
 class EventsHandler:
     def __init__(self, registrations_dir):
         self.registrations_dir = registrations_dir
 
-    def create_sourcedocs_events(self, events, event_type: str):
+    def create_type_sourcedoc(self, event, event_type: str):
         """
         Possible event_types:
-        Construction, WellHeadProtector, Lengthening,
+        WellHeadProtector, Lengthening,
         GroundLevel, Owner, Shortening, Positions,
         ElectrodeStatus, Maintainer, TubeStatus,
         Insertion, Shift, Removal, GroundLevelMeasuring,
         PositionsMeasuring, ConstructionWithHistory'
 
+        Construction has its own function.
+
         """
 
-        for event in events:
-            well = models.GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=event.groundwater_monitoring_well_static
-            )
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id=event.groundwater_monitoring_well_static
+        )
 
-            # Get some well properties
-            bro_id = well.bro_id
-            quality_regime = well.quality_regime
+        delete_existing_failed_registrations(event, well.quality_regime)
 
-            # Check if there is already a registration for this well
-            if (
-                models.gmw_registration_log.objects.filter(
-                    event_id=event.change_id, quality_regime=quality_regime
-                ).exists()
-                == False
-            ):
+        create_sourcedocs(
+            event=event,
+            registrations_dir=self.registrations_dir,
+            source_doc_type=f"{event_type}",
+        )
 
-                # There is not a gmw registration object with this configuration
-                # Create a new configuration by creating registration sourcedocs
-                # By creating the sourcedocs (or failng to do so), a registration is made in the database
-                # This registration is used to track the progress of the delivery in further steps
 
-                create_sourcedocs(
-                    event=event,
-                    registrations_dir=self.registrations_dir,
-                    source_doc_type=f"{event_type}",
-                )
+    def create_construction_sourcedoc(self, event: models.Event):
+        well = models.GroundwaterMonitoringWellStatic.objects.get(
+            bro_id=event.groundwater_monitoring_well_static
+        )
 
-            else:
-                reg = models.gmw_registration_log.objects.get(
-                    event_id=event.change_id, quality_regime=quality_regime
-                )
+        # Check if there is already a registration for this well
+        delete_existing_failed_registrations(event, well.quality_regime)
 
-                if reg.process_status == "failed_to_generate_source_documents":
-                    reg.delete()
-
-                    create_sourcedocs(
-                        event=event,
-                        registrations_dir=self.registrations_dir,
-                        source_doc_type=f"{event_type}",
-                    )
+        create_construction_sourcedocs(
+            event=event,
+            registrations_dir=self.registrations_dir,
+        )
 
 
 def gmw_create_sourcedocs_wells(registrations_dir):
@@ -1061,70 +1136,84 @@ def gmw_create_sourcedocs_wells(registrations_dir):
     # Pak de construction events, filter welke events al in de BRO staan
     construction_events = GetEvents.construction()
     events_handler = EventsHandler(registrations_dir)
-    events_handler.create_sourcedocs_events(
-        events=construction_events, event_type="Construction"
-    )
+    for construction in construction_events:
+        events_handler.create_construction_sourcedoc(
+            event=construction
+        )
 
     electrodeStatus_events = GetEvents.electrodeStatus()
-    events_handler.create_sourcedocs_events(
-        events=electrodeStatus_events, event_type="ElectrodeStatus"
-    )
+    for electrode_status in electrodeStatus_events:
+        events_handler.create_type_sourcedoc(
+            event=electrode_status, event_type="ElectrodeStatus"
+        )
 
     groundLevel_events = GetEvents.groundLevel()
-    events_handler.create_sourcedocs_events(
-        events=groundLevel_events, event_type="GroundLevel"
-    )
+    for ground_level in groundLevel_events:
+        events_handler.create_type_sourcedoc(
+            event=ground_level, event_type="GroundLevel"
+        )
 
     groundLevelMeasuring_events = GetEvents.groundLevelMeasuring()
-    events_handler.create_sourcedocs_events(
-        events=groundLevelMeasuring_events, event_type="GroundLevelMeasuring"
-    )
+    for ground_level_measuring in groundLevelMeasuring_events:
+        events_handler.create_type_sourcedoc(
+            event=ground_level_measuring, event_type="GroundLevelMeasuring"
+        )
 
     insertion_events = GetEvents.insertion()
-    events_handler.create_sourcedocs_events(
-        events=insertion_events, event_type="Insertion"
-    )
+    for insertion in insertion_events:
+        events_handler.create_type_sourcedoc(
+            event=insertion, event_type="Insertion"
+        )
 
     lengthening_events = GetEvents.lengthening()
-    events_handler.create_sourcedocs_events(
-        events=lengthening_events, event_type="Lengthening"
-    )
+    for lengthening in lengthening_events:
+        events_handler.create_type_sourcedoc(
+            event=lengthening, event_type="Lengthening"
+        )
 
     maintainer_events = GetEvents.maintainer()
-    events_handler.create_sourcedocs_events(
-        events=maintainer_events, event_type="Maintainer"
-    )
+    for maintainer in maintainer_events:
+        events_handler.create_type_sourcedoc(
+            event=maintainer, event_type="Maintainer"
+        )
 
     owner_events = GetEvents.owner()
-    events_handler.create_sourcedocs_events(events=owner_events, event_type="Owner")
+    for owner in owner_events:
+        events_handler.create_type_sourcedoc(events=owner, event_type="Owner")
 
     positionsMeasuring_events = GetEvents.positionsMeasuring()
-    events_handler.create_sourcedocs_events(
-        events=positionsMeasuring_events, event_type="PositionsMeasuring"
-    )
+    for positions_measuring in positionsMeasuring_events:
+        events_handler.create_type_sourcedoc(
+            event=positions_measuring, event_type="PositionsMeasuring"
+        )
 
     positions_events = GetEvents.positions()
-    events_handler.create_sourcedocs_events(
-        events=positions_events, event_type="Positions"
-    )
+    for position in positions_events:
+        events_handler.create_type_sourcedoc(
+            event=position, event_type="Positions"
+        )
 
     shift_events = GetEvents.shift()
-    events_handler.create_sourcedocs_events(events=shift_events, event_type="Shift")
+    for shift in shift_events:
+        events_handler.create_type_sourcedoc(events=shift, event_type="Shift")
 
     shortening_events = GetEvents.shortening()
-    events_handler.create_sourcedocs_events(
-        events=shortening_events, event_type="Shortening"
-    )
+    for shortening in shortening_events:
+        events_handler.create_type_sourcedoc(
+            event=shortening, event_type="Shortening"
+        )
 
     tubeStatus_events = GetEvents.tubeStatus()
-    events_handler.create_sourcedocs_events(
-        events=tubeStatus_events, event_type="TubeStatus"
-    )
+    for tube_status in tubeStatus_events:
+        events_handler.create_type_sourcedoc(
+            event=tube_status, event_type="TubeStatus"
+        )
 
     wellHeadProtector_events = GetEvents.wellHeadProtector()
-    events_handler.create_sourcedocs_events(
-        events=wellHeadProtector_events, event_type="WellHeadProtector"
-    )
+    for well_head_protector in wellHeadProtector_events:
+        events_handler.create_type_sourcedoc(
+            event=well_head_protector, event_type="WellHeadProtector"
+        )
 
 
 def delivered_but_not_approved(registration):
@@ -1273,31 +1362,6 @@ def gmw_check_existing_registrations(bro_info, registrations_dir, demo):
                 reversion.set_comment("Delivered the information to the BRO.")
 
 
-def gmw_create_withhistory_sourcedocs():
-    """
-    Find if there are multiple registration requests, where the construction is not yet delivered.
-    If there are multiple registration docs AND the construction is not yet deliverd, combine all sourcedocs into one.
-
-    *This would probably also require me to delete the registration log of the incorporated sourcedocs to avoid confusion.
-    """
-    # Get all construction registrations that have not yet been delivered.
-    undelivered_construction_registrations = models.gmw_registration_log.objects.filter(
-        levering_type="Construction",
-        levering_id=None,
-    )
-
-    # For every undelivered construction log, check for more logs
-    for reg in undelivered_construction_registrations:
-        all_registrations_for_one_gmw = models.gmw_registration_log.objects.filter()
-
-
-def update_delivered_events():
-    """
-    If an event has been delivered, update the event to match this.
-    This prevents future registration forms and deliveries to be made.
-    """
-
-
 class Command(BaseCommand):
     help = (
         """Command to automatically register all new events and send them to the BRO."""
@@ -1319,4 +1383,4 @@ class Command(BaseCommand):
         )
 
         # Check existing registrations
-        check = gmw_check_existing_registrations(bro_info, registrations_dir, demo)
+        gmw_check_existing_registrations(bro_info, registrations_dir, demo)
