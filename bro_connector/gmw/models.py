@@ -85,7 +85,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
 
 class GroundwaterMonitoringWellDynamic(models.Model):
     groundwater_monitoring_well_dynamic_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
+    groundwater_monitoring_well_static = models.ForeignKey(
         "GroundwaterMonitoringWellStatic",
         on_delete=models.CASCADE,
         null=True,
@@ -128,7 +128,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     remark = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.groundwater_monitoring_well.bro_id)
+        return str(self.groundwater_monitoring_well_static.bro_id)
 
     class Meta:
         managed = True
@@ -137,9 +137,9 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         verbose_name_plural = "Grondwatermonitoring Putten - Data Aanpassingen"
 
 
-class GroundwaterMonitoringTubesStatic(models.Model):
+class GroundwaterMonitoringTubeStatic(models.Model):
     groundwater_monitoring_tube_static_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
+    groundwater_monitoring_well_static = models.ForeignKey(
         "GroundwaterMonitoringWellStatic",
         on_delete=models.CASCADE,
         null=True,
@@ -180,7 +180,7 @@ class GroundwaterMonitoringTubesStatic(models.Model):
     def __str__(self):
 
         try:
-            well = str(self.groundwater_monitoring_well.bro_id)
+            well = str(self.groundwater_monitoring_well_static.bro_id)
         except:
             well = "Onbekend"
 
@@ -188,12 +188,12 @@ class GroundwaterMonitoringTubesStatic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."groundwater_monitoring_tubes_static'
+        db_table = 'gmw"."groundwater_monitoring_tube_static'
         verbose_name = "Grondwatermonitoring Filter"
         verbose_name_plural = "Grondwatermonitoring Filters"
 
 
-class GroundwaterMonitoringTubesDynamic(models.Model):
+class GroundwaterMonitoringTubeDynamic(models.Model):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_static = models.ForeignKey(
         "GroundwaterMonitoringTubesStatic",
@@ -251,7 +251,7 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."groundwater_monitoring_tubes_dynamic'
+        db_table = 'gmw"."groundwater_monitoring_tube_dynamic'
         verbose_name = "Grondwatermonitoring Filter - Data Aanpassingen"
         verbose_name_plural = "Grondwatermonitoring Filters - Data Aanpassingen"
 
@@ -259,7 +259,7 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
 class GeoOhmCable(models.Model):
     geo_ohm_cable_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_static = models.ForeignKey(
-        "GroundwaterMonitoringTubesStatic",
+        "GroundwaterMonitoringTubeStatic",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -295,7 +295,7 @@ class ElectrodeStatic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."electrodes_static'
+        db_table = 'gmw"."electrode_static'
         verbose_name = "Electrode - Statische gegevens"
         verbose_name_plural = "Electrodes - Statische gegevens"
 
@@ -317,7 +317,7 @@ class ElectrodeDynamic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."electrodes_dynamic'
+        db_table = 'gmw"."electrode_dynamic'
         verbose_name = "Electrode - Dynamische gegevens"
         verbose_name_plural = "Electrodes - Dynamische gegevens"
 
@@ -341,7 +341,7 @@ class Event(models.Model):
         blank=True,
     )
     groundwater_monitoring_well_tube_dynamic = models.ForeignKey(
-        "GroundwaterMonitoringTubesDynamic",
+        "GroundwaterMonitoringTubeDynamic",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -389,18 +389,18 @@ class gmw_registration_log(models.Model):
 
 class Picture(models.Model):
     picture_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
+    groundwater_monitoring_well_static = models.ForeignKey(
         "GroundwaterMonitoringWellStatic",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
     recording_date = models.DateField(blank=True, null=True)
-    picture = models.CharField(max_length=254, null=True, blank=True)
+    picture = models.BinaryField(blank=True, null=True)
     description = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
-        db_table = 'gmw"."pictures'
+        db_table = 'gmw"."picture'
         verbose_name = "Foto"
         verbose_name_plural = "Fotos"
 
@@ -426,14 +426,14 @@ class MaintenanceParty(models.Model):
 
 class Maintenance(models.Model):
     maintenance_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
+    groundwater_monitoring_well_static = models.ForeignKey(
         "GroundwaterMonitoringWellStatic",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
-    groundwater_monitoring_tube = models.ForeignKey(
-        "GroundwaterMonitoringTubesStatic",
+    groundwater_monitoring_tube_static = models.ForeignKey(
+        "GroundwaterMonitoringTubeStatic",
         on_delete=models.CASCADE,
         null=True,
         blank=True,

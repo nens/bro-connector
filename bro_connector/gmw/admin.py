@@ -351,10 +351,10 @@ _register(
     models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
 )
 _register(
-    models.GroundwaterMonitoringTubesStatic, GroundwaterMonitoringTubesStaticAdmin
+    models.GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubesStaticAdmin
 )
 _register(
-    models.GroundwaterMonitoringTubesDynamic, GroundwaterMonitoringTubesDynamicAdmin
+    models.GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubesDynamicAdmin
 )
 _register(models.GeoOhmCable, GeoOhmCableAdmin)
 _register(models.ElectrodeStatic, ElectrodeStaticAdmin)

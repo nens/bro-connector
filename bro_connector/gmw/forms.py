@@ -51,7 +51,7 @@ class GroundwaterMonitoringWellDynamicForm(forms.ModelForm):
 
 class GroundwaterMonitoringTubesStaticForm(forms.ModelForm):
     class Meta:
-        model = models.GroundwaterMonitoringTubesStatic
+        model = models.GroundwaterMonitoringTubeStatic
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
@@ -68,7 +68,7 @@ class GroundwaterMonitoringTubesStaticForm(forms.ModelForm):
 
 class GroundwaterMonitoringTubesDynamicForm(forms.ModelForm):
     class Meta:
-        model = models.GroundwaterMonitoringTubesDynamic
+        model = models.GroundwaterMonitoringTubeDynamic
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):

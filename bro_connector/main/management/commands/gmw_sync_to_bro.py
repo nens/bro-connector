@@ -133,8 +133,8 @@ class GetSourceDocData:
 
     def create_material_used_dict(
         self,
-        tube_static: models.GroundwaterMonitoringTubesStatic,
-        tube_dynamic: models.GroundwaterMonitoringTubesDynamic,
+        tube_static: models.GroundwaterMonitoringTubeStatic,
+        tube_dynamic: models.GroundwaterMonitoringTubeDynamic,
     ) -> dict:
         material_used = {
             "materialUsed": {
@@ -147,7 +147,7 @@ class GetSourceDocData:
 
     def handle_individual_tube(
         self,
-        dynamic_tube: models.GroundwaterMonitoringTubesDynamic,
+        dynamic_tube: models.GroundwaterMonitoringTubeDynamic,
         tube_number: int,
         sourcedoctype: str,
     ) -> None:
@@ -206,7 +206,7 @@ class GetSourceDocData:
         self.datafile.update(dynamic_well_data)
 
     def handle_dynamic_tube(
-        self, tube_dynamic: models.GroundwaterMonitoringTubesDynamic, tube_number
+        self, tube_dynamic: models.GroundwaterMonitoringTubeDynamic, tube_number
     ):
         tubes_dynamic_data = self.get_data.update_dynamic_tube(tube_dynamic)
         self.datafile["monitoringTubes"][tube_number].update(tubes_dynamic_data)
@@ -292,7 +292,7 @@ class GetSourceDocData:
 
         for tube in tubes:
             tube_dynamic = (
-                models.GroundwaterMonitoringTubesDynamic.objects.filter(
+                models.GroundwaterMonitoringTubeDynamic.objects.filter(
                     groundwater_monitoring_tube_static=tube
                 )
                 .order_by("groundwater_monitoring_tube_dynamic_id")

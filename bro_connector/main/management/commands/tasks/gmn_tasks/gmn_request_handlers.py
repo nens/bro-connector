@@ -123,7 +123,7 @@ class StartRegistrationGMN:
 
             for measuringpoint_obj in measuringpoint_objs:
                 well_code = (
-                    measuringpoint_obj.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id
+                    measuringpoint_obj.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id
                 )
                 measuringpoint = {
                     "measuringPointCode": measuringpoint_obj.code,

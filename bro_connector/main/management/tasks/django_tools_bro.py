@@ -3,7 +3,7 @@ from gmw import models
 
 class GetDjangoObjects:
     def get_all_tubes(well_static_id):
-        return models.GroundwaterMonitoringTubesStatic.objects.filter(
+        return models.GroundwaterMonitoringTubeStatic.objects.filter(
             groundwater_monitoring_well=well_static_id,
         )
 
@@ -23,8 +23,8 @@ class GetDjangoObjects:
             electrode_static_id=electrode_static_id
         )
 
-    def get_tube_static(tube_static_id) -> models.GroundwaterMonitoringTubesStatic:
-        return models.GroundwaterMonitoringTubesStatic.objects.get(
+    def get_tube_static(tube_static_id) -> models.GroundwaterMonitoringTubeStatic:
+        return models.GroundwaterMonitoringTubeStatic.objects.get(
             groundwater_monitoring_tube_static_id=tube_static_id
         )
 
@@ -60,7 +60,7 @@ class DjangoTableToDict:
         }
         return static_well_data
 
-    def update_static_tube(self, tube: models.GroundwaterMonitoringTubesStatic) -> dict:
+    def update_static_tube(self, tube: models.GroundwaterMonitoringTubeStatic) -> dict:
 
         static_tube_data = {
             "tubeNumber": tube.tube_number,
@@ -155,7 +155,7 @@ class DjangoTableToDict:
         return dynamic_well_data
 
     def update_dynamic_tube(
-        self, dynamic_tube: models.GroundwaterMonitoringTubesDynamic, sourcedoctype
+        self, dynamic_tube: models.GroundwaterMonitoringTubeDynamic, sourcedoctype
     ) -> dict:
         if sourcedoctype == "construction" or "construction_with_history":
             dynamic_tube_data = {

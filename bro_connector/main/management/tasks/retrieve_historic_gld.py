@@ -2,7 +2,7 @@ from ..tasks.bro_handlers import GLDHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
 import datetime
-from gmw.models import GroundwaterMonitoringTubesStatic, GroundwaterMonitoringWellStatic
+from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 
 
 from gld.models import (
@@ -129,7 +129,7 @@ def get_censor_reason(
 def get_tube_id(bro_id: str, tube_number: int) -> str:
     well = GroundwaterMonitoringWellStatic.objects.get(bro_id=bro_id)
 
-    tube = GroundwaterMonitoringTubesStatic.objects.get(
+    tube = GroundwaterMonitoringTubeStatic.objects.get(
         groundwater_monitoring_well=well,
         tube_number=tube_number,
     )

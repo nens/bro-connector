@@ -1,6 +1,6 @@
 from django.db import models
 from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
-from gmw.models import GroundwaterMonitoringTubesStatic
+from gmw.models import GroundwaterMonitoringTubeStatic
 
 
 # Create your models here.
@@ -112,7 +112,7 @@ class GroundwaterMonitoringNet(models.Model):
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
     groundwater_monitoring_tube = models.ForeignKey(
-        GroundwaterMonitoringTubesStatic,
+        GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=False,
@@ -141,7 +141,7 @@ class MeasuringPoint(models.Model):
         return self.code
 
     def save(self, *args, **kwargs):
-        self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id}_{self.groundwater_monitoring_tube.tube_number}"
+        self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_tube.tube_number}"
         is_new = self._state.adding
         super().save(*args, **kwargs)
 
