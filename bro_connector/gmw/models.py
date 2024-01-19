@@ -452,3 +452,33 @@ class Maintenance(models.Model):
         db_table = 'gmw"."maintenance'
         verbose_name = "Onderhoudsmoment"
         verbose_name_plural = "Onderhoudsmomenten"
+
+
+
+class XMLImport(models.Model):
+    id = models.AutoField(primary_key=True)
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    file = models.FileField(upload_to=f"bulk", validators=[])
+    report = models.TextField(
+        help_text="process description",
+        blank=True,
+        null=True,
+    )
+    checked = models.BooleanField(
+        help_text="checked",
+        editable=False,
+        default=False,
+        blank=True,
+        null=True,
+    )
+    imported = models.BooleanField(
+        verbose_name="fully imported",
+        default=False,
+        editable=False,
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = "XML import"
+        verbose_name_plural = "XML imports"
