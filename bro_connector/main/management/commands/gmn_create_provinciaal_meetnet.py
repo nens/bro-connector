@@ -3,7 +3,7 @@ from gmn.models import (
     GroundwaterMonitoringNet,
     MeasuringPoint,
 )
-from gmw.models import GroundwaterMonitoringTubesStatic
+from gmw.models import GroundwaterMonitoringTubeStatic
 from datetime import date
 
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
             new_gmn_obj.save()
 
         # Haal all Filters op en maak hiervoor Measuring points aan
-        gmw_tubes = GroundwaterMonitoringTubesStatic.objects.all()
+        gmw_tubes = GroundwaterMonitoringTubeStatic.objects.all()
 
         print(
             f"{len(gmw_tubes)} filters gevonden in de database. Hiervoor worden Measuring Points aangemaakt, gelinkt aan het '{meetnet_naam}' Meetnet"

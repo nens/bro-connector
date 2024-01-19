@@ -124,7 +124,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
-        "groundwater_monitoring_well",
+        "groundwater_monitoring_well_static",
         "number_of_standpipes",
         "ground_level_stable",
         "well_stability",
@@ -135,7 +135,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "ground_level_position",
         "ground_level_positioning_method",
     )
-    list_filter = ("groundwater_monitoring_well", "deliver_gld_to_bro", "owner")
+    list_filter = ("groundwater_monitoring_well_static", "deliver_gld_to_bro", "owner")
 
 
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
@@ -144,7 +144,7 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
     list_display = (
         "groundwater_monitoring_tube_static_id",
-        "groundwater_monitoring_well",
+        "groundwater_monitoring_well_static",
         "deliver_gld_to_bro",
         "tube_number",
         "tube_type",
@@ -228,7 +228,7 @@ class EventAdmin(admin.ModelAdmin):
         "event_name",
         "event_date",
         "groundwater_monitoring_well_static",
-        "groundwater_monitoring_well_tube_dynamic",
+        "groundwater_monitoring_tube_dynamic",
         "electrode_dynamic",
     )
     list_filter = ("change_id",)
@@ -236,16 +236,23 @@ class EventAdmin(admin.ModelAdmin):
 
 class PictureAdmin(admin.ModelAdmin):
 
-    list_display = ()
+    list_display = (
+        "groundwater_monitoring_well_static",
+        "recording_date",
+    )
     list_filter = (
-        "groundwater_monitoring_well",
+        "groundwater_monitoring_well_static",
         "recording_date",
     )
 
 
 class MaintenancePartyAdmin(admin.ModelAdmin):
 
-    list_display = ()
+    list_display = (
+        "organisation",
+        "postal_code",
+        "function",
+    )
     list_filter = (
         "organisation",
         "postal_code",
@@ -255,94 +262,19 @@ class MaintenancePartyAdmin(admin.ModelAdmin):
 
 class MaintenanceAdmin(admin.ModelAdmin):
 
-    list_display = ()
+    list_display = (
+        "kind_of_maintenance",
+        "groundwater_monitoring_well_static",
+        "execution_date",
+        "reporter",
+    )
     list_filter = (
         "kind_of_maintenance",
-        "groundwater_monitoring_well",
+        "groundwater_monitoring_well_static",
         "execution_date",
         "reporter",
     )
 
-
-class XMLImportAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "created",
-        "file",
-        "checked",
-        "imported",
-    )
-
-    actions = [
-        "update_database",
-    ]
-
-    def save_model(self, request, obj, form, change):
-        try:
-            originele_constructie_import = models.XMLImport.objects.get(id=obj.id)
-            file = originele_constructie_import.file
-        except models.XMLImport.DoesNotExist:
-            originele_constructie_import = None
-            file = None
-
-        if obj.file != file and file is not None:
-            # If a new csv is set into the ConstructieImport row.
-            obj.imported = False
-            obj.checked = False
-            obj.report = (
-                obj.report + f"\nswitched the csv file from {file} to {obj.file}."
-            )
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
-
-        else:
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
-
-    def update_database(self, request, QuerySet):
-        for object in QuerySet:
-            if str(object.file).endswith("xml"):
-                print("Handling XML file")
-                (completed, message) = xml_import.import_xml(object.file, ".")
-                object.checked = True
-                object.imported = completed
-                object.report += message
-                object.save()
-
-            elif str(object.file).endswith("zip"):
-                print("Handling ZIP file")
-                # First unpack the zip
-                with ZipFile(object.file, "r") as zip:
-                    zip.printdir()
-                    zip.extractall(path=f"./{object.name}/")
-
-                # Remove constructies/ and .zip from the filename
-                file_name = str(object.file)[13:-4]
-                print(file_name)
-
-                path = f"."
-
-                for file in os.listdir(path):
-                    if file.endswith("csv"):
-                        print(
-                            f"Bulk import of filetype of {file} not yet supported not yet supported."
-                        )
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
-                        pass
-
-                    elif file.endswith("xml"):
-                        (completed, message) = xml_import.import_xml(file, path)
-                        object.checked = True
-                        object.imported = completed
-                        object.report += message
-                        object.save()
-
-                    else:
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
 
 
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
@@ -351,10 +283,10 @@ _register(
     models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
 )
 _register(
-    models.GroundwaterMonitoringTubesStatic, GroundwaterMonitoringTubesStaticAdmin
+    models.GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubesStaticAdmin
 )
 _register(
-    models.GroundwaterMonitoringTubesDynamic, GroundwaterMonitoringTubesDynamicAdmin
+    models.GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubesDynamicAdmin
 )
 _register(models.GeoOhmCable, GeoOhmCableAdmin)
 _register(models.ElectrodeStatic, ElectrodeStaticAdmin)
@@ -363,4 +295,3 @@ _register(models.Event, EventAdmin)
 _register(models.Picture, PictureAdmin)
 _register(models.MaintenanceParty, MaintenancePartyAdmin)
 _register(models.Maintenance, MaintenanceAdmin)
-_register(models.XMLImport, XMLImportAdmin)

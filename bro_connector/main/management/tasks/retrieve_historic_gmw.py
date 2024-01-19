@@ -7,8 +7,8 @@ from ..tasks import events_handler
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
     GroundwaterMonitoringWellDynamic,
-    GroundwaterMonitoringTubesDynamic,
-    GroundwaterMonitoringTubesStatic,
+    GroundwaterMonitoringTubeDynamic,
+    GroundwaterMonitoringTubeStatic,
     GeoOhmCable,
     ElectrodeDynamic,
     ElectrodeStatic,
@@ -227,7 +227,7 @@ class InitializeData:
         self.gmwd.save()
 
     def tube_static(self):
-        self.gmts = GroundwaterMonitoringTubesStatic.objects.create(
+        self.gmts = GroundwaterMonitoringTubeStatic.objects.create(
             groundwater_monitoring_well=self.gmws,
             artesian_well_cap_present=self.gmw_dict.get(
                 self.prefix + "artesianWellCapPresent", None
@@ -253,7 +253,7 @@ class InitializeData:
         self.gmts.save()
 
     def tube_dynamic(self):
-        self.gmtd = GroundwaterMonitoringTubesDynamic.objects.create(
+        self.gmtd = GroundwaterMonitoringTubeDynamic.objects.create(
             groundwater_monitoring_tube_static=self.gmts,
             glue=self.gmw_dict.get(self.prefix + "glue", None),
             inserted_part_diameter=self.gmw_dict.get(

@@ -3,8 +3,8 @@ from django.utils import timezone
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
     GroundwaterMonitoringWellDynamic,
-    GroundwaterMonitoringTubesDynamic,
-    GroundwaterMonitoringTubesStatic,
+    GroundwaterMonitoringTubeDynamic,
+    GroundwaterMonitoringTubeStatic,
     GeoOhmCable,
     ElectrodeDynamic,
     ElectrodeStatic,
@@ -118,7 +118,7 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
     try:
         eles_id = ElectrodeStatic.objects.filter(
             geo_ohm_cable=GeoOhmCable.objects.filter(
-                groundwater_monitoring_tube_static=GroundwaterMonitoringTubesStatic.objects.get(
+                groundwater_monitoring_tube_static=GroundwaterMonitoringTubeStatic.objects.get(
                     groundwater_monitoring_well=groundwater_monitoring_well,
                     tube_number=tube_number,
                 )
@@ -131,7 +131,7 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
 
 
 def get_tube_static(groundwater_monitoring_well, tube_number):
-    gmts_id = GroundwaterMonitoringTubesStatic.objects.get(
+    gmts_id = GroundwaterMonitoringTubeStatic.objects.get(
         groundwater_monitoring_well=groundwater_monitoring_well, tube_number=tube_number
     )
     return gmts_id
@@ -140,13 +140,13 @@ def get_tube_static(groundwater_monitoring_well, tube_number):
 def get_tube_dynamic_history(well_static: GroundwaterMonitoringWellStatic, updates):
     try:
         # Find which filter needs to be adjusted
-        new_gmts = GroundwaterMonitoringTubesStatic.objects.get(
+        new_gmts = GroundwaterMonitoringTubeStatic.objects.get(
             tube_number=updates["tubeNumber"],
             groundwater_monitoring_well=well_static,
         )
 
         # Clone row and make new primary key with save
-        new_gmtds = GroundwaterMonitoringTubesDynamic.objects.filter(
+        new_gmtds = GroundwaterMonitoringTubeDynamic.objects.filter(
             groundwater_monitoring_tube_static=new_gmts
         )
     except:

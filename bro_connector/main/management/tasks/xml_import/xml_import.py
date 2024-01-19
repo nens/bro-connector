@@ -240,7 +240,7 @@ class InitializeData:
             self.gmw_dict, self.prefix
         )
 
-        self.filter_instance = bro.GroundwaterMonitoringTubesStatic.objects.create(
+        self.filter_instance = bro.GroundwaterMonitoringTubeStatic.objects.create(
             groundwater_monitoring_well=self.meetpunt_instance,
             artesian_well_cap_present=arthesisch_water_aanwezig,
             screen_length=self.gmw_dict.get(self.prefix + "screenLength", None),
@@ -260,7 +260,7 @@ class InitializeData:
 
     def filter_dynamic(self):
         self.filtergeschiedenis_instance = (
-            bro.GroundwaterMonitoringTubesDynamic.objects.create(
+            bro.GroundwaterMonitoringTubeDynamic.objects.create(
                 groundwater_monitoring_tube_static=self.filter_instance,
                 tube_packing_material=self.gmw_dict.get(
                     self.prefix + "tubePackingMaterial", None

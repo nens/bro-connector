@@ -67,6 +67,7 @@ class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
         "id",
         "formationresistance",
         "measurement_configuration",
+        "datetime"
     )
     list_filter = (
         "measurement_configuration",

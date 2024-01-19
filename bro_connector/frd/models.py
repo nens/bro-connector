@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from .choices import *
 from django.core.validators import MaxValueValidator, MinValueValidator
-from gmw.models import GroundwaterMonitoringTubesStatic
+from gmw.models import GroundwaterMonitoringTubeStatic
 from gmn.models import GroundwaterMonitoringNet
 
 # Create your models here.
@@ -62,7 +62,7 @@ class FormationResistanceDossier(models.Model):
         blank=True,
     )
     gmw_tube = models.ForeignKey(
-        GroundwaterMonitoringTubesStatic,
+        GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -84,7 +84,7 @@ class FormationResistanceDossier(models.Model):
 
     @property
     def name(self):
-        nitg_code = self.gmw_tube.groundwater_monitoring_well.nitg_code
+        nitg_code = self.gmw_tube.groundwater_monitoring_well_static.nitg_code
         name = f"FRD_{nitg_code}_{self.gmw_tube.tube_number}"
         return name
 
@@ -283,9 +283,6 @@ class FormationresistanceSeries(models.Model):
         verbose_name_plural = "Formationresistance Series"
 
 
-# class FRDRecord(models.Model):
-#     pass
-
 
 class GeoOhmMeasurementValue(models.Model):
     formationresistance = models.DecimalField(
@@ -294,6 +291,7 @@ class GeoOhmMeasurementValue(models.Model):
     measurement_configuration = models.ForeignKey(
         "MeasurementConfiguration", on_delete=models.CASCADE, null=True, blank=False
     )
+    datetime = models.DateTimeField(blank = False, null = False)
 
     class Meta:
         managed = True

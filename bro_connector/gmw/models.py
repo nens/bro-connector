@@ -85,8 +85,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
 
 class GroundwaterMonitoringWellDynamic(models.Model):
     groundwater_monitoring_well_dynamic_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
-        "GroundwaterMonitoringWellStatic",
+    groundwater_monitoring_well_static = models.ForeignKey(
+        GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -128,7 +128,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     remark = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.groundwater_monitoring_well.bro_id)
+        return str(self.groundwater_monitoring_well_static.bro_id)
 
     class Meta:
         managed = True
@@ -137,10 +137,10 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         verbose_name_plural = "Grondwatermonitoring Putten - Data Aanpassingen"
 
 
-class GroundwaterMonitoringTubesStatic(models.Model):
+class GroundwaterMonitoringTubeStatic(models.Model):
     groundwater_monitoring_tube_static_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
-        "GroundwaterMonitoringWellStatic",
+    groundwater_monitoring_well_static = models.ForeignKey(
+        GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -180,7 +180,7 @@ class GroundwaterMonitoringTubesStatic(models.Model):
     def __str__(self):
 
         try:
-            well = str(self.groundwater_monitoring_well.bro_id)
+            well = str(self.groundwater_monitoring_well_static.bro_id)
         except:
             well = "Onbekend"
 
@@ -188,15 +188,15 @@ class GroundwaterMonitoringTubesStatic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."groundwater_monitoring_tubes_static'
+        db_table = 'gmw"."groundwater_monitoring_tube_static'
         verbose_name = "Grondwatermonitoring Filter"
         verbose_name_plural = "Grondwatermonitoring Filters"
 
 
-class GroundwaterMonitoringTubesDynamic(models.Model):
+class GroundwaterMonitoringTubeDynamic(models.Model):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_static = models.ForeignKey(
-        "GroundwaterMonitoringTubesStatic",
+        GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -251,7 +251,7 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."groundwater_monitoring_tubes_dynamic'
+        db_table = 'gmw"."groundwater_monitoring_tube_dynamic'
         verbose_name = "Grondwatermonitoring Filter - Data Aanpassingen"
         verbose_name_plural = "Grondwatermonitoring Filters - Data Aanpassingen"
 
@@ -259,7 +259,7 @@ class GroundwaterMonitoringTubesDynamic(models.Model):
 class GeoOhmCable(models.Model):
     geo_ohm_cable_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_static = models.ForeignKey(
-        "GroundwaterMonitoringTubesStatic",
+        GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -283,7 +283,7 @@ class GeoOhmCable(models.Model):
 class ElectrodeStatic(models.Model):
     electrode_static_id = models.AutoField(primary_key=True)
     geo_ohm_cable = models.ForeignKey(
-        "GeoOhmCable", on_delete=models.CASCADE, null=True, blank=True
+        GeoOhmCable, on_delete=models.CASCADE, null=True, blank=True
     )
     electrode_packing_material = models.CharField(
         choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True
@@ -295,7 +295,7 @@ class ElectrodeStatic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."electrodes_static'
+        db_table = 'gmw"."electrode_static'
         verbose_name = "Electrode - Statische gegevens"
         verbose_name_plural = "Electrodes - Statische gegevens"
 
@@ -303,7 +303,7 @@ class ElectrodeStatic(models.Model):
 class ElectrodeDynamic(models.Model):
     electrode_dynamic_id = models.AutoField(primary_key=True)
     electrode_static = models.ForeignKey(
-        "ElectrodeStatic", on_delete=models.CASCADE, null=True, blank=True
+        ElectrodeStatic, on_delete=models.CASCADE, null=True, blank=True
     )
     electrode_number = models.IntegerField(
         blank=True, null=True
@@ -317,7 +317,7 @@ class ElectrodeDynamic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."electrodes_dynamic'
+        db_table = 'gmw"."electrode_dynamic'
         verbose_name = "Electrode - Dynamische gegevens"
         verbose_name_plural = "Electrodes - Dynamische gegevens"
 
@@ -329,25 +329,25 @@ class Event(models.Model):
     )
     event_date = models.CharField(max_length=254, blank=True, null=True)
     groundwater_monitoring_well_static = models.ForeignKey(
-        "GroundwaterMonitoringWellStatic",
+        GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
     groundwater_monitoring_well_dynamic = models.ForeignKey(
-        "GroundwaterMonitoringWellDynamic",
+        GroundwaterMonitoringWellDynamic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
-    groundwater_monitoring_well_tube_dynamic = models.ForeignKey(
-        "GroundwaterMonitoringTubesDynamic",
+    groundwater_monitoring_tube_dynamic = models.ForeignKey(
+        GroundwaterMonitoringTubeDynamic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
     electrode_dynamic = models.ForeignKey(
-        "ElectrodeDynamic", on_delete=models.CASCADE, null=True, blank=True
+        ElectrodeDynamic, on_delete=models.CASCADE, null=True, blank=True
     )
     delivered_to_bro = models.BooleanField(blank=True, default=False)
 
@@ -389,18 +389,18 @@ class gmw_registration_log(models.Model):
 
 class Picture(models.Model):
     picture_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
-        "GroundwaterMonitoringWellStatic",
+    groundwater_monitoring_well_static = models.ForeignKey(
+        GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
     recording_date = models.DateField(blank=True, null=True)
-    picture = models.CharField(max_length=254, null=True, blank=True)
+    picture = models.BinaryField(blank=True, null=True)
     description = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
-        db_table = 'gmw"."pictures'
+        db_table = 'gmw"."picture'
         verbose_name = "Foto"
         verbose_name_plural = "Fotos"
 
@@ -426,14 +426,14 @@ class MaintenanceParty(models.Model):
 
 class Maintenance(models.Model):
     maintenance_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_well = models.ForeignKey(
-        "GroundwaterMonitoringWellStatic",
+    groundwater_monitoring_well_static = models.ForeignKey(
+        GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
-    groundwater_monitoring_tube = models.ForeignKey(
-        "GroundwaterMonitoringTubesStatic",
+    groundwater_monitoring_tube_static = models.ForeignKey(
+        GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -442,7 +442,7 @@ class Maintenance(models.Model):
     kind_of_maintenance = models.CharField(max_length=254, choices="")
     description = models.CharField(max_length=254, null=True, blank=True)
     picture = models.ForeignKey(
-        "Picture", on_delete=models.CASCADE, null=True, blank=True
+        Picture, on_delete=models.CASCADE, null=True, blank=True
     )
     reporter = models.IntegerField(blank=True, null=True)  # Maintenance_party_id
     execution_date = models.DateField(blank=True, null=True)
@@ -452,32 +452,3 @@ class Maintenance(models.Model):
         db_table = 'gmw"."maintenance'
         verbose_name = "Onderhoudsmoment"
         verbose_name_plural = "Onderhoudsmomenten"
-
-
-class XMLImport(models.Model):
-    id = models.AutoField(primary_key=True)
-    created = models.DateTimeField(auto_now_add=True, editable=False)
-    file = models.FileField(upload_to=f"bulk", validators=[])
-    report = models.TextField(
-        help_text="process description",
-        blank=True,
-        null=True,
-    )
-    checked = models.BooleanField(
-        help_text="checked",
-        editable=False,
-        default=False,
-        blank=True,
-        null=True,
-    )
-    imported = models.BooleanField(
-        verbose_name="fully imported",
-        default=False,
-        editable=False,
-        blank=True,
-        null=True,
-    )
-
-    class Meta:
-        verbose_name = "XML import"
-        verbose_name_plural = "XML imports"
