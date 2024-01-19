@@ -382,6 +382,7 @@ class gmw_registration_log(models.Model):
     )
 
     class Meta:
+        managed = True
         db_table = 'aanlevering"."gmw_registration_log'
         verbose_name = "GMW Synchronisatie Log"
         verbose_name_plural = "GMW Synchronisatie Logs"
@@ -400,6 +401,7 @@ class Picture(models.Model):
     description = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
+        managed = True
         db_table = 'gmw"."picture'
         verbose_name = "Foto"
         verbose_name_plural = "Fotos"
@@ -449,6 +451,7 @@ class Maintenance(models.Model):
     execution_by = models.IntegerField(blank=True, null=True)  # Maintenance_party_id
 
     class Meta:
+        managed = True
         db_table = 'gmw"."maintenance'
         verbose_name = "Onderhoudsmoment"
         verbose_name_plural = "Onderhoudsmomenten"
