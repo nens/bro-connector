@@ -446,7 +446,7 @@ class FrdSyncLog(models.Model):
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
-        max_length=25,
+        max_length=40,
     )
     frd = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, blank=True, null=True
@@ -464,7 +464,7 @@ class FrdSyncLog(models.Model):
     delivery_id = models.CharField(max_length=254, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.event_type}_{self.frd.object_id_accountable_party}_log"
+        return f"{self.event_type}_log"
 
     class Meta:
         db_table = 'frd"."frd_sync_log'

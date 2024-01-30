@@ -2,7 +2,7 @@ import os
 import time
 
 from django.core.management.base import BaseCommand
-from bro_exchange.broxml.frd.requests import FrdStartregistrationTool
+from bro_exchange.broxml.frd.requests import FrdStartregistrationTool, ConfigurationRegistrationTool
 from bro_exchange.bhp.connector import (
     validate_sourcedoc,
     upload_sourcedocs_from_dict,
@@ -12,6 +12,15 @@ from frd.models import FormationResistanceDossier, FrdSyncLog, MeasurementConfig
 from datetime import datetime
 from main.settings.base import FRD_SETTINGS
 
+def get_xml_payload(xml_filepath):
+    """
+    Creates a payload of the xml file, based on the filepath
+    """
+    filepath = xml_filepath
+    with open(filepath) as file:
+        xml_payload = file.read()
+
+    return xml_payload
 
 class Command(BaseCommand):
     """
@@ -132,7 +141,7 @@ class FrdStartregistration:
         Validates the xml file, using the BRO validations service.
         If the xml file is VALIDE, the deliver_xml_file method is called
         """
-        xml_payload = self.get_xml_payload()
+        xml_payload = get_xml_payload(self.frd_startregistration_log.xml_filepath)
 
         try:
             validation_info = validate_sourcedoc(
@@ -360,7 +369,7 @@ class ConfigurationRegistration:
         If so, checks the status, and picks up the registration process where it was left.
         """
         self.registration_log, created = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_GEM_MeasurementConfiguration", frd=self.frd_obj
+            event_type="FRD_GEM_MeasurementConfiguration", configuration=self.measurement_configuration
         )
 
         status_function_mapping = {
@@ -370,10 +379,10 @@ class ConfigurationRegistration:
             "succesfully_generated_xml": self.validate_xml_file,
             "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
             "source_document_validation_succesful": self.deliver_xml_file,
-            "succesfully_delivered_sourcedocuments": self.check_delivery,
+            # "succesfully_delivered_sourcedocuments": self.check_delivery,
         }
 
-        current_status = self.frd_startregistration_log.process_status
+        current_status = self.registration_log.process_status
         method_to_call = status_function_mapping.get(current_status)
 
         method_to_call()
@@ -400,6 +409,45 @@ class ConfigurationRegistration:
 
             self.validate_xml_file()
 
+    def validate_xml_file(self):
+        """
+        Validates the xml file, using the BRO validations service.
+        If the xml file is VALIDE, the deliver_xml_file method is called
+        """
+        xml_payload = get_xml_payload(self.registration_log.xml_filepath)
+
+        try:
+            validation_info = validate_sourcedoc(
+                payload=xml_payload,
+                bro_info=self.bro_info,
+                demo=self.demo,
+                api=self.api_version,
+            )
+
+        except Exception as e:
+            self.registration_log.process_status = "failed_to_validate_sourcedocument"
+            self.registration_log.comment = f"Error message: {e}"
+            self.registration_log.save()
+
+        else:
+            validation_status = validation_info["status"]
+            validation_errors = validation_info["errors"]
+
+            if validation_status == "VALIDE":
+                self.registration_log.process_status = "source_document_validation_succesful"
+                self.registration_log.comment = "Succesfully validated sourcedocument"
+                self.registration_log.save()
+
+                self.deliver_xml_file()
+
+            else:
+                self.registration_log.process_status = "failed_to_validate_sourcedocument"
+                self.registration_log.comment = f"Validation Status: {validation_status}, errors: {validation_errors}"
+                self.registration_log.save()
+
+    def deliver_xml_file(self):
+        pass
+
     def construct_xml_tree(self):
         """
         Setup the data for the xml file.
@@ -409,15 +457,19 @@ class ConfigurationRegistration:
         srcdocdata = {
             "request_reference": f"registration_{self.measurement_configuration.configuration_name}",
             "measurement_configuration_id": self.measurement_configuration.configuration_name,
+            "measurement_pair":self.measurement_configuration.measurement_pair,
+            "flowcurrent_pair":self.measurement_configuration.flowcurrent_pair,
         }
 
-        startregistration_tool = FrdStartregistrationTool(srcdocdata)
-        self.startregistration_xml_file = startregistration_tool.generate_xml_file()
+        configuration_registration_tool = ConfigurationRegistrationTool(srcdocdata)
+        self.startregistration_xml_file = configuration_registration_tool.generate_xml_file()
 
     def save_xml_file(self):
         """
         Saves the xmltree as xml file in the filepath as defined in self.
         """
-        filename = f"startregistration_{self.frd_obj.object_id_accountable_party}.xml"
+        filename = f"registration_{self.measurement_configuration.configuration_name}.xml"
         self.filepath = os.path.join(self.output_dir, filename)
         self.startregistration_xml_file.write(self.filepath, pretty_print=True)
+
+
