@@ -6,10 +6,12 @@ from main.management.tasks.xml_import import xml_import
 from zipfile import ZipFile
 import os
 
-from . import models
+from django.db import models
+
+from . import models as gmw_models
 
 from main.settings.base import gmw_SETTINGS
-from . import forms
+from . import forms as gmw_forms
 
 
 def _register(model, admin_class):
@@ -26,7 +28,7 @@ def get_searchable_fields(model_class):
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
-    form = forms.GroundwaterMonitoringWellStaticForm
+    form = gmw_forms.GroundwaterMonitoringWellStaticForm
 
     list_display = (
         "groundwater_monitoring_well_static_id",
@@ -120,7 +122,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
-    form = forms.GroundwaterMonitoringWellDynamicForm
+    form = gmw_forms.GroundwaterMonitoringWellDynamicForm
 
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
@@ -140,7 +142,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
-    form = forms.GroundwaterMonitoringTubesStaticForm
+    form = gmw_forms.GroundwaterMonitoringTubesStaticForm
 
     list_display = (
         "groundwater_monitoring_tube_static_id",
@@ -161,7 +163,7 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
-    form = forms.GroundwaterMonitoringTubesDynamicForm
+    form = gmw_forms.GroundwaterMonitoringTubesDynamicForm
 
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
@@ -183,7 +185,7 @@ class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
 class GeoOhmCableAdmin(admin.ModelAdmin):
 
-    form = forms.GeoOhmCableForm
+    form = gmw_forms.GeoOhmCableForm
 
     list_display = (
         "geo_ohm_cable_id",
@@ -195,11 +197,12 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
 
 class ElectrodeStaticAdmin(admin.ModelAdmin):
 
-    form = forms.ElectrodeStaticForm
+    form = gmw_forms.ElectrodeStaticForm
 
     list_display = (
         "electrode_static_id",
         "geo_ohm_cable_id",
+        "electrode_number",
         "electrode_packing_material",
         "electrode_position",
     )
@@ -208,12 +211,11 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
-    form = forms.ElectrodeDynamicForm
+    form = gmw_forms.ElectrodeDynamicForm
 
     list_display = (
         "electrode_dynamic_id",
         "electrode_static_id",
-        "electrode_number",
         "electrode_status",
     )
     list_filter = ("electrode_dynamic_id",)
@@ -221,7 +223,7 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
 class EventAdmin(admin.ModelAdmin):
 
-    form = forms.EventForm
+    form = gmw_forms.EventForm
 
     list_display = (
         "change_id",
@@ -235,6 +237,9 @@ class EventAdmin(admin.ModelAdmin):
 
 
 class PictureAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        models.BinaryField: {'widget': gmw_forms.BinaryFileInput()},
+    }
 
     list_display = (
         "groundwater_monitoring_well_static",
@@ -359,21 +364,20 @@ class XMLImportAdmin(admin.ModelAdmin):
 
 
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
-_register(models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
+_register(gmw_models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
 _register(
-    models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
+    gmw_models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
 )
 _register(
-    models.GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubesStaticAdmin
+    gmw_models.GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubesStaticAdmin
 )
 _register(
-    models.GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubesDynamicAdmin
+    gmw_models.GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubesDynamicAdmin
 )
-_register(models.GeoOhmCable, GeoOhmCableAdmin)
-_register(models.ElectrodeStatic, ElectrodeStaticAdmin)
-_register(models.ElectrodeDynamic, ElectrodeDynamicAdmin)
-_register(models.Event, EventAdmin)
-_register(models.Picture, PictureAdmin)
-_register(models.MaintenanceParty, MaintenancePartyAdmin)
-_register(models.Maintenance, MaintenanceAdmin)
-_register(models.XMLImport, XMLImportAdmin)
+_register(gmw_models.GeoOhmCable, GeoOhmCableAdmin)
+_register(gmw_models.ElectrodeStatic, ElectrodeStaticAdmin)
+_register(gmw_models.ElectrodeDynamic, ElectrodeDynamicAdmin)
+_register(gmw_models.Event, EventAdmin)
+_register(gmw_models.Picture, PictureAdmin)
+_register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
+_register(gmw_models.Maintenance, MaintenanceAdmin)
