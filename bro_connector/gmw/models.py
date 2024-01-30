@@ -289,6 +289,9 @@ class ElectrodeStatic(models.Model):
         choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True
     )
     electrode_position = models.CharField(max_length=200, blank=True, null=True)
+    electrode_number = models.IntegerField(
+        blank=True, null=True
+    )
 
     def __str__(self):
         return str(self.electrode_static_id)
@@ -305,9 +308,6 @@ class ElectrodeDynamic(models.Model):
     electrode_static = models.ForeignKey(
         ElectrodeStatic, on_delete=models.CASCADE, null=True, blank=True
     )
-    electrode_number = models.IntegerField(
-        blank=True, null=True
-    )  # Is het niet gek dat dit nummer in de dynamic staat? Aanpassen zal voor problemen zorgen in de toekomst met FRD.
     electrode_status = models.CharField(
         choices=ELECTRODESTATUS, max_length=200, blank=True, null=True
     )
@@ -397,7 +397,7 @@ class Picture(models.Model):
         blank=True,
     )
     recording_date = models.DateField(blank=True, null=True)
-    picture = models.BinaryField(blank=True, null=True)
+    picture = models.BinaryField(blank=True, null=True, editable=True)
     description = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
