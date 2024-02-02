@@ -88,13 +88,214 @@ class Command(BaseCommand):
         return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
 
 class Registration(ABC):
+    xml_file = None
+    log = FrdSyncLog
+    demo = bool
+    api_version = str
+    bro_info = dict
+
     @abstractmethod
     def sync(self):
         pass
 
-    
+    def generate_xml_file(self):
+        """
+        Handles the generation of the registration xml file.
+        If it is succesfull, it calls the validate_registration_xml to continue the registration process.
+        """
+        try:
+            self.construct_xml_tree()
+            self.save_xml_file()
 
-class FrdStartregistration:
+        except Exception as e:
+            self.log.process_status = "failed_to_generate_registration_xml"
+            self.log.comment = f"Error message: {e}",
+            self.log.save()
+
+        else:
+            self.log.process_status = "succesfully_generated_registration_xml"
+            self.log.comment = "Succesfully generated registration request"
+            self.log.xml_filepath = self.filepath
+            self.log.save()
+
+            self.validate_xml_file()
+
+    @abstractmethod
+    def construct_xml_tree(self):
+        """
+        Setup the data for the registration xml file.
+        Then creates the file and saves the xml tree to self.
+        """
+        pass
+    
+    @abstractmethod
+    def save_xml_file(self):
+        """
+        Saves the xmltree as xml file in the filepath as defined in self.
+        """
+        pass
+
+    def validate_xml_file(self):
+        """
+        Validates the xml file, using the BRO validations service.
+        If the xml file is VALIDE, the deliver_xml_file method is called
+        """
+        xml_payload = get_xml_payload(self.log.xml_filepath)
+
+        try:
+            validation_info = validate_sourcedoc(
+                payload=xml_payload,
+                bro_info=self.bro_info,
+                demo=self.demo,
+                api=self.api_version,
+            )
+
+        except Exception as e:
+            self.log.process_status = "failed_to_validate_sourcedocument"
+            self.log.comment = f"Error message: {e}"
+            self.log.save()
+
+        # Is this else statement needed?
+        else:
+            validation_status = validation_info["status"]
+            validation_errors = validation_info["errors"]
+
+            if validation_status == "VALIDE":
+                self.log.process_status = "source_document_validation_succesful"
+                self.log.comment = "Succesfully validated sourcedocument"
+                self.log.save()
+
+                self.deliver_xml_file()
+            
+            # Could we not return and once again remove the else statement?
+            else:
+                self.log.process_status = "failed_to_validate_sourcedocument"
+                self.log.comment = f"Validation Status: {validation_status}, errors: {validation_errors}"
+                self.log.save()
+
+    def deliver_xml_file(self):
+        """
+        Delivers the xml file after it has succesfully been validated.
+        If the delivery status is OK, the check_delivery method is called to check for further details.
+        """
+
+        delivery_status = self.log.delivery_status
+
+        if delivery_status == 3:
+            self.log.process_status = "The delivery of the xml file has failed 3 times. Please check manually what's going on, and reset the delivery status on 'Nog niet aangeleverd"
+            self.log.save()
+            return
+
+        xml_payload = get_xml_payload(self.log.xml_filepath)
+        xml_filename = self.log.xml_filepath.rsplit("/", 1)[-1]
+        request_dict = {xml_filename: xml_payload}
+
+        try:
+            upload_info = upload_sourcedocs_from_dict(
+                reqs=request_dict,
+                token=self.bro_info["token"],
+                demo=self.demo,
+                api=self.api_version,
+            )
+
+        except Exception as e:
+            delivery_status += 1
+            self.log.process_status = "failed_to_deliver_sourcedocuments"
+            self.log.comment = f"Error message: {e}"
+            self.log.delivery_status = delivery_status
+            self.log.save()
+
+        else:
+            if upload_info == "Error":
+                delivery_status += 1
+                self.log.process_status = "failed_to_deliver_sourcedocuments"
+                self.log.comment = f"Error message: {upload_info}"
+                self.log.delivery_status = delivery_status
+                self.log.save()
+
+            else:
+                self.log.process_status = "succesfully_delivered_sourcedocuments"
+                self.log.comment = "Succesfully delivered registration xml file"
+                self.log.delivery_status = 4
+                self.log.delivery_status_info = upload_info.json()["status"]
+                self.log.delivery_id = upload_info.json()["identifier"]
+                self.log.save()
+
+                time.sleep(10)
+
+                self.check_delivery()
+
+    def check_delivery(self):
+        """
+        Checks the delivery status based on the delivery id.
+        Updates the log of the frd, based on the return of the BRO webservice.
+        If the delivery is fully succesfull, the finish_registration method is called.
+        """
+
+        try:
+            delivery_status_info = check_delivery_status(
+                identifier=self.log.delivery_id,
+                token=self.bro_info["token"],
+                demo=self.demo,
+                api=self.api_version,
+            )
+        except Exception as e:
+            self.log.comment = f"Error occured during status check of delivery: {e}"
+            self.log.save()
+        else:
+            delivery_status = delivery_status_info.json()["status"]
+            delivery_brondocument_status = delivery_status_info.json()["brondocuments"][
+                0
+            ]["status"]
+            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
+
+            if (
+                delivery_status == "DOORGELEVERD"
+                and delivery_brondocument_status == "OPGENOMEN_LVBRO"
+            ):
+                self.finish_registration(delivery_status_info)
+
+            elif delivery_errors:
+                self.log.comment = f"Found errors during the delivery check: {delivery_errors}"
+                self.log.save()
+
+            else:
+                self.log.delivery_status_info = delivery_status_info.json()[
+                            "brondocuments"
+                        ][0]["status"]
+                self.log.comment = "Startregistration request not yet approved"
+                self.log.save()
+
+    def finish_registration(self, delivery_status_info):
+        """
+        Updates the log, saves the bro_id to the frd, and removes the xml file.
+        """
+        self.log.delivery_status_info = delivery_status_info.json()["brondocuments"][0][
+            "status"
+        ]
+        self.log.comment = "Startregistration request approved"
+        self.log.process_status = "delivery_approved"
+        self.log.bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
+        self.log.synced = True
+        self.log.save()
+        
+        self.save_bro_id(delivery_status_info)
+        self.remove_xml_file()
+
+    @abstractmethod
+    def save_bro_id(self, delivery_status_info):
+        """
+        Save the Bro_Id to the FRD object
+        """
+        pass
+
+    def remove_xml_file(self):
+        """
+        Removes the succesfully delivered xml file.
+        """
+        os.remove(self.log.xml_filepath)
+
+class FrdStartregistration(Registration):
     """
     Handles the startregistration of a new FRD in the BRO-Connector.
     The sync method is the main function which should always be called
@@ -103,8 +304,8 @@ class FrdStartregistration:
     def __init__(self, frd_obj: FormationResistanceDossier):
         self.output_dir = "frd/xml_files/"
         self.frd_obj = frd_obj
-        self.startregistration_xml_file = None
-        self.frd_startregistration_log = None
+        self.xml_file = None
+        self.log = None
         self.demo = FRD_SETTINGS["demo"]
         self.api_version = FRD_SETTINGS["api_version"]
 
@@ -119,7 +320,7 @@ class FrdStartregistration:
         If not, creates one and handles the complete startregistrations.
         If so, checks the status, and picks up the startregistration process where it was left.
         """
-        self.frd_startregistration_log, created = FrdSyncLog.objects.update_or_create(
+        self.log, created = FrdSyncLog.objects.update_or_create(
             event_type="FRD_StartRegistration", frd=self.frd_obj
         )
 
@@ -133,164 +334,10 @@ class FrdStartregistration:
             "succesfully_delivered_sourcedocuments": self.check_delivery,
         }
 
-        current_status = self.frd_startregistration_log.process_status
+        current_status = self.log.process_status
         method_to_call = status_function_mapping.get(current_status)
 
         method_to_call()
-
-    def generate_xml_file(self):
-        """
-        Handles the generation of the startregistration xml file.
-        If it is succesfull, it calls the validate_startregistration_xml to continue the startregistration process.
-        """
-        try:
-            self.construct_xml_tree()
-            self.save_xml_file()
-
-        except Exception as e:
-            self.frd_startregistration_log.process_status = "failed_to_generate_startregistration_xml"
-            self.frd_startregistration_log.comment = f"Error message: {e}",
-            self.frd_startregistration_log.save()
-
-        else:
-            self.frd_startregistration_log.process_status = "succesfully_generated_startregistration_xml"
-            self.frd_startregistration_log.comment = "Succesfully generated startregistration request"
-            self.frd_startregistration_log.xml_filepath = self.filepath
-            self.frd_startregistration_log.save()
-
-            self.validate_xml_file()
-
-    def validate_xml_file(self):
-        """
-        Validates the xml file, using the BRO validations service.
-        If the xml file is VALIDE, the deliver_xml_file method is called
-        """
-        xml_payload = get_xml_payload(self.frd_startregistration_log.xml_filepath)
-
-        try:
-            validation_info = validate_sourcedoc(
-                payload=xml_payload,
-                bro_info=self.bro_info,
-                demo=self.demo,
-                api=self.api_version,
-            )
-
-        except Exception as e:
-            self.frd_startregistration_log.process_status = "failed_to_validate_sourcedocument"
-            self.frd_startregistration_log.comment = f"Error message: {e}"
-            self.frd_startregistration_log.save()
-
-        # Is this else statement needed?
-        else:
-            validation_status = validation_info["status"]
-            validation_errors = validation_info["errors"]
-
-            if validation_status == "VALIDE":
-                self.frd_startregistration_log.process_status = "source_document_validation_succesful"
-                self.frd_startregistration_log.comment = "Succesfully validated sourcedocument"
-                self.frd_startregistration_log.save()
-
-                self.deliver_xml_file()
-            
-            # Could we not return and once again remove the else statement?
-            else:
-                self.frd_startregistration_log.process_status = "failed_to_validate_sourcedocument"
-                self.frd_startregistration_log.comment = f"Validation Status: {validation_status}, errors: {validation_errors}"
-                self.frd_startregistration_log.save()
-
-
-    def deliver_xml_file(self):
-        """
-        Delivers the xml file after it has succesfully been validated.
-        If the delivery status is OK, the check_delivery method is called to check for further details.
-        """
-
-        delivery_status = self.frd_startregistration_log.delivery_status
-
-        if delivery_status == 3:
-            self.frd_startregistration_log.process_status = "The delivery of the xml file has failed 3 times. Please check manually what's going on, and reset the delivery status on 'Nog niet aangeleverd"
-            self.frd_startregistration_log.save()
-            return
-
-        xml_payload = get_xml_payload(self.frd_startregistration_log.xml_filepath)
-        xml_filename = self.frd_startregistration_log.xml_filepath.rsplit("/", 1)[-1]
-        request_dict = {xml_filename: xml_payload}
-
-        try:
-            upload_info = upload_sourcedocs_from_dict(
-                reqs=request_dict,
-                token=self.bro_info["token"],
-                demo=self.demo,
-                api=self.api_version,
-            )
-
-        except Exception as e:
-            delivery_status += 1
-            self.frd_startregistration_log.process_status = "failed_to_deliver_sourcedocuments"
-            self.frd_startregistration_log.comment = f"Error message: {e}"
-            self.frd_startregistration_log.delivery_status = delivery_status
-            self.frd_startregistration_log.save()
-
-        else:
-            if upload_info == "Error":
-                delivery_status += 1
-                self.frd_startregistration_log.process_status = "failed_to_deliver_sourcedocuments"
-                self.frd_startregistration_log.comment = f"Error message: {upload_info}"
-                self.frd_startregistration_log.delivery_status = delivery_status
-                self.frd_startregistration_log.save()
-
-            else:
-                self.frd_startregistration_log.process_status = "succesfully_delivered_sourcedocuments"
-                self.frd_startregistration_log.comment = "Succesfully delivered startregistration xml file"
-                self.frd_startregistration_log.delivery_status = 4
-                self.frd_startregistration_log.delivery_status_info = upload_info.json()["status"]
-                self.frd_startregistration_log.delivery_id = upload_info.json()["identifier"]
-                self.frd_startregistration_log.save()
-
-                time.sleep(10)
-
-                self.check_delivery()
-
-    def check_delivery(self):
-        """
-        Checks the delivery status based on the delivery id.
-        Updates the log of the frd, based on the return of the BRO webservice.
-        If the delivery is fully succesfull, the finish_startregistration method is called.
-        """
-
-        try:
-            delivery_status_info = check_delivery_status(
-                identifier=self.frd_startregistration_log.delivery_id,
-                token=self.bro_info["token"],
-                demo=self.demo,
-                api=self.api_version,
-            )
-        except Exception as e:
-            self.frd_startregistration_log.comment = f"Error occured during status check of delivery: {e}"
-            self.frd_startregistration_log.save()
-        else:
-            delivery_status = delivery_status_info.json()["status"]
-            delivery_brondocument_status = delivery_status_info.json()["brondocuments"][
-                0
-            ]["status"]
-            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
-
-            if (
-                delivery_status == "DOORGELEVERD"
-                and delivery_brondocument_status == "OPGENOMEN_LVBRO"
-            ):
-                self.finish_startregistration(delivery_status_info)
-
-            elif delivery_errors:
-                self.frd_startregistration_log.comment = f"Found errors during the delivery check: {delivery_errors}"
-                self.frd_startregistration_log.save()
-
-            else:
-                self.frd_startregistration_log.delivery_status_info = delivery_status_info.json()[
-                            "brondocuments"
-                        ][0]["status"]
-                self.frd_startregistration_log.comment = "Startregistration request not yet approved"
-                self.frd_startregistration_log.save()
 
     def construct_xml_tree(self):
         """
@@ -317,48 +364,27 @@ class FrdStartregistration:
         }
 
         startregistration_tool = FrdStartregistrationTool(srcdocdata)
-        self.startregistration_xml_file = startregistration_tool.generate_xml_file()
+        self.xml_file = startregistration_tool.generate_xml_file()
 
     def save_xml_file(self):
         """
         Saves the xmltree as xml file in the filepath as defined in self.
         """
-        filename = f"startregistration_{self.frd_obj.object_id_accountable_party}.xml"
+        filename = f"{datetime.now().date()}_startregistration_{self.frd_obj.object_id_accountable_party}.xml"
         self.filepath = os.path.join(self.output_dir, filename)
-        self.startregistration_xml_file.write(self.filepath, pretty_print=True)
-
-    def finish_startregistration(self, delivery_status_info):
-        """
-        Updates the log, saves the bro_id to the frd, and removes the xml file.
-        """
-        self.frd_startregistration_log.delivery_status_info = delivery_status_info.json()["brondocuments"][0][
-                    "status"
-                ]
-        self.frd_startregistration_log.comment = "Startregistration request approved"
-        self.frd_startregistration_log.process_status = "delivery_approved"
-        self.frd_startregistration_log.bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
-        self.frd_startregistration_log.synced = True
-        self.frd_startregistration_log.save()
-        
-        self.save_bro_id(delivery_status_info)
-        self.remove_xml_file()
+        self.xml_file.write(self.filepath, pretty_print=True)
 
     def save_bro_id(self, delivery_status_info):
         """
         Save the Bro_Id to the FRD object
         """
+        pass
         self.frd_obj.frd_bro_id = delivery_status_info.json()["brondocuments"][0][
             "broId"
         ]
         self.frd_obj.save()
 
-    def remove_xml_file(self):
-        """
-        Removes the succesfully delivered xml file.
-        """
-        os.remove(self.frd_startregistration_log.xml_filepath)
-
-class ConfigurationRegistration:
+class ConfigurationRegistration(Registration):
     """
     Handles the sync of of a new measurement configuration in the BRO-Connector.
     The sync method is the main function which should always be called.
@@ -403,160 +429,6 @@ class ConfigurationRegistration:
         method_to_call = status_function_mapping.get(current_status)
 
         method_to_call()
-
-    def generate_xml_file(self):
-        """
-        Handles the generation of the startregistration xml file.
-        If it is succesfull, it calls the validate_startregistration_xml to continue the startregistration process.
-        """
-        try:
-            self.construct_xml_tree()
-            self.save_xml_file()
-
-        except Exception as e:
-            self.registration_log.process_status = "failed_to_generate_xml"
-            self.registration_log.comment = f"Error message: {e}",
-            self.registration_log.save()
-
-        else:
-            self.registration_log.process_status = "succesfully_generated_xml"
-            self.registration_log.comment = "Succesfully generated request"
-            self.registration_log.xml_filepath = self.filepath
-            self.registration_log.save()
-
-            self.validate_xml_file()
-
-    def validate_xml_file(self):
-        """
-        Validates the xml file, using the BRO validations service.
-        If the xml file is VALIDE, the deliver_xml_file method is called
-        """
-        xml_payload = get_xml_payload(self.registration_log.xml_filepath)
-
-        try:
-            validation_info = validate_sourcedoc(
-                payload=xml_payload,
-                bro_info=self.bro_info,
-                demo=self.demo,
-                api=self.api_version,
-            )
-
-        except Exception as e:
-            self.registration_log.process_status = "failed_to_validate_sourcedocument"
-            self.registration_log.comment = f"Error message: {e}"
-            self.registration_log.save()
-
-        # Is this else statement needed?
-        else:
-            validation_status = validation_info["status"]
-            validation_errors = validation_info["errors"]
-
-            if validation_status == "VALIDE":
-                self.registration_log.process_status = "source_document_validation_succesful"
-                self.registration_log.comment = "Succesfully validated sourcedocument"
-                self.registration_log.save()
-
-                self.deliver_xml_file()
-            
-            # Could we not return and once again remove the else statement?
-            else:
-                self.registration_log.process_status = "failed_to_validate_sourcedocument"
-                self.registration_log.comment = f"Validation Status: {validation_status}, errors: {validation_errors}"
-                self.registration_log.save()
-
-
-    def deliver_xml_file(self):
-        """
-        Delivers the xml file after it has succesfully been validated.
-        If the delivery status is OK, the check_delivery method is called to check for further details.
-        """
-
-        delivery_status = self.registration_log.delivery_status
-
-        if delivery_status == 3:
-            self.registration_log.process_status = "The delivery of the xml file has failed 3 times. Please check manually what's going on, and reset the delivery status on 'Nog niet aangeleverd"
-            self.registration_log.save()
-            return
-
-        xml_payload = get_xml_payload(self.registration_log.xml_filepath)
-        xml_filename = self.registration_log.xml_filepath.rsplit("/", 1)[-1]
-        request_dict = {xml_filename: xml_payload}
-
-        try:
-            upload_info = upload_sourcedocs_from_dict(
-                reqs=request_dict,
-                token=self.bro_info["token"],
-                demo=self.demo,
-                api=self.api_version,
-            )
-
-        except Exception as e:
-            delivery_status += 1
-            self.registration_log.process_status = "failed_to_deliver_sourcedocuments"
-            self.registration_log.comment = f"Error message: {e}"
-            self.registration_log.delivery_status = delivery_status
-            self.registration_log.save()
-
-        else:
-            if upload_info == "Error":
-                delivery_status += 1
-                self.registration_log.process_status = "failed_to_deliver_sourcedocuments"
-                self.registration_log.comment = f"Error message: {upload_info}"
-                self.registration_log.delivery_status = delivery_status
-                self.registration_log.save()
-
-            else:
-                self.registration_log.process_status = "succesfully_delivered_sourcedocuments"
-                self.registration_log.comment = "Succesfully delivered startregistration xml file"
-                self.registration_log.delivery_status = 4
-                self.registration_log.delivery_status_info = upload_info.json()["status"]
-                self.registration_log.delivery_id = upload_info.json()["identifier"]
-                self.registration_log.save()
-
-                time.sleep(10)
-
-                self.check_delivery()
-
-    def check_delivery(self):
-        """
-        Checks the delivery status based on the delivery id.
-        Updates the log of the frd, based on the return of the BRO webservice.
-        If the delivery is fully succesfull, the finish_startregistration method is called.
-        """
-
-        try:
-            delivery_status_info = check_delivery_status(
-                identifier=self.frd_startregistration_log.delivery_id,
-                token=self.bro_info["token"],
-                demo=self.demo,
-                api=self.api_version,
-            )
-        except Exception as e:
-            self.frd_startregistration_log.comment = f"Error occured during status check of delivery: {e}"
-            self.frd_startregistration_log.save()
-        else:
-            delivery_status = delivery_status_info.json()["status"]
-            delivery_brondocument_status = delivery_status_info.json()["brondocuments"][
-                0
-            ]["status"]
-            delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
-
-            if (
-                delivery_status == "DOORGELEVERD"
-                and delivery_brondocument_status == "OPGENOMEN_LVBRO"
-            ):
-                self.finish_startregistration(delivery_status_info)
-
-            elif delivery_errors:
-                self.frd_startregistration_log.comment = f"Found errors during the delivery check: {delivery_errors}"
-                self.frd_startregistration_log.save()
-
-            else:
-                self.frd_startregistration_log.delivery_status_info = delivery_status_info.json()[
-                            "brondocuments"
-                        ][0]["status"]
-                self.frd_startregistration_log.comment = "Startregistration request not yet approved"
-                self.frd_startregistration_log.save()
 
     def format_request_reference(self):
         return f"registration_mc_{self.formation_resistance_dossier.frd_bro_id}_{datetime.now().date()}"
@@ -609,26 +481,9 @@ class ConfigurationRegistration:
         """
         Saves the xmltree as xml file in the filepath as defined in self.
         """
-        filename = f"registration_{self.measurement_configuration.configuration_name}.xml"
+        filename = f"{datetime.now().date()}_registration_{self.measurement_configuration.formation_resistance_dossier.bro_id}.xml"
         self.filepath = os.path.join(self.output_dir, filename)
         self.startregistration_xml_file.write(self.filepath, pretty_print=True)
-
-    def finish_startregistration(self, delivery_status_info):
-        """
-        Updates the log, saves the bro_id to the frd, and removes the xml file.
-        """
-        self.startregistration_xml_file.gmn_bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
-        self.startregistration_xml_file.delivery_status_info = delivery_status_info.json()["brondocuments"][0][
-                    "status"
-                ]
-        self.startregistration_xml_file.comments = "Startregistration request approved"
-        self.startregistration_xml_file.process_status = "delivery_approved"
-        self.startregistration_xml_file.bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
-        self.startregistration_xml_file.synced = True
-        self.startregistration_xml_file.save()
-        
-        self.save_bro_id(delivery_status_info)
-        self.remove_xml_file()
 
     def save_bro_id(self, delivery_status_info):
         """
@@ -639,13 +494,7 @@ class ConfigurationRegistration:
         ]
         self.measurement_configuration.save()
 
-    def remove_xml_file(self):
-        """
-        Removes the succesfully delivered xml file.
-        """
-        os.remove(self.startregistration_xml_file.xml_filepath)
-
-class GeoOhmMeasurementRegistration:
+class GeoOhmMeasurementRegistration(Registration):
     """
     Handles the sync of of a new measurement in the BRO-Connector.
     The sync method is the main function which should always be called
@@ -689,67 +538,6 @@ class GeoOhmMeasurementRegistration:
 
         method_to_call()
 
-    def generate_xml_file(self):
-        """
-        Handles the generation of the startregistration xlm file.
-        If it is succesfull, it calls the validate_startregistration_xml to continue the startregistration process.
-        """
-        try:
-            self.construct_xml_tree()
-            self.save_xml_file()
-
-        except Exception as e:
-            self.registration_log.process_status = "failed_to_generate_xml"
-            self.registration_log.comment = f"Error message: {e}",
-            self.registration_log.save()
-
-        else:
-            self.registration_log.process_status = "succesfully_generated_xml"
-            self.registration_log.comment = "Succesfully generated request"
-            self.registration_log.xml_filepath = self.filepath
-            self.registration_log.save()
-
-            self.validate_xml_file()
-
-    def validate_xml_file(self):
-        """
-        Validates the xml file, using the BRO validations service.
-        If the xml file is VALIDE, the deliver_xml_file method is called
-        """
-        xml_payload = get_xml_payload(self.registration_log.xml_filepath)
-
-        try:
-            validation_info = validate_sourcedoc(
-                payload=xml_payload,
-                bro_info=self.bro_info,
-                demo=self.demo,
-                api=self.api_version,
-            )
-
-        except Exception as e:
-            self.registration_log.process_status = "failed_to_validate_sourcedocument"
-            self.registration_log.comment = f"Error message: {e}"
-            self.registration_log.save()
-
-        else:
-            validation_status = validation_info["status"]
-            validation_errors = validation_info["errors"]
-
-            if validation_status == "VALIDE":
-                self.registration_log.process_status = "source_document_validation_succesful"
-                self.registration_log.comment = "Succesfully validated sourcedocument"
-                self.registration_log.save()
-
-                self.deliver_xml_file()
-
-            else:
-                self.registration_log.process_status = "failed_to_validate_sourcedocument"
-                self.registration_log.comment = f"Validation Status: {validation_status}, errors: {validation_errors}"
-                self.registration_log.save()
-
-    def deliver_xml_file(self):
-        pass
-
     def construct_xml_tree(self):
         """
         Setup the data for the xml file.
@@ -774,3 +562,12 @@ class GeoOhmMeasurementRegistration:
         filename = f"registration_{self.measurement.configuration_name}.xml"
         self.filepath = os.path.join(self.output_dir, filename)
         self.startregistration_xml_file.write(self.filepath, pretty_print=True)
+
+    def save_bro_id(self, delivery_status_info):
+        """
+        Save the Bro_Id to the FRD object
+        """
+        self.measurement_configuration.bro_id = delivery_status_info.json()["brondocuments"][0][
+            "broId"
+        ]
+        self.measurement_configuration.save()
