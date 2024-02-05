@@ -42,7 +42,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.handle_startregistrations()
         self.handle_configurations()
-        self.handle_measurements()
+        #self.handle_measurements()
 
     def handle_startregistrations(self):
         """
@@ -60,12 +60,12 @@ class Command(BaseCommand):
         Handles the measurement configurations for all configurations without bro_id.
         """
         unsynced_configurations = self.get_unsynced_configurations()
-        per_dossier = defaultdict(list)
+        per_dossier = defaultdict(list[dict])
         for measurement_configuration in unsynced_configurations:
-            per_dossier[measurement_configuration.formation_resistance_dossier_id].append(measurement_configuration)
+            per_dossier[str(measurement_configuration.formation_resistance_dossier_id)].append(measurement_configuration)
 
-        for dossier in per_dossier:
-            configuration_registration = ConfigurationRegistration(dossier)
+        for key, values in per_dossier.items():
+            configuration_registration = ConfigurationRegistration(values)
             configuration_registration.sync()
 
     def handle_measurements(self):
@@ -140,8 +140,11 @@ class Registration(ABC):
         Validates the xml file, using the BRO validations service.
         If the xml file is VALIDE, the deliver_xml_file method is called
         """
-        xml_payload = get_xml_payload(self.log.xml_filepath)
 
+        if 'NIET_VALIDE' in self.log.comment:
+            self.generate_xml_file()
+
+        xml_payload = get_xml_payload(self.log.xml_filepath)
         try:
             validation_info = validate_sourcedoc(
                 payload=xml_payload,
@@ -326,9 +329,9 @@ class FrdStartregistration(Registration):
 
         status_function_mapping = {
             None: self.generate_xml_file,
-            "failed_to_generate_startregistration_xml": self.generate_xml_file,
+            "failed_to_generate_registration_xml": self.generate_xml_file,
             "failed_to_validate_sourcedocument": self.validate_xml_file,
-            "succesfully_generated_startregistration_xml": self.validate_xml_file,
+            "succesfully_generated_registration_xml": self.validate_xml_file,
             "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
             "source_document_validation_succesful": self.deliver_xml_file,
             "succesfully_delivered_sourcedocuments": self.check_delivery,
@@ -336,7 +339,6 @@ class FrdStartregistration(Registration):
 
         current_status = self.log.process_status
         method_to_call = status_function_mapping.get(current_status)
-
         method_to_call()
 
     def construct_xml_tree(self):
@@ -345,14 +347,13 @@ class FrdStartregistration(Registration):
         Then creates the file and saves the xml tree to self.
         """
         quality_regime = self.frd_obj.quality_regime or "IMBRO"
-        gmn_bro_id = getattr(self.frd_obj.gmn, "gmn_bro_id", None)
+        gmn_bro_id = getattr(self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None)
         gmw_bro_id = getattr(
-            getattr(self.frd_obj.gmw_tube, "groundwater_monitoring_well", None),
+            getattr(self.frd_obj.groundwater_monitoring_tube, "groundwater_monitoring_well", None),
             "bro_id",
             None,
         )
-        gmw_tube_number = str(getattr(self.frd_obj.gmw_tube, "tube_number", None))
-
+        gmw_tube_number = str(getattr(self.frd_obj.groundwater_monitoring_tube, "tube_number", None))
         srcdocdata = {
             "request_reference": f"startregistration_{self.frd_obj.object_id_accountable_party}",
             "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
@@ -362,7 +363,6 @@ class FrdStartregistration(Registration):
             "gmw_bro_id": gmw_bro_id,
             "gmw_tube_number": gmw_tube_number,
         }
-
         startregistration_tool = FrdStartregistrationTool(srcdocdata)
         self.xml_file = startregistration_tool.generate_xml_file()
 
@@ -396,7 +396,7 @@ class ConfigurationRegistration(Registration):
         self.measurement_configurations = measurement_configurations
         self.formation_resistance_dossier = measurement_configurations[0].formation_resistance_dossier
         self.xml_file = None
-        self.registration_log = None
+        self.log = None
         self.demo = FRD_SETTINGS["demo"]
         self.api_version = FRD_SETTINGS["api_version"]
 
@@ -411,23 +411,23 @@ class ConfigurationRegistration(Registration):
         If not, creates one and handles the complete registration.
         If so, checks the status, and picks up the registration process where it was left.
         """
-        self.registration_log, created = FrdSyncLog.objects.update_or_create(
+        self.log, created = FrdSyncLog.objects.update_or_create(
             event_type="FRD_GEM_MeasurementConfiguration", frd=self.formation_resistance_dossier
         )
 
         status_function_mapping = {
             None: self.generate_xml_file,
-            "failed_to_generate_xml": self.generate_xml_file,
+            "failed_to_generate_registration_xml": self.generate_xml_file,
             "failed_to_validate_sourcedocument": self.validate_xml_file,
-            "succesfully_generated_xml": self.validate_xml_file,
+            "succesfully_generated_registration_xml": self.validate_xml_file,
             "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
             "source_document_validation_succesful": self.deliver_xml_file,
-            # "succesfully_delivered_sourcedocuments": self.check_delivery,
+            "succesfully_delivered_sourcedocuments": self.check_delivery,
         }
 
-        current_status = self.registration_log.process_status
+        current_status = self.log.process_status
         method_to_call = status_function_mapping.get(current_status)
-
+        print(method_to_call)
         method_to_call()
 
     def format_request_reference(self):
@@ -464,14 +464,13 @@ class ConfigurationRegistration(Registration):
         """     
 
         quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO"
-
         srcdocdata = {
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
             "object_id_accountable_party": self.formation_resistance_dossier.object_id_accountable_party,
             "quality_regime": quality_regime,
             "request_reference": self.format_request_reference(),
-            "measurement_configurations": self.configuration_to_list_of_dict(self.measurement_configurations),
+            "measurement_configurations": self.configuration_to_list_of_dict(),
         }
 
         configuration_registration_tool = ConfigurationRegistrationTool(srcdocdata)
@@ -481,7 +480,14 @@ class ConfigurationRegistration(Registration):
         """
         Saves the xmltree as xml file in the filepath as defined in self.
         """
-        filename = f"{datetime.now().date()}_registration_{self.measurement_configuration.formation_resistance_dossier.bro_id}.xml"
+        date = datetime.now().date()
+        print(date)
+        if self.measurement_configurations[0].formation_resistance_dossier.frd_bro_id:
+            naming = self.measurement_configurations[0].formation_resistance_dossier.frd_bro_id
+        else:
+            naming = self.measurement_configurations[0].formation_resistance_dossier.name
+        
+        filename = f"{date}_registration_{naming}.xml"
         self.filepath = os.path.join(self.output_dir, filename)
         self.startregistration_xml_file.write(self.filepath, pretty_print=True)
 
@@ -489,10 +495,10 @@ class ConfigurationRegistration(Registration):
         """
         Save the Bro_Id to the FRD object
         """
-        self.measurement_configuration.bro_id = delivery_status_info.json()["brondocuments"][0][
+        self.measurement_configurations.bro_id = delivery_status_info.json()["brondocuments"][0][
             "broId"
         ]
-        self.measurement_configuration.save()
+        self.measurement_configurations.save()
 
 class GeoOhmMeasurementRegistration(Registration):
     """
@@ -504,7 +510,7 @@ class GeoOhmMeasurementRegistration(Registration):
         self.output_dir = "frd/xml_files/"
         self.measurement = measurement
         self.xml_file = None
-        self.registration_log = None
+        self.log = None
         self.demo = FRD_SETTINGS["demo"]
         self.api_version = FRD_SETTINGS["api_version"]
 
@@ -519,21 +525,21 @@ class GeoOhmMeasurementRegistration(Registration):
         If not, creates one and handles the complete registration.
         If so, checks the status, and picks up the registration process where it was left.
         """
-        self.registration_log, created = FrdSyncLog.objects.update_or_create(
+        self.log, created = FrdSyncLog.objects.update_or_create(
             event_type="FRD_GEM_Measurement", configuration=self.measurement
         )
 
         status_function_mapping = {
             None: self.generate_xml_file,
-            "failed_to_generate_xml": self.generate_xml_file,
+            "failed_to_generate_registration_xml": self.generate_xml_file,
             "failed_to_validate_sourcedocument": self.validate_xml_file,
-            "succesfully_generated_xml": self.validate_xml_file,
+            "succesfully_generated_registration_xml": self.validate_xml_file,
             "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
             "source_document_validation_succesful": self.deliver_xml_file,
-            # "succesfully_delivered_sourcedocuments": self.check_delivery,
+            "succesfully_delivered_sourcedocuments": self.check_delivery,
         }
 
-        current_status = self.registration_log.process_status
+        current_status = self.log.process_status
         method_to_call = status_function_mapping.get(current_status)
 
         method_to_call()
