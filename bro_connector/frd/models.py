@@ -119,6 +119,9 @@ class ElectromagneticMeasurementMethod(models.Model):
         verbose_name_plural = "Electromagnetic Measurement Method"
 
 class InstrumentConfiguration(models.Model):
+    formation_resistance_dossier = models.ForeignKey(
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
+    )
     configuration_name = models.TextField(max_length=40, null=False, blank=False)
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
@@ -178,6 +181,7 @@ class GeoOhmMeasurementMethod(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False
     )
+    bro_id = models.CharField(max_length=254, null=True, blank=True)
     measurement_date = models.DateField(null=False, blank=True)
     measuring_responsible_party = models.CharField(
         blank=False,
@@ -259,6 +263,9 @@ class ElectrodePair(models.Model):
 
 
 class MeasurementConfiguration(models.Model):
+    formation_resistance_dossier = models.ForeignKey(
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
+    )
     bro_id = models.CharField(max_length=254, null=True, blank=True)
     configuration_name = models.CharField(
         max_length=40, null=False, blank=False, unique=True
@@ -443,6 +450,7 @@ class FormationresistanceRecord(models.Model):
 class FrdSyncLog(models.Model):
     synced = models.BooleanField(default=False)
     date_modified = models.DateTimeField(auto_now=True)
+    bro_id = models.CharField(max_length=254, null=True, blank=True)
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
@@ -450,9 +458,6 @@ class FrdSyncLog(models.Model):
     )
     frd = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, blank=True, null=True
-    )
-    configuration = models.ForeignKey(
-        MeasurementConfiguration, on_delete=models.CASCADE, blank=True, null=True
     )
     process_status = models.CharField(max_length=254, null=True, blank=True)
     comment = models.CharField(max_length=10000, null=True, blank=True)
@@ -462,6 +467,11 @@ class FrdSyncLog(models.Model):
     )
     delivery_status_info = models.CharField(max_length=254, null=True, blank=True)
     delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    delivery_type = models.CharField(
+        choices=DELIVERY_TYPE_CHOICES,
+        blank=False,
+        max_length=40,
+    )
 
     def __str__(self):
         return f"{self.event_type}_log"
