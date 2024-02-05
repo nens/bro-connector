@@ -50,6 +50,14 @@ QUALITY_CONTROL = (
 
 EVENT_TYPE_CHOICES = (("FRD_StartRegistration", "FRD_StartRegistration"),("FRD_GEM_MeasurementConfiguration", "FRD_GEM_MeasurementConfiguration"))
 
+DELIVERY_TYPE_CHOICES = (
+    ("register", "register"),
+    ("replace", "replace"),
+    ("insert", "insert"),
+    ("move", "move"),
+    ("delete", "delete"),
+)
+
 LEVERINGSTATUS_CHOICES = [
     (0, "Nog niet aangeleverd"),
     (1, "1 keer gefaald"),
