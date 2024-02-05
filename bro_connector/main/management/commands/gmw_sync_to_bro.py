@@ -106,7 +106,7 @@ class GetSourceDocData:
             "groundLevelPosition": well_dynamic.ground_level_position,
             "groundLevelPositioningMethod": well_dynamic.ground_level_positioning_method,
         }
-
+        
         delivered_vertical_position = {
             "deliveredVerticalPosition": delivered_vertical_position_info
         }
@@ -272,9 +272,7 @@ class GetSourceDocData:
         well_construction_date = get_event_date(event)
         self.datafile.update({"wellConstructionDate": well_construction_date})
 
-        well = models.GroundwaterMonitoringWellStatic.objects.get(
-            bro_id=str(event.groundwater_monitoring_well_static)
-        )
+        well = event.groundwater_monitoring_well_static
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
@@ -328,13 +326,17 @@ class GetSourceDocData:
                 ]["electrodes"] = {}
 
                 for electrode in electrodes:
-                    electrode_dynamic = (
-                        models.ElectrodeDynamic.objects.filter(
-                            electrode_static=electrode
+                    try:
+                        electrode_dynamic = (
+                            models.ElectrodeDynamic.objects.get(
+                                electrode_static_id=electrode.electrode_static_id
+                            )
                         )
-                        .order_by("electrode_dynamic_id")
-                        .first()
-                    )
+                    except models.ElectrodeDynamic.DoesNotExist:
+                        electrode_dynamic = models.ElectrodeDynamic.objects.create(
+                            electrode_static = electrode,
+                            electrode_status = "onbekend",
+                        )
 
                     self.handle_individual_electrode(
                         electrode_static=electrode,
@@ -362,6 +364,7 @@ class GetSourceDocData:
         self.datafile.update(
             {"numberOfMonitoringTubes": len(self.datafile["monitoringTubes"])}
         )
+        print(self.datafile)
 
     def shortening(self, event: models.Event) -> None:
         """
@@ -698,6 +701,7 @@ def create_sourcedocs(
     )
     # Check what kind of request is required and make as followed.
     # Registrate with history
+    print(srcdocdata)
     try:
         gmw_registration_request = brx.gmw_registration_request(
             srcdoc=f"GMW_{source_doc_type}",
@@ -754,9 +758,7 @@ def create_construction_sourcedocs(
     Registration requests are saved to .xml file in registrations folder
     """
 
-    well = models.GroundwaterMonitoringWellStatic.objects.get(
-        bro_id=event.groundwater_monitoring_well_static
-    )
+    well = event.groundwater_monitoring_well_static
 
     delivery_accountable_party = set_delivery_accountable_party(
         well, gmw_SETTINGS["demo"]
@@ -838,12 +840,12 @@ def handle_not_valid_or_error(registration_id, validation_info):
 
     try:
         validation_errors = validation_info["errors"]
+        print(validation_errors)
         comments = "Validated registration document, found errors: {}".format(
             validation_errors
         )
 
         defaults.update({"comments": comments})
-        print(validation_errors)
         if (
             "Dit registratieobject heeft de registratiestatus voltooid."
             in validation_errors
@@ -853,8 +855,8 @@ def handle_not_valid_or_error(registration_id, validation_info):
         record, created = models.gmw_registration_log.objects.update_or_create(
             id=registration_id, defaults=defaults
         )
-    except:
-        comments = f"No errors found, details: {validation_info['detail']}"
+    except Exception as e:
+        comments = f"No errors found, details: {e}"
 
         defaults.update({"comments": comments})
 
@@ -1112,9 +1114,7 @@ class EventsHandler:
 
 
     def create_construction_sourcedoc(self, event: models.Event):
-        well = models.GroundwaterMonitoringWellStatic.objects.get(
-            bro_id=event.groundwater_monitoring_well_static
-        )
+        well = event.groundwater_monitoring_well_static
 
         # Check if there is already a registration for this well
         delete_existing_failed_registrations(event, well.quality_regime)
@@ -1137,9 +1137,12 @@ def gmw_create_sourcedocs_wells(registrations_dir):
     construction_events = GetEvents.construction()
     events_handler = EventsHandler(registrations_dir)
     for construction in construction_events:
+        print(construction)
         events_handler.create_construction_sourcedoc(
             event=construction
         )
+
+    return
 
     electrodeStatus_events = GetEvents.electrodeStatus()
     for electrode_status in electrodeStatus_events:
@@ -1257,10 +1260,11 @@ def gmw_check_existing_registrations(bro_info, registrations_dir, demo):
     """
     # Get all the current registrations, order by event id so construction is handled first.
     gmw_registrations = (
-        models.gmw_registration_log.objects.all()
-        .order_by("event_id")
-        .exclude(process_status="delivery_approved")
-    )
+        models.gmw_registration_log.objects.filter(
+            id__gt = 93480,
+    ))
+
+    print(gmw_registrations)
 
     # Get BRO-IDs
 
