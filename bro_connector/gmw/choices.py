@@ -61,11 +61,10 @@ TUBESTATUS = (
 )
 
 TUBETYPE = (
-    ("nietGetransformeerd", "nietGetransformeerd"),
-    ("RDNAPTRANS2008", "RDNAPTRANS2008"),
-    ("RDNAPTRANS2018", "RDNAPTRANS2018"),
-    ("RDNAPTRANS2008MV0", "RDNAPTRANS2008MV0"),
-    ("RDNAPTRANS2018MV0", "RDNAPTRANS2018MV0"),
+    ("minifilter", "minifilter"),
+    ("standaardbuis", "standaardbuis"),
+    ("volledigFilter", "volledigFilter"),
+    ("filterlozeBuis", "filterlozeBuis"),
 )
 
 COORDINATETRANSFORMATION = (
