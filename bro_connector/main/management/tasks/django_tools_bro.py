@@ -4,12 +4,12 @@ from gmw import models
 class GetDjangoObjects:
     def get_all_tubes(well_static_id):
         return models.GroundwaterMonitoringTubeStatic.objects.filter(
-            groundwater_monitoring_well=well_static_id,
+            groundwater_monitoring_well_static_id=well_static_id,
         )
 
     def get_all_geo_ohm_cables(tube_static_id):
         return models.GeoOhmCable.objects.filter(
-            groundwater_monitoring_tube_static=tube_static_id,
+            groundwater_monitoring_tube_static_id=tube_static_id,
         )
 
     def get_all_electrodes(geo_ohm_cable_id):
@@ -61,12 +61,26 @@ class DjangoTableToDict:
         return static_well_data
 
     def update_static_tube(self, tube: models.GroundwaterMonitoringTubeStatic) -> dict:
+        cap_present = "onbekend"
+        if tube.artesian_well_cap_present:
+            if tube.artesian_well_cap_present == True:
+                cap_present = "ja"
+            elif tube.artesian_well_cap_present == False:
+                cap_present = "nee"
+        
+        sump_present = "onbekend"
+
+        if tube.sediment_sump_present:
+            if tube.sediment_sump_present == True:
+                cap_present = "ja"
+            elif tube.sediment_sump_present == False:
+                cap_present = "nee"
 
         static_tube_data = {
             "tubeNumber": tube.tube_number,
             "tubeType": tube.tube_type,
-            "artesianWellCapPresent": tube.artesian_well_cap_present,
-            "sedimentSumpPresent": tube.sediment_sump_present,
+            "artesianWellCapPresent": cap_present,
+            "sedimentSumpPresent": sump_present,
             "numberOfGeoOhmCables": tube.number_of_geo_ohm_cables,
             "tubeMaterial": tube.tube_material,
             "screen": {
@@ -125,7 +139,8 @@ class DjangoTableToDict:
     def update_static_electrode(self, electrode: models.ElectrodeStatic) -> dict:
         electrode_static_data = {
             "electrodePackingMaterial": electrode.electrode_packing_material,
-            "electrodePosition": electrode.electrode_position,
+            "electrodePosition": float(electrode.electrode_position.replace(",", ".")),
+            "electrodeNumber": electrode.electrode_number,
         }
 
         return electrode_static_data
@@ -200,7 +215,6 @@ class DjangoTableToDict:
         self, dynamic_electrode: models.ElectrodeDynamic
     ) -> dict:
         dynamic_electrode_data = {
-            "electrodeNumber": dynamic_electrode.electrode_number,
             "electrodeStatus": dynamic_electrode.electrode_status,
         }
 
@@ -215,9 +229,9 @@ class GetEvents:
 
     def construction():
         return models.Event.objects.filter(
-            event_name="construction",
+            event_name="constructie",
             delivered_to_bro=False,
-        )
+        ).order_by("change_id")
 
     def wellHeadProtector():
         return models.Event.objects.filter(
