@@ -74,7 +74,10 @@ class GroundwaterMonitoringWellStatic(models.Model):
         return self.construction_coordinates.y
 
     def __str__(self):
-        return str(self.bro_id)
+        if self.bro_id:
+            return str(self.bro_id)
+        else:
+            return str(self.groundwater_monitoring_well_static_id)
 
     class Meta:
         managed = True
@@ -128,7 +131,10 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     remark = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.groundwater_monitoring_well_static.bro_id)
+        if self.groundwater_monitoring_well_static.bro_id:
+            return f"{self.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_well_dynamic_id}"
+        else:
+            return f"{self.groundwater_monitoring_well_dynamic_id}"
 
     class Meta:
         managed = True
@@ -182,7 +188,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         try:
             well = str(self.groundwater_monitoring_well_static.bro_id)
         except:
-            well = "Onbekend"
+            well = str(self.groundwater_monitoring_tube_static_id)
 
         return "{}, tube {}".format(well, self.tube_number)
 
@@ -240,10 +246,10 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
 
     def __str__(self):
 
-        try:
-            well = str(self.groundwater_monitoring_well.bro_id)
-        except:
-            well = "Onbekend"
+        if self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id:
+            well = str(self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id)
+        else:
+            well = str(self.groundwater_monitoring_tube_dynamic_id)
 
         return "{}, tube {}".format(
             well, self.groundwater_monitoring_tube_static.tube_number
