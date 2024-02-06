@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db.models import fields
 from .models import *
+from reversion_compare.helpers import patch_admin
 
 def _register(model: models.Model, admin_class: admin.ModelAdmin):
     admin.site.register(model, admin_class)
@@ -60,6 +61,21 @@ class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
     )
 
     search_fields = get_searchable_fields(GeoOhmMeasurementMethod)
+
+
+class CalculatedFormationresistanceAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "responsible_party",
+        "electromagnetic_measurement_method",
+        "geo_ohm_measurement_method"
+    )
+    list_filter = (
+        "responsible_party",
+        "electromagnetic_measurement_method",
+        "geo_ohm_measurement_method",
+    )
+
 
 class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
 
@@ -169,6 +185,7 @@ class FrdSyncLogAdmin(admin.ModelAdmin):
 
 
 _register(FormationResistanceDossier, FormationResistanceDossierAdmin)
+_register(CalculatedFormationresistanceMethod, CalculatedFormationresistanceAdmin)
 _register(InstrumentConfiguration, InstrumentConfigurationAdmin)
 _register(ElectromagneticMeasurementMethod, ElectromagneticMeasurementMethodAdmin)
 _register(GeoOhmMeasurementMethod, GeoOhmMeasurementMethodAdmin)
@@ -181,3 +198,8 @@ _register(ElectromagneticSeries, ElectromagneticSeriesAdmin)
 _register(ElectromagneticRecord, ElectromagneticRecordAdmin)
 _register(FormationresistanceRecord, FormationresistanceRecordAdmin)
 _register(FrdSyncLog,FrdSyncLogAdmin)
+
+# Voorbeeld voor offerte
+patch_admin(FormationResistanceDossier)
+patch_admin(GeoOhmMeasurementValue)
+patch_admin(GeoOhmMeasurementMethod)

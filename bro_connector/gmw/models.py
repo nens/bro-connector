@@ -74,7 +74,10 @@ class GroundwaterMonitoringWellStatic(models.Model):
         return self.construction_coordinates.y
 
     def __str__(self):
-        return str(self.bro_id)
+        if self.bro_id:
+            return str(self.bro_id)
+        else:
+            return str(self.groundwater_monitoring_well_static_id)
 
     class Meta:
         managed = True
@@ -128,7 +131,10 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     remark = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.groundwater_monitoring_well_static.bro_id)
+        if self.groundwater_monitoring_well_static.bro_id:
+            return f"{self.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_well_dynamic_id}"
+        else:
+            return f"{self.groundwater_monitoring_well_dynamic_id}"
 
     class Meta:
         managed = True
@@ -182,7 +188,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         try:
             well = str(self.groundwater_monitoring_well_static.bro_id)
         except:
-            well = "Onbekend"
+            well = str(self.groundwater_monitoring_tube_static_id)
 
         return "{}, tube {}".format(well, self.tube_number)
 
@@ -240,10 +246,10 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
 
     def __str__(self):
 
-        try:
-            well = str(self.groundwater_monitoring_well.bro_id)
-        except:
-            well = "Onbekend"
+        if self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id:
+            well = str(self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id)
+        else:
+            well = str(self.groundwater_monitoring_tube_dynamic_id)
 
         return "{}, tube {}".format(
             well, self.groundwater_monitoring_tube_static.tube_number
@@ -289,6 +295,9 @@ class ElectrodeStatic(models.Model):
         choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True
     )
     electrode_position = models.CharField(max_length=200, blank=True, null=True)
+    electrode_number = models.IntegerField(
+        blank=True, null=True
+    )
 
     def __str__(self):
         return str(self.electrode_static_id)
@@ -305,9 +314,6 @@ class ElectrodeDynamic(models.Model):
     electrode_static = models.ForeignKey(
         ElectrodeStatic, on_delete=models.CASCADE, null=True, blank=True
     )
-    electrode_number = models.IntegerField(
-        blank=True, null=True
-    )  # Is het niet gek dat dit nummer in de dynamic staat? Aanpassen zal voor problemen zorgen in de toekomst met FRD.
     electrode_status = models.CharField(
         choices=ELECTRODESTATUS, max_length=200, blank=True, null=True
     )
@@ -382,6 +388,7 @@ class gmw_registration_log(models.Model):
     )
 
     class Meta:
+        managed = True
         db_table = 'aanlevering"."gmw_registration_log'
         verbose_name = "GMW Synchronisatie Log"
         verbose_name_plural = "GMW Synchronisatie Logs"
@@ -396,10 +403,11 @@ class Picture(models.Model):
         blank=True,
     )
     recording_date = models.DateField(blank=True, null=True)
-    picture = models.BinaryField(blank=True, null=True)
+    picture = models.BinaryField(blank=True, null=True, editable=True)
     description = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:
+        managed = True
         db_table = 'gmw"."picture'
         verbose_name = "Foto"
         verbose_name_plural = "Fotos"
@@ -449,6 +457,7 @@ class Maintenance(models.Model):
     execution_by = models.IntegerField(blank=True, null=True)  # Maintenance_party_id
 
     class Meta:
+        managed = True
         db_table = 'gmw"."maintenance'
         verbose_name = "Onderhoudsmoment"
         verbose_name_plural = "Onderhoudsmomenten"
