@@ -364,7 +364,6 @@ class GetSourceDocData:
         self.datafile.update(
             {"numberOfMonitoringTubes": len(self.datafile["monitoringTubes"])}
         )
-        print(self.datafile)
 
     def shortening(self, event: models.Event) -> None:
         """
@@ -666,7 +665,7 @@ def create_sourcedocs(
     """
     Try to create registration sourcedocuments for a well/tube/quality regime
     Registration requests are saved to .xml file in registrations folder
-    """
+    """ 
 
     validate_source_doc_type(source_doc_type)
 
@@ -701,7 +700,6 @@ def create_sourcedocs(
     )
     # Check what kind of request is required and make as followed.
     # Registrate with history
-    print(srcdocdata)
     try:
         gmw_registration_request = brx.gmw_registration_request(
             srcdoc=f"GMW_{source_doc_type}",
@@ -709,7 +707,7 @@ def create_sourcedocs(
             deliveryAccountableParty=str(delivery_accountable_party),
             qualityRegime=quality_regime,
             broId=srcdocdata["broId"],
-            underPrivilege="ja",
+            underPrivilege=well.under_privilege,
             srcdocdata=srcdocdata,
         )
 
@@ -792,7 +790,7 @@ def create_construction_sourcedocs(
             deliveryAccountableParty=str(delivery_accountable_party),
             qualityRegime=well.quality_regime,
             srcdocdata=srcdocdata,
-            underPrivilege="ja",
+            underPrivilege=well.under_privilege,
         )
 
         filename = request_reference + ".xml"
@@ -840,7 +838,6 @@ def handle_not_valid_or_error(registration_id, validation_info):
 
     try:
         validation_errors = validation_info["errors"]
-        print(validation_errors)
         comments = "Validated registration document, found errors: {}".format(
             validation_errors
         )
@@ -878,7 +875,7 @@ def validate_gmw_registration_request(
     source_doc_file = os.path.join(registrations_dir, file)
     payload = open(source_doc_file)
 
-    validation_info = brx.validate_sourcedoc(payload, bro_info, demo=demo, api="v1")
+    validation_info = brx.validate_sourcedoc(payload, bro_info, demo=demo, api="v2")
     validation_status = validation_info["status"]
 
     if validation_info["status"] == "VALIDE":
@@ -926,6 +923,7 @@ def deliver_sourcedocuments(registration_id, registrations_dir, bro_info, demo):
             request,
             user=bro_info["token"]["user"],
             password=bro_info["token"]["pass"],
+            project_id=bro_info["projectnummer"],
             demo=demo,
             api=gmw_SETTINGS["api_version"],
         )
@@ -942,6 +940,7 @@ def deliver_sourcedocuments(registration_id, registrations_dir, bro_info, demo):
                 },
             )
         else:
+            print(upload_info.text)
             levering_id = upload_info.json()["identifier"]
             delivery_status = upload_info.json()["status"]
             lastchanged = upload_info.json()["lastChanged"]
@@ -1137,7 +1136,6 @@ def gmw_create_sourcedocs_wells(registrations_dir):
     construction_events = GetEvents.construction()
     events_handler = EventsHandler(registrations_dir)
     for construction in construction_events:
-        print(construction)
         events_handler.create_construction_sourcedoc(
             event=construction
         )
@@ -1264,7 +1262,6 @@ def gmw_check_existing_registrations(bro_info, registrations_dir, demo):
             id__gt = 93480,
     ))
 
-    print(gmw_registrations)
 
     # Get BRO-IDs
 

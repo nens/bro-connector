@@ -41,7 +41,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.handle_startregistrations()
-        self.handle_configurations()
+        #self.handle_configurations()
         #self.handle_measurements()
 
     def handle_startregistrations(self):
@@ -160,6 +160,7 @@ class Registration(ABC):
 
         # Is this else statement needed?
         else:
+            print(validation_info)
             validation_status = validation_info["status"]
             validation_errors = validation_info["errors"]
 
@@ -349,7 +350,7 @@ class FrdStartregistration(Registration):
         quality_regime = self.frd_obj.quality_regime or "IMBRO"
         gmn_bro_id = getattr(self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None)
         gmw_bro_id = getattr(
-            getattr(self.frd_obj.groundwater_monitoring_tube, "groundwater_monitoring_well", None),
+            getattr(self.frd_obj.groundwater_monitoring_tube, "groundwater_monitoring_well_static", None),
             "bro_id",
             None,
         )

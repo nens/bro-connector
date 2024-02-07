@@ -387,6 +387,9 @@ class gmw_registration_log(models.Model):
         max_length=254, null=True, blank=True
     )
 
+    def __str__(self):
+        return f"{self.bro_id}-{self.levering_type}_log ({self.date_modified})"
+
     class Meta:
         managed = True
         db_table = 'aanlevering"."gmw_registration_log'

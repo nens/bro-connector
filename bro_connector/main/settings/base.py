@@ -255,8 +255,9 @@ else:
 # # BROCONVERTER SETTINGS
 gld_SETTINGS = {
     "bro_info_demo": {
-        "user": bro_demo_user,
-        "pass": bro_demo_password,
+        "projectnummer":3012,
+        "user": bro_acceptatie_user_v2,
+        "pass": bro_acceptatie_password_v2,
     },
     "bro_info_bro_connector": {
         "user": bro_production_user,
@@ -266,14 +267,15 @@ gld_SETTINGS = {
     "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gld/additions"),
     "startregistrations_dir": os.path.join(BASE_DIR, "gld/startregistrations"),
-    "api_version": "v1",
+    "api_version": "v2",
 }
 
 gmw_SETTINGS = {
     "bro_info_demo": {
+        "projectnummer":3012,
         "token": {
-            "user": bro_demo_user,
-            "pass": bro_demo_password,
+            "user": bro_acceptatie_user_v2,
+            "pass": bro_acceptatie_password_v2,
         },
         "kvk_nummer": 20168636,
     },
@@ -286,16 +288,16 @@ gmw_SETTINGS = {
     },
     "demo": demo,
     "registrations_dir": os.path.join(BASE_DIR, "gmw\\registrations"),
-    "api_version": "v1",
+    "api_version": "v2",
 }
 
 gmn_SETTINGS = {
     "acces_token_bro_portal_demo": {
         "token": {
-            "user": bro_demo_user,
-            "pass": bro_demo_password,
+            "user": bro_acceptatie_user_v2,
+            "pass": bro_acceptatie_password_v2,
         },
-        "projectnummer": None,
+        "projectnummer": 3012,
     },
     "acces_token_bro_portal_bro_connector": {
         "user": bro_production_user,
@@ -311,9 +313,10 @@ gmn_SETTINGS = {
 
 FRD_SETTINGS = {
     "bro_info_demo": {
+        "projectnummer":3012,
         "token": {
-            "user": bro_demo_user,
-            "pass": bro_demo_password,
+            "user": bro_acceptatie_user_v2,
+            "pass": bro_acceptatie_password_v2,
         },
         "kvk_nummer": 20168636,
     },
@@ -325,7 +328,7 @@ FRD_SETTINGS = {
         "kvk_nummer": None,
     },
     "demo": demo,
-    "api_version": "v1",
+    "api_version": "v2",
 }
 
 

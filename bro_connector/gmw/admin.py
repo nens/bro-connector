@@ -27,6 +27,7 @@ def get_searchable_fields(model_class):
 
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
+    
 
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
 
@@ -381,3 +382,4 @@ _register(gmw_models.Event, EventAdmin)
 _register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
+admin.site.register(gmw_models.gmw_registration_log)
