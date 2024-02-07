@@ -574,4 +574,38 @@ class ClosureRegistration(Registration):
         self.log, created = FrdSyncLog.objects.update_or_create(
             event_type="FRD_Closure", configuration=self.measurement
         )
+    
+    def construct_xml_tree(self):
+        """
+        Setup the data for the xml file.
+        Then creates the file and saves the xml tree to self.
+        """     
+
+        srcdocdata = {
+            "request_reference": f"registration_{self.measurement.formation_resistance_dossier}_{self.measurement.measurement_date}",
+            "measurements": '!DUMMY!',
+            "calculated_apparant_formation_resistance": '!DUMMY!',
+            "determination_procedure": self.measurement.determination_procedure,
+            "evaluation_procedure": self.measurement.evaluation_procedure,
+        }
+
+        configuration_registration_tool = ConfigurationRegistrationTool(srcdocdata)
+        self.startregistration_xml_file = configuration_registration_tool.generate_xml_file()
+
+    def save_xml_file(self):
+        """
+        Saves the xmltree as xml file in the filepath as defined in self.
+        """
+        filename = f"closure_registration_{self}.xml"
+        self.filepath = os.path.join(self.output_dir, filename)
+        self.startregistration_xml_file.write(self.filepath, pretty_print=True)
+
+    def save_bro_id(self, delivery_status_info):
+        """
+        Save the Bro_Id to the FRD object
+        """
+        self.measurement_configuration.bro_id = delivery_status_info.json()["brondocuments"][0][
+            "broId"
+        ]
+        self.measurement_configuration.save()
 
