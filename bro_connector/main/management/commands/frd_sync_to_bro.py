@@ -41,7 +41,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.handle_startregistrations()
-        #self.handle_configurations()
+        self.handle_configurations()
         #self.handle_measurements()
 
     def handle_startregistrations(self):
