@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # Create your models here.
 class FormationResistanceDossier(models.Model):
     frd_bro_id = models.CharField(
-        max_length=200, null=True, blank=True, editable=False, verbose_name="Bro-ID FRD"
+        max_length=200, null=True, blank=True, editable=True, verbose_name="Bro-ID FRD"
     )
     delivery_accountable_party = models.CharField(
         max_length=200,

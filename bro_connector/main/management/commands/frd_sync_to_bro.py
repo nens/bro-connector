@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from django.core.management.base import BaseCommand
 from bro_exchange.broxml.frd.requests import FrdStartregistrationTool, ConfigurationRegistrationTool
-import bro_exchange.broxml.frd.constructables as constructables
 from bro_exchange.bhp.connector import (
     validate_sourcedoc,
     upload_sourcedocs_from_dict,
@@ -42,7 +41,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.handle_startregistrations()
         self.handle_configurations()
-        #self.handle_measurements()
+        # self.handle_closures()
+        # self.handle_measurements()
 
     def handle_startregistrations(self):
         """
@@ -93,10 +93,6 @@ class Registration(ABC):
     demo = bool
     api_version = str
     bro_info = dict
-
-    @abstractmethod
-    def update_or_create_log(self):
-        pass
 
     def sync(self):
         """
@@ -161,11 +157,11 @@ class Registration(ABC):
         Validates the xml file, using the BRO validations service.
         If the xml file is VALIDE, the deliver_xml_file method is called
         """
-
         if 'NIET_VALIDE' in self.log.comment:
             self.generate_xml_file()
 
         xml_payload = get_xml_payload(self.log.xml_filepath)
+
         try:
             validation_info = validate_sourcedoc(
                 payload=xml_payload,
@@ -220,6 +216,7 @@ class Registration(ABC):
                 reqs=request_dict,
                 token=self.bro_info["token"],
                 demo=self.demo,
+                project_id=self.bro_info["projectnummer"],
                 api=self.api_version,
             )
 
@@ -328,9 +325,11 @@ class FrdStartregistration(Registration):
 
     def __init__(self, frd_obj: FormationResistanceDossier):
         self.output_dir = "frd/xml_files/"
-        self.frd_obj = frd_obj
         self.xml_file = None
-        self.log = None
+        self.frd_obj = frd_obj
+        self.log = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_StartRegistration", frd=self.frd_obj
+        )[0]
         self.demo = FRD_SETTINGS["demo"]
         self.api_version = FRD_SETTINGS["api_version"]
 
@@ -338,15 +337,6 @@ class FrdStartregistration(Registration):
             self.bro_info = FRD_SETTINGS["bro_info_demo"]
         else:
             self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
-
-    def update_or_create_log(self):
-        """
-        Checks if a log on the configuration already exists.
-        If not, creates one.
-        """
-        self.log, created = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_StartRegistration", configuration=self.measurement
-        )
 
     def construct_xml_tree(self):
         """
@@ -403,7 +393,9 @@ class ConfigurationRegistration(Registration):
         self.measurement_configurations = measurement_configurations
         self.formation_resistance_dossier = measurement_configurations[0].formation_resistance_dossier
         self.xml_file = None
-        self.log = None
+        self.log = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_GEM_MeasurementConfiguration", frd = self.formation_resistance_dossier
+        )[0]
         self.demo = FRD_SETTINGS["demo"]
         self.api_version = FRD_SETTINGS["api_version"]
 
@@ -412,15 +404,7 @@ class ConfigurationRegistration(Registration):
         else:
             self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
 
-    def update_or_create_log(self):
-        """
-        Checks if a log on the configuration already exists.
-        If not, creates one.
-        """
-        self.log, created = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_GEM_MeasurementConfiguration", configuration=self.measurement
-        )    
-
+    
     def format_request_reference(self):
         return f"registration_mc_{self.formation_resistance_dossier.frd_bro_id}_{datetime.now().date()}"
 
@@ -472,7 +456,6 @@ class ConfigurationRegistration(Registration):
         Saves the xmltree as xml file in the filepath as defined in self.
         """
         date = datetime.now().date()
-        print(date)
         if self.measurement_configurations[0].formation_resistance_dossier.frd_bro_id:
             naming = self.measurement_configurations[0].formation_resistance_dossier.frd_bro_id
         else:
@@ -501,7 +484,11 @@ class GeoOhmMeasurementRegistration(Registration):
         self.output_dir = "frd/xml_files/"
         self.measurement = measurement
         self.xml_file = None
-        self.log = None
+        #TODO: deze frd obj juist instellen
+        self.frd_obj = None
+        self.log = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_GEM_Measurement", frd=self.frd_obj
+        )[0]
         self.demo = FRD_SETTINGS["demo"]
         self.api_version = FRD_SETTINGS["api_version"]
 
@@ -510,14 +497,6 @@ class GeoOhmMeasurementRegistration(Registration):
         else:
             self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
 
-    def update_or_create_log(self):
-        """
-        Checks if a log on the configuration already exists.
-        If not, creates one.
-        """
-        self.log, created = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_GEM_Measurement", configuration=self.measurement
-        )
 
     def construct_xml_tree(self):
         """
@@ -558,7 +537,11 @@ class ClosureRegistration(Registration):
         self.output_dir = "frd/xml_files/"
         self.closure = closure
         self.xml_file = None
-        self.log = None
+        #TODO: Deze frd juist definieren
+        self.frd = None
+        self.log = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_Closure", frd=self.frd
+        )[0]
         self.demo = FRD_SETTINGS["demo"]
         self.api_version = FRD_SETTINGS["api_version"]
 
@@ -567,14 +550,6 @@ class ClosureRegistration(Registration):
         else:
             self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
 
-    def update_or_create_log(self):
-        """
-        Checks if a log on the configuration already exists.
-        If not, creates one.
-        """
-        self.log, created = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_Closure", configuration=self.measurement
-        )
     
     def construct_xml_tree(self):
         """
