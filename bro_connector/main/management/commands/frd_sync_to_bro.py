@@ -35,7 +35,7 @@ class Command(BaseCommand):
     help = "Syncs the FRD data to the BRO"
 
     def handle(self, *args, **kwargs):
-        # self.handle_frd_registrations()
+        self.handle_frd_registrations()
         # self.handle_configurations_registration()
         self.handle_frd_closures()
         # self.handle_measurements()
@@ -48,7 +48,7 @@ class Command(BaseCommand):
         unsynced_startregistration_dossiers = self.get_unsynced_dossiers()
 
         for dossier in unsynced_startregistration_dossiers:
-            startregistration = FrdStartregistration(dossier)
+            startregistration = FrdStartRegistration(dossier)
             startregistration.sync()
     
     def handle_configurations_registration(self):
@@ -86,13 +86,13 @@ class Command(BaseCommand):
     #         measurement_registration.sync()
 
     def get_unsynced_dossiers(self):
-        return FormationResistanceDossier.objects.filter(frd_bro_id=None)
+        return FormationResistanceDossier.objects.filter(frd_bro_id=None, closed_in_bro=False)
     
     def get_unsynced_configurations(self):
         return MeasurementConfiguration.objects.filter(bro_id=None)
     
     def get_closed_dossiers(self):
-        return FormationResistanceDossier.objects.filter(closure_date__isnull=False, frd_bro_id__isnull=False)
+        return FormationResistanceDossier.objects.filter(closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False)
     
     # def get_unsynced_measurements(self):
     #     return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
@@ -138,6 +138,7 @@ class Registration(ABC):
         If it is succesfull, it calls the validate_registration_xml to continue the registration process.
         """
         try:
+            print("Generating XML file")
             self.construct_xml_tree()
             self.save_xml_file()
 
@@ -174,6 +175,8 @@ class Registration(ABC):
         Validates the xml file, using the BRO validations service.
         If the xml file is VALIDE, the deliver_xml_file method is called
         """
+        print("Validating XML file")
+
         if 'NIET_VALIDE' in self.log.comment:
             self.generate_xml_file()
 
@@ -216,6 +219,7 @@ class Registration(ABC):
         Delivers the xml file after it has succesfully been validated.
         If the delivery status is OK, the check_delivery method is called to check for further details.
         """
+        print("Delivering XML File")
 
         delivery_status = self.log.delivery_status
 
@@ -270,6 +274,7 @@ class Registration(ABC):
         Updates the log of the frd, based on the return of the BRO webservice.
         If the delivery is fully succesfull, the finish_registration method is called.
         """
+        print("Checking delivery")
 
         try:
             delivery_status_info = brx.check_delivery_status(
@@ -277,11 +282,14 @@ class Registration(ABC):
                 token=self.bro_info["token"],
                 demo=self.demo,
                 api=self.api_version,
+                project_id=self.bro_info["projectnummer"],
             )
         except Exception as e:
             self.log.comment = f"Error occured during status check of delivery: {e}"
             self.log.save()
         else:
+            print(delivery_status_info)
+
             delivery_status = delivery_status_info.json()["status"]
             delivery_brondocument_status = delivery_status_info.json()["brondocuments"][
                 0
@@ -312,7 +320,7 @@ class Registration(ABC):
         self.log.delivery_status_info = delivery_status_info.json()["brondocuments"][0][
             "status"
         ]
-        self.log.comment = "Startregistration request approved"
+        self.log.comment = "Delivery approved"
         self.log.process_status = "delivery_approved"
         self.log.bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
         self.log.synced = True
@@ -334,7 +342,7 @@ class Registration(ABC):
         """
         os.remove(self.log.xml_filepath)
 
-class FrdStartregistration(Registration):
+class FrdStartRegistration(Registration):
     """
     Handles the startregistration of a new FRD in the BRO-Connector.
     The sync method is the main function which should always be called
@@ -344,7 +352,7 @@ class FrdStartregistration(Registration):
         super().__init__()
         self.frd_obj = frd_obj
         self.log = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_StartRegistration", frd=self.frd_obj
+            event_type="FRD_StartRegistration", frd=self.frd_obj, delivery_type="register"
         )[0]
         self.filename = f"frd_startregistration_{self.frd_obj.object_id_accountable_party}_{date.today()}.xml"
 
@@ -357,16 +365,19 @@ class FrdStartregistration(Registration):
             None,
         )
         gmw_tube_number = str(getattr(self.frd_obj.groundwater_monitoring_tube, "tube_number", None))
-        srcdocdata = {
+        
+        metadata = {
             "request_reference": f"startregistration_{self.frd_obj.object_id_accountable_party}",
             "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
-            "object_id_accountable_party": self.frd_obj.object_id_accountable_party,
             "quality_regime": quality_regime,
+        }
+        srcdocdata = {      
+            "object_id_accountable_party": self.frd_obj.object_id_accountable_party,  
             "gmn_bro_id": gmn_bro_id,
             "gmw_bro_id": gmw_bro_id,
             "gmw_tube_number": gmw_tube_number,
         }
-        startregistration_tool = brx.FrdStartregistrationTool(srcdocdata)
+        startregistration_tool = brx.FRDStartRegistrationTool(metadata, srcdocdata)
         self.xml_file = startregistration_tool.generate_xml_file()
 
     def save_bro_id(self, delivery_status_info):
@@ -387,7 +398,7 @@ class ConfigurationRegistration(Registration):
         self.measurement_configurations = measurement_configurations
         self.formation_resistance_dossier = measurement_configurations[0].formation_resistance_dossier
         self.log = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_GEM_MeasurementConfiguration", frd = self.formation_resistance_dossier
+            event_type="FRD_GEM_MeasurementConfiguration", frd = self.formation_resistance_dossier, delivery_type="register"
         )[0]
         
         # Create filename
@@ -428,16 +439,21 @@ class ConfigurationRegistration(Registration):
 
     def construct_xml_tree(self):
         quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO"
-        srcdocdata = {
-            "bro_id": self.formation_resistance_dossier.frd_bro_id,
+        
+        metadata = {
+            "request_reference": self.format_request_reference(),
             "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
-            "object_id_accountable_party": self.formation_resistance_dossier.object_id_accountable_party,
+            "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
+        }
+
+        srcdocdata = {
+            "object_id_accountable_party": self.formation_resistance_dossier.object_id_accountable_party,
             "request_reference": self.format_request_reference(),
             "measurement_configurations": self.configuration_to_list_of_dict(),
         }
 
-        configuration_registration_tool = brx.ConfigurationRegistrationTool(srcdocdata)
+        configuration_registration_tool = brx.FRDGEMConfigurationRegistrationTool(metadata, srcdocdata)
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
     def save_bro_id(self, delivery_status_info):
@@ -451,27 +467,26 @@ class ClosureRegistration(Registration):
         super().__init__()
         self.frd_obj = dossier
         self.log = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_Closure", frd=self.frd_obj
+            event_type="FRD_Closure", frd=self.frd_obj, delivery_type="register"
         )[0]       
         self.filename = f"closure_registration_{self.frd_obj.frd_bro_id}_{date.today()}.xml"   
 
     
     def construct_xml_tree(self):   
         quality_regime = self.frd_obj.quality_regime or "IMBRO"
-        srcdocdata = {
+        
+        metadata = {
             "request_reference": f"closure_registration_{self.frd_obj.frd_bro_id}_{date.today()}",
             "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
             "bro_id": self.frd_obj.frd_bro_id,
-            "qualityRegime": quality_regime,
+            "quality_regime": quality_regime,
         }
 
-        closure_registration_tool = brx.ConfigurationRegistrationTool(srcdocdata)
+        closure_registration_tool = brx.FRDClosureTool(metadata)
         self.xml_file = closure_registration_tool.generate_xml_file()
 
     def save_bro_id(self, delivery_status_info):
-        self.frd_obj.closure_bro_id = delivery_status_info.json()["brondocuments"][0][
-            "broId"
-        ]
+        self.frd_obj.closed_in_bro = True
         self.frd_obj.save()
 
 

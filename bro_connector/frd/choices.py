@@ -48,7 +48,10 @@ QUALITY_CONTROL = (
 )
 
 
-EVENT_TYPE_CHOICES = (("FRD_StartRegistration", "FRD_StartRegistration"),("FRD_GEM_MeasurementConfiguration", "FRD_GEM_MeasurementConfiguration"))
+EVENT_TYPE_CHOICES = (
+    ("FRD_StartRegistration", "FRD_StartRegistration"),
+    ("FRD_Closure", "FRD_Closure"),
+    ("FRD_GEM_MeasurementConfiguration", "FRD_GEM_MeasurementConfiguration"))
 
 DELIVERY_TYPE_CHOICES = (
     ("register", "register"),
