@@ -70,6 +70,11 @@ class FormationResistanceDossier(models.Model):
 
     deliver_to_bro = models.BooleanField(blank=False, null=True)
 
+    closure_date = models.DateField(blank=True, null=True)
+    closure_bro_id = models.CharField(
+        max_length=200, null=True, blank=True, editable=False, verbose_name="Bro-ID FRD Closure"
+    )
+
     def __str__(self):
         return self.name
 
