@@ -36,7 +36,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.handle_frd_registrations()
-        # self.handle_configurations_registration()
+        self.handle_configurations_registration()
         self.handle_frd_closures()
         # self.handle_measurements()
 
