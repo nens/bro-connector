@@ -6,8 +6,8 @@ from django.core.management.base import BaseCommand
 import bro_exchange as brx
 
 from frd.models import (
-    FormationResistanceDossier, 
-    FrdSyncLog, 
+    FormationResistanceDossier,
+    FrdSyncLog,
     MeasurementConfiguration,
     GeoOhmMeasurementMethod,
     ElectrodePair,
@@ -15,6 +15,7 @@ from frd.models import (
 )
 from datetime import datetime, date
 from main.settings.base import FRD_SETTINGS
+
 
 def get_xml_payload(xml_filepath):
     """
@@ -25,6 +26,7 @@ def get_xml_payload(xml_filepath):
         xml_payload = file.read()
 
     return xml_payload
+
 
 class Command(BaseCommand):
     """
@@ -50,7 +52,7 @@ class Command(BaseCommand):
         for dossier in unsynced_startregistration_dossiers:
             startregistration = FrdStartRegistration(dossier)
             startregistration.sync()
-    
+
     def handle_configurations_registration(self):
         """
         Handles the measurement configurations for all configurations without bro_id.
@@ -58,22 +60,23 @@ class Command(BaseCommand):
         unsynced_configurations = self.get_unsynced_configurations()
         per_dossier = defaultdict(list[dict])
         for measurement_configuration in unsynced_configurations:
-            per_dossier[str(measurement_configuration.formation_resistance_dossier_id)].append(measurement_configuration)
+            per_dossier[
+                str(measurement_configuration.formation_resistance_dossier_id)
+            ].append(measurement_configuration)
 
         for key, values in per_dossier.items():
             configuration_registration = ConfigurationRegistration(values)
             configuration_registration.sync()
 
     def handle_frd_closures(self):
-        """ Closes all FRDs with a closure date
-        
+        """Closes all FRDs with a closure date
+
         Checks if any FRD have a closure date. If so, and no allready existing log on a closure is found, a Closure request is done.
         """
         closed_startregistration_dossiers = self.get_closed_dossiers()
         for dossier in closed_startregistration_dossiers:
             closure = ClosureRegistration(dossier)
             closure.sync()
-    
 
     # def handle_measurements(self):
     #     """
@@ -86,16 +89,21 @@ class Command(BaseCommand):
     #         measurement_registration.sync()
 
     def get_unsynced_dossiers(self):
-        return FormationResistanceDossier.objects.filter(frd_bro_id=None, closed_in_bro=False)
-    
+        return FormationResistanceDossier.objects.filter(
+            frd_bro_id=None, closed_in_bro=False
+        )
+
     def get_unsynced_configurations(self):
         return MeasurementConfiguration.objects.filter(bro_id=None)
-    
+
     def get_closed_dossiers(self):
-        return FormationResistanceDossier.objects.filter(closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False)
-    
+        return FormationResistanceDossier.objects.filter(
+            closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
+        )
+
     # def get_unsynced_measurements(self):
     #     return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
+
 
 class Registration(ABC):
     log = FrdSyncLog
@@ -117,7 +125,7 @@ class Registration(ABC):
         If not, creates one and handles the complete startregistrations.
         If so, checks the status, and picks up the startregistration process where it was left.
         """
-        
+
         status_function_mapping = {
             None: self.generate_xml_file,
             "failed_to_generate_registration_xml": self.generate_xml_file,
@@ -144,7 +152,7 @@ class Registration(ABC):
 
         except Exception as e:
             self.log.process_status = "failed_to_generate_registration_xml"
-            self.log.comment = f"Error message: {e}",
+            self.log.comment = (f"Error message: {e}",)
             self.log.save()
 
         else:
@@ -162,7 +170,7 @@ class Registration(ABC):
         Then creates the file and saves the xml tree to self.
         """
         pass
-    
+
     def save_xml_file(self):
         """
         Saves the xmltree as xml file in the filepath as defined in self.
@@ -177,7 +185,7 @@ class Registration(ABC):
         """
         print("Validating XML file")
 
-        if 'NIET_VALIDE' in self.log.comment:
+        if "NIET_VALIDE" in self.log.comment:
             self.generate_xml_file()
 
         xml_payload = get_xml_payload(self.log.xml_filepath)
@@ -207,7 +215,7 @@ class Registration(ABC):
                 self.log.save()
 
                 self.deliver_xml_file()
-            
+
             # Could we not return and once again remove the else statement?
             else:
                 self.log.process_status = "failed_to_validate_sourcedocument"
@@ -303,13 +311,15 @@ class Registration(ABC):
                 self.finish_registration(delivery_status_info)
 
             elif delivery_errors:
-                self.log.comment = f"Found errors during the delivery check: {delivery_errors}"
+                self.log.comment = (
+                    f"Found errors during the delivery check: {delivery_errors}"
+                )
                 self.log.save()
 
             else:
                 self.log.delivery_status_info = delivery_status_info.json()[
-                            "brondocuments"
-                        ][0]["status"]
+                    "brondocuments"
+                ][0]["status"]
                 self.log.comment = "Startregistration request not yet approved"
                 self.log.save()
 
@@ -325,7 +335,7 @@ class Registration(ABC):
         self.log.bro_id = delivery_status_info.json()["brondocuments"][0]["broId"]
         self.log.synced = True
         self.log.save()
-        
+
         self.save_bro_id(delivery_status_info)
         self.remove_xml_file()
 
@@ -342,6 +352,7 @@ class Registration(ABC):
         """
         os.remove(self.log.xml_filepath)
 
+
 class FrdStartRegistration(Registration):
     """
     Handles the startregistration of a new FRD in the BRO-Connector.
@@ -352,27 +363,37 @@ class FrdStartRegistration(Registration):
         super().__init__()
         self.frd_obj = frd_obj
         self.log = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_StartRegistration", frd=self.frd_obj, delivery_type="register"
+            event_type="FRD_StartRegistration",
+            frd=self.frd_obj,
+            delivery_type="register",
         )[0]
         self.filename = f"frd_startregistration_{self.frd_obj.object_id_accountable_party}_{date.today()}.xml"
 
     def construct_xml_tree(self):
         quality_regime = self.frd_obj.quality_regime or "IMBRO"
-        gmn_bro_id = getattr(self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None)
+        gmn_bro_id = getattr(
+            self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None
+        )
         gmw_bro_id = getattr(
-            getattr(self.frd_obj.groundwater_monitoring_tube, "groundwater_monitoring_well_static", None),
+            getattr(
+                self.frd_obj.groundwater_monitoring_tube,
+                "groundwater_monitoring_well_static",
+                None,
+            ),
             "bro_id",
             None,
         )
-        gmw_tube_number = str(getattr(self.frd_obj.groundwater_monitoring_tube, "tube_number", None))
-        
+        gmw_tube_number = str(
+            getattr(self.frd_obj.groundwater_monitoring_tube, "tube_number", None)
+        )
+
         metadata = {
             "request_reference": f"startregistration_{self.frd_obj.object_id_accountable_party}",
             "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
             "quality_regime": quality_regime,
         }
-        srcdocdata = {      
-            "object_id_accountable_party": self.frd_obj.object_id_accountable_party,  
+        srcdocdata = {
+            "object_id_accountable_party": self.frd_obj.object_id_accountable_party,
             "gmn_bro_id": gmn_bro_id,
             "gmw_bro_id": gmw_bro_id,
             "gmw_tube_number": gmw_tube_number,
@@ -386,30 +407,39 @@ class FrdStartRegistration(Registration):
         ]
         self.frd_obj.save()
 
+
 class ConfigurationRegistration(Registration):
     """
     Handles the sync of of a new measurement configuration in the BRO-Connector.
     The sync method is the main function which should always be called.
-    
+
     Measurement configurations can be a dictionary of one or multiple measurement configs.
     """
+
     def __init__(self, measurement_configurations: dict):
         super().__init__()
         self.measurement_configurations = measurement_configurations
-        self.formation_resistance_dossier = measurement_configurations[0].formation_resistance_dossier
+        self.formation_resistance_dossier = measurement_configurations[
+            0
+        ].formation_resistance_dossier
         self.log = FrdSyncLog.objects.update_or_create(
-            event_type="FRD_GEM_MeasurementConfiguration", frd = self.formation_resistance_dossier, delivery_type="register"
+            event_type="FRD_GEM_MeasurementConfiguration",
+            frd=self.formation_resistance_dossier,
+            delivery_type="register",
         )[0]
-        
+
         # Create filename
         if self.measurement_configurations[0].formation_resistance_dossier.frd_bro_id:
-            naming = self.measurement_configurations[0].formation_resistance_dossier.frd_bro_id
+            naming = self.measurement_configurations[
+                0
+            ].formation_resistance_dossier.frd_bro_id
         else:
-            naming = self.measurement_configurations[0].formation_resistance_dossier.name
-        
-        self.filename = f"configuration_registration_{naming}_{date.today()}.xml"      
+            naming = self.measurement_configurations[
+                0
+            ].formation_resistance_dossier.name
 
-    
+        self.filename = f"configuration_registration_{naming}_{date.today()}.xml"
+
     def format_request_reference(self):
         return f"registration_mc_{self.formation_resistance_dossier.frd_bro_id}_{datetime.now().date()}"
 
@@ -435,11 +465,10 @@ class ConfigurationRegistration(Registration):
             }
             configurations_list.append(config_dict)
         return configurations_list
-        
 
     def construct_xml_tree(self):
         quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO"
-        
+
         metadata = {
             "request_reference": self.format_request_reference(),
             "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
@@ -453,14 +482,17 @@ class ConfigurationRegistration(Registration):
             "measurement_configurations": self.configuration_to_list_of_dict(),
         }
 
-        configuration_registration_tool = brx.FRDGEMConfigurationRegistrationTool(metadata, srcdocdata)
+        configuration_registration_tool = brx.FRDGEMConfigurationRegistrationTool(
+            metadata, srcdocdata
+        )
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
     def save_bro_id(self, delivery_status_info):
-        self.measurement_configurations.bro_id = delivery_status_info.json()["brondocuments"][0][
-            "broId"
-        ]
+        self.measurement_configurations.bro_id = delivery_status_info.json()[
+            "brondocuments"
+        ][0]["broId"]
         self.measurement_configurations.save()
+
 
 class ClosureRegistration(Registration):
     def __init__(self, dossier):
@@ -468,13 +500,14 @@ class ClosureRegistration(Registration):
         self.frd_obj = dossier
         self.log = FrdSyncLog.objects.update_or_create(
             event_type="FRD_Closure", frd=self.frd_obj, delivery_type="register"
-        )[0]       
-        self.filename = f"closure_registration_{self.frd_obj.frd_bro_id}_{date.today()}.xml"   
+        )[0]
+        self.filename = (
+            f"closure_registration_{self.frd_obj.frd_bro_id}_{date.today()}.xml"
+        )
 
-    
-    def construct_xml_tree(self):   
+    def construct_xml_tree(self):
         quality_regime = self.frd_obj.quality_regime or "IMBRO"
-        
+
         metadata = {
             "request_reference": f"closure_registration_{self.frd_obj.frd_bro_id}_{date.today()}",
             "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
@@ -518,7 +551,7 @@ class ClosureRegistration(Registration):
 #         """
 #         Setup the data for the xml file.
 #         Then creates the file and saves the xml tree to self.
-#         """     
+#         """
 
 #         srcdocdata = {
 #             "request_reference": f"registration_{self.measurement.formation_resistance_dossier}_{self.measurement.measurement_date}",
