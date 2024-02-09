@@ -464,6 +464,9 @@ class FrdSyncLog(models.Model):
     frd = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, blank=True, null=True
     )
+    geo_ohm_measuring_method = models.ForeignKey(
+        GeoOhmMeasurementMethod, on_delete=models.CASCADE, blank=True, null=True, default=None
+    )
     process_status = models.CharField(max_length=254, null=True, blank=True)
     comment = models.CharField(max_length=10000, null=True, blank=True)
     xml_filepath = models.CharField(max_length=254, null=True, blank=True)

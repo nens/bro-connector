@@ -37,10 +37,10 @@ class Command(BaseCommand):
     help = "Syncs the FRD data to the BRO"
 
     def handle(self, *args, **kwargs):
-        self.handle_frd_registrations()
-        self.handle_configurations_registration()
-        self.handle_frd_closures()
-        # self.handle_measurements()
+        # self.handle_frd_registrations()
+        # self.handle_gem_configurations_registration()
+        # self.handle_frd_closures()
+        self.handle_gem_measurement_registrations()
 
     def handle_frd_registrations(self):
         """
@@ -53,7 +53,7 @@ class Command(BaseCommand):
             startregistration = FrdStartRegistration(dossier)
             startregistration.sync()
 
-    def handle_configurations_registration(self):
+    def handle_gem_configurations_registration(self):
         """
         Handles the measurement configurations for all configurations without bro_id.
         """
@@ -65,28 +65,29 @@ class Command(BaseCommand):
             ].append(measurement_configuration)
 
         for key, values in per_dossier.items():
-            configuration_registration = ConfigurationRegistration(values)
+            configuration_registration = GEMConfigurationRegistration(values)
             configuration_registration.sync()
 
     def handle_frd_closures(self):
-        """Closes all FRDs with a closure date
-
-        Checks if any FRD have a closure date. If so, and no allready existing log on a closure is found, a Closure request is done.
+        """
+        Closes all FRDs with a closure date.
+        Checks if any FRD have a closure date. 
+        If so, and no allready existing log on a closure is found, a Closure request is done.
         """
         closed_startregistration_dossiers = self.get_closed_dossiers()
         for dossier in closed_startregistration_dossiers:
             closure = ClosureRegistration(dossier)
             closure.sync()
 
-    # def handle_measurements(self):
-    #     """
-    #     Handles measurements, this is based on the measurement method, without a bro_id.
-    #     """
-    #     unsynced_measurements = self.get_unsynced_measurements()
+    def handle_gem_measurement_registrations(self):
+        """
+        Handles measurements, this is based on the measurement method, without a bro_id.
+        """
+        unsynced_measurements_methods = self.get_unsynced_gem_measurement_methods()
 
-    #     for measurement in unsynced_measurements:
-    #         measurement_registration = GeoOhmMeasurementRegistration(measurement)
-    #         measurement_registration.sync()
+        for method in unsynced_measurements_methods:
+            measurement_registration = GEMMeasurementRegistration(method)
+            measurement_registration.sync()
 
     def get_unsynced_dossiers(self):
         return FormationResistanceDossier.objects.filter(
@@ -101,8 +102,8 @@ class Command(BaseCommand):
             closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
         )
 
-    # def get_unsynced_measurements(self):
-    #     return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
+    def get_unsynced_gem_measurement_methods(self):
+        return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
 
 
 class Registration(ABC):
@@ -354,10 +355,7 @@ class Registration(ABC):
 
 
 class FrdStartRegistration(Registration):
-    """
-    Handles the startregistration of a new FRD in the BRO-Connector.
-    The sync method is the main function which should always be called
-    """
+    """ Creates and delivers 10_FRD_StartRegistration.xml files."""
 
     def __init__(self, frd_obj: FormationResistanceDossier):
         super().__init__()
@@ -388,7 +386,7 @@ class FrdStartRegistration(Registration):
         )
 
         metadata = {
-            "request_reference": f"startregistration_{self.frd_obj.object_id_accountable_party}",
+            "request_reference": self.filename,
             "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
             "quality_regime": quality_regime,
         }
@@ -398,7 +396,7 @@ class FrdStartRegistration(Registration):
             "gmw_bro_id": gmw_bro_id,
             "gmw_tube_number": gmw_tube_number,
         }
-        startregistration_tool = brx.FRDStartRegistrationTool(metadata, srcdocdata)
+        startregistration_tool = brx.FRDStartRegistrationTool(metadata, srcdocdata, "registrationRequest")
         self.xml_file = startregistration_tool.generate_xml_file()
 
     def save_bro_id(self, delivery_status_info):
@@ -408,13 +406,8 @@ class FrdStartRegistration(Registration):
         self.frd_obj.save()
 
 
-class ConfigurationRegistration(Registration):
-    """
-    Handles the sync of of a new measurement configuration in the BRO-Connector.
-    The sync method is the main function which should always be called.
-
-    Measurement configurations can be a dictionary of one or multiple measurement configs.
-    """
+class GEMConfigurationRegistration(Registration):
+    """  Creates and delivers 11_FRD_GEM_MeasurementConfiguration.xml files."""
 
     def __init__(self, measurement_configurations: dict):
         super().__init__()
@@ -470,7 +463,7 @@ class ConfigurationRegistration(Registration):
         quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO"
 
         metadata = {
-            "request_reference": self.format_request_reference(),
+            "request_reference": self.filename,
             "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
@@ -482,8 +475,8 @@ class ConfigurationRegistration(Registration):
             "measurement_configurations": self.configuration_to_list_of_dict(),
         }
 
-        configuration_registration_tool = brx.FRDGEMConfigurationRegistrationTool(
-            metadata, srcdocdata
+        configuration_registration_tool = brx.GEMConfigurationTool(
+            metadata, srcdocdata, "registrationRequest"
         )
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
@@ -495,6 +488,7 @@ class ConfigurationRegistration(Registration):
 
 
 class ClosureRegistration(Registration):
+    """ Creates and delivers 15_FRD_Closure.xml files."""
     def __init__(self, dossier):
         super().__init__()
         self.frd_obj = dossier
@@ -509,13 +503,13 @@ class ClosureRegistration(Registration):
         quality_regime = self.frd_obj.quality_regime or "IMBRO"
 
         metadata = {
-            "request_reference": f"closure_registration_{self.frd_obj.frd_bro_id}_{date.today()}",
+            "request_reference": self.filename,
             "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
 
-        closure_registration_tool = brx.FRDClosureTool(metadata)
+        closure_registration_tool = brx.FRDClosureTool(metadata=metadata, request_type="registrationRequest")
         self.xml_file = closure_registration_tool.generate_xml_file()
 
     def save_bro_id(self, delivery_status_info):
@@ -523,53 +517,36 @@ class ClosureRegistration(Registration):
         self.frd_obj.save()
 
 
-# class GeoOhmMeasurementRegistration(Registration):
-#     """
-#     Handles the sync of of a new measurement in the BRO-Connector.
-#     The sync method is the main function which should always be called
-#     """
+class GEMMeasurementRegistration(Registration):
+    """ Creates and delivers 12_FRD_GEM_Measurement.xml files."""
+    def __init__(self, method):
+        super().__init__()
+        self.method_obj = method
+        self.frd_obj = self.method_obj.formation_resistance_dossier
+        self.log = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_GEM_Measurement", frd=self.frd_obj, delivery_type="register", geo_ohm_measuring_method=self.method_obj
+        )[0]
+        self.filename = (
+            f"measurement_registration_{self.frd_obj.frd_bro_id}_{date.today()}.xml"
+        )
 
-#     def __init__(self, measurement):
-#         self.output_dir = "frd/xml_files/"
-#         self.measurement = measurement
-#         self.xml_file = None
-#         self.log = FrdSyncLog.objects.update_or_create(
-#             event_type="FRD_GEM_Measurement", frd=self.frd_obj
-#         )[0]
-#         self.demo = FRD_SETTINGS["demo"]
-#         self.api_version = FRD_SETTINGS["api_version"]
+    def construct_xml_tree(self):
+        quality_regime = self.frd_obj.quality_regime or "IMBRO"
 
-#         if self.demo:
-#             self.bro_info = FRD_SETTINGS["bro_info_demo"]
-#         else:
-#             self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
+        metadata = {
+            "request_reference": self.filename,
+            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "bro_id": self.frd_obj.frd_bro_id,
+            "quality_regime": quality_regime,
+        }
 
-#         self.filename = f"measurement_registration_{self.measurement.configuration_name}_{date.today()}.xml"
+        srcdocdata = {
 
+        }
 
-#     def construct_xml_tree(self):
-#         """
-#         Setup the data for the xml file.
-#         Then creates the file and saves the xml tree to self.
-#         """
-
-#         srcdocdata = {
-#             "request_reference": f"registration_{self.measurement.formation_resistance_dossier}_{self.measurement.measurement_date}",
-#             "measurements": '!DUMMY!',
-#             "calculated_apparant_formation_resistance": '!DUMMY!',
-#             "determination_procedure": self.measurement.determination_procedure,
-#             "evaluation_procedure": self.measurement.evaluation_procedure,
-#         }
-
-#         configuration_registration_tool = ConfigurationRegistrationTool(srcdocdata)
-#         self.startregistration_xml_file = configuration_registration_tool.generate_xml_file()
+        measurment_registration_tool = brx.GEMMeasurementTool(metadata, srcdocdata, "registrationRequest")
+        self.xml_file = measurment_registration_tool.generate_xml_file()
 
 
-#     def save_bro_id(self, delivery_status_info):
-#         """
-#         Save the Bro_Id to the FRD object
-#         """
-#         self.measurement_configuration.bro_id = delivery_status_info.json()["brondocuments"][0][
-#             "broId"
-#         ]
-#         self.measurement_configuration.save()
+    def save_bro_id(self, delivery_status_info):
+        pass
