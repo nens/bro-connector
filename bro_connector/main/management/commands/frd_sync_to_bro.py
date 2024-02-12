@@ -44,9 +44,9 @@ class Command(BaseCommand):
     help = "Syncs the FRD data to the BRO"
 
     def handle(self, *args, **kwargs):
-        # self.handle_frd_registrations()
-        # self.handle_gem_configurations_registration()
-        # self.handle_frd_closures()
+        self.handle_frd_registrations()
+        self.handle_gem_configurations_registration()
+        self.handle_frd_closures()
         self.handle_gem_measurement_registrations()
 
     def handle_frd_registrations(self):
