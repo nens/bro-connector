@@ -131,15 +131,11 @@ class InstrumentConfiguration(models.Model):
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
     )
-    relative_position_send_coil = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    relative_position_send_coil = models.FloatField(
         null=True,
         blank=True,
     )
-    relative_position_receive_coil = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    relative_position_receive_coil = models.FloatField(
         null=True,
         blank=True,
     )
@@ -149,9 +145,7 @@ class InstrumentConfiguration(models.Model):
         blank=True,
         null=True,
     )
-    relative_position_secondary_coil = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    relative_position_secondary_coil = models.FloatField(
         null=True,
         blank=True,
     )
@@ -161,16 +155,12 @@ class InstrumentConfiguration(models.Model):
         blank=True,
         null=True,
     )
-    coilfrequency = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    coilfrequency = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )  # Unit is kHz
-    instrument_length = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    instrument_length = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(300)],
@@ -316,8 +306,8 @@ class GeoOhmMeasurementValue(models.Model):
     geo_ohm_measurement_method = models.ForeignKey(
         GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
     )
-    formationresistance = models.DecimalField(
-        max_digits=6, decimal_places=3, validators=[MinValueValidator(0)]
+    formationresistance = models.FloatField(
+         validators=[MinValueValidator(0)]
     )
     measurement_configuration = models.ForeignKey(
         MeasurementConfiguration, on_delete=models.CASCADE, null=False, blank=False
@@ -347,21 +337,15 @@ class ElectromagneticRecord(models.Model):
         ElectromagneticSeries, on_delete=models.CASCADE, null=True, blank=False
     )
 
-    vertical_position = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    vertical_position = models.FloatField(
         validators=[MinValueValidator(-750), MaxValueValidator(325)],
     )  # Unit = m (meter)
 
-    primary_measurement = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    primary_measurement = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(3000)],
     )  # Unit = mS/m (milliSiemens/meter)
 
-    secondary_measurement = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    secondary_measurement = models.FloatField(
         blank=True,
         null=True,
         validators=[MinValueValidator(0), MaxValueValidator(3000)],
@@ -426,19 +410,18 @@ class FormationresistanceSeries(models.Model):
 
 
 class FormationresistanceRecord(models.Model):
+    """
+    Schijnbare formatieweerstand meetreeks
+    """
     series = models.ForeignKey(
         FormationresistanceSeries, on_delete=models.CASCADE, null=True, blank=False
     )
 
-    vertical_position = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    vertical_position = models.FloatField(
         validators=[MinValueValidator(-750), MaxValueValidator(325)],
     )  # Unit = m (meter)
 
-    formationresistance = models.DecimalField(
-        max_digits=6,
-        decimal_places=3,
+    formationresistance = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(10000)],
     )  # Unit = ohm.m
 

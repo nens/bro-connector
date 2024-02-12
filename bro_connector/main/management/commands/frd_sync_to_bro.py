@@ -1,17 +1,24 @@
 import os
 import time
+from typing import Type
+from django.db.models.query import QuerySet
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from django.core.management.base import BaseCommand
 import bro_exchange as brx
+
 
 from frd.models import (
     FormationResistanceDossier,
     FrdSyncLog,
     MeasurementConfiguration,
     GeoOhmMeasurementMethod,
+    GeoOhmMeasurementValue,
     ElectrodePair,
     GMWElectrodeReference,
+    CalculatedFormationresistanceMethod,
+    FormationresistanceSeries,
+    FormationresistanceRecord
 )
 from datetime import datetime, date
 from main.settings.base import FRD_SETTINGS
@@ -540,13 +547,63 @@ class GEMMeasurementRegistration(Registration):
             "quality_regime": quality_regime,
         }
 
-        srcdocdata = {
+        measurement_date = self.method_obj.measurement_date.strftime("%Y-%m-%d")
+        measurements_data = self._get_measurements()
+        calculated_method = self._get_calculated_method()
+        calculated_values = self._create_calculated_values_string(calculated_method)
 
+        srcdocdata = {
+            "measurement_date":measurement_date,
+            "measuring_responsible_party":self.method_obj.measuring_responsible_party,
+            "measuring_procedure":self.method_obj.measuring_procedure,
+            "evaluation_procedure":self.method_obj.assessment_procedure,
+            "measurements":measurements_data,
+            "calculated_method_responsible_party":calculated_method.responsible_party,
+            "calculated_method_procedure":calculated_method.assessment_procedure,
+            "measurement_count":len(measurements_data),
+            "calculated_values":calculated_values,
         }
 
         measurment_registration_tool = brx.GEMMeasurementTool(metadata, srcdocdata, "registrationRequest")
         self.xml_file = measurment_registration_tool.generate_xml_file()
 
+    def _get_measurements(self) -> list[dict]:
+        """Queries the measurements linked to the method"""
+        measurements = GeoOhmMeasurementValue.objects.filter(geo_ohm_measurement_method=self.method_obj)
+        return [(measurement.measurement_configuration.configuration_name,measurement.formationresistance) for measurement in measurements]
+    
+    def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
+        """Queries the related CalculatedFormationresistanceMethod"""
+        return CalculatedFormationresistanceMethod.objects.get(geo_ohm_measurement_method=self.method_obj)    
+    
+    def _create_calculated_values_string(self, calculated_method) -> str:
+        """Looks up all calulated apperent fromation resistance values.
+        
+        Returns the str format required for the FRD XML file.
+        Example from the BRO: '-8.20,245,goedgekeurd -8.40,230,goedgekeurd -8.60,210,goedgekeurd -13.20,10.5,goedgekeurd -13.60,4.5,goedgekeurd'
+        This consists of a list, seperated by spaces.
+        Each item in the list consists of: vertical position, resistance value, status quality control.
+        """
+        series = self._get_series(calculated_method)
+        calculated_resistance_values = self._get_calculated_resistance_values(series)
 
+        string_elements = [
+            f"{value_obj.vertical_position},{value_obj.formationresistance},{value_obj.status_qualitycontrol}"
+            for value_obj in calculated_resistance_values
+        ]
+
+        string = " ".join(string_elements)
+
+        return string
+    
+    def _get_series(self, calculated_method) ->  Type[FormationresistanceSeries]:
+        """Looks up the series related to calculated formation method"""
+        return FormationresistanceSeries.objects.get(calculated_formationresistance=calculated_method)
+
+    def _get_calculated_resistance_values(self, series) ->  QuerySet[FormationresistanceRecord]:
+        """Looks up the  calculated formation resistance values, based on a series"""
+        return FormationresistanceRecord.objects.filter(series=series)
+
+    #TODO: write this save to bro
     def save_bro_id(self, delivery_status_info):
-        pass
+        print(delivery_status_info)
