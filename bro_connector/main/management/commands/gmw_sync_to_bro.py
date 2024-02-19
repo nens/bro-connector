@@ -1140,8 +1140,6 @@ def gmw_create_sourcedocs_wells(registrations_dir):
             event=construction
         )
 
-    return
-
     electrodeStatus_events = GetEvents.electrodeStatus()
     for electrode_status in electrodeStatus_events:
         events_handler.create_type_sourcedoc(
