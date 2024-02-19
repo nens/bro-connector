@@ -122,7 +122,7 @@ class InstrumentConfiguration(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
-    configuration_name = models.TextField(max_length=40, null=False, blank=False)
+    configuration_name = models.CharField(max_length=40, null=False, blank=False)
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
     )

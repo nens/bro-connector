@@ -33,32 +33,16 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     list_display = (
         "groundwater_monitoring_well_static_id",
-        "registration_object_type",
         "bro_id",
-        "request_reference",
         "delivery_accountable_party",
-        "delivery_responsible_party",
-        "quality_regime",
-        "under_privilege",
-        "delivery_context",
-        "construction_standard",
         "initial_function",
         "nitg_code",
-        "olga_code",
         "well_code",
-        "monitoring_pdok_id",
         "coordinates",
-        "reference_system",
-        "horizontal_positioning_method",
-        "local_vertical_reference_point",
-        "well_offset",
-        "vertical_datum",
-        "last_horizontal_positioning_date",
-        "construction_coordinates",
         "in_management",
     )
 
-    list_filter = ("delivery_accountable_party", "nitg_code", "in_management")
+    list_filter = ("delivery_accountable_party", "bro_id", "nitg_code", "well_code", "in_management")
 
     fieldsets = [
         (
@@ -129,15 +113,12 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "groundwater_monitoring_well_dynamic_id",
         "groundwater_monitoring_well_static",
         "number_of_standpipes",
-        "ground_level_stable",
-        "well_stability",
         "owner",
-        "maintenance_responsible_party",
         "well_head_protector",
         "deliver_gld_to_bro",
         "ground_level_position",
-        "ground_level_positioning_method",
     )
+
     list_filter = ("groundwater_monitoring_well_static", "deliver_gld_to_bro", "owner")
 
 
@@ -148,18 +129,17 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_tube_static_id",
         "groundwater_monitoring_well_static",
-        "deliver_gld_to_bro",
         "tube_number",
         "tube_type",
-        "artesian_well_cap_present",
-        "sediment_sump_present",
         "number_of_geo_ohm_cables",
         "tube_material",
         "screen_length",
         "sock_material",
+        "sediment_sump_present",
         "sediment_sump_length",
+        "deliver_gld_to_bro",
     )
-    list_filter = ("deliver_gld_to_bro",)
+    list_filter = ("groundwater_monitoring_well_static", "deliver_gld_to_bro")
 
 
 class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
@@ -173,13 +153,7 @@ class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
         "variable_diameter",
         "tube_status",
         "tube_top_position",
-        "tube_top_positioning_method",
-        "tube_packing_material",
-        "glue",
         "plain_tube_part_length",
-        "inserted_part_diameter",
-        "inserted_part_length",
-        "inserted_part_material",
     )
     list_filter = ("groundwater_monitoring_tube_static_id",)
 
@@ -207,7 +181,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
         "electrode_packing_material",
         "electrode_position",
     )
-    list_filter = ("electrode_static_id",)
+    list_filter = ("electrode_static_id", "geo_ohm_cable_id")
 
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
@@ -219,7 +193,7 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
         "electrode_static_id",
         "electrode_status",
     )
-    list_filter = ("electrode_dynamic_id",)
+    list_filter = ("electrode_dynamic_id", "electrode_static_id")
 
 
 class EventAdmin(admin.ModelAdmin):
@@ -234,7 +208,7 @@ class EventAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube_dynamic",
         "electrode_dynamic",
     )
-    list_filter = ("change_id",)
+    list_filter = ("change_id", "groundwater_monitoring_well_static", "event_name", "event_date")
 
 
 class PictureAdmin(admin.ModelAdmin):
@@ -255,9 +229,10 @@ class PictureAdmin(admin.ModelAdmin):
 class MaintenancePartyAdmin(admin.ModelAdmin):
 
     list_display = (
-        "organisation",
-        "postal_code",
+        "first_name",
+        "surname",
         "function",
+        "organisation",
     )
     list_filter = (
         "organisation",
@@ -271,14 +246,16 @@ class MaintenanceAdmin(admin.ModelAdmin):
     list_display = (
         "kind_of_maintenance",
         "groundwater_monitoring_well_static",
-        "execution_date",
         "reporter",
+        "execution_date",
+        "execution_by",
     )
     list_filter = (
         "kind_of_maintenance",
         "groundwater_monitoring_well_static",
         "execution_date",
         "reporter",
+        "execution_by",
     )
 
 
@@ -363,6 +340,13 @@ class XMLImportAdmin(admin.ModelAdmin):
                         )
                         object.save()
 
+class GmwSyncLogAdmin(admin.ModelAdmin):
+    list_display = (
+        "date_modified", "last_changed", "bro_id", "process_status", "comments", 
+    )
+    list_filter = (
+        "bro_id",
+    )
 
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
 _register(gmw_models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
@@ -382,4 +366,4 @@ _register(gmw_models.Event, EventAdmin)
 _register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
-admin.site.register(gmw_models.gmw_registration_log)
+_register(gmw_models.gmw_registration_log, GmwSyncLogAdmin)

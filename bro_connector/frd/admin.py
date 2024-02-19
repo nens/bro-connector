@@ -19,20 +19,30 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "frd_bro_id",
-        "object_id_accountable_party",
+        "groundwater_monitoring_tube",
+        "delivery_accountable_party",
+        "assessment_type",
         "quality_regime",
+        "deliver_to_bro",
     )
     list_filter = (
-        "object_id_accountable_party",
+        "frd_bro_id",
+        "groundwater_monitoring_tube",
+        "delivery_accountable_party",
+        "deliver_to_bro",
     )
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "formation_resistance_dossier", 
+        "electromagnetic_measurement_method",
     )
     list_filter = (
-
+        "id",
+        "formation_resistance_dossier", 
+        "electromagnetic_measurement_method",
     )
 
 class ElectromagneticMeasurementMethodAdmin(admin.ModelAdmin):
@@ -58,10 +68,8 @@ class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
         "measuring_responsible_party",
         "measuring_procedure",
         "assessment_procedure",
+        "measurement_date",
     )
-
-    search_fields = get_searchable_fields(GeoOhmMeasurementMethod)
-
 
 class CalculatedFormationresistanceAdmin(admin.ModelAdmin):
     list_display = (
@@ -87,6 +95,7 @@ class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "measurement_configuration",
+        "datetime",
     )
 
 class GMWElectrodeReferenceAdmin(admin.ModelAdmin):

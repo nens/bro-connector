@@ -82,8 +82,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_static'
-        verbose_name = "Grondwatermonitoring Put"
-        verbose_name_plural = "Grondwatermonitoring Putten"
+        verbose_name = "Grondwatermonitoring Put - Statisch"
+        verbose_name_plural = "Grondwatermonitoring Putten - Statisch"
 
 
 class GroundwaterMonitoringWellDynamic(models.Model):
@@ -139,8 +139,8 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_dynamic'
-        verbose_name = "Grondwatermonitoring Put - Data Aanpassing"
-        verbose_name_plural = "Grondwatermonitoring Putten - Data Aanpassingen"
+        verbose_name = "Grondwatermonitoring Put - Dynamisch"
+        verbose_name_plural = "Grondwatermonitoring Putten - Dynamisch"
 
 
 class GroundwaterMonitoringTubeStatic(models.Model):
@@ -195,8 +195,8 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tube_static'
-        verbose_name = "Grondwatermonitoring Filter"
-        verbose_name_plural = "Grondwatermonitoring Filters"
+        verbose_name = "Grondwatermonitoring Filter - Statisch"
+        verbose_name_plural = "Grondwatermonitoring Filters - Statisch"
 
 
 class GroundwaterMonitoringTubeDynamic(models.Model):
@@ -258,8 +258,8 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tube_dynamic'
-        verbose_name = "Grondwatermonitoring Filter - Data Aanpassingen"
-        verbose_name_plural = "Grondwatermonitoring Filters - Data Aanpassingen"
+        verbose_name = "Grondwatermonitoring Filter - Dynamisch"
+        verbose_name_plural = "Grondwatermonitoring Filters - Dynamisch"
 
 
 class GeoOhmCable(models.Model):
@@ -305,8 +305,8 @@ class ElectrodeStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."electrode_static'
-        verbose_name = "Electrode - Statische gegevens"
-        verbose_name_plural = "Electrodes - Statische gegevens"
+        verbose_name = "Electrode - Statisch"
+        verbose_name_plural = "Electrodes - Statisch"
 
 
 class ElectrodeDynamic(models.Model):
@@ -324,8 +324,8 @@ class ElectrodeDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."electrode_dynamic'
-        verbose_name = "Electrode - Dynamische gegevens"
-        verbose_name_plural = "Electrodes - Dynamische gegevens"
+        verbose_name = "Electrode - Dynamisch"
+        verbose_name_plural = "Electrodes - Dynamisch"
 
 
 class Event(models.Model):

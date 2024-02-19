@@ -13,9 +13,6 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "gmn_bro_id",
         "name",
         "measuring_point_count",
-        "quality_regime",
-        "delivery_context",
-        "monitoring_purpose",
         "groundwater_aspect",
         "start_date_monitoring",
         "deliver_to_bro",
@@ -24,8 +21,6 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
     list_filter = (
         "gmn_bro_id",
         "name",
-        "quality_regime",
-        "delivery_context",
         "monitoring_purpose",
         "groundwater_aspect",
         "deliver_to_bro",
@@ -50,6 +45,7 @@ class MeasuringPointAdmin(admin.ModelAdmin):
 class IntermediateEventAdmin(admin.ModelAdmin):
     list_display = (
         "gmn",
+        "measuring_point",
         "event_type",
         "event_date",
         "synced_to_bro",
@@ -57,6 +53,7 @@ class IntermediateEventAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "gmn",
+        "measuring_point",
         "event_type",
         "event_date",
         "synced_to_bro",
@@ -66,11 +63,13 @@ class IntermediateEventAdmin(admin.ModelAdmin):
 
 class gmn_bro_sync_logAdmin(admin.ModelAdmin):
     list_display = (
-        "object_id_accountable_party",
-        "event_type",
         "gmn_bro_id",
+        "date_modified",
+        "last_changed",
+        "event_type",
         "process_status",
         "measuringpoint",
+        "comments",
     )
     list_filter = (
         "object_id_accountable_party",
