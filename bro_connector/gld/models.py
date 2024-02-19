@@ -70,12 +70,7 @@ class Observation(models.Model):
         except:
             dossier = "Registratie onbekend"
 
-        try:
-            status = str(self.observation_metadata.status)
-        except:
-            status = "Status onbekend"
-
-        return "{}, {}, {} - {}".format(dossier, status, starttime, endtime)
+        return "{} ({} - {})".format(dossier, starttime, endtime)
 
     class Meta:
         managed = True
