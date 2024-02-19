@@ -40,14 +40,14 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 
     list_display = (
         "groundwater_level_dossier_id",
-        "groundwater_monitoring_tube_id",
+        "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
         "gld_bro_id",
     )
     list_filter = (
         "groundwater_level_dossier_id",
-        "groundwater_monitoring_tube_id",
+        "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
     )
@@ -84,8 +84,8 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
 class ObservationAdmin(admin.ModelAdmin):
 
     list_display = (
-        "groundwater_level_dossier_id",
         "observation_id",
+        "groundwater_level_dossier",
         "observation_starttime",
         "observation_endtime",
         "result_time",
@@ -95,7 +95,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_id",
         "observation_starttime",
         "observation_endtime",
-        "groundwater_level_dossier_id",
+        "groundwater_level_dossier",
         "result_time",
         "status",
     )

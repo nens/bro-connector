@@ -7,6 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from .choices import *
+from gmw.models import GroundwaterMonitoringTubeStatic
 
 
 #%% GLD Models
@@ -14,7 +15,7 @@ from .choices import *
 
 class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_tube_id = models.IntegerField(blank=True, null=True)
+    groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubeStatic, on_delete = models.CASCADE, null = True, blank = False)
     gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
     tube_number = models.IntegerField(blank=True, null=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
@@ -23,7 +24,7 @@ class GroundwaterLevelDossier(models.Model):
     research_last_correction = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return "{}".format(str(self.gld_bro_id))
+        return f"{self.gld_bro_id}"
 
     class Meta:
         managed = True
