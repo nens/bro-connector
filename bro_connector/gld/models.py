@@ -17,11 +17,14 @@ class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubeStatic, on_delete = models.CASCADE, null = True, blank = False)
     gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
-    tube_number = models.IntegerField(blank=True, null=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
     research_last_correction = models.DateTimeField(blank=True, null=True)
+
+    @property
+    def tube_number(self):
+        return self.groundwater_monitoring_tube.tube_number
 
     def __str__(self):
         return f"{self.gld_bro_id}"

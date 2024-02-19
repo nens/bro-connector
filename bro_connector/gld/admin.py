@@ -52,6 +52,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "research_last_date",
     )
 
+    readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number"]
+
 
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
 
