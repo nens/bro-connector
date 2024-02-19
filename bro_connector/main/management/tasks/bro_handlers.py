@@ -258,6 +258,7 @@ class GLDHandler(BROHandler):
     def reset_values(self):
         self.number_of_points = 0
         self.number_of_observations = 0
+        self.count_dictionary = {}
         self.point_value = []
         self.time = []
         self.qualifier = []
