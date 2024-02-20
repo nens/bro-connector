@@ -32,6 +32,17 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
+    actions = ["deliver_to_bro", "check_status"]
+
+    def deliver_to_bro(self, request, queryset):
+        pass
+
+    def check_status(self, request, queryset):
+        pass
+
+    deliver_to_bro.short_description = "Deliver FRD to BRO"
+    check_status.short_description = "Check FRD status from BRO"
+
 class InstrumentConfigurationAdmin(admin.ModelAdmin):
 
     list_display = (
