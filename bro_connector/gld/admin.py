@@ -54,6 +54,17 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 
     readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number"]
 
+    actions = ["deliver_to_bro", "check_status"]
+
+    def deliver_to_bro(self, request, queryset):
+        pass
+
+    def check_status(self, request, queryset):
+        pass
+
+    deliver_to_bro.short_description = "Deliver GLD to BRO"
+    check_status.short_description = "Check GLD status from BRO"
+
 
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
 
@@ -73,13 +84,13 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
 
     list_display = (
         "measurement_tvp_id",
-        "observation_id",
+        "observation",
         "measurement_time",
         "field_value",
     )
 
     list_filter = (
-        "observation_id",
+        "observation",
     )
 
 
@@ -92,6 +103,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_endtime",
         "result_time",
         "status",
+        "observation_type"
     )
     list_filter = (
         "observation_id",
@@ -101,6 +113,9 @@ class ObservationAdmin(admin.ModelAdmin):
         "result_time",
         "status",
     )
+
+    def observation_type(self, obj: models.Observation):
+        return obj.observation_metadata.observation_type
 
 
 class ObservationMetadataAdmin(admin.ModelAdmin):
