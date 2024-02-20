@@ -26,6 +26,17 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
+    actions = ["deliver_to_bro", "check_status"]
+
+    def deliver_to_bro(self, request, queryset):
+        pass
+
+    def check_status(self, request, queryset):
+        pass
+
+    deliver_to_bro.short_description = "Deliver GMN to BRO"
+    check_status.short_description = "Check GMN status from BRO"
+
 
 class MeasuringPointAdmin(admin.ModelAdmin):
 
