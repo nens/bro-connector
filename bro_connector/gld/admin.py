@@ -40,20 +40,30 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 
     list_display = (
         "groundwater_level_dossier_id",
-        "groundwater_monitoring_tube_id",
+        "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
-        "gmw_bro_id",
         "gld_bro_id",
     )
     list_filter = (
-        "research_start_date",
-        "research_last_date",
         "groundwater_level_dossier_id",
-        "groundwater_monitoring_tube_id",
+        "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
     )
+
+    readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number"]
+
+    actions = ["deliver_to_bro", "check_status"]
+
+    def deliver_to_bro(self, request, queryset):
+        pass
+
+    def check_status(self, request, queryset):
+        pass
+
+    deliver_to_bro.short_description = "Deliver GLD to BRO"
+    check_status.short_description = "Check GLD status from BRO"
 
 
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
@@ -62,15 +72,11 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
         "measurement_point_metadata_id",
         "qualifier_by_category",
         "censored_reason",
-        "qualifier_by_quantity",
-        "interpolation_code",
     )
     list_filter = (
         "measurement_point_metadata_id",
         "qualifier_by_category",
         "censored_reason",
-        "qualifier_by_quantity",
-        "interpolation_code",
     )
 
 
@@ -78,31 +84,13 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
 
     list_display = (
         "measurement_tvp_id",
-        "observation_id",
+        "observation",
         "measurement_time",
         "field_value",
-        "field_value_unit",
-        "calculated_value",
-        "corrected_value",
-        "correction_time",
-        "correction_reason",
-        # "measurement_point_metadata_id",
-        "measurement_point_metadata",
     )
+
     list_filter = (
-        "measurement_time",
-        "correction_time",
-        "measurement_tvp_id",
-        "observation_id",
-        "measurement_time",
-        "field_value",
-        "field_value_unit",
-        "calculated_value",
-        "corrected_value",
-        "correction_time",
-        "correction_reason",
-        # "measurement_point_metadata_id",
-        "measurement_point_metadata",
+        "observation",
     )
 
 
@@ -110,26 +98,24 @@ class ObservationAdmin(admin.ModelAdmin):
 
     list_display = (
         "observation_id",
-        "observationperiod",
+        "groundwater_level_dossier",
         "observation_starttime",
         "observation_endtime",
-        "observation_metadata_id",
-        "observation_process",  #
-        "groundwater_level_dossier_id",
         "result_time",
         "status",
+        "observation_type"
     )
     list_filter = (
         "observation_id",
-        "observationperiod",
         "observation_starttime",
         "observation_endtime",
-        "observation_metadata_id",
-        "observation_process",  #
-        "groundwater_level_dossier_id",
+        "groundwater_level_dossier",
         "result_time",
         "status",
     )
+
+    def observation_type(self, obj: models.Observation):
+        return obj.observation_metadata.observation_type
 
 
 class ObservationMetadataAdmin(admin.ModelAdmin):

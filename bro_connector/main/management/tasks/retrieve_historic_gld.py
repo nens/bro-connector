@@ -87,17 +87,28 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
 
         print("total points: ", gld.number_of_points)
 
+        if gld.number_of_observations > 1:
+            gld.count_dictionary[gld.number_of_observations] = gld.number_of_points - gld.count_dictionary[gld.number_of_observations - 1]
+        else:
+            gld.count_dictionary[1] = gld.number_of_points
+
+        print(gld.count_dictionary)
+
+        count = 1
         for observation_number in range(1, (1 + gld.number_of_observations)):
             ini.increment_observation_number()
             ini.observation_process()
             ini.metadata_observation()
             ini.observation()
 
-            for measurement_number in range(gld.number_of_points):
-                if measurement_number % 100 == 0:
-                    print(measurement_number)
+            for measurement_number in range(gld.count_dictionary[observation_number]):
+                if count % 100 == 0:
+                    print(count)
                 ini.metadata_measurement_tvp(measurement_number)
                 ini.measurement_tvp(measurement_number)
+                count += 1
+            
+
 
         gld.reset_values()
         ini.reset_values()
@@ -130,7 +141,7 @@ def get_tube_id(bro_id: str, tube_number: int) -> str:
     well = GroundwaterMonitoringWellStatic.objects.get(bro_id=bro_id)
 
     tube = GroundwaterMonitoringTubeStatic.objects.get(
-        groundwater_monitoring_well=well,
+        groundwater_monitoring_well_static=well,
         tube_number=tube_number,
     )
 
