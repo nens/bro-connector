@@ -45,9 +45,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.handle_frd_registrations()
-        self.handle_gem_configurations_registration()
-        self.handle_frd_closures()
-        self.handle_gem_measurement_registrations()
+        # self.handle_gem_configurations_registration()
+        # self.handle_frd_closures()
+        # self.handle_gem_measurement_registrations()
 
     def handle_frd_registrations(self):
         """
@@ -142,6 +142,7 @@ class Registration(ABC):
             "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
             "source_document_validation_succesful": self.deliver_xml_file,
             "succesfully_delivered_sourcedocuments": self.check_delivery,
+            "delivery_approved": self.check_delivery,
         }
 
         current_status = self.log.process_status
@@ -213,7 +214,6 @@ class Registration(ABC):
 
         # Is this else statement needed?
         else:
-            print(validation_info)
             validation_status = validation_info["status"]
             validation_errors = validation_info["errors"]
 
@@ -304,8 +304,6 @@ class Registration(ABC):
             self.log.comment = f"Error occured during status check of delivery: {e}"
             self.log.save()
         else:
-            print(delivery_status_info)
-
             delivery_status = delivery_status_info.json()["status"]
             delivery_brondocument_status = delivery_status_info.json()["brondocuments"][
                 0
@@ -317,7 +315,7 @@ class Registration(ABC):
                 and delivery_brondocument_status == "OPGENOMEN_LVBRO"
             ):
                 self.finish_registration(delivery_status_info)
-
+                pass
             elif delivery_errors:
                 self.log.comment = (
                     f"Found errors during the delivery check: {delivery_errors}"
@@ -414,7 +412,7 @@ class FrdStartRegistration(Registration):
 
 
 class GEMConfigurationRegistration(Registration):
-    """  Creates and delivers 11_FRD_GEM_MeasurementConfiguration.xml files."""
+    """Creates and delivers 11_FRD_GEM_MeasurementConfiguration.xml files."""
 
     def __init__(self, measurement_configurations: dict):
         super().__init__()
@@ -488,10 +486,11 @@ class GEMConfigurationRegistration(Registration):
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
     def save_bro_id(self, delivery_status_info):
-        self.measurement_configurations.bro_id = delivery_status_info.json()[
-            "brondocuments"
-        ][0]["broId"]
-        self.measurement_configurations.save()
+        for configuration in self.measurement_configurations:
+            configuration.bro_id = delivery_status_info.json()[
+                "brondocuments"
+            ][0]["broId"]
+            configuration.save()
 
 
 class ClosureRegistration(Registration):

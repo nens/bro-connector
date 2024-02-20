@@ -114,6 +114,7 @@ class MeasurementConfigurationAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "bro_id",
         "configuration_name",
         "measurement_pair",
         "flowcurrent_pair",
