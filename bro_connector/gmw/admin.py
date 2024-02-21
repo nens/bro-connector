@@ -10,7 +10,7 @@ import reversion
 from django.db import models
 
 from . import models as gmw_models
-
+import main.management.tasks.gmw_actions as gmw_actions
 from main.settings.base import gmw_SETTINGS
 from . import forms as gmw_forms
 
@@ -108,10 +108,12 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         obj.save()
 
     def deliver_to_bro(self, request, queryset):
-        pass
+        for well in queryset:
+            gmw_actions.check_and_deliver(well)
 
     def check_status(self, request, queryset):
-        pass
+        for well in queryset:
+            gmw_actions.check_status(well)
 
     deliver_to_bro.short_description = "Deliver GMW to BRO"
     check_status.short_description = "Check GMW status from BRO"
