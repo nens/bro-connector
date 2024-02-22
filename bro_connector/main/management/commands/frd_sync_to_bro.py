@@ -21,6 +21,9 @@ from frd.models import (
     FormationresistanceRecord,
     InstrumentConfiguration,
     ElectromagneticMeasurementMethod,
+    ElectromagneticRecord,
+    ElectromagneticSeries,
+    InstrumentConfiguration
 )
 from datetime import datetime, date
 from main.settings.base import FRD_SETTINGS
@@ -73,7 +76,7 @@ class Command(BaseCommand):
         # self.handle_gem_configurations_registration()
         # self.handle_frd_closures()
         # self.handle_gem_measurement_registrations()
-        self.handle_emm_configurations()
+        # self.handle_emm_configurations()
         self.handle_emm_measurements()
 
     def handle_frd_registrations(self):
@@ -704,7 +707,7 @@ class EMMConfigurationRegistration(Registration):
 
 class EMMMeasurementRegistration(Registration):
     """ Creates and delivers 14_FRD_EMM_Measurement.xml files."""
-    def __init__(self, method):
+    def __init__(self, method: Type[ElectromagneticMeasurementMethod]):
         super().__init__()
         self.method_obj = method
         self.frd_obj = self.method_obj.formation_resistance_dossier
@@ -716,36 +719,88 @@ class EMMMeasurementRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        pass
-        # quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
+        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
 
-        # metadata = {
-        #     "request_reference": self.filename,
-        #     "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
-        #     "bro_id": self.frd_obj.frd_bro_id,
-        #     "quality_regime": quality_regime,
-        # }
+        metadata = {
+            "request_reference": self.filename,
+            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "bro_id": self.frd_obj.frd_bro_id,
+            "quality_regime": quality_regime,
+        }
 
-        # measurement_date = self.method_obj.measurement_date.strftime("%Y-%m-%d")
-        # measurements_data = self._get_measurements()
-        # calculated_method = self._get_calculated_method()
-        # calculated_values = self._create_calculated_values_string(calculated_method)
+        measurement_date = self.method_obj.measurement_date.strftime("%Y-%m-%d")
+        measurement_records, measurement_records_count = self._get_measurement_data()
+        calculated_method = self._get_calculated_method()
+        calculated_records, calculated_records_count = self._get_calculated_data(calculated_method)
+        instrument_config = self._get_config()
 
-        # srcdocdata = {
-        #     "measurement_date":measurement_date,
-        #     "measuring_responsible_party":self.method_obj.measuring_responsible_party,
-        #     "measuring_procedure":self.method_obj.measuring_procedure,
-        #     "evaluation_procedure":self.method_obj.assessment_procedure,
-        #     "measurements":measurements_data,
-        #     "calculated_method_responsible_party":calculated_method.responsible_party,
-        #     "calculated_method_procedure":calculated_method.assessment_procedure,
-        #     "measurement_count":len(measurements_data),
-        #     "calculated_values":calculated_values,
-        # }
+        srcdocdata = {
+            "measurement_date":measurement_date,
+            "measuring_responsible_party":self.method_obj.measuring_responsible_party,
+            "measuring_procedure":self.method_obj.measuring_procedure,
+            "evaluation_procedure": self.method_obj.assessment_procedure,
+            "element_count":measurement_records_count,
+            "measurement_data":measurement_records,
+            "related_instrument_config":instrument_config,
+            "calculated_measurement_operator":calculated_method.responsible_party,
+            "calculated_determination_procedure":calculated_method.assessment_procedure,
+            "formation_measurement_data_count":calculated_records_count,
+            "formation_measurement_data":calculated_records,
 
-        # measurment_registration_tool = brx.GEMMeasurementTool(metadata, srcdocdata, "registrationRequest")
-        # self.xml_file = measurment_registration_tool.generate_xml_file()
+        }
+
+        emm_measurment_registration_tool = brx.EMMMeasurementTool(metadata, srcdocdata, "registrationRequest")
+        self.xml_file = emm_measurment_registration_tool.generate_xml_file()
+
+    def _get_config(self):
+        return InstrumentConfiguration.objects.get(formation_resistance_dossier=self.frd_obj)
+
+    def _get_measurement_data(self):
+        series = self._get_related_series()
+        records = self._get_records(series)
+
+        count = len(records)
+
+        string_elements = [
+            f"{value_obj.vertical_position},{value_obj.primary_measurement},{value_obj.secondary_measurement}"
+            for value_obj in records
+        ]
+
+        string = " ".join(string_elements)
+        
+        return string, count
+
+    def _get_related_series(self):
+        return ElectromagneticSeries.objects.get(electromagnetic_measurement_method=self.method_obj)
     
+    def _get_records(self,series):
+        return ElectromagneticRecord.objects.filter(series=series)
+    
+    def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
+        """Queries the related CalculatedFormationresistanceMethod"""
+        return CalculatedFormationresistanceMethod.objects.get(electromagnetic_measurement_method=self.method_obj)    
+
+    def _get_calculated_data(self,calculated_method):
+        series = self._get_related_formation_series(calculated_method)
+        records = self._get_formation_records(series)
+
+        count = len(records)
+
+        string_elements = [
+            f"{value_obj.vertical_position},{value_obj.formationresistance},{value_obj.status_qualitycontrol}"
+            for value_obj in records
+        ]
+
+        string = " ".join(string_elements)
+        
+        return string, count
+    
+    def _get_related_formation_series(self, calculated_method):
+        return FormationresistanceSeries.objects.get(calculated_formationresistance=calculated_method)
+    
+    def _get_formation_records(self,series):
+        return FormationresistanceRecord.objects.filter(series=series)
+
     #TODO: write this save to bro
     def save_bro_id(self, delivery_status_info):
         pass

@@ -104,6 +104,7 @@ class ElectromagneticMeasurementMethod(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
+    bro_id = models.CharField(max_length=254, null=True, blank=True)
     measurement_date = models.DateField(null=False, blank=True)
     measuring_responsible_party = models.TextField(
         max_length=200, null=False, blank=True
@@ -499,47 +500,18 @@ def create_electromagnetic_series(instance: CalculatedFormationresistanceMethod)
         logger.exception("Unable to find a connected Monitoring Tube, cannot calculate the formation resistance.")
         return
     
-    measurement_values = GeoOhmMeasurementValue.objects.filter(
-        geo_ohm_measurement_method = measurement_method,
-    )
+    series = ElectromagneticSeries.objects.get(electromagnetic_measurement_method=measurement_method)
+    records = ElectromagneticRecord.objects.filter(series=series)
 
-    series = FormationresistanceSeries.objects.filter(
-        calculated_formationresistance = instance,
-    ).first()
+    form_series = FormationresistanceSeries.objects.create(calculated_formationresistance=instance)
 
-    if series == None:
-        series = FormationresistanceSeries.objects.create(
-            calculated_formationresistance = instance
+    for record in records:
+        FormationresistanceRecord.objects.create(
+            series = form_series,
+            vertical_position = record.vertical_position,  
+            formationresistance = (1/record.formationresistance),
+            status_qualitycontrol = "onbeslist",
         )
-
-    for measurement_value in measurement_values:
-        measurement_pair = get_measurement_pair(measurement_value)
-        electrode_position_1 = retrieve_electrode_position(measurement_pair.elektrode1, monitoring_tube)
-        electrode_position_2 = retrieve_electrode_position(measurement_pair.elektrode2, monitoring_tube)
-        measurement_position = (electrode_position_1 + electrode_position_2) / 2
-
-
-        resistance_record = FormationresistanceRecord.objects.filter(
-            series = series,
-            vertical_position = measurement_position, 
-        ).first()
-        
-        calculated_resistance = calculate_formationresistance_electro(
-            resistance = float(measurement_value.formationresistance)
-        )
-
-        if resistance_record == None:
-            FormationresistanceRecord.objects.create(
-                series = series,
-                vertical_position = measurement_position,  
-                formationresistance = calculated_resistance,
-                status_qualitycontrol = "onbeslist",
-            )
-
-        if calculated_resistance != resistance_record.formationresistance:
-            resistance_record.formationresistance = calculated_resistance
-            resistance_record.status_qualitycontrol = "onbeslist"
-            resistance_record.save()
 
 
 def calculate_formationresistance_geo_ohm(
