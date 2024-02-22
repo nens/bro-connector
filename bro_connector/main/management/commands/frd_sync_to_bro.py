@@ -18,7 +18,9 @@ from frd.models import (
     GMWElectrodeReference,
     CalculatedFormationresistanceMethod,
     FormationresistanceSeries,
-    FormationresistanceRecord
+    FormationresistanceRecord,
+    InstrumentConfiguration,
+    ElectromagneticMeasurementMethod,
 )
 from datetime import datetime, date
 from main.settings.base import FRD_SETTINGS
@@ -34,6 +36,29 @@ def get_xml_payload(xml_filepath):
 
     return xml_payload
 
+def get_unsynced_dossiers():
+        return FormationResistanceDossier.objects.filter(
+            frd_bro_id=None, closed_in_bro=False
+        )
+
+def get_unsynced_configurations():
+    return MeasurementConfiguration.objects.filter(bro_id=None)
+
+def get_closed_dossiers():
+    return FormationResistanceDossier.objects.filter(
+        closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
+    )
+
+def get_unsynced_gem_measurement_methods():
+    return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
+
+def get_unsynced_emm_methods():
+    return ElectromagneticMeasurementMethod.objects.filter(bro_id=None)
+
+def get_unsynced_emm_configurations():
+    return InstrumentConfiguration.objects.filter(bro_id=None)
+
+
 
 class Command(BaseCommand):
     """
@@ -44,17 +69,19 @@ class Command(BaseCommand):
     help = "Syncs the FRD data to the BRO"
 
     def handle(self, *args, **kwargs):
-        self.handle_frd_registrations()
+        # self.handle_frd_registrations()
         # self.handle_gem_configurations_registration()
         # self.handle_frd_closures()
         # self.handle_gem_measurement_registrations()
+        self.handle_emm_configurations()
+        self.handle_emm_measurements()
 
     def handle_frd_registrations(self):
         """
         Handles the startregistrations for all FRD's without bro_id.
         For each unsynced FRD, the FrdStartregistration class is used to handle the registration
         """
-        unsynced_startregistration_dossiers = self.get_unsynced_dossiers()
+        unsynced_startregistration_dossiers = get_unsynced_dossiers()
 
         for dossier in unsynced_startregistration_dossiers:
             startregistration = FrdStartRegistration(dossier)
@@ -64,7 +91,7 @@ class Command(BaseCommand):
         """
         Handles the measurement configurations for all configurations without bro_id.
         """
-        unsynced_configurations = self.get_unsynced_configurations()
+        unsynced_configurations = get_unsynced_configurations()
         per_dossier = defaultdict(list[dict])
         for measurement_configuration in unsynced_configurations:
             per_dossier[
@@ -75,13 +102,23 @@ class Command(BaseCommand):
             configuration_registration = GEMConfigurationRegistration(values)
             configuration_registration.sync()
 
+    def handle_emm_configurations(self):
+        """
+        Handles the emm instrument configurations
+        """
+        unsynced_configurations = get_unsynced_emm_configurations()
+
+        for configuration in unsynced_configurations:
+            emm_configuration_registration = EMMConfigurationRegistration(configuration)
+            emm_configuration_registration.sync()
+
     def handle_frd_closures(self):
         """
         Closes all FRDs with a closure date.
         Checks if any FRD have a closure date. 
         If so, and no allready existing log on a closure is found, a Closure request is done.
         """
-        closed_startregistration_dossiers = self.get_closed_dossiers()
+        closed_startregistration_dossiers = get_closed_dossiers()
         for dossier in closed_startregistration_dossiers:
             closure = ClosureRegistration(dossier)
             closure.sync()
@@ -90,29 +127,23 @@ class Command(BaseCommand):
         """
         Handles measurements, this is based on the measurement method, without a bro_id.
         """
-        unsynced_measurements_methods = self.get_unsynced_gem_measurement_methods()
+        unsynced_measurements_methods = get_unsynced_gem_measurement_methods()
 
         for method in unsynced_measurements_methods:
             measurement_registration = GEMMeasurementRegistration(method)
             measurement_registration.sync()
 
-    def get_unsynced_dossiers(self):
-        return FormationResistanceDossier.objects.filter(
-            frd_bro_id=None, closed_in_bro=False
-        )
+    def handle_emm_measurements(self):
+        """
+        Handles measurements, this is based on the measurement method, without a bro_id.
+        """
+        unsynced_emm_methods = get_unsynced_emm_methods()
 
-    def get_unsynced_configurations(self):
-        return MeasurementConfiguration.objects.filter(bro_id=None)
+        for method in unsynced_emm_methods:
+            emm_measurement_registration = EMMMeasurementRegistration(method)
+            emm_measurement_registration.sync()
 
-    def get_closed_dossiers(self):
-        return FormationResistanceDossier.objects.filter(
-            closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
-        )
-
-    def get_unsynced_gem_measurement_methods(self):
-        return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
-
-
+    
 class Registration(ABC):
     log = FrdSyncLog
 
@@ -357,6 +388,7 @@ class Registration(ABC):
         Removes the succesfully delivered xml file.
         """
         os.remove(self.log.xml_filepath)
+        return
 
 
 class FrdStartRegistration(Registration):
@@ -373,7 +405,7 @@ class FrdStartRegistration(Registration):
         self.filename = f"frd_startregistration_{self.frd_obj.object_id_accountable_party}_{date.today()}.xml"
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime or "IMBRO"
+        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
         gmn_bro_id = getattr(
             self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None
         )
@@ -465,7 +497,7 @@ class GEMConfigurationRegistration(Registration):
         return configurations_list
 
     def construct_xml_tree(self):
-        quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO"
+        quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
@@ -506,7 +538,7 @@ class ClosureRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime or "IMBRO"
+        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
@@ -537,7 +569,7 @@ class GEMMeasurementRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime or "IMBRO"
+        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
@@ -606,3 +638,114 @@ class GEMMeasurementRegistration(Registration):
     #TODO: write this save to bro
     def save_bro_id(self, delivery_status_info):
         print(delivery_status_info)
+
+
+
+class EMMConfigurationRegistration(Registration):
+    """Creates and delivers 13_FRD_EMM_InstrumentConfiguration.xml files."""
+
+    def __init__(self, instrument_configuration: dict):
+        super().__init__()
+        self.instrument_configuration = instrument_configuration
+        self.formation_resistance_dossier = instrument_configuration.formation_resistance_dossier
+        self.log = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_EMM_InstrumentConfiguration",
+            frd=self.formation_resistance_dossier,
+            delivery_type="register",
+        )[0]
+
+        # Create filename
+        if self.instrument_configuration.formation_resistance_dossier.frd_bro_id:
+            naming = self.instrument_configuration.formation_resistance_dossier.frd_bro_id
+        else:
+            naming = self.instrument_configuration.formation_resistance_dossier.name
+
+        self.filename = f"configuration_registration_{naming}_{date.today()}.xml"
+
+
+    def construct_xml_tree(self):
+        quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO/A"
+
+        metadata = {
+            "request_reference": self.instrument_configuration.configuration_name,
+            "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
+            "bro_id": self.formation_resistance_dossier.frd_bro_id,
+            "quality_regime": quality_regime,
+        }
+
+        srcdocdata = {
+            "instrument_configuration_id": self.instrument_configuration.configuration_name,
+            "relative_position_transmitter_coil": self.instrument_configuration.relative_position_send_coil ,
+            "relative_position_primary_receiver_coil": self.instrument_configuration.relative_position_receive_coil,
+            "secondary_receiver_coil_available": self.instrument_configuration.secondary_receive_coil,
+            "coil_frequency_known": self.instrument_configuration.coilfrequency_known,
+            "instrument_length":self.instrument_configuration.instrument_length,
+        }
+
+        if self.instrument_configuration.secondary_receive_coil == "ja":
+            srcdocdata["relative_position_secondary_receiver_coil"] = self.instrument_configuration.relative_position_secondary_coil
+
+        if self.instrument_configuration.coilfrequency_known == "ja":
+            srcdocdata["coilfrequency"] = self.instrument_configuration.coilfrequency
+
+
+        configuration_registration_tool = brx.EMMConfigurationTool(
+            metadata, srcdocdata, "registrationRequest"
+        )
+        self.xml_file = configuration_registration_tool.generate_xml_file()
+
+
+    def save_bro_id(self, delivery_status_info):
+        self.instrument_configuration.bro_id = delivery_status_info.json()[
+            "brondocuments"
+        ][0]["broId"]
+        self.instrument_configuration.save()
+    
+
+class EMMMeasurementRegistration(Registration):
+    """ Creates and delivers 14_FRD_EMM_Measurement.xml files."""
+    def __init__(self, method):
+        super().__init__()
+        self.method_obj = method
+        self.frd_obj = self.method_obj.formation_resistance_dossier
+        self.log = FrdSyncLog.objects.update_or_create(
+            event_type="FRD_EMM_Measurement", frd=self.frd_obj, delivery_type="register", electomagnetic_method=self.method_obj
+        )[0]
+        self.filename = (
+            f"measurement_registration_{self.frd_obj.frd_bro_id}_{date.today()}.xml"
+        )
+
+    def construct_xml_tree(self):
+        pass
+        # quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
+
+        # metadata = {
+        #     "request_reference": self.filename,
+        #     "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+        #     "bro_id": self.frd_obj.frd_bro_id,
+        #     "quality_regime": quality_regime,
+        # }
+
+        # measurement_date = self.method_obj.measurement_date.strftime("%Y-%m-%d")
+        # measurements_data = self._get_measurements()
+        # calculated_method = self._get_calculated_method()
+        # calculated_values = self._create_calculated_values_string(calculated_method)
+
+        # srcdocdata = {
+        #     "measurement_date":measurement_date,
+        #     "measuring_responsible_party":self.method_obj.measuring_responsible_party,
+        #     "measuring_procedure":self.method_obj.measuring_procedure,
+        #     "evaluation_procedure":self.method_obj.assessment_procedure,
+        #     "measurements":measurements_data,
+        #     "calculated_method_responsible_party":calculated_method.responsible_party,
+        #     "calculated_method_procedure":calculated_method.assessment_procedure,
+        #     "measurement_count":len(measurements_data),
+        #     "calculated_values":calculated_values,
+        # }
+
+        # measurment_registration_tool = brx.GEMMeasurementTool(metadata, srcdocdata, "registrationRequest")
+        # self.xml_file = measurment_registration_tool.generate_xml_file()
+    
+    #TODO: write this save to bro
+    def save_bro_id(self, delivery_status_info):
+        pass

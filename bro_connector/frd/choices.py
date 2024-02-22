@@ -1,8 +1,8 @@
 PRESENT = (
-    ("Indicatie", "Indicatie"),
-    ("Ja", "Ja"),
-    ("Nee", "Nee"),
-    ("Onbekend", "Onbekend"),
+    ("indicatie", "Indicatie"),
+    ("ja", "Ja"),
+    ("nee", "Nee"),
+    ("onbekend", "Onbekend"),
 )
 
 
@@ -53,6 +53,8 @@ EVENT_TYPE_CHOICES = (
     ("FRD_Closure", "FRD_Closure"),
     ("FRD_GEM_MeasurementConfiguration", "FRD_GEM_MeasurementConfiguration"),
     ("FRD_GEM_Measurement", "FRD_GEM_Measurement"),
+    ("FRD_EMM_InstrumentConfiguration", "FRD_EMM_InstrumentConfiguration"),
+    ("FRD_EMM_Measurement", "FRD_EMM_Measurement"),
     )
 
 DELIVERY_TYPE_CHOICES = (

@@ -127,6 +127,7 @@ class InstrumentConfiguration(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
+    bro_id = models.CharField(max_length=254, null=True, blank=True)
     configuration_name = models.TextField(max_length=40, null=False, blank=False)
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
@@ -214,8 +215,6 @@ class GeoOhmMeasurementMethod(models.Model):
                 responsible_party = 85101117, # Nelen & Schuurmans Consultancy KVK
                 assessment_procedure = "onbekend",
             )
-
-
 
 
 class GMWElectrodeReference(models.Model):
@@ -449,6 +448,9 @@ class FrdSyncLog(models.Model):
     )
     geo_ohm_measuring_method = models.ForeignKey(
         GeoOhmMeasurementMethod, on_delete=models.CASCADE, blank=True, null=True, default=None
+    )
+    electomagnetic_method = models.ForeignKey(
+        ElectromagneticMeasurementMethod, on_delete=models.CASCADE, blank=True, null=True, default=None
     )
     process_status = models.CharField(max_length=254, null=True, blank=True)
     comment = models.CharField(max_length=10000, null=True, blank=True)
