@@ -65,6 +65,7 @@ class GroundwaterMonitoringNet(models.Model):
     removed_from_BRO = models.BooleanField(
         blank=False, null=True, default=False, editable=False
     )
+    description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name

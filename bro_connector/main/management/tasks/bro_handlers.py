@@ -103,6 +103,7 @@ class GLDHandler(BROHandler):
     def __init__(self):
         self.number_of_points = 0
         self.number_of_observations = 0
+        self.count_dictionary = {}
         self.dict = {}
 
         # Initializing list to use in the dictionary making process.
@@ -147,6 +148,14 @@ class GLDHandler(BROHandler):
             split = tag.split("}")
 
             if split[1] == f"observation":
+                if self.number_of_observations != 0:
+                    if self.number_of_observations == 1:
+                        self.count_dictionary[self.number_of_observations] = self.number_of_points
+                        
+                    else:
+                        self.count_dictionary[self.number_of_observations] = self.number_of_points - self.count_dictionary[self.number_of_observations - 1]
+
+
                 self.number_of_observations = self.number_of_observations + 1
                 prefix = f"{self.number_of_observations}_"
 
@@ -249,6 +258,7 @@ class GLDHandler(BROHandler):
     def reset_values(self):
         self.number_of_points = 0
         self.number_of_observations = 0
+        self.count_dictionary = {}
         self.point_value = []
         self.time = []
         self.qualifier = []

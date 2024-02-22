@@ -82,8 +82,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_static'
-        verbose_name = "Grondwatermonitoring Put"
-        verbose_name_plural = "Grondwatermonitoring Putten"
+        verbose_name = "Grondwatermonitoring Put - Statisch"
+        verbose_name_plural = "Grondwatermonitoring Putten - Statisch"
 
 
 class GroundwaterMonitoringWellDynamic(models.Model):
@@ -94,7 +94,6 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         null=True,
         blank=True,
     )
-    number_of_standpipes = models.IntegerField(blank=True, null=True)
     ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
     well_stability = models.CharField(
         choices=WELLSTABILITY, max_length=200, blank=True, null=True
@@ -104,7 +103,6 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     well_head_protector = models.CharField(
         choices=WELLHEADPROTECTOR, max_length=200, blank=True, null=True
     )
-    deliver_gld_to_bro = models.BooleanField(blank=False, default=False)
     ground_level_position = models.DecimalField(
         max_digits=6, decimal_places=3, blank=True, null=True
     )
@@ -136,11 +134,24 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         else:
             return f"{self.groundwater_monitoring_well_dynamic_id}"
 
+    @property
+    def number_of_standpipes(self):
+        return GroundwaterMonitoringTubeStatic.objects.filter(
+            groundwater_monitoring_well_static = self.groundwater_monitoring_well_static
+        ).count()
+    
+    @property
+    def deliver_gld_to_bro(self):
+        return GroundwaterMonitoringTubeStatic.objects.filter(
+            deliver_gld_to_bro = True,
+            groundwater_monitoring_well_static = self.groundwater_monitoring_well_static
+        ).count() > 0
+
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_dynamic'
-        verbose_name = "Grondwatermonitoring Put - Data Aanpassing"
-        verbose_name_plural = "Grondwatermonitoring Putten - Data Aanpassingen"
+        verbose_name = "Grondwatermonitoring Put - Dynamisch"
+        verbose_name_plural = "Grondwatermonitoring Putten - Dynamisch"
 
 
 class GroundwaterMonitoringTubeStatic(models.Model):
@@ -158,7 +169,6 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     )
     artesian_well_cap_present = models.CharField(max_length=200, blank=True, null=True)
     sediment_sump_present = models.CharField(max_length=200, blank=True, null=True)
-    number_of_geo_ohm_cables = models.IntegerField(blank=True, null=True)
     tube_material = models.CharField(
         choices=TUBEMATERIAL, max_length=200, blank=True, null=True
     )
@@ -173,30 +183,24 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     )
 
     @property
-    def screen_top_position(self):
-        return self.tube_top_position - self.plain_tube_part_length
-
-    @property
-    def screen_bottom_position(self):
-        return self.tube_top_position - (
-            self.plain_tube_part_length
-            + self.groundwater_monitoring_tube_static.screen_length
-        )
+    def number_of_geo_ohm_cables(self):
+        return GeoOhmCable.objects.filter(
+            groundwater_monitoring_tube_static = self
+        ).count()
 
     def __str__(self):
-
-        try:
+        if self.groundwater_monitoring_well_static.bro_id:
             well = str(self.groundwater_monitoring_well_static.bro_id)
-        except:
-            well = str(self.groundwater_monitoring_tube_static_id)
+        else:
+            well = f"{str(self.groundwater_monitoring_tube_static_id)}"
 
-        return "{}, tube {}".format(well, self.tube_number)
+        return "{}-{}".format(well, format_integer(self.tube_number))
 
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tube_static'
-        verbose_name = "Grondwatermonitoring Filter"
-        verbose_name_plural = "Grondwatermonitoring Filters"
+        verbose_name = "Grondwatermonitoring Filter - Statisch"
+        verbose_name_plural = "Grondwatermonitoring Filters - Statisch"
 
 
 class GroundwaterMonitoringTubeDynamic(models.Model):
@@ -251,15 +255,15 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         else:
             well = str(self.groundwater_monitoring_tube_dynamic_id)
 
-        return "{}, tube {}".format(
-            well, self.groundwater_monitoring_tube_static.tube_number
+        return "{}-{}".format(
+            well, format_integer(self.groundwater_monitoring_tube_static.tube_number)
         )
 
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_tube_dynamic'
-        verbose_name = "Grondwatermonitoring Filter - Data Aanpassingen"
-        verbose_name_plural = "Grondwatermonitoring Filters - Data Aanpassingen"
+        verbose_name = "Grondwatermonitoring Filter - Dynamisch"
+        verbose_name_plural = "Grondwatermonitoring Filters - Dynamisch"
 
 
 class GeoOhmCable(models.Model):
@@ -273,7 +277,7 @@ class GeoOhmCable(models.Model):
     cable_number = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.geo_ohm_cable_id)
+        return f"{self.groundwater_monitoring_tube_static}-K{self.cable_number}"
 
     @property
     def electrode_count(self):
@@ -300,13 +304,13 @@ class ElectrodeStatic(models.Model):
     )
 
     def __str__(self):
-        return str(self.electrode_static_id)
+        return f"{self.geo_ohm_cable.groundwater_monitoring_tube_static}-K{self.geo_ohm_cable.cable_number}E{self.electrode_number}"
 
     class Meta:
         managed = True
         db_table = 'gmw"."electrode_static'
-        verbose_name = "Electrode - Statische gegevens"
-        verbose_name_plural = "Electrodes - Statische gegevens"
+        verbose_name = "Electrode - Statisch"
+        verbose_name_plural = "Electrodes - Statisch"
 
 
 class ElectrodeDynamic(models.Model):
@@ -324,8 +328,8 @@ class ElectrodeDynamic(models.Model):
     class Meta:
         managed = True
         db_table = 'gmw"."electrode_dynamic'
-        verbose_name = "Electrode - Dynamische gegevens"
-        verbose_name_plural = "Electrodes - Dynamische gegevens"
+        verbose_name = "Electrode - Dynamisch"
+        verbose_name_plural = "Electrodes - Dynamisch"
 
 
 class Event(models.Model):
@@ -429,6 +433,9 @@ class MaintenanceParty(models.Model):
     mobilephone = models.IntegerField(null=True, blank=True)
     email = models.CharField(max_length=254, null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.first_name} {self.surname}"
+
     class Meta:
         db_table = 'gmw"."maintenance_party'
         verbose_name = "Onderhoudsteam"
@@ -455,9 +462,9 @@ class Maintenance(models.Model):
     picture = models.ForeignKey(
         Picture, on_delete=models.CASCADE, null=True, blank=True
     )
-    reporter = models.IntegerField(blank=True, null=True)  # Maintenance_party_id
+    reporter = models.ForeignKey(MaintenanceParty, on_delete=models.SET_NULL, blank=True, null=True, related_name = "Reporter")  # Maintenance_party_id
     execution_date = models.DateField(blank=True, null=True)
-    execution_by = models.IntegerField(blank=True, null=True)  # Maintenance_party_id
+    execution_by = models.ForeignKey(MaintenanceParty, on_delete=models.SET_NULL, blank=True, null=True, related_name = "Executioner")  # Maintenance_party_id
 
     class Meta:
         managed = True
@@ -494,3 +501,11 @@ class XMLImport(models.Model):
     class Meta:
         verbose_name = "XML import"
         verbose_name_plural = "XML imports"
+
+def format_integer(num):
+    if num < 10:
+        return f"00{num}"
+    elif num < 100:
+        return f"0{num}"
+    else:
+        return str(num)

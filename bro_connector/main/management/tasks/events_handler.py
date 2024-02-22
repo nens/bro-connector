@@ -103,7 +103,7 @@ def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
         date = None
 
     event = Event.objects.create(
-        event_name="construction",
+        event_name="constructie",
         event_date=date,
         groundwater_monitoring_well_static=groundwater_monitoring_well_static,
         groundwater_monitoring_well_dynamic=GroundwaterMonitoringWellDynamic.objects.filter(
