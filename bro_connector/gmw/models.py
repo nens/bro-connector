@@ -1,15 +1,47 @@
 from django.db import models
 from django.contrib.gis.db import models as geo_models
 from .choices import *
+import random
 
+def get_color_value():
+    # Generate random values for red, green, and blue components
+    red = random.randint(0, 255)
+    green = random.randint(0, 255)
+    blue = random.randint(0, 255)
+    
+    # Convert decimal values to hexadecimal and format them
+    color_code = "#{:02x}{:02x}{:02x}".format(red, green, blue)
+    
+    return color_code
+
+class Instantie(models.Model):
+    name = models.CharField(max_length=50, null=True, blank = True)
+    company_number = models.IntegerField(blank=True)
+    color = models.CharField(max_length=50, default=get_color_value(), null=False, blank=False)
+
+    class Meta:
+        managed = True
+        db_table = 'gmw"."instantie'
+        verbose_name = "Instantie"
+        verbose_name_plural = "Instanties"
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
     registration_object_type = models.CharField(max_length=256, blank=True, null=True)
     bro_id = models.CharField(max_length=15, blank=True, null=True)
     request_reference = models.CharField(max_length=255, blank=True, null=True)
-    delivery_accountable_party = models.IntegerField(blank=True, null=True)
-    delivery_responsible_party = models.IntegerField(blank=True, null=True)
+    delivery_accountable_party = models.ForeignKey(
+        Instantie,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    delivery_responsible_party = models.ForeignKey(
+        Instantie,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     quality_regime = models.CharField(max_length=256, blank=True, null=True)
     under_privilege = models.CharField(max_length=256, blank=True, null=True)
     delivery_context = models.CharField(
@@ -471,7 +503,6 @@ class Maintenance(models.Model):
         db_table = 'gmw"."maintenance'
         verbose_name = "Onderhoudsmoment"
         verbose_name_plural = "Onderhoudsmomenten"
-
 
 
 class XMLImport(models.Model):
