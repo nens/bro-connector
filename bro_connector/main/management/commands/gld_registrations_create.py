@@ -23,10 +23,13 @@ def get_registration_validation_status(registration_id):
 
 
 class GldSyncHandler:
-    def __init__(self, directory, demo, access_info):
-        self.registrations_dir = directory
-        self.demo = demo
-        self.access_info = access_info
+    def __init__(self, gld_settings):
+        self.registrations_dir = gld_settings["startregistrations_dir"]
+        self.demo = gld_settings["demo"]
+        if self.demo:
+            self.access_info = gld_settings["bro_info_demo"]
+        else:
+            self.access_info = gld_settings["bro_info_bro_connector"]
 
     def create_start_registration_sourcedocs(
             self,
@@ -511,9 +514,8 @@ class Command(BaseCommand):
             ]
 
         monitoringnetworks = gld_SETTINGS["monitoringnetworks"]
-        startregistrations_dir = gld_SETTINGS["startregistrations_dir"]
 
-        gld = GldSyncHandler(startregistrations_dir, demo, access_info)
+        gld = GldSyncHandler(gld_SETTINGS)
 
         # Check the database for new wells/tubes and start a GLD registration for these objects if its it needed
         gld.create_sourcedocs_start_registrations(
@@ -522,6 +524,6 @@ class Command(BaseCommand):
 
         # print('check status')
         # Check existing registrations
-        gld.gld_check_existing_startregistrations(
+        gld.check_existing_startregistrations(
             access_info
         )
