@@ -1,6 +1,9 @@
 from gld.models import (
     GroundwaterLevelDossier
 )
+from gmw.models import (
+    GroundwaterMonitoringTubeStatic
+)
 import os
 import reversion
 
@@ -27,3 +30,9 @@ def create_registrations_folder():
                 print(f"Creation of the folder '{folder}' failed.")
         else:
             print(f"Folder '{folder}' already exists.")
+
+def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
+    pass
+
+def check_status(dossier: GroundwaterLevelDossier) -> None:
+    pass
