@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django import forms
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
@@ -26,6 +25,26 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
+
+class EventsInline(admin.TabularInline):
+    model = gmw_models.Event
+    search_fields = get_searchable_fields(gmw_models.Event)
+    fields = (
+        "event_name",
+        "event_date",
+    )
+    show_change_link = True
+
+    readonly_fields = (
+        "groundwater_monitoring_well_static",
+        "groundwater_monitoring_well_dynamic",
+        "groundwater_monitoring_tube_dynamic",
+        "electrode_dynamic",
+        "delivered_to_bro",
+    )
+
+    extra = 0
+    max_num = 0
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     
@@ -86,6 +105,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
             },
         ),
     ]
+
+    inlines = (EventsInline,)
 
     actions = ["deliver_to_bro", "check_status"]
 
