@@ -1,137 +1,210 @@
-{% extends "admin/base_site.html" %}
-{% load leaflet_tags %}
+{% extends "admin/base_site.html" %} {% block content %} {% load static %}
 
-{% block content %}
+<div id="deck-gl-canvas" style="height: 800px; width: 1000px">
+  <div
+    id="legend"
+    style="
+      position: absolute;
+      right: 0;
+      bottom: 20px;
+      z-index: 100;
+      background-color: white;
+      padding: 1em;
+    "
+  >
+    {% for organisation in organisations %}
+    <div
+      onclick="event.preventDefault(); handleOrganisationClick('{{ organisation.organisation_id }}', this)"
+    >
+      <label
+        style="display: flex; align-items: center"
+        for="checkbox-{{organisation.organisation_id}}"
+      >
+        <input
+          type="checkbox"
+          id="checkbox-{{organisation.organisation_id}}"
+          name="checkbox-{{organisation.organisation_id}}"
+          checked
+          onclick="handleCheckboxClick(this)"
+          style="margin-right:0.5em; accent-color: {{ organisation.organisation_color }}; background: {{ organisation.organisation_color }};"
+        />
+        {{organisation.organisation_name}}
+      </label>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<div style="display: none">{{ wells|json_script:"wells_json" }}</div>
+<div style="display: none">
+  {{ organisations|json_script:"organisations_json" }}
+</div>
+<div style="display: none">
+  {{ groundwater_level_dossiers|json_script:"groundwater_level_dossiers_json" }}
+</div>
 
-    <div id="map" style="height: 800px; width: 1000px;"></div>
-    <div id="legend" class="leaflet-control leaflet-control-custom"></div>
+<style>
+  .deck-gl-canvas .input[type="checkbox"]:not(:checked):not(:disabled) {
+    appearance: none;
+    margin-bottom: 0;
+    width: 1em;
+    height: 1em;
+    border-radius: 2px;
+  }
 
-    <!-- Include Leaflet CSS and JS files -->
-    {% leaflet_css %}
-    {% leaflet_js %}
+  .deck-gl-canvas label {
+    cursor: pointer;
+    user-select: none;
+  }
 
-    {{ wells|json_script:"wells_json" }}
+  .mapboxgl-canvas.grab {
+    cursor: grab !important;
+  }
 
-    <script>
+  .mapboxgl-canvas.pointer {
+    cursor: pointer !important;
+  }
 
-    var map = L.map('map').setView([51.522601,3.945697], 9);
+  .mapboxgl-canvas.grabbing {
+    cursor: grabbing !important;
+  }
+</style>
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+<link
+  href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css"
+  rel="stylesheet"
+/>
+<script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+<script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
 
-    let wells = JSON.parse(document.getElementById('wells_json').textContent)
+<script>
+  const legend = document.getElementById("legend");
+  const wells = JSON.parse(document.getElementById("wells_json").textContent);
+  const organisations = JSON.parse(
+    document.getElementById("organisations_json").textContent
+  );
+  const glds = JSON.parse(
+    document.getElementById("groundwater_level_dossiers_json").textContent
+  );
+  const colorMapping = {};
+  const hexToRgb = (hex) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return [r, g, b];
+  };
 
-    // Mapping object to store color assignments based on accountable party id
-    var colorMapping = {};
+  // Add color map and legend item
+  Object.keys(organisations).forEach((orgKey) => {
+    const { organisation_color, organisation_name, organisation_id } =
+      organisations[orgKey];
+    const newColor = hexToRgb(organisation_color);
+    colorMapping[organisation_id] = { color: newColor, visible: true };
+  });
 
-    // Function to get or generate a color based on the accountable party id
-    function getMarkerColor(accountablePartyId) {
-        if (!colorMapping.hasOwnProperty(accountablePartyId)) {
-            // If color not assigned, generate and assign a new color
-            colorMapping[accountablePartyId] = getRandomColor();
-        }
-        return colorMapping[accountablePartyId];
-    }
+  const createPopup = (well) => {
+    const popup = document.createElement("div");
 
-    // Function to generate a random color (for initial color assignment)
-    function getRandomColor() {
-        var letters = '0123456789ABCDEF';
-        var color = '#';
-        for (var i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-    }
+    const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.object_id}`;
+    // Create a popup with well information and a link to the object page
+    const popupContent = `
+                <div style="background-color: white; padding: 1em; border-radius: 10px">
+                  <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
+                  Latitude: ${well.latitude}<br>
+                  Longitude: ${well.longitude}<br>
+                  Quality regime: ${well.quality_regime}<br>
+                  Accountable party: ${well.accountable_party}<br>
+                </div>
+                <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
+                  <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
+                </div>
+                    `;
+    popup.innerHTML = popupContent;
+    return popup;
+  };
 
+  const white = [255, 255, 255];
+  let marker = null;
 
-    // Initialize legend when creating the map
-    var legend = L.control({ position: 'bottomright' });
+  // For each well, add a marker
+  const myScatterplotLayer = new deck.MapboxLayer({
+    id: "scatterplot-layer",
+    data: wells,
+    type: deck.ScatterplotLayer,
+    getPosition: (well) => [well.longitude, well.latitude],
+    pickable: true,
+    radiusMaxPixels: 6.5,
+    radiusUnits: "meters",
+    lineWidthMaxPixels: 1,
+    lineWidthUnits: "meters",
+    getLineWidth: 0.005,
+    stroked: true,
+    filled: true,
+    antialiasing: true,
+    radiusUnits: "pixels",
+    getFillColor: (well) => colorMapping[well.organisation_id].color,
+    lineWidthMinPixels: 2,
+    getLineColor: white,
 
-    legend.onAdd = function(map) {
-        var div = L.DomUtil.create('div', 'info legend');
+    getRadius: (well) => (colorMapping[well.organisation_id].visible ? 10 : 0),
+    onClick: (event) => {
+      const well = event.object;
+      const popup = createPopup(well);
+      const newMarker = new mapboxgl.Marker(popup, { anchor: "bottom" })
+        .setLngLat([well.longitude, well.latitude])
+        .addTo(map);
+      setTimeout(() => (marker = newMarker));
+    },
+  });
 
-        // Loop through the colorMapping object and add legend items
-        for (var accountId in colorMapping) {
-            var color = colorMapping[accountId];
-            div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background:' + color + ';"></div> Accountable Party ' + accountId + '</div>';
-        }
+  const map = new mapboxgl.Map({
+    container: "deck-gl-canvas",
+    style:
+      "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
+    antialias: true,
+    center: [3.945697, 51.522601],
+    zoom: 9,
+    bearing: 0,
+    pitch: 0,
+  });
 
-        return div;
-    };
+  map.addControl(new mapboxgl.NavigationControl(), "top-left");
 
-    legend.addTo(map);
+  map.on("load", () => map.addLayer(myScatterplotLayer));
+  map.on("click", () => marker && marker.remove());
 
-    // For each well add a marker
-    // For each well, add a marker and popup
-    wells.forEach(well => {
-        // Check the current zoom level
-        if (map.getZoom() >= 10) {
-            var markerColor = getMarkerColor(well.accountable_party);
+  const mapCanvas = map.getCanvas();
+  let cursor = "pointer";
+  const setCursorStyle = (style) => {
+    cursor = style;
+    mapCanvas.classList.remove("grab");
+    mapCanvas.classList.remove("pointer");
+    mapCanvas.classList.remove("grabbing");
+    mapCanvas.classList.add(cursor);
+  };
 
-            var customIcon = L.divIcon({
-                className: 'custom-marker',
-                iconSize: [15, 30],
-                iconAnchor: [7, 30],
-                html: `<div style="background-color: ${markerColor}; border-radius: 50%; width: 10px; height: 10px;"></div>`
-            });
+  map.on("dragstart", (e) => setCursorStyle("grabbing"));
+  map.on("dragend", (e) => setCursorStyle("grab"));
+  map.on("mousemove", (e) => {
+    const isHovering =
+      e.target.__deck && e.target.__deck.cursorState.isHovering;
+    if (isHovering && cursor === "grab") return setCursorStyle("pointer");
+    if (!isHovering && cursor === "pointer") return setCursorStyle("grab");
+  });
 
-            var marker = L.marker([well.latitude, well.longitude], { icon: customIcon }).addTo(map);
-
-            var objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.object_id}`;
-
-            // Create a popup with well information and a link to the object page
-            var popupContent = `
-                <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
-                Latitude: ${well.latitude}<br>
-                Longitude: ${well.longitude}<br>
-                Quality regime: ${well.quality_regime}<br>
-                Accountable party: ${well.accountable_party}<br>
-            `;
-
-            marker.bindPopup(popupContent);
-            legend.addTo(map)
-        }
+  const handleOrganisationClick = (id, element) => {
+    const colorMap = colorMapping[id];
+    colorMap.visible = !colorMap.visible;
+    const checkbox = element.querySelector('input[type="checkbox"]');
+    checkbox.checked = colorMap.visible;
+    myScatterplotLayer.setProps({
+      updateTriggers: {
+        getRadius: Date.now(),
+      },
     });
+  };
 
-    // Event listener to reload markers when the zoom level changes
-    map.on('zoomend', function() {
-        // Clear existing markers
-        map.eachLayer(function(layer) {
-            if (layer instanceof L.Marker) {
-                map.removeLayer(layer);
-            }
-        });
-
-        // Add markers based on the new zoom level
-        wells.forEach(well => {
-            if (map.getZoom() >= 12) {
-                var markerColor = getMarkerColor(well.accountable_party);
-                var customIcon = L.divIcon({
-                    className: 'custom-marker',
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10],
-                    html: `<div style="background-color: ${markerColor}; border-radius: 50%; width: 20px; height: 20px;"></div>`
-                });
-
-                var marker = L.marker([well.latitude, well.longitude], { icon: customIcon }).addTo(map);
-
-                var objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.object_id}`;
-                var popupContent = `
-                    <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
-                    Latitude: ${well.latitude}<br>
-                    Longitude: ${well.longitude}<br>
-                    Quality regime: ${well.quality_regime}<br>
-                    Accountable party: ${well.accountable_party}<br>
-                `;
-
-                marker.bindPopup(popupContent);
-                legend.addTo(map)
-            }
-        });
-    });
-
-    </script>
+  const handleCheckboxClick = (checkbox) =>
+    setTimeout(() => (checkbox.checked = !checkbox.checked));
+</script>
 
 {% endblock %}
