@@ -2,7 +2,6 @@
 | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{%
 endblock %}{% endblock %} {% block extrahead %}
 <link rel="icon" href="{{STATIC_URL}}img/favicon.ico" sizes="48x48" />
-<link rel="stylesheet" href="{{STATIC_URL}}gmw/gmw_map.css" />
 {% endblock %} {% block branding %}
 <h1 id="site-name">
   <a href="{% url 'admin:index' %}"
