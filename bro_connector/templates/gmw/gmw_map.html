@@ -1,7 +1,5 @@
 {% extends "admin/base_site.html" %} {% block content %} {% load static %}
 
-<link rel="stylesheet" href="{% static 'polls/style.css' %}" />
-
 <div id="deck-gl-canvas" style="height: 800px; width: 1000px">
   <div
     id="legend"
@@ -13,10 +11,51 @@
       background-color: white;
       padding: 1em;
     "
-  ></div>
+  >
+    {% for organisation in organisations %}
+    <div
+      onclick="event.preventDefault(); handleOrganisationClick('{{ organisation.organisation_id }}', this)"
+    >
+      <label
+        style="display: flex; align-items: center"
+        for="checkbox-{{organisation.organisation_id}}"
+      >
+        <input
+          type="checkbox"
+          id="checkbox-{{organisation.organisation_id}}"
+          name="checkbox-{{organisation.organisation_id}}"
+          checked
+          onclick="handleCheckboxClick(this)"
+          style="margin-right:0.5em; accent-color: {{ organisation.organisation_color }}; background: {{ organisation.organisation_color }};"
+        />
+        {{organisation.organisation_name}}
+      </label>
+    </div>
+    {% endfor %}
+  </div>
 </div>
-{{ wells|json_script:"wells_json" }}
+<div style="display: none">{{ wells|json_script:"wells_json" }}</div>
+<div style="display: none">
+  {{ organisations|json_script:"organisations_json" }}
+</div>
+<div style="display: none">
+  {{ groundwater_level_dossiers|json_script:"groundwater_level_dossiers_json" }}
+</div>
+
 <style>
+  .deck-gl-canvas .input[type="checkbox"]:not(:checked):not(:disabled) {
+    appearance: none;
+    margin-bottom: 0;
+    width: 1em;
+    height: 1em;
+    border-radius: 2px;
+  }
+
+  .deck-gl-canvas label {
+    cursor: pointer;
+    user-select: none;
+  }
+
   .mapboxgl-canvas.grab {
     cursor: grab !important;
   }
@@ -29,65 +68,60 @@
     cursor: grabbing !important;
   }
 </style>
-<link href="static/gmw/gmw_map.css" rel="stylesheet" />
+
 <link
   href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css"
   rel="stylesheet"
 />
-
 <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
 <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
 
 <script>
   const legend = document.getElementById("legend");
-
-  const getRandomColor = () => {
-    const randomRGB = (min = 0, max = 255) =>
-      min + Math.floor(Math.random() * (max - min + 1));
-    return [randomRGB(), randomRGB(), randomRGB()];
-  };
-
+  const wells = JSON.parse(document.getElementById("wells_json").textContent);
+  const organisations = JSON.parse(
+    document.getElementById("organisations_json").textContent
+  );
+  const glds = JSON.parse(
+    document.getElementById("groundwater_level_dossiers_json").textContent
+  );
   const colorMapping = {};
-  const getMarkerColor = (accountablePartyId) => {
-    if (!colorMapping.hasOwnProperty(accountablePartyId)) {
-      // If color not assigned, generate and assign a new color
-      colorMapping[accountablePartyId] = getRandomColor();
-      // Append new color to legend
-      const div = document.createElement("div");
-      div.innerHTML +=
-        '<div class="legend-item"><div class="legend-color" style="background:' +
-        colorMapping[accountablePartyId] +
-        ';"></div> Accountable Party ' +
-        accountablePartyId +
-        "</div>";
-      legend.appendChild(div);
-    }
-    return colorMapping[accountablePartyId];
+  const hexToRgb = (hex) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return [r, g, b];
   };
+
+  // Add color map and legend item
+  Object.keys(organisations).forEach((orgKey) => {
+    const { organisation_color, organisation_name, organisation_id } =
+      organisations[orgKey];
+    const newColor = hexToRgb(organisation_color);
+    colorMapping[organisation_id] = { color: newColor, visible: true };
+  });
 
   const createPopup = (well) => {
     const popup = document.createElement("div");
-    popup.classList.add("popup");
 
     const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.object_id}`;
     // Create a popup with well information and a link to the object page
     const popupContent = `
-      <div style="background-color: white; padding: 1em; border-radius: 10px">
-        <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
-        Latitude: ${well.latitude}<br>
-        Longitude: ${well.longitude}<br>
-        Quality regime: ${well.quality_regime}<br>
-        Accountable party: ${well.accountable_party}<br>
-      </div>
-      <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
-        <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
-      </div>
-          `;
+                <div style="background-color: white; padding: 1em; border-radius: 10px">
+                  <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
+                  Latitude: ${well.latitude}<br>
+                  Longitude: ${well.longitude}<br>
+                  Quality regime: ${well.quality_regime}<br>
+                  Accountable party: ${well.accountable_party}<br>
+                </div>
+                <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
+                  <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
+                </div>
+                    `;
     popup.innerHTML = popupContent;
     return popup;
   };
 
-  const wells = JSON.parse(document.getElementById("wells_json").textContent);
   const white = [255, 255, 255];
   let marker = null;
 
@@ -100,7 +134,6 @@
     pickable: true,
     radiusMaxPixels: 6.5,
     radiusUnits: "meters",
-    getRadius: 10,
     lineWidthMaxPixels: 1,
     lineWidthUnits: "meters",
     getLineWidth: 0.005,
@@ -108,10 +141,11 @@
     filled: true,
     antialiasing: true,
     radiusUnits: "pixels",
-    getFillColor: (well) => getMarkerColor(well.accountable_party),
+    getFillColor: (well) => colorMapping[well.organisation_id].color,
     lineWidthMinPixels: 2,
     getLineColor: white,
 
+    getRadius: (well) => (colorMapping[well.organisation_id].visible ? 10 : 0),
     onClick: (event) => {
       const well = event.object;
       const popup = createPopup(well);
@@ -156,6 +190,21 @@
     if (isHovering && cursor === "grab") return setCursorStyle("pointer");
     if (!isHovering && cursor === "pointer") return setCursorStyle("grab");
   });
+
+  const handleOrganisationClick = (id, element) => {
+    const colorMap = colorMapping[id];
+    colorMap.visible = !colorMap.visible;
+    const checkbox = element.querySelector('input[type="checkbox"]');
+    checkbox.checked = colorMap.visible;
+    myScatterplotLayer.setProps({
+      updateTriggers: {
+        getRadius: Date.now(),
+      },
+    });
+  };
+
+  const handleCheckboxClick = (checkbox) =>
+    setTimeout(() => (checkbox.checked = !checkbox.checked));
 </script>
 
 {% endblock %}
