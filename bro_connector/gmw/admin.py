@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django import forms
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
@@ -10,7 +9,7 @@ import reversion
 from django.db import models
 
 from . import models as gmw_models
-
+import main.management.tasks.gmw_actions as gmw_actions
 from main.settings.base import gmw_SETTINGS
 from . import forms as gmw_forms
 
@@ -26,6 +25,38 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
+class InstantieAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+        "company_number",
+        "color",
+    )
+
+    list_filter = (
+        "name",
+        "company_number",
+    )
+
+class EventsInline(admin.TabularInline):
+    model = gmw_models.Event
+    search_fields = get_searchable_fields(gmw_models.Event)
+    fields = (
+        "event_name",
+        "event_date",
+    )
+    show_change_link = True
+
+    readonly_fields = (
+        "groundwater_monitoring_well_static",
+        "groundwater_monitoring_well_dynamic",
+        "groundwater_monitoring_tube_dynamic",
+        "electrode_dynamic",
+        "delivered_to_bro",
+    )
+
+    extra = 0
+    max_num = 0
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     
@@ -87,6 +118,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         ),
     ]
 
+    inlines = (EventsInline,)
+
     actions = ["deliver_to_bro", "check_status"]
 
     def save_model(self, request, obj, form, change):
@@ -108,10 +141,12 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         obj.save()
 
     def deliver_to_bro(self, request, queryset):
-        pass
+        for well in queryset:
+            gmw_actions.check_and_deliver(well)
 
     def check_status(self, request, queryset):
-        pass
+        for well in queryset:
+            gmw_actions.check_status(well)
 
     deliver_to_bro.short_description = "Deliver GMW to BRO"
     check_status.short_description = "Check GMW status from BRO"
@@ -390,3 +425,4 @@ _register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
 _register(gmw_models.gmw_registration_log, GmwSyncLogAdmin)
+_register(gmw_models.Instantie, InstantieAdmin)

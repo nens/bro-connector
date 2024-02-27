@@ -231,7 +231,7 @@ class GetEvents:
         return models.Event.objects.filter(
             event_name="constructie",
             delivered_to_bro=False,
-        ).order_by("change_id")
+        )
 
     def wellHeadProtector():
         return models.Event.objects.filter(

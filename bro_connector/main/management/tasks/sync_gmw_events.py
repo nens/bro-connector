@@ -1008,9 +1008,17 @@ def check_delivery_status_levering(registration_id, registrations_dir, bro_info,
     registration = models.gmw_registration_log.objects.get(id=registration_id)
     levering_id = registration.levering_id
     try:
-        upload_info = brx.check_delivery_status(
-            levering_id, token=bro_info["token"], demo=demo
-        )
+        if gmw_SETTINGS["api_version"] == "v2":
+            upload_info = brx.check_delivery_status(
+                levering_id, token=bro_info["token"], demo=demo, api="v2", project_id=bro_info["projectnummer"]
+            )
+
+        else:
+            upload_info = brx.check_delivery_status(
+                levering_id, token=bro_info["token"], demo=demo
+            )
+
+        print(upload_info.json())
         if (
             upload_info.json()["status"] == "DOORGELEVERD"
             and upload_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO"
@@ -1078,7 +1086,9 @@ def delete_existing_failed_registrations(event: models.Event, quality_regime: st
             event_id=event.change_id, quality_regime=quality_regime
         )
 
-        if reg.process_status == "failed_to_generate_source_documents":
+        if (
+            reg.process_status == "failed_to_generate_source_documents"
+        ):
             reg.delete()
 
 class EventsHandler:

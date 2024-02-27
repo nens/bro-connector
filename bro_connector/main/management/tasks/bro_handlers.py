@@ -42,7 +42,8 @@ class GMWHandler(BROHandler):
             fh = "nee"
 
         gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
-
+        print(gmw_verzoek.content)
+        print(id)
         self.root = ET.fromstring(gmw_verzoek.content)
 
     def root_data_to_dictionary(self):

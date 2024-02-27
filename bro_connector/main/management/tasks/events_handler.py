@@ -92,7 +92,7 @@ def get_mytimezone_date(original_datetime):
     return timezone_datetime
 
 
-def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
+def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> Event:
     if "construction_date" in gmw_dict:
         date = gmw_dict["construction_date"]
 
@@ -102,16 +102,18 @@ def get_construction_event(gmw_dict, groundwater_monitoring_well_static):
     else:
         date = None
 
-    event = Event.objects.create(
+    event = Event.objects.update_or_create(
         event_name="constructie",
-        event_date=date,
         groundwater_monitoring_well_static=groundwater_monitoring_well_static,
-        groundwater_monitoring_well_dynamic=GroundwaterMonitoringWellDynamic.objects.filter(
-            groundwater_monitoring_well=groundwater_monitoring_well_static
-        ).first(),
-        delivered_to_bro=True,
+        defaults={
+            "event_date": date,
+            "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
+                groundwater_monitoring_well=groundwater_monitoring_well_static
+            ).first(),
+            "delivered_to_bro": True,
+        }
     )
-    event.save()
+    return event
 
 
 def get_electrode_static(groundwater_monitoring_well, tube_number):
