@@ -1,11 +1,24 @@
 from django.core.management.base import BaseCommand
 from gmw.models import (
     ElectrodeStatic,
+    ElectrodeDynamic,
 )
 import reversion
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        # Convert from dynamic to Static
+        electrodes = ElectrodeDynamic.objects.filter(
+            electrode_number__gt = 0,
+        )
+
+        for electrode in electrodes:
+            static = ElectrodeStatic.objects.get(
+                electrode_static_id = electrode.electrode_static.electrode_static_id
+            )
+            static.electrode_number = electrode.electrode_number
+            static.save()
+
         electrodes = ElectrodeStatic.objects.filter(
             electrode_number = None,
         )

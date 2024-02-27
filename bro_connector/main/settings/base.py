@@ -195,6 +195,7 @@ ADMIN_REORDER = (
             "gmw.Picture",
             "gmw.MaintenanceParty",
             "gmw.Maintenance",
+            "gmw.Instantie",
         ),
     },
     {
@@ -383,6 +384,7 @@ JAZZMIN_SETTINGS = {
         "gmw.ElectrodeStatic": "fas fa-bolt",
         "gmw.ElectrodeDynamic": "fas fa-bolt",
         "gmw.Event": "fas fa-book-open",
+        "gmw.Instantie": "fas fa-solid fa-building",
         "gmn.GroundwaterMonitoringNet": "fas fa-project-diagram",
         "gmn.MeasuringPoint": "fas fa-ruler-vertical",
         "gmn.IntermediateEvent": "fas fa-calendar",
