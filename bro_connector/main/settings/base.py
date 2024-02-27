@@ -40,7 +40,6 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "jazzmin",
-    "leaflet",
     "main",
     "gld",
     "gmw",
@@ -81,7 +80,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",    
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "reversion.middleware.RevisionMiddleware",
 ]
 
@@ -256,7 +255,7 @@ else:
 # # BROCONVERTER SETTINGS
 gld_SETTINGS = {
     "bro_info_demo": {
-        "projectnummer":3012,
+        "projectnummer": 3012,
         "user": bro_acceptatie_user_v2,
         "pass": bro_acceptatie_password_v2,
     },
@@ -273,7 +272,7 @@ gld_SETTINGS = {
 
 gmw_SETTINGS = {
     "bro_info_demo": {
-        "projectnummer":3012,
+        "projectnummer": 3012,
         "token": {
             "user": bro_acceptatie_user_v2,
             "pass": bro_acceptatie_password_v2,
@@ -314,7 +313,7 @@ gmn_SETTINGS = {
 
 FRD_SETTINGS = {
     "bro_info_demo": {
-        "projectnummer":3012,
+        "projectnummer": 3012,
         "token": {
             "user": bro_acceptatie_user_v2,
             "pass": bro_acceptatie_password_v2,
