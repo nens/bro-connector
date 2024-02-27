@@ -25,6 +25,18 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
+class InstantieAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+        "company_number",
+        "color",
+    )
+
+    list_filter = (
+        "name",
+        "company_number",
+    )
 
 class EventsInline(admin.TabularInline):
     model = gmw_models.Event
@@ -413,3 +425,4 @@ _register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
 _register(gmw_models.gmw_registration_log, GmwSyncLogAdmin)
+_register(gmw_models.Instantie, InstantieAdmin)

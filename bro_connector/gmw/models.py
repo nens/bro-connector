@@ -17,13 +17,27 @@ def get_color_value():
 class Instantie(models.Model):
     name = models.CharField(max_length=50, null=True, blank = True)
     company_number = models.IntegerField(blank=True)
-    color = models.CharField(max_length=50, default=get_color_value(), null=False, blank=False)
+    color = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
         managed = True
         db_table = 'gmw"."instantie'
         verbose_name = "Instantie"
         verbose_name_plural = "Instanties"
+
+    def __str__(self):
+        if self.name:
+            return self.name
+        elif self.company_number:
+            return self.company_number
+        else:
+            return self.id
+
+    def save(self, *args, **kwargs):
+        # Set a default color only if it's not already set
+        if not self.color:
+            self.color = get_color_value()
+        super().save(*args, **kwargs)
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
@@ -34,13 +48,15 @@ class GroundwaterMonitoringWellStatic(models.Model):
         Instantie,
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        related_name="delivery_accountable_party",
     )
     delivery_responsible_party = models.ForeignKey(
         Instantie,
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        related_name="delivery_responsible_party",
     )
     quality_regime = models.CharField(max_length=256, blank=True, null=True)
     under_privilege = models.CharField(max_length=256, blank=True, null=True)
