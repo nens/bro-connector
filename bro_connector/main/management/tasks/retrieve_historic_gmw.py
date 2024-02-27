@@ -34,6 +34,35 @@ def within_bbox(coordinates) -> bool:
         return True
     return False
 
+def delete_non_construction_dynamics(groundwater_monitoring_well_static):
+    well_dynamics = GroundwaterMonitoringWellDynamic.objects.filter(
+        groundwater_monitoring_well_static = groundwater_monitoring_well_static
+    ).order_by("groundwater_monitoring_well_dynamic_id")[1:]
+    for well_dynamic in well_dynamics:
+        well_dynamic.delete()
+
+    tubes = GroundwaterMonitoringTubeStatic.objects.filter(
+        groundwater_monitoring_well_static = groundwater_monitoring_well_static
+    )
+    for tube in tubes:
+        tube_dynamics = GroundwaterMonitoringTubeDynamic.objects.filter(
+            groundwater_monitoring_tube_static = tube
+        ).order_by("groundwater_monitoring_tube_dynamic_id")[1:]
+        for tube_dynamic in tube_dynamics:
+            tube_dynamic.delete()
+        cables = GeoOhmCable.objects.filter(
+            groundwater_monitoring_tube_static = tube
+        )
+        for cable in cables:
+            electrodes = ElectrodeStatic.objects.filter(
+                geo_ohm_cable = cable
+            )
+            for electrode in electrodes:
+                electrode_dynamics = ElectrodeDynamic.objects.filter(
+                    electrode_static = electrode
+                ).order_by("electrode_dynamic_id")[1:]
+                for electrode_dynamic in electrode_dynamics:
+                    electrode_dynamic.delete()
 
 def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
     progressor = Progress()
@@ -76,35 +105,29 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
 
         ini.well_dynamic()
 
-        try:
-            for tube_number in range(gmw.number_of_tubes):
-                ini.increment_tube_number()
-                ini.tube_static()
-                ini.tube_dynamic()
+        for tube_number in range(gmw.number_of_tubes):
+            ini.increment_tube_number()
+            ini.tube_static()
+            ini.tube_dynamic()
 
-                try:
-                    for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
-                        ini.increment_geo_ohm_number()
-                        ini.geo_ohm()
+            for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
+                ini.increment_geo_ohm_number()
+                ini.geo_ohm()
 
-                        for electrode in range(int(gmw.number_of_electrodes)):
-                            ini.increment_electrode_number()
-                            ini.electrode_static()
-                            ini.electrode_dynamic()
+                for electrode in range(int(gmw.number_of_electrodes)):
+                    ini.increment_electrode_number()
+                    ini.electrode_static()
+                    ini.electrode_dynamic()
 
-                        ini.reset_electrode_number()
-                    ini.reset_geo_ohm_number()
-                except:
-                    raise Exception(f"Failed, {gmw_dict}")
-        except:
-            raise Exception(f"Failed, {gmw_dict}")
+                ini.reset_electrode_number()
+            ini.reset_geo_ohm_number()
 
         construction_event = events_handler.create_construction_event(gmw_dict, gmws)
+        delete_non_construction_dynamics(gmws)
 
         # Update based on the events
+        updater = events_handler.Updater(gmw.dict, gmws)
         for nr in range(int(gmw.number_of_events)):
-            print(gmw.dict)
-            updater = events_handler.Updater(gmw.dict, gmws)
             updater.intermediate_events()
 
         gmw.reset_values()
@@ -240,16 +263,15 @@ class InitializeData:
     def tube_static(self):
         self.gmts, created = GroundwaterMonitoringTubeStatic.objects.update_or_create(
             groundwater_monitoring_well_static=self.gmws,
+            tube_number = self.gmw_dict.get(self.prefix + "tubeNumber", None),
             defaults={
                 "artesian_well_cap_present": self.gmw_dict.get(self.prefix + "artesianWellCapPresent", None),
                 "deliver_gld_to_bro": self.gmw_dict.get(self.prefix + "deliverGldToBro", False),
-                "number_of_geo_ohm_cables": self.gmw_dict.get(self.prefix + "numberOfGeoOhmCables", None),
                 "screen_length": self.gmw_dict.get(self.prefix + "screenLength", None),
                 "sediment_sump_length": self.gmw_dict.get(self.prefix + "sedimentSumpLength", None),
                 "sediment_sump_present": self.gmw_dict.get(self.prefix + "sedimentSumpPresent", None),
                 "sock_material": self.gmw_dict.get(self.prefix + "sockMaterial", None),
                 "tube_material": self.gmw_dict.get(self.prefix + "tubeMaterial", None),
-                "tube_number": self.gmw_dict.get(self.prefix + "tubeNumber", None),
                 "tube_type": self.gmw_dict.get(self.prefix + "tubeType", None),
             }
         )
@@ -302,6 +324,7 @@ class InitializeData:
     def electrode_static(self):
         self.eles, created = ElectrodeStatic.objects.update_or_create(
             geo_ohm_cable=self.geoc,
+            electrode_number = self.gmw_dict.get(self.prefix + "electrodeNumber", None),
             defaults={
                 "electrode_packing_material": self.gmw_dict.get(self.prefix + "electrodePackingMaterial", None),
                 "electrode_position": self.gmw_dict.get(self.prefix + "electrodePosition", None),
@@ -309,10 +332,19 @@ class InitializeData:
         )
 
     def electrode_dynamic(self):
-        self.eled, created = ElectrodeDynamic.objects.update_or_create(
-            electrode_static=self.eles,
-            defaults={
-                "electrode_number": self.gmw_dict.get(self.prefix + "electrodeNumber", None),
-                "electrode_status": self.gmw_dict.get(self.prefix + "electrodeStatus", None),
-            }
-        )
+        dynamic = ElectrodeDynamic.objects.filter(
+            electrode_static=self.eles
+        ).first()
+
+        if dynamic:
+            with reversion.create_revision():
+                dynamic.electrode_status = self.gmw_dict.get(self.prefix + "electrodeStatus", None)
+                dynamic.save()
+                reversion.set_comment(f"Updated from BRO-database({datetime.datetime.now().astimezone()})")
+        else:
+            self.eled = ElectrodeDynamic.objects.create(
+                electrode_static=self.eles,
+                defaults={
+                    "electrode_status": self.gmw_dict.get(self.prefix + "electrodeStatus", None),
+                }
+            )

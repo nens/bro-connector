@@ -21,9 +21,6 @@ def slice(sourcedict, string):
 
 
 def well_dynamic(gmwd, updates_dict):
-    gmwd.number_of_standpipes = updates_dict.get(
-        "numberOfStandpipes", gmwd.number_of_standpipes
-    )
     gmwd.ground_level_stable = updates_dict.get(
         "groundLevelStable", gmwd.ground_level_stable
     )
@@ -34,9 +31,6 @@ def well_dynamic(gmwd, updates_dict):
     )
     gmwd.well_head_protector = updates_dict.get(
         "wellHeadProtector", gmwd.well_head_protector
-    )
-    gmwd.deliver_gld_to_bro = updates_dict.get(
-        "deliverGldToBro", gmwd.deliver_gld_to_bro
     )
     gmwd.ground_level_position = updates_dict.get(
         "groundLevelPosition", gmwd.ground_level_position
@@ -108,7 +102,7 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
         defaults={
             "event_date": date,
             "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
-                groundwater_monitoring_well=groundwater_monitoring_well_static
+                groundwater_monitoring_well_static=groundwater_monitoring_well_static
             ).first(),
             "delivered_to_bro": True,
         }
@@ -121,7 +115,7 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
         eles_id = ElectrodeStatic.objects.filter(
             geo_ohm_cable=GeoOhmCable.objects.filter(
                 groundwater_monitoring_tube_static=GroundwaterMonitoringTubeStatic.objects.get(
-                    groundwater_monitoring_well=groundwater_monitoring_well,
+                    groundwater_monitoring_well_static=groundwater_monitoring_well,
                     tube_number=tube_number,
                 )
             )
@@ -134,7 +128,7 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
 
 def get_tube_static(groundwater_monitoring_well, tube_number):
     gmts_id = GroundwaterMonitoringTubeStatic.objects.get(
-        groundwater_monitoring_well=groundwater_monitoring_well, tube_number=tube_number
+        groundwater_monitoring_well_static=groundwater_monitoring_well, tube_number=tube_number
     )
     return gmts_id
 
@@ -144,7 +138,7 @@ def get_tube_dynamic_history(well_static: GroundwaterMonitoringWellStatic, updat
         # Find which filter needs to be adjusted
         new_gmts = GroundwaterMonitoringTubeStatic.objects.get(
             tube_number=updates["tubeNumber"],
-            groundwater_monitoring_well=well_static,
+            groundwater_monitoring_well_static=well_static,
         )
 
         # Clone row and make new primary key with save
@@ -164,7 +158,7 @@ def get_tube_dynamic_history(well_static: GroundwaterMonitoringWellStatic, updat
 class Updater:
     def __init__(self, gmw_dict, groundwater_monitoring_well):
         self.gmw_dict = gmw_dict
-        self.groundwater_monitoring_well = groundwater_monitoring_well
+        self.groundwater_monitoring_well_static = groundwater_monitoring_well
         self.event_number = 1
         self.prefix = f"event_{str(self.event_number)}_"
         self.event_updates = []
@@ -190,16 +184,21 @@ class Updater:
         else:
             raise Exception(f"date/year not found in dict: {self.event_updates}")
 
-        try:
+        event = Event.objects.filter(
+            event_name=self.event_updates["eventName"],
+            event_date=date,
+            groundwater_monitoring_well_static=self.groundwater_monitoring_well_static,
+            delivered_to_bro=True,
+        ).first()
+        if event:
+            self.event = event
+        else:
             self.event = Event.objects.create(
                 event_name=self.event_updates["eventName"],
                 event_date=date,
-                groundwater_monitoring_well_static=self.groundwater_monitoring_well,
+                groundwater_monitoring_well_static=self.groundwater_monitoring_well_static,
                 delivered_to_bro=True,
             )
-        except:
-            print(self.event_updates)
-            exit()
 
     def intermediate_events(self):
         # Create a base event
@@ -208,7 +207,7 @@ class Updater:
 
         # Update tables accordingly
         TableUpdater.fill(
-            self.groundwater_monitoring_well, self.event, self.event_updates
+            self.groundwater_monitoring_well_static, self.event, self.event_updates
         )
         self.increment_event()
 
@@ -253,7 +252,7 @@ class TableUpdater(Updater):
             new_gmtd.save()
 
             #  Add to the event
-            event.groundwater_monitoring_well_tube_dynamic = new_gmtd
+            event.groundwater_monitoring_tube_dynamic = new_gmtd
             event.save()
 
         except:
@@ -298,40 +297,37 @@ class TableUpdater(Updater):
             raise Exception(f"Failed to update electrode data: {updates}")
 
     def well_data(well_static, event, updates):
-        try:
-            # Clone row and make new primary key with save
-            new_gmwds = GroundwaterMonitoringWellDynamic.objects.filter(
-                groundwater_monitoring_well=well_static
+        # Clone row and make new primary key with save
+        new_gmwds = GroundwaterMonitoringWellDynamic.objects.filter(
+            groundwater_monitoring_well_static=well_static
+        )
+
+        # This assumes the gmwds are sorted based on creation date.
+        if len(new_gmwds) == 1:
+            new_gmwd = new_gmwds.first()
+            new_gmwd.groundwater_monitoring_well_dynamic_id = None
+
+        elif len(new_gmwds) > 1:
+            new_gmwd = new_gmwds.last()
+            new_gmwd.groundwater_monitoring_well_dynamic_id = None
+
+        else:
+            raise Exception(
+                "No Groundwater Monitoring Well Dynamic Tables found for this GMW: ",
+                well_static,
             )
 
-            # This assumes the gmwds are sorted based on creation date.
-            if len(new_gmwds) == 1:
-                new_gmwd = new_gmwds.first()
-                new_gmwd.groundwater_monitoring_well_dynamic_id = None
+        # Check what has to be changed
+        new_gmwd = well_dynamic(new_gmwd, updates)
 
-            elif len(new_gmwds) > 1:
-                new_gmwd = new_gmwds.last()
-                new_gmwd.groundwater_monitoring_well_dynamic_id = None
+        # Save and add new key to event
+        new_gmwd.save()
 
-            else:
-                raise Exception(
-                    "No Groundwater Monitoring Well Dynamic Tables found for this GMW: ",
-                    well_static,
-                )
+        # Add to the event.
+        event.groundwater_monitoring_well_static = well_static
+        event.groundwater_monitoring_well_dynamic = new_gmwd
+        event.save()
 
-            # Check what has to be changed
-            new_gmwd = well_dynamic(new_gmwd, updates)
-
-            # Save and add new key to event
-            new_gmwd.save()
-
-            # Add to the event.
-            event.groundwater_monitoring_well_static = well_static
-            event.groundwater_monitoring_well_dynamic = new_gmwd
-            event.save()
-
-        except:
-            raise Exception(f"Failed to update tube data: {updates}")
 
 
 def get_removal_event(gmw_dict, groundwater_monitoring_well_static):
