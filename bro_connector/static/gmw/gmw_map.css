@@ -1,0 +1,54 @@
+#deck-gl-canvas {
+  height: 800px;
+  width: 1000px;
+}
+
+#legend {
+  position: absolute;
+  right: 0;
+  bottom: 20px;
+  z-index: 100;
+  background-color: white;
+  padding: 1em;
+}
+
+.mapbox-checkbox-wrapper {
+  cursor: pointer;
+}
+
+.mapbox-checkbox-label {
+  cursor: pointer;
+
+  user-select: none;
+  display: flex;
+  align-items: center;
+}
+
+.mapbox-checkbox {
+  cursor: pointer;
+
+  margin-right: 0.5em;
+}
+
+.mapbox-checkbox[type="checkbox"]:not(:checked):not(:disabled) {
+  appearance: none;
+  margin-bottom: 0;
+  width: 1em;
+  height: 1em;
+  border-radius: 2px;
+}
+
+.json {
+  display: none;
+}
+
+/* Mapbox cursor states */
+.mapboxgl-canvas.grab {
+  cursor: grab !important;
+}
+.mapboxgl-canvas.pointer {
+  cursor: pointer !important;
+}
+.mapboxgl-canvas.grabbing {
+  cursor: grabbing !important;
+}
