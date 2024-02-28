@@ -88,7 +88,10 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
         print("total points: ", gld.number_of_points)
 
         if gld.number_of_observations > 1:
-            gld.count_dictionary[gld.number_of_observations] = gld.number_of_points - gld.count_dictionary[gld.number_of_observations - 1]
+            gld.count_dictionary[gld.number_of_observations] = (
+                gld.number_of_points
+                - gld.count_dictionary[gld.number_of_observations - 1]
+            )
         else:
             gld.count_dictionary[1] = gld.number_of_points
 
@@ -107,8 +110,6 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
                 ini.metadata_measurement_tvp(measurement_number)
                 ini.measurement_tvp(measurement_number)
                 count += 1
-            
-
 
         gld.reset_values()
         ini.reset_values()

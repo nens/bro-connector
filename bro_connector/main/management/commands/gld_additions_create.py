@@ -109,7 +109,6 @@ def order_measurements_list(measurement_list):
 
 
 def get_timeseries_tvp_for_observation_id(observation_id):
-
     """
     Get all timeseries values between start and stop datetime, including metadata
     """
@@ -201,7 +200,6 @@ def get_observation_metadata(observation_metadata_id):
 
 
 def get_observation_procedure_data(observation_process_id, quality_regime):
-
     """
     Get the procedure data for the observation
     This is unique for each observation
@@ -261,7 +259,6 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
 
 
 def get_observation_gld_source_document_data(observation):
-
     """
     Generate the GLD addition sourcedocs, without result data
     """
@@ -326,7 +323,6 @@ def get_observation_gld_source_document_data(observation):
 
 
 def get_gld_registration_data_for_observation(observation):
-
     """
     Each observation has a GLD id and GWM id
     When delivering the observations we get the GLD id from the observation
@@ -355,7 +351,6 @@ def generate_gld_addition_sourcedoc_data(
     additions_dir,
     addition_type,
 ):
-
     """
     Generate all additions for this observation instance
     Write to files in the additions folder
@@ -487,7 +482,6 @@ def create_new_observations():
 def create_addition_sourcedocuments_for_observations(
     additions_dir, acces_token_bro_portal
 ):
-
     """
     Check the database for new observations and create new source documents
     """

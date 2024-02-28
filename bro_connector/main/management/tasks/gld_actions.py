@@ -1,9 +1,5 @@
-from gld.models import (
-    GroundwaterLevelDossier
-)
-from gmw.models import (
-    GroundwaterMonitoringTubeStatic
-)
+from gld.models import GroundwaterLevelDossier
+from gmw.models import GroundwaterMonitoringTubeStatic
 import os
 import reversion
 
@@ -18,6 +14,7 @@ else:
 folders = ["./additions/", "./startregistrations/"]
 monitoringnetworks = gld_SETTINGS["monitoringnetworks"]
 
+
 def create_registrations_folder():
     for folder in folders:
         # Check if the folder already exists
@@ -31,8 +28,10 @@ def create_registrations_folder():
         else:
             print(f"Folder '{folder}' already exists.")
 
+
 def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
     pass
+
 
 def check_status(dossier: GroundwaterLevelDossier) -> None:
     pass

@@ -151,11 +151,15 @@ class GLDHandler(BROHandler):
             if split[1] == f"observation":
                 if self.number_of_observations != 0:
                     if self.number_of_observations == 1:
-                        self.count_dictionary[self.number_of_observations] = self.number_of_points
-                        
-                    else:
-                        self.count_dictionary[self.number_of_observations] = self.number_of_points - self.count_dictionary[self.number_of_observations - 1]
+                        self.count_dictionary[self.number_of_observations] = (
+                            self.number_of_points
+                        )
 
+                    else:
+                        self.count_dictionary[self.number_of_observations] = (
+                            self.number_of_points
+                            - self.count_dictionary[self.number_of_observations - 1]
+                        )
 
                 self.number_of_observations = self.number_of_observations + 1
                 prefix = f"{self.number_of_observations}_"
@@ -249,9 +253,9 @@ class GLDHandler(BROHandler):
                     censor_reason = element.attrib[
                         "{http://www.w3.org/1999/xlink}href"
                     ].split("/")[-1]
-                    self.censoring_limit_reason[
-                        self.number_of_points - 1
-                    ] = censor_reason
+                    self.censoring_limit_reason[self.number_of_points - 1] = (
+                        censor_reason
+                    )
                     values_value = self.censoring_limit_reason
 
             self.dict.update({tag: values_value})

@@ -6,9 +6,7 @@ from main.settings.base import gld_SETTINGS
 from main.management.tasks import gld_actions
 
 
-from main.management.commands.gld_registrations_create import (
-    GldSyncHandler
-)
+from main.management.commands.gld_registrations_create import GldSyncHandler
 
 
 from main.management.commands.gld_additions_create import (
@@ -27,7 +25,7 @@ def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
 
-#%% GLD model registration
+# %% GLD model registration
 
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
@@ -85,9 +83,7 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "field_value",
     )
 
-    list_filter = (
-        "observation",
-    )
+    list_filter = ("observation",)
 
 
 class ObservationAdmin(admin.ModelAdmin):
@@ -99,7 +95,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_endtime",
         "result_time",
         "status",
-        "observation_type"
+        "observation_type",
     )
     list_filter = (
         "observation_id",
@@ -182,9 +178,13 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
         for registration_log in queryset:
             bro_id_well = registration_log.gwm_bro_id
-            tube = models.GroundwaterMonitoringTubeStatic.objects.get(groundwater_monitoring_well_static__bro_id=bro_id_well)
+            tube = models.GroundwaterMonitoringTubeStatic.objects.get(
+                groundwater_monitoring_well_static__bro_id=bro_id_well
+            )
             location_code = tube.groundwater_monitoring_well_static.nitg_code
-            delivery_accountable_party = str(tube.groundwater_monitoring_well_static.delivery_accountable_party)
+            delivery_accountable_party = str(
+                tube.groundwater_monitoring_well_static.delivery_accountable_party
+            )
 
             gld = GldSyncHandler(gld_SETTINGS)
 
@@ -215,7 +215,9 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         gld = GldSyncHandler(gld_SETTINGS)
 
         for registration_log in queryset:
-            sourcedoc_file = os.path.join(gld_SETTINGS["startregistrations_dir"], registration_log.file)
+            sourcedoc_file = os.path.join(
+                gld_SETTINGS["startregistrations_dir"], registration_log.file
+            )
 
             if registration_log.process_status == "failed_to_generate_source_documents":
                 self.message_user(
@@ -295,9 +297,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                status = gld.check_delivery_status_levering(
-                    registration_log.id
-                )
+                status = gld.check_delivery_status_levering(registration_log.id)
                 self.message_user(
                     request, "Attempted registration status check", messages.INFO
                 )

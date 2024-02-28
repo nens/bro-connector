@@ -27,9 +27,7 @@ def print_timer(
             print(
                 __message_with_time(start_message)
                 if show_times
-                else start_message
-                if start_message
-                else ""
+                else start_message if start_message else ""
             )
             start_time = datetime.datetime.now()
             value = func(*args, **kwargs)

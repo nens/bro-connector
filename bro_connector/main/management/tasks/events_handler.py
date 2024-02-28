@@ -11,6 +11,7 @@ from gmw.models import (
     Event,
 )
 
+
 # FORMULAS USED IN HISTORIE_OPHALEN COMMAND DJANGO ZEELAND
 def slice(sourcedict, string):
     newdict = {}
@@ -111,7 +112,7 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
                 groundwater_monitoring_well=groundwater_monitoring_well_static
             ).first(),
             "delivered_to_bro": True,
-        }
+        },
     )
     return event
 

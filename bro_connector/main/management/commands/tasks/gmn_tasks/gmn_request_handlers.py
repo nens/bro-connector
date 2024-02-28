@@ -1436,7 +1436,6 @@ class ClosureGMN:
             )
 
     def validate_closure(self):
-
         """
         This function validates closure request files, and registers its process in the log instance.
         """

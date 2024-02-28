@@ -1,6 +1,7 @@
 import django.forms as forms
 from . import models
 
+
 class BinaryFileInput(forms.ClearableFileInput):
 
     def is_initial(self, value):
@@ -16,14 +17,14 @@ class BinaryFileInput(forms.ClearableFileInput):
         as to wether this file is not empty/corrupt.
         """
         if self.is_initial(value):
-            return f'{len(value)} bytes'
-
+            return f"{len(value)} bytes"
 
     def value_from_datadict(self, data, files, name):
         """Return the file contents so they can be put in the db."""
         upload = super().value_from_datadict(data, files, name)
         if upload:
             return upload.read()
+
 
 class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
     x = forms.CharField(required=True)

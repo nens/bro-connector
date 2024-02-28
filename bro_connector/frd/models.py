@@ -11,6 +11,7 @@ from django.db.models.signals import post_delete, post_save, pre_delete, pre_sav
 
 logger = logging.getLogger(__name__)
 
+
 # Create your models here.
 class FormationResistanceDossier(models.Model):
     frd_bro_id = models.CharField(
@@ -72,8 +73,9 @@ class FormationResistanceDossier(models.Model):
 
     closure_date = models.DateField(blank=True, null=True)
 
-    closed_in_bro = models.BooleanField(blank=False, null=False, editable=True, default=False)
-
+    closed_in_bro = models.BooleanField(
+        blank=False, null=False, editable=True, default=False
+    )
 
     def __str__(self):
         return self.name
@@ -86,7 +88,6 @@ class FormationResistanceDossier(models.Model):
         if self.frd_bro_id != None:
             return f"{self.frd_bro_id}"
         return f"FRD_{self.object_id_accountable_party}"
-        
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -124,6 +125,7 @@ class ElectromagneticMeasurementMethod(models.Model):
         db_table = 'frd"."electromagnetic_measurement_method'
         verbose_name_plural = "Electromagnetic Measurement Method"
 
+
 class InstrumentConfiguration(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
@@ -131,7 +133,10 @@ class InstrumentConfiguration(models.Model):
     bro_id = models.CharField(max_length=254, null=True, blank=True)
     configuration_name = models.CharField(max_length=40, null=False, blank=False)
     electromagnetic_measurement_method = models.ForeignKey(
-        ElectromagneticMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
+        ElectromagneticMeasurementMethod,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     relative_position_send_coil = models.FloatField(
         null=True,
@@ -207,14 +212,14 @@ class GeoOhmMeasurementMethod(models.Model):
         super().save(*args, **kwargs)
 
         calculated_method = CalculatedFormationresistanceMethod.objects.filter(
-            geo_ohm_measurement_method = self
+            geo_ohm_measurement_method=self
         ).last()
 
         if calculated_method == None:
             CalculatedFormationresistanceMethod.objects.create(
-                geo_ohm_measurement_method = self,
-                responsible_party = 85101117, # Nelen & Schuurmans Consultancy KVK
-                assessment_procedure = "onbekend",
+                geo_ohm_measurement_method=self,
+                responsible_party=85101117,  # Nelen & Schuurmans Consultancy KVK
+                assessment_procedure="onbekend",
             )
 
 
@@ -294,7 +299,10 @@ class MeasurementConfiguration(models.Model):
 
 class ElectromagneticSeries(models.Model):
     electromagnetic_measurement_method = models.ForeignKey(
-        ElectromagneticMeasurementMethod, on_delete=models.CASCADE, null=True, blank=False
+        ElectromagneticMeasurementMethod,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=False,
     )
 
     class Meta:
@@ -302,17 +310,16 @@ class ElectromagneticSeries(models.Model):
         db_table = 'frd"."electromagnetic_series'
         verbose_name_plural = "Electromagnetic Series"
 
+
 class GeoOhmMeasurementValue(models.Model):
     geo_ohm_measurement_method = models.ForeignKey(
         GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
     )
-    formationresistance = models.FloatField(
-         validators=[MinValueValidator(0)]
-    )
+    formationresistance = models.FloatField(validators=[MinValueValidator(0)])
     measurement_configuration = models.ForeignKey(
         MeasurementConfiguration, on_delete=models.CASCADE, null=False, blank=False
     )
-    datetime = models.DateTimeField(blank = False, null = False)
+    datetime = models.DateTimeField(blank=False, null=False)
 
     class Meta:
         managed = True
@@ -323,7 +330,7 @@ class GeoOhmMeasurementValue(models.Model):
         super().save(*args, **kwargs)
 
         calculated_method = CalculatedFormationresistanceMethod.objects.filter(
-            geo_ohm_measurement_method = self.geo_ohm_measurement_method
+            geo_ohm_measurement_method=self.geo_ohm_measurement_method
         ).first()
 
         print(calculated_method)
@@ -365,12 +372,16 @@ class ElectromagneticRecord(models.Model):
         db_table = 'frd"."electromagnetic_record'
         verbose_name_plural = "Electromagnetic Records"
 
+
 class CalculatedFormationresistanceMethod(models.Model):
     geo_ohm_measurement_method = models.ForeignKey(
         GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
     )
     electromagnetic_measurement_method = models.ForeignKey(
-        ElectromagneticMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
+        ElectromagneticMeasurementMethod,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     responsible_party = models.CharField(
         max_length=200,
@@ -381,12 +392,11 @@ class CalculatedFormationresistanceMethod(models.Model):
         blank=False, max_length=235, choices=ASSESSMENT_PROCEDURE
     )
 
-
     class Meta:
         managed = True
         db_table = 'frd"."calculated_formationresistance_method'
         verbose_name_plural = "Calculated Formationresistance Method"
-    
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
@@ -400,7 +410,10 @@ class CalculatedFormationresistanceMethod(models.Model):
 
 class FormationresistanceSeries(models.Model):
     calculated_formationresistance = models.ForeignKey(
-        CalculatedFormationresistanceMethod, on_delete=models.CASCADE, null=True, blank=False
+        CalculatedFormationresistanceMethod,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=False,
     )
 
     class Meta:
@@ -413,6 +426,7 @@ class FormationresistanceRecord(models.Model):
     """
     Schijnbare formatieweerstand meetreeks
     """
+
     series = models.ForeignKey(
         FormationresistanceSeries, on_delete=models.CASCADE, null=True, blank=False
     )
@@ -448,10 +462,18 @@ class FrdSyncLog(models.Model):
         FormationResistanceDossier, on_delete=models.CASCADE, blank=True, null=True
     )
     geo_ohm_measuring_method = models.ForeignKey(
-        GeoOhmMeasurementMethod, on_delete=models.CASCADE, blank=True, null=True, default=None
+        GeoOhmMeasurementMethod,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        default=None,
     )
     electomagnetic_method = models.ForeignKey(
-        ElectromagneticMeasurementMethod, on_delete=models.CASCADE, blank=True, null=True, default=None
+        ElectromagneticMeasurementMethod,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        default=None,
     )
     process_status = models.CharField(max_length=254, null=True, blank=True)
     comment = models.CharField(max_length=10000, null=True, blank=True)
@@ -475,14 +497,18 @@ class FrdSyncLog(models.Model):
         verbose_name = "FRD Synchronisatie Log"
         verbose_name_plural = "FRD Synchronisatie Logs"
 
-def create_calculated_resistance_from_geo_ohm(instance: GeoOhmMeasurementValue, calculated_method: CalculatedFormationresistanceMethod) -> None:
+
+def create_calculated_resistance_from_geo_ohm(
+    instance: GeoOhmMeasurementValue,
+    calculated_method: CalculatedFormationresistanceMethod,
+) -> None:
     series = FormationresistanceSeries.objects.filter(
-        calculated_formationresistance = calculated_method
+        calculated_formationresistance=calculated_method
     ).first()
 
     if series == None:
         series = FormationresistanceSeries.objects.create(
-            calculated_formationresistance = calculated_method
+            calculated_formationresistance=calculated_method
         )
 
     create_or_update_geo_record(instance, series)
@@ -495,30 +521,36 @@ def calculate_formationresistance_electro(measurement: float) -> float:
 def create_electromagnetic_series(instance: CalculatedFormationresistanceMethod):
     measurement_method = instance.electromagnetic_measurement_method
     try:
-        monitoring_tube = measurement_method.formation_resistance_dossier.groundwater_monitoring_tube
+        monitoring_tube = (
+            measurement_method.formation_resistance_dossier.groundwater_monitoring_tube
+        )
     except measurement_method.formation_resistance_dossier.DoesNotExist:
-        logger.exception("Unable to find a connected Monitoring Tube, cannot calculate the formation resistance.")
+        logger.exception(
+            "Unable to find a connected Monitoring Tube, cannot calculate the formation resistance."
+        )
         return
-    
-    series = ElectromagneticSeries.objects.get(electromagnetic_measurement_method=measurement_method)
+
+    series = ElectromagneticSeries.objects.get(
+        electromagnetic_measurement_method=measurement_method
+    )
     records = ElectromagneticRecord.objects.filter(series=series)
 
-    form_series = FormationresistanceSeries.objects.create(calculated_formationresistance=instance)
+    form_series = FormationresistanceSeries.objects.create(
+        calculated_formationresistance=instance
+    )
 
     for record in records:
         FormationresistanceRecord.objects.create(
-            series = form_series,
-            vertical_position = record.vertical_position,  
-            formationresistance = (1/record.formationresistance),
-            status_qualitycontrol = "onbeslist",
+            series=form_series,
+            vertical_position=record.vertical_position,
+            formationresistance=(1 / record.formationresistance),
+            status_qualitycontrol="onbeslist",
         )
 
 
 def calculate_formationresistance_geo_ohm(
-        resistance: float, 
-        area: float, 
-        electrode_distance: float
-    ) -> float:
+    resistance: float, area: float, electrode_distance: float
+) -> float:
     """
     Calculate the formation resistance in Ohm.m \n
 
@@ -530,7 +562,9 @@ def calculate_formationresistance_geo_ohm(
     return resistance * 4 * math.pi * electrode_distance
 
 
-def get_measurement_pair(geo_ohm_measurement_value: GeoOhmMeasurementValue) -> ElectrodePair:
+def get_measurement_pair(
+    geo_ohm_measurement_value: GeoOhmMeasurementValue,
+) -> ElectrodePair:
     return geo_ohm_measurement_value.measurement_configuration.measurement_pair
 
 
@@ -548,17 +582,20 @@ def string_to_float(string: str) -> float:
         return float(f"{split_string[0]}.{split_string[1]}") * negative
     else:
         raise Exception("Unkown formationresistance format.")
-    
 
-def retrieve_electrode_position(electrode_reference: GMWElectrodeReference, monitoring_tube: GroundwaterMonitoringTubeStatic) -> float:
+
+def retrieve_electrode_position(
+    electrode_reference: GMWElectrodeReference,
+    monitoring_tube: GroundwaterMonitoringTubeStatic,
+) -> float:
     geo_ohm_cable = GeoOhmCable.objects.filter(
-        cable_number = electrode_reference.cable_number,
-        groundwater_monitoring_tube_static = monitoring_tube,
+        cable_number=electrode_reference.cable_number,
+        groundwater_monitoring_tube_static=monitoring_tube,
     ).first()
 
     electrode = ElectrodeStatic.objects.filter(
-        geo_ohm_cable = geo_ohm_cable,
-        electrode_number = electrode_reference.electrode_number,
+        geo_ohm_cable=geo_ohm_cable,
+        electrode_number=electrode_reference.electrode_number,
     ).first()
 
     positie_float = string_to_float(electrode.electrode_position)
@@ -566,10 +603,13 @@ def retrieve_electrode_position(electrode_reference: GMWElectrodeReference, moni
     return positie_float
 
 
-def retrieve_geo_ohm_cable_area(electrode_reference: GMWElectrodeReference, monitoring_tube: GroundwaterMonitoringTubeStatic) -> float:
+def retrieve_geo_ohm_cable_area(
+    electrode_reference: GMWElectrodeReference,
+    monitoring_tube: GroundwaterMonitoringTubeStatic,
+) -> float:
     geo_ohm_cable = GeoOhmCable.objects.filter(
-        cable_number = electrode_reference.cable_number,
-        groundwater_monitoring_tube_static = monitoring_tube,
+        cable_number=electrode_reference.cable_number,
+        groundwater_monitoring_tube_static=monitoring_tube,
     ).first()
 
     # Will be retrieving the area if this is gonna be registered under geo ohm cables
@@ -583,33 +623,43 @@ def calculate_electode_distance(electrode_position_1, electrode_position_2) -> f
     return round(abs(electrode_position_1 - electrode_position_2), 3)
 
 
-def create_or_update_geo_record(measurement_value: GeoOhmMeasurementValue, series: FormationresistanceSeries):
-    monitoring_tube = measurement_value.geo_ohm_measurement_method.formation_resistance_dossier.groundwater_monitoring_tube
+def create_or_update_geo_record(
+    measurement_value: GeoOhmMeasurementValue, series: FormationresistanceSeries
+):
+    monitoring_tube = (
+        measurement_value.geo_ohm_measurement_method.formation_resistance_dossier.groundwater_monitoring_tube
+    )
 
     measurement_pair = get_measurement_pair(measurement_value)
-    electrode_position_1 = retrieve_electrode_position(measurement_pair.elektrode1, monitoring_tube)
-    electrode_position_2 = retrieve_electrode_position(measurement_pair.elektrode2, monitoring_tube)
+    electrode_position_1 = retrieve_electrode_position(
+        measurement_pair.elektrode1, monitoring_tube
+    )
+    electrode_position_2 = retrieve_electrode_position(
+        measurement_pair.elektrode2, monitoring_tube
+    )
     measurement_position = (electrode_position_1 + electrode_position_2) / 2
-    
-    electrode_distance = calculate_electode_distance(electrode_position_1, electrode_position_2)
+
+    electrode_distance = calculate_electode_distance(
+        electrode_position_1, electrode_position_2
+    )
     area = retrieve_geo_ohm_cable_area(measurement_pair.elektrode1, monitoring_tube)
     calculated_resistance = calculate_formationresistance_geo_ohm(
-        resistance = float(measurement_value.formationresistance),
-        area = area,
-        electrode_distance = electrode_distance,
+        resistance=float(measurement_value.formationresistance),
+        area=area,
+        electrode_distance=electrode_distance,
     )
 
     resistance_record = FormationresistanceRecord.objects.filter(
-        series = series,
-        vertical_position = measurement_position, 
+        series=series,
+        vertical_position=measurement_position,
     ).first()
 
     if resistance_record == None:
         FormationresistanceRecord.objects.create(
-            series = series,
-            vertical_position = measurement_position,  
-            formationresistance = calculated_resistance,
-            status_qualitycontrol = "onbeslist",
+            series=series,
+            vertical_position=measurement_position,
+            formationresistance=calculated_resistance,
+            status_qualitycontrol="onbeslist",
         )
 
     if resistance_record.formationresistance != calculated_resistance:
@@ -621,22 +671,26 @@ def create_or_update_geo_record(measurement_value: GeoOhmMeasurementValue, serie
 def create_geo_ohm_series(instance: CalculatedFormationresistanceMethod):
     measurement_method = instance.geo_ohm_measurement_method
     try:
-        monitoring_tube = measurement_method.formation_resistance_dossier.groundwater_monitoring_tube
+        monitoring_tube = (
+            measurement_method.formation_resistance_dossier.groundwater_monitoring_tube
+        )
     except measurement_method.formation_resistance_dossier.DoesNotExist:
-        logger.exception("Unable to find a connected Monitoring Tube, cannot calculate the formation resistance.")
+        logger.exception(
+            "Unable to find a connected Monitoring Tube, cannot calculate the formation resistance."
+        )
         return
-    
+
     measurement_values = GeoOhmMeasurementValue.objects.filter(
-        geo_ohm_measurement_method = measurement_method,
+        geo_ohm_measurement_method=measurement_method,
     )
 
     series = FormationresistanceSeries.objects.filter(
-        calculated_formationresistance = instance,
+        calculated_formationresistance=instance,
     ).first()
 
     if series == None:
         series = FormationresistanceSeries.objects.create(
-            calculated_formationresistance = instance
+            calculated_formationresistance=instance
         )
 
     for measurement_value in measurement_values:

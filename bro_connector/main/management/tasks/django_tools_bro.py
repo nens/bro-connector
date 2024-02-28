@@ -67,7 +67,7 @@ class DjangoTableToDict:
                 cap_present = "ja"
             elif tube.artesian_well_cap_present == False:
                 cap_present = "nee"
-        
+
         sump_present = "onbekend"
 
         if tube.sediment_sump_present:
