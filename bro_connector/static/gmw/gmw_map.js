@@ -6,6 +6,8 @@ const organisations = JSON.parse(
 const glds = JSON.parse(
   document.getElementById("groundwater_level_dossiers_json").textContent
 );
+
+// Color map
 const colorMapping = {};
 const hexToRgb = (hex) => {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -76,7 +78,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
   //   Hide circle when organisation is set to invicible
   getRadius: (well) => (colorMapping[well.organisation_id].visible ? 10 : 0),
 
-  //   On click add a Mapbox marker at the circle's location
+  //   On click add a popup as an Mapbox marker at the circle's location
   onClick: (event) => {
     const well = event.object;
     const popup = createPopup(well);
