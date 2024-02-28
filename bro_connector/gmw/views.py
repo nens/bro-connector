@@ -1,15 +1,12 @@
 # Create your views here.
 from django.shortcuts import render
-from gmn.models import (
-    GroundwaterMonitoringNet,
-    MeasuringPoint
-)
+from gmn.models import MeasuringPoint
 from gld.models import (
     GroundwaterLevelDossier,
     Observation,
 )
 from gmw.models import (
-    GroundwaterMonitoringWellStatic, 
+    GroundwaterMonitoringWellStatic,
     Instantie,
     GroundwaterMonitoringTubeStatic,
 )
@@ -24,31 +21,29 @@ def gmw_map_context(request):
     organisations = []
     wells = []
     glds = []
- 
     transformer = Transformer.from_crs(crs_from="EPSG:28992", crs_to="EPSG:4326")
  
     for well in well_instances:
         (x, y) = transformer.transform(well.coordinates.x, well.coordinates.y)
 
         filter_instances = GroundwaterMonitoringTubeStatic.objects.filter(
-            groundwater_monitoring_well_static = well
+            groundwater_monitoring_well_static=well
         )
         filters = []
 
         for filter in filter_instances:
             measuring_point = MeasuringPoint.objects.filter(
-                groundwater_monitoring_tube = filter
+                groundwater_monitoring_tube=filter
             ).first()
 
             meetnet = None
             if measuring_point:
-                meetnet =  measuring_point.gmn
+                meetnet = measuring_point.gmn
 
             filters.append(
                 {
                     "number": filter.tube_number,
                     "type": filter.tube_type,
-                    "meetnet": meetnet,
                 }
             )
 
@@ -65,12 +60,9 @@ def gmw_map_context(request):
                 "organisation_id": well.delivery_accountable_party.id,
             }
         )
-    
 
     for gld in gld_instances:
-        observations = Observation.objects.filter(
-            groundwater_level_dossier = gld
-        )
+        observations = Observation.objects.filter(groundwater_level_dossier=gld)
 
         glds.append(
             {
@@ -89,6 +81,10 @@ def gmw_map_context(request):
                 "organisation_color": organisation.color,
             }
         )
- 
-    context = {"wells": wells, "organisations": organisations, "groundwater_level_dossiers": glds}
+
+    context = {
+        "wells": wells,
+        "organisations": organisations,
+        "groundwater_level_dossiers": glds,
+    }
     return render(request, "gmw/gmw_map.html", context)
