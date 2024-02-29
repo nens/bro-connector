@@ -454,7 +454,7 @@ class FrdSyncLog(models.Model):
         ElectromagneticMeasurementMethod, on_delete=models.CASCADE, blank=True, null=True, default=None
     )
     process_status = models.CharField(max_length=254, null=True, blank=True)
-    comment = models.CharField(max_length=10000, null=True, blank=True)
+    comment = models.CharField(max_length=100000, null=True, blank=True)
     xml_filepath = models.CharField(max_length=254, null=True, blank=True)
     delivery_status = models.IntegerField(
         choices=LEVERINGSTATUS_CHOICES, null=True, blank=True, default=0

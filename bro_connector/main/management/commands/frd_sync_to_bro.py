@@ -7,7 +7,6 @@ from collections import defaultdict
 from django.core.management.base import BaseCommand
 import bro_exchange as brx
 
-
 from frd.models import (
     FormationResistanceDossier,
     FrdSyncLog,
@@ -608,7 +607,7 @@ class GEMMeasurementRegistration(Registration):
     
     def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
         """Queries the related CalculatedFormationresistanceMethod"""
-        return CalculatedFormationresistanceMethod.objects.get(geo_ohm_measurement_method=self.method_obj)    
+        return CalculatedFormationresistanceMethod.objects.filter(geo_ohm_measurement_method=self.method_obj).first()
     
     def _create_calculated_values_string(self, calculated_method) -> str:
         """Looks up all calulated apperent fromation resistance values.
@@ -632,7 +631,7 @@ class GEMMeasurementRegistration(Registration):
     
     def _get_series(self, calculated_method) ->  Type[FormationresistanceSeries]:
         """Looks up the series related to calculated formation method"""
-        return FormationresistanceSeries.objects.get(calculated_formationresistance=calculated_method)
+        return FormationresistanceSeries.objects.filter(calculated_formationresistance=calculated_method).first()
 
     def _get_calculated_resistance_values(self, series) ->  QuerySet[FormationresistanceRecord]:
         """Looks up the  calculated formation resistance values, based on a series"""
@@ -640,7 +639,10 @@ class GEMMeasurementRegistration(Registration):
 
     #TODO: write this save to bro
     def save_bro_id(self, delivery_status_info):
-        print(delivery_status_info)
+        self.method_obj.bro_id = delivery_status_info.json()[
+            "brondocuments"
+        ][0]["broId"]
+        self.method_obj.save()
 
 
 
@@ -741,7 +743,7 @@ class EMMMeasurementRegistration(Registration):
             "evaluation_procedure": self.method_obj.assessment_procedure,
             "element_count":measurement_records_count,
             "measurement_data":measurement_records,
-            "related_instrument_config":instrument_config,
+            "related_instrument_config":instrument_config.configuration_name,
             "calculated_measurement_operator":calculated_method.responsible_party,
             "calculated_determination_procedure":calculated_method.assessment_procedure,
             "formation_measurement_data_count":calculated_records_count,
@@ -753,7 +755,7 @@ class EMMMeasurementRegistration(Registration):
         self.xml_file = emm_measurment_registration_tool.generate_xml_file()
 
     def _get_config(self):
-        return InstrumentConfiguration.objects.get(formation_resistance_dossier=self.frd_obj)
+        return InstrumentConfiguration.objects.filter(formation_resistance_dossier=self.frd_obj).first()
 
     def _get_measurement_data(self):
         series = self._get_related_series()
@@ -762,7 +764,7 @@ class EMMMeasurementRegistration(Registration):
         count = len(records)
 
         string_elements = [
-            f"{value_obj.vertical_position},{value_obj.primary_measurement},{value_obj.secondary_measurement}"
+            f"{value_obj.vertical_position},{value_obj.primary_measurement},{value_obj.secondary_measurement if value_obj.secondary_measurement is not None else 'NaN'}"
             for value_obj in records
         ]
 
@@ -771,14 +773,14 @@ class EMMMeasurementRegistration(Registration):
         return string, count
 
     def _get_related_series(self):
-        return ElectromagneticSeries.objects.get(electromagnetic_measurement_method=self.method_obj)
+        return ElectromagneticSeries.objects.filter(electromagnetic_measurement_method=self.method_obj).first()
     
     def _get_records(self,series):
         return ElectromagneticRecord.objects.filter(series=series)
     
     def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
         """Queries the related CalculatedFormationresistanceMethod"""
-        return CalculatedFormationresistanceMethod.objects.get(electromagnetic_measurement_method=self.method_obj)    
+        return CalculatedFormationresistanceMethod.objects.filter(electromagnetic_measurement_method=self.method_obj).first()  
 
     def _get_calculated_data(self,calculated_method):
         series = self._get_related_formation_series(calculated_method)
@@ -796,11 +798,13 @@ class EMMMeasurementRegistration(Registration):
         return string, count
     
     def _get_related_formation_series(self, calculated_method):
-        return FormationresistanceSeries.objects.get(calculated_formationresistance=calculated_method)
+        return FormationresistanceSeries.objects.filter(calculated_formationresistance=calculated_method).first()
     
     def _get_formation_records(self,series):
         return FormationresistanceRecord.objects.filter(series=series)
 
-    #TODO: write this save to bro
     def save_bro_id(self, delivery_status_info):
-        pass
+        self.method_obj.bro_id = delivery_status_info.json()[
+            "brondocuments"
+        ][0]["broId"]
+        self.method_obj.save()
