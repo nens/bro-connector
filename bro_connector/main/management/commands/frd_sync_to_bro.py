@@ -76,12 +76,13 @@ class Command(BaseCommand):
     help = "Syncs the FRD data to the BRO"
 
     def handle(self, *args, **kwargs):
-        # self.handle_frd_registrations()
-        # self.handle_gem_configurations_registration()
-        # self.handle_frd_closures()
-        # self.handle_gem_measurement_registrations()
-        # self.handle_emm_configurations()
+        self.handle_frd_registrations()
+        self.handle_gem_configurations_registration()
+        self.handle_frd_closures()
+        self.handle_gem_measurement_registrations()
+        self.handle_emm_configurations()
         self.handle_emm_measurements()
+
 
     def handle_frd_registrations(self):
         """
@@ -663,9 +664,12 @@ class GEMMeasurementRegistration(Registration):
         """Looks up the  calculated formation resistance values, based on a series"""
         return FormationresistanceRecord.objects.filter(series=series)
 
-    # TODO: write this save to bro
     def save_bro_id(self, delivery_status_info):
-        print(delivery_status_info)
+        pass
+        self.method_obj.bro_id = delivery_status_info.json()[
+            "brondocuments"
+        ][0]["broId"]
+        self.method_obj.save()
 
 
 

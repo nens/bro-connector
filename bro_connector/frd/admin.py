@@ -175,6 +175,7 @@ class FrdSyncLogAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "event_type",
+        "delivery_type",
         "synced",
         "frd",
         "process_status",
