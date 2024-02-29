@@ -278,7 +278,7 @@ class EventAdmin(admin.ModelAdmin):
         "event_name",
         "event_date",
     )
-
+    ordering = ['-change_id'] 
 
 class PictureAdmin(admin.ModelAdmin):
     formfield_overrides = {
