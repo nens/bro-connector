@@ -6,9 +6,7 @@ from main.settings.base import gld_SETTINGS
 from main.management.tasks import gld_actions
 
 
-from main.management.commands.gld_registrations_create import (
-    GldSyncHandler
-)
+from main.management.commands.gld_registrations_create import GldSyncHandler
 
 
 from main.management.commands.gld_additions_create import (
@@ -27,11 +25,10 @@ def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
 
-#%% GLD model registration
+# %% GLD model registration
 
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
-
     list_display = (
         "groundwater_level_dossier_id",
         "groundwater_monitoring_tube",
@@ -63,7 +60,6 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 
 
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
-
     list_display = (
         "measurement_point_metadata_id",
         "qualifier_by_category",
@@ -77,7 +73,6 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
 
 
 class MeasurementTvpAdmin(admin.ModelAdmin):
-
     list_display = (
         "measurement_tvp_id",
         "observation",
@@ -85,13 +80,10 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "field_value",
     )
 
-    list_filter = (
-        "observation",
-    )
+    list_filter = ("observation",)
 
 
 class ObservationAdmin(admin.ModelAdmin):
-
     list_display = (
         "observation_id",
         "groundwater_level_dossier",
@@ -99,7 +91,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_endtime",
         "result_time",
         "status",
-        "observation_type"
+        "observation_type",
     )
     list_filter = (
         "observation_id",
@@ -115,7 +107,6 @@ class ObservationAdmin(admin.ModelAdmin):
 
 
 class ObservationMetadataAdmin(admin.ModelAdmin):
-
     list_display = (
         "observation_metadata_id",
         "date_stamp",
@@ -134,7 +125,6 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
 
 
 class ObservationProcessAdmin(admin.ModelAdmin):
-
     list_display = (
         "observation_process_id",
         "process_reference",
@@ -154,7 +144,6 @@ class ObservationProcessAdmin(admin.ModelAdmin):
 
 
 class ResponsiblePartyAdmin(admin.ModelAdmin):
-
     list_display = (
         "responsible_party_id",
         "identification",
@@ -168,7 +157,6 @@ class ResponsiblePartyAdmin(admin.ModelAdmin):
 
 
 class gld_registration_logAdmin(admin.ModelAdmin):
-
     # Retry generate startregistration
     actions = [
         "regenerate_start_registration_sourcedocument",
@@ -179,12 +167,15 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
     @admin.action(description="Regenerate startregistration sourcedocument")
     def regenerate_start_registration_sourcedocument(self, request, queryset):
-
         for registration_log in queryset:
             bro_id_well = registration_log.gwm_bro_id
-            tube = models.GroundwaterMonitoringTubeStatic.objects.get(groundwater_monitoring_well_static__bro_id=bro_id_well)
+            tube = models.GroundwaterMonitoringTubeStatic.objects.get(
+                groundwater_monitoring_well_static__bro_id=bro_id_well
+            )
             location_code = tube.groundwater_monitoring_well_static.nitg_code
-            delivery_accountable_party = str(tube.groundwater_monitoring_well_static.delivery_accountable_party)
+            delivery_accountable_party = str(
+                tube.groundwater_monitoring_well_static.delivery_accountable_party
+            )
 
             gld = GldSyncHandler(gld_SETTINGS)
 
@@ -211,11 +202,12 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
     @admin.action(description="Validate startregistration sourcedocument")
     def validate_startregistration_sourcedocument(self, request, queryset):
-
         gld = GldSyncHandler(gld_SETTINGS)
 
         for registration_log in queryset:
-            sourcedoc_file = os.path.join(gld_SETTINGS["startregistrations_dir"], registration_log.file)
+            sourcedoc_file = os.path.join(
+                gld_SETTINGS["startregistrations_dir"], registration_log.file
+            )
 
             if registration_log.process_status == "failed_to_generate_source_documents":
                 self.message_user(
@@ -250,7 +242,6 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         gld = GldSyncHandler(gld_SETTINGS)
 
         for registration_log in queryset:
-
             if registration_log.levering_id is not None:
                 self.message_user(
                     request,
@@ -282,11 +273,9 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
     @admin.action(description="Check status of startregistration")
     def check_status_startregistration(self, request, queryset):
-
         gld = GldSyncHandler(gld_SETTINGS)
 
         for registration_log in queryset:
-
             levering_id = registration_log.levering_id
             if levering_id is None:
                 self.message_user(
@@ -295,9 +284,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                status = gld.check_delivery_status_levering(
-                    registration_log.id
-                )
+                status = gld.check_delivery_status_levering(registration_log.id)
                 self.message_user(
                     request, "Attempted registration status check", messages.INFO
                 )
@@ -326,7 +313,6 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
 
 class gld_addition_log_Admin(admin.ModelAdmin):
-
     # Retry functions
     actions = [
         "regenerate_sourcedocuments",
@@ -340,7 +326,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     @admin.action(description="Regenerate sourcedocuments")
     def regenerate_sourcedocuments(self, request, queryset):
         for addition_log in queryset:
-
             if addition_log.levering_id is not None:
                 self.message_user(
                     request,
@@ -373,7 +358,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     # Retry validate sourcedocuments (only if file is present)
     @admin.action(description="Validate sourcedocuments")
     def validate_sourcedocuments(self, request, queryset):
-
         demo = gld_SETTINGS["demo"]
         if demo:
             acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]
@@ -460,7 +444,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             ]
 
         for addition_log in queryset:
-
             observation_id = addition_log.observation_id
             levering_id = addition_log.levering_id
             if levering_id is None:

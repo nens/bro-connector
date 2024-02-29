@@ -414,7 +414,6 @@ class StartRegistrationGMN:
                 os.remove(filepath)
 
             elif delivery_errors:
-
                 (
                     self.gmn_bro_register_log_obj,
                     created,
@@ -824,7 +823,6 @@ class MeasuringPointAddition:
                 os.remove(filepath)
 
             elif delivery_errors:
-
                 (
                     self.gmn_bro_addition_log_obj,
                     created,
@@ -1233,7 +1231,6 @@ class MeasuringPointRemoval:
                 os.remove(filepath)
 
             elif delivery_errors:
-
                 (
                     self.gmn_bro_removal_log_obj,
                     created,
@@ -1436,7 +1433,6 @@ class ClosureGMN:
             )
 
     def validate_closure(self):
-
         """
         This function validates closure request files, and registers its process in the log instance.
         """
@@ -1624,7 +1620,6 @@ class ClosureGMN:
                 os.remove(filepath)
 
             elif delivery_errors:
-
                 (
                     self.gmn_bro_closure_log_obj,
                     created,

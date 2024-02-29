@@ -250,7 +250,6 @@ class Command(BaseCommand):
         # Is the observation
 
         for observation in observation_set:
-
             # Perform qc-check only if the observation is not checked yet
             if observation.status != None:
                 continue

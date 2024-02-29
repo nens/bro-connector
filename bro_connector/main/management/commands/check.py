@@ -22,7 +22,6 @@ class Command(BaseCommand):
     help = """Custom command for import of GIS data."""
 
     def handle(self, *args, **options):
-
         for object in models.MeasurementPointMetadata.objects.all():
             print(
                 models.TypeStatusQualityControl.objects.filter(

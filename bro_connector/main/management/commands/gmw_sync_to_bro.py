@@ -24,4 +24,6 @@ class Command(BaseCommand):
         )
 
         # Check existing registrations
-        sync_gmw_events.gmw_check_existing_registrations(bro_info, registrations_dir, demo)
+        sync_gmw_events.gmw_check_existing_registrations(
+            bro_info, registrations_dir, demo
+        )

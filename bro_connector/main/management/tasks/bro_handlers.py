@@ -151,11 +151,15 @@ class GLDHandler(BROHandler):
             if split[1] == f"observation":
                 if self.number_of_observations != 0:
                     if self.number_of_observations == 1:
-                        self.count_dictionary[self.number_of_observations] = self.number_of_points
-                        
-                    else:
-                        self.count_dictionary[self.number_of_observations] = self.number_of_points - self.count_dictionary[self.number_of_observations - 1]
+                        self.count_dictionary[
+                            self.number_of_observations
+                        ] = self.number_of_points
 
+                    else:
+                        self.count_dictionary[self.number_of_observations] = (
+                            self.number_of_points
+                            - self.count_dictionary[self.number_of_observations - 1]
+                        )
 
                 self.number_of_observations = self.number_of_observations + 1
                 prefix = f"{self.number_of_observations}_"

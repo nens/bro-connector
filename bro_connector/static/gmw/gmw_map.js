@@ -39,10 +39,18 @@ const createPopup = (well) => {
   const popupContent = `
               <div style="background-color: white; padding: 1em; border-radius: 10px">
                 <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
-                Latitude: ${well.y}<br>
-                Longitude: ${well.x}<br>
+                Well Code: ${well.well_code}<br>
                 Quality regime: ${well.quality_regime}<br>
-                Accountable party: ${well.delivery_accountable_party}<br>
+                Registration Object Type: ${well.registration_object_type}<br>
+                Delivery Context: ${well.delivery_context}<br>
+                Construction Standard: ${well.construction_standard}<br>
+                Initial Function: ${well.initial_function}<br>
+                Horizontal Positioning Method: ${well.horizontal_positioning_method}<br>
+                Local Vertical Reference Point: ${well.local_vertical_reference_point}<br>
+                Vertical Datum: ${well.vertical_datum}<br>
+                Deliver GMW to BRO: ${well.deliver_gmw_to_bro}<br>
+                Complete BRO: ${well.complete_bro}<br>
+                In Management: ${well.in_management}<br>
               </div>
               <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
                 <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
@@ -60,7 +68,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
   id: "scatterplot-layer",
   data: wells,
   type: deck.ScatterplotLayer,
-  getPosition: (well) => [well.x, well.y],
+  getPosition: (well) => [well.y, well.x],
   pickable: true,
   radiusMaxPixels: 6.5,
   radiusUnits: "meters",
@@ -83,7 +91,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
     const well = event.object;
     const popup = createPopup(well);
     const newMarker = new mapboxgl.Marker(popup, { anchor: "bottom" })
-      .setLngLat([well.x, well.y])
+      .setLngLat([well.y, well.x])
       .addTo(map);
     setTimeout(() => (marker = newMarker));
   },

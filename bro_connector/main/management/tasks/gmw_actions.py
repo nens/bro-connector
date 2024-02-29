@@ -17,6 +17,7 @@ else:
 
 folder_name = "./registrations/"
 
+
 def create_registrations_folder():
     # Check if the folder already exists
     if not os.path.exists(folder_name):
@@ -29,6 +30,7 @@ def create_registrations_folder():
     else:
         print(f"Folder '{folder_name}' already exists.")
 
+
 class GetEvents:
     """
     A Class that helps retrieving different types of events.
@@ -37,101 +39,102 @@ class GetEvents:
 
     def construction(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="constructie",
             delivered_to_bro=False,
         )
 
     def wellHeadProtector(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="beschermconstructieVeranderd",
             delivered_to_bro=False,
         )
 
     def lengthening(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="buisOpgelengd",
             delivered_to_bro=False,
         )
 
     def shortening(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="buisIngekort",
             delivered_to_bro=False,
         )
 
     def groundLevelMeasuring(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="nieuweInmetingMaaiveld",
             delivered_to_bro=False,
         )
 
     def positionsMeasuring(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="nieuweInmetingPosities",
             delivered_to_bro=False,
         )
 
     def groundLevel(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="nieuweBepalingMaaiveld",
             delivered_to_bro=False,
         )
 
     def owner(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="eigenaarVeranderd",
             delivered_to_bro=False,
         )
 
     def positions(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="inmeting",
             delivered_to_bro=False,
         )
 
     def electrodeStatus(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="electrodeStatus",
             delivered_to_bro=False,
         )
 
     def maintainer(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="onderhouderVeranderd",
             delivered_to_bro=False,
         )
 
     def tubeStatus(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="buisstatusVeranderd",
             delivered_to_bro=False,
         )
 
     def insertion(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="buisdeelIngeplaatst",
             delivered_to_bro=False,
         )
 
     def shift(well):
         return Event.objects.filter(
-            groundwater_monitoring_well_static = well,
+            groundwater_monitoring_well_static=well,
             event_name="maaiveldVerlegd",
             delivered_to_bro=False,
         )
+
 
 def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
     """
@@ -148,9 +151,7 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
 
     events_handler = gmw_sync.EventsHandler("./registrations/")
     for construction in construction_events:
-        events_handler.create_construction_sourcedoc(
-            event=construction
-        )
+        events_handler.create_construction_sourcedoc(event=construction)
 
     electrodeStatus_events = GetEvents.electrodeStatus(well)
     for electrode_status in electrodeStatus_events:
@@ -172,9 +173,7 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
 
     insertion_events = GetEvents.insertion(well)
     for insertion in insertion_events:
-        events_handler.create_type_sourcedoc(
-            event=insertion, event_type="Insertion"
-        )
+        events_handler.create_type_sourcedoc(event=insertion, event_type="Insertion")
 
     lengthening_events = GetEvents.lengthening(well)
     for lengthening in lengthening_events:
@@ -184,9 +183,7 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
 
     maintainer_events = GetEvents.maintainer(well)
     for maintainer in maintainer_events:
-        events_handler.create_type_sourcedoc(
-            event=maintainer, event_type="Maintainer"
-        )
+        events_handler.create_type_sourcedoc(event=maintainer, event_type="Maintainer")
 
     owner_events = GetEvents.owner(well)
     for owner in owner_events:
@@ -200,9 +197,7 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
 
     positions_events = GetEvents.positions(well)
     for position in positions_events:
-        events_handler.create_type_sourcedoc(
-            event=position, event_type="Positions"
-        )
+        events_handler.create_type_sourcedoc(event=position, event_type="Positions")
 
     shift_events = GetEvents.shift(well)
     for shift in shift_events:
@@ -210,15 +205,11 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
 
     shortening_events = GetEvents.shortening(well)
     for shortening in shortening_events:
-        events_handler.create_type_sourcedoc(
-            event=shortening, event_type="Shortening"
-        )
+        events_handler.create_type_sourcedoc(event=shortening, event_type="Shortening")
 
     tubeStatus_events = GetEvents.tubeStatus(well)
     for tube_status in tubeStatus_events:
-        events_handler.create_type_sourcedoc(
-            event=tube_status, event_type="TubeStatus"
-        )
+        events_handler.create_type_sourcedoc(event=tube_status, event_type="TubeStatus")
 
     wellHeadProtector_events = GetEvents.wellHeadProtector(well)
     for well_head_protector in wellHeadProtector_events:
@@ -226,27 +217,40 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
             event=well_head_protector, event_type="WellHeadProtector"
         )
 
-    events = construction_events | electrodeStatus_events | groundLevelMeasuring_events | groundLevel_events | insertion_events | lengthening_events | maintainer_events | owner_events | positionsMeasuring_events | positions_events | shift_events | shortening_events | tubeStatus_events | wellHeadProtector_events
+    events = (
+        construction_events
+        | electrodeStatus_events
+        | groundLevelMeasuring_events
+        | groundLevel_events
+        | insertion_events
+        | lengthening_events
+        | maintainer_events
+        | owner_events
+        | positionsMeasuring_events
+        | positions_events
+        | shift_events
+        | shortening_events
+        | tubeStatus_events
+        | wellHeadProtector_events
+    )
 
     for event in events:
-        registration = (
-            gmw_registration_log.objects.get(
-                event_id = event.change_id,
-        ))
+        registration = gmw_registration_log.objects.get(
+            event_id=event.change_id,
+        )
         gmw_check_registrations(registration)
 
 
 def check_status(well: GroundwaterMonitoringWellStatic) -> None:
     events = Event.objects.filter(
-        groundwater_monitoring_well_static = well,
+        groundwater_monitoring_well_static=well,
         delivered_to_bro=False,
     )
 
     for event in events:
-        registration = (
-            gmw_registration_log.objects.get(
-                event_id = event.change_id,
-        ))
+        registration = gmw_registration_log.objects.get(
+            event_id=event.change_id,
+        )
         gmw_check_registrations(registration)
 
 
@@ -279,7 +283,6 @@ def gmw_check_registrations(registration):
         status = gmw_sync.check_delivery_status_levering(
             registration_id, folder_name, bro_info, demo
         )
-        
 
     if (
         gmw_sync.get_registration_process_status(registration_id)

@@ -11,7 +11,43 @@ from gmw.models import (
     GroundwaterMonitoringTubeStatic,
 )
 
+import django.db.models as models
+from django.contrib.gis.db import models as geo_models
+
+
 from pyproj import Transformer
+
+
+def model_to_dict(instance):
+    """
+    Convert a Django model instance to a dictionary
+    """
+    fields = instance._meta.get_fields()
+    field_dict = {}
+    for field in fields:
+        field_name = field.name
+
+        if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
+            continue
+
+        field_value = getattr(instance, field_name)
+
+        if isinstance(field, geo_models.PointField) and field_value is not None:
+            transformer = Transformer.from_crs(
+                crs_from="EPSG:28992", crs_to="EPSG:4326"
+            )
+            (x, y) = transformer.transform(field_value.x, field_value.y)
+            field_dict["x"] = x
+            field_dict["y"] = y
+            continue
+
+        if isinstance(field, models.ForeignKey) and field_value is not None:
+            field_dict[field_name] = field_value.pk
+            continue
+
+        field_dict[field_name] = field_value
+
+    return field_dict
 
 
 def gmw_map_context(request):
@@ -22,11 +58,7 @@ def gmw_map_context(request):
     wells = []
     glds = []
 
-    transformer = Transformer.from_crs(crs_from="EPSG:28992", crs_to="EPSG:4326")
-
     for well in well_instances:
-        (x, y) = transformer.transform(well.coordinates.x, well.coordinates.y)
-
         filter_instances = GroundwaterMonitoringTubeStatic.objects.filter(
             groundwater_monitoring_well_static=well
         )
@@ -41,51 +73,24 @@ def gmw_map_context(request):
             if measuring_point:
                 meetnet = measuring_point.gmn
 
-            filters.append(
-                {
-                    "number": filter.tube_number,
-                    "type": filter.tube_type,
-                }
-            )
+            filters.append(model_to_dict(filter))
 
-        wells.append(
-            {
-                "object_id": well.groundwater_monitoring_well_static_id,
-                "bro_id": well.bro_id,
-                "latitude": x,
-                "longitude": y,
-                "quality_regime": well.quality_regime,
-                "BRO-compleet": well.complete_bro,
-                "BRO-obligatory": well.deliver_gmw_to_bro,
-                "filters": filters,
-                "organisation_id": well.delivery_accountable_party.id,
-            }
-        )
+        wells.append(model_to_dict(well))
 
     for gld in gld_instances:
         observations = Observation.objects.filter(groundwater_level_dossier=gld)
 
-        glds.append(
-            {
-                "gmw_bro_id": gld.gmw_bro_id,
-                "research_start_date": gld.research_start_date,
-                "research_end_date": gld.research_last_date,
-                "observations": len(observations),
-            }
-        )
+        glds.append(model_to_dict(gld))
 
     for organisation in organisation_instances:
-        organisations.append(
-            {
-                "organisation_id": organisation.id,
-                "organisation_name": organisation.name,
-                "organisation_color": organisation.color,
-            }
-        )
+        organisations.append(model_to_dict(organisation))
 
     context = {
         "wells": wells,
         "organisations": organisations,
         "groundwater_level_dossiers": glds,
     }
+    print(context["wells"][0:2])
+    print(context["organisations"][0:2])
+    print(context["groundwater_level_dossiers"][0:2])
     return render(request, "gmw/gmw_map.html", context)

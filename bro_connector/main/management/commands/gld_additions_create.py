@@ -40,7 +40,6 @@ def grouper(n, iterable):
 
 
 def get_measurement_point_metadata_for_measurement(measurement_point_metadata_id):
-
     measurement_point_metadata = models.MeasurementPointMetadata.objects.get(
         measurement_point_metadata_id=measurement_point_metadata_id
     )
@@ -76,7 +75,6 @@ def get_measurement_point_metadata_for_measurement(measurement_point_metadata_id
         censored_reason = None
 
     if censored_reason is not None:
-
         metadata = {
             "StatusQualityControl": status_qualitycontrol,
             "interpolationType": interpolation_type,
@@ -109,7 +107,6 @@ def order_measurements_list(measurement_list):
 
 
 def get_timeseries_tvp_for_observation_id(observation_id):
-
     """
     Get all timeseries values between start and stop datetime, including metadata
     """
@@ -130,7 +127,6 @@ def get_timeseries_tvp_for_observation_id(observation_id):
             continue
         # If the measurement value is None, this value must have been censored
         if measurement.calculated_value is None:
-
             if metadata["censoredReason"] is None:
                 # We can't include a missing value without a censoring reason
                 continue
@@ -164,7 +160,6 @@ def get_observation_with_measurement_time_series_id(measurement_time_series_id):
 
 
 def get_observation_metadata(observation_metadata_id):
-
     observation_metadata = models.ObservationMetadata.objects.get(
         observation_metadata_id=observation_metadata_id
     )
@@ -201,7 +196,6 @@ def get_observation_metadata(observation_metadata_id):
 
 
 def get_observation_procedure_data(observation_process_id, quality_regime):
-
     """
     Get the procedure data for the observation
     This is unique for each observation
@@ -261,7 +255,6 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
 
 
 def get_observation_gld_source_document_data(observation):
-
     """
     Generate the GLD addition sourcedocs, without result data
     """
@@ -297,7 +290,6 @@ def get_observation_gld_source_document_data(observation):
     # Can be either 'controlemeting, 'regulier_voorlopig_beoordeeld' or 'regulier_volledig_beoordeeld'
 
     if observation_metadata["observationType"] == "controlemeting":
-
         addition_type = "controlemeting"
 
         # Create the sourcedocs for the addition, results will later be added in chunks
@@ -326,7 +318,6 @@ def get_observation_gld_source_document_data(observation):
 
 
 def get_gld_registration_data_for_observation(observation):
-
     """
     Each observation has a GLD id and GWM id
     When delivering the observations we get the GLD id from the observation
@@ -355,7 +346,6 @@ def generate_gld_addition_sourcedoc_data(
     additions_dir,
     addition_type,
 ):
-
     """
     Generate all additions for this observation instance
     Write to files in the additions folder
@@ -487,7 +477,6 @@ def create_new_observations():
 def create_addition_sourcedocuments_for_observations(
     additions_dir, acces_token_bro_portal
 ):
-
     """
     Check the database for new observations and create new source documents
     """

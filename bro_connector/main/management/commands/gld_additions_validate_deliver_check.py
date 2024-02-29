@@ -19,7 +19,6 @@ failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 def validate_gld_addition_source_document(
     observation_id, filename, acces_token_bro_portal, demo
 ):
-
     """
     Validate the generated GLD addition sourcedoc
     """
@@ -80,7 +79,6 @@ def validate_gld_addition_source_document(
 def deliver_gld_addition_source_document(
     observation_id, filename, acces_token_bro_portal, demo
 ):
-
     """
     Deliver GLD addition sourcedocument to the BRO
     """
@@ -104,7 +102,6 @@ def deliver_gld_addition_source_document(
         )
 
         if upload_info == "Error":
-
             comments = "Error occured during delivery of sourcedocument"
 
             models.gld_addition_log.objects.update_or_create(
@@ -138,7 +135,6 @@ def deliver_gld_addition_source_document(
             )
 
     except Exception as e:
-
         comments = "Error occured in attempting to deliver sourcedocument, {}".format(e)
 
         models.gld_addition_log.objects.update_or_create(
@@ -168,7 +164,6 @@ def check_status_gld_addition(
         delivery_status = upload_info.json()["status"]
 
         if delivery_status == "DOORGELEVERD":
-
             comments = "GLD addition is approved"
             models.gld_addition_log.objects.update_or_create(
                 observation_id=observation_id,
@@ -216,7 +211,6 @@ def check_status_gld_addition(
 
 
 def validate_addition(observation, acces_token_bro_portal, demo):
-
     """
     Validate the sourcedocuments, register the results in the database
     """
@@ -237,7 +231,6 @@ def validate_addition(observation, acces_token_bro_portal, demo):
 
 
 def deliver_addition(observation, access_token_bro_portal, demo):
-
     """
     If there is a valid source document, deliver to the BRO
     If delivery has failed three times prior, no more attempts will be made
@@ -264,7 +257,6 @@ def deliver_addition(observation, access_token_bro_portal, demo):
 
 
 def check_status_addition(observation, acces_token_bro_portal, demo):
-
     """
     Check the status of a delivery
     If the delivery has been approved, remove the source document
@@ -294,7 +286,6 @@ def check_status_addition(observation, acces_token_bro_portal, demo):
 
 
 def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
-
     """
     Main algorithm that checks the observations and performs actions based on the status
     """
@@ -351,7 +342,6 @@ def gld_validate_and_deliver(additions_dir, acces_token_bro_portal, demo):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-
         demo = gld_SETTINGS["demo"]
         if demo:
             acces_token_bro_portal = gld_SETTINGS["acces_token_bro_portal_demo"]

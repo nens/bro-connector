@@ -11,6 +11,7 @@ from gmw.models import (
     Event,
 )
 
+
 # FORMULAS USED IN HISTORIE_OPHALEN COMMAND DJANGO ZEELAND
 def slice(sourcedict, string):
     newdict = {}
@@ -105,7 +106,7 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
                 groundwater_monitoring_well_static=groundwater_monitoring_well_static
             ).first(),
             "delivered_to_bro": True,
-        }
+        },
     )
     return event
 
@@ -128,7 +129,8 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
 
 def get_tube_static(groundwater_monitoring_well, tube_number):
     gmts_id = GroundwaterMonitoringTubeStatic.objects.get(
-        groundwater_monitoring_well_static=groundwater_monitoring_well, tube_number=tube_number
+        groundwater_monitoring_well_static=groundwater_monitoring_well,
+        tube_number=tube_number,
     )
     return gmts_id
 
@@ -327,7 +329,6 @@ class TableUpdater(Updater):
         event.groundwater_monitoring_well_static = well_static
         event.groundwater_monitoring_well_dynamic = new_gmwd
         event.save()
-
 
 
 def get_removal_event(gmw_dict, groundwater_monitoring_well_static):

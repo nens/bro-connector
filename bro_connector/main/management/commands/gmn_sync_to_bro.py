@@ -24,7 +24,6 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-
         ### SETUP ###
         # Check demo settings and define required acces token
         demo = gmn_SETTINGS["demo"]
@@ -41,7 +40,6 @@ class Command(BaseCommand):
         )
 
         for event in events:
-
             event.refresh_from_db()
             # Synced_to_bro might be updated during the handling of another event.
             if event.synced_to_bro == True:
