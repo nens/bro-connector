@@ -10,7 +10,7 @@ from gmw.models import (
     Instantie,
     GroundwaterMonitoringTubeStatic,
 )
-
+from main import localsecret as ls
 import django.db.models as models
 from django.contrib.gis.db import models as geo_models
 
@@ -89,8 +89,6 @@ def gmw_map_context(request):
         "wells": wells,
         "organisations": organisations,
         "groundwater_level_dossiers": glds,
+        "maptiler_key": ls.maptiler_key,
     }
-    print(context["wells"][0:2])
-    print(context["organisations"][0:2])
-    print(context["groundwater_level_dossiers"][0:2])
     return render(request, "gmw/gmw_map.html", context)
