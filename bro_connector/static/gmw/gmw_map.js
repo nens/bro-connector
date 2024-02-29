@@ -18,31 +18,31 @@ const hexToRgb = (hex) => {
 
 // Add color map for each organisation
 Object.keys(organisations).forEach((orgKey) => {
-  const { organisation_color, organisation_id } = organisations[orgKey];
+  const { color, id } = organisations[orgKey];
 
   // Apply color to html checkbox
   const organisationCheckbox = document.getElementById(
-    `checkbox-${organisation_id}`
+    `checkbox-${id}`
   );
-  organisationCheckbox.style.accentColor = organisation_color;
-  organisationCheckbox.style.background = organisation_color;
+  organisationCheckbox.style.accentColor = color;
+  organisationCheckbox.style.background = color;
 
   // Add color to color map
-  const rgbColor = hexToRgb(organisation_color);
-  colorMapping[organisation_id] = { color: rgbColor, visible: true };
+  const rgbColor = hexToRgb(color);
+  colorMapping[id] = { color: rgbColor, visible: true };
 });
 
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
   const popup = document.createElement("div");
-  const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.object_id}`;
+  const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
   const popupContent = `
               <div style="background-color: white; padding: 1em; border-radius: 10px">
                 <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
-                Latitude: ${well.latitude}<br>
-                Longitude: ${well.longitude}<br>
+                Latitude: ${well.y}<br>
+                Longitude: ${well.x}<br>
                 Quality regime: ${well.quality_regime}<br>
-                Accountable party: ${well.accountable_party}<br>
+                Accountable party: ${well.delivery_accountable_party}<br>
               </div>
               <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
                 <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
@@ -60,7 +60,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
   id: "scatterplot-layer",
   data: wells,
   type: deck.ScatterplotLayer,
-  getPosition: (well) => [well.longitude, well.latitude],
+  getPosition: (well) => [well.x, well.y],
   pickable: true,
   radiusMaxPixels: 6.5,
   radiusUnits: "meters",
@@ -71,19 +71,19 @@ const myScatterplotLayer = new deck.MapboxLayer({
   filled: true,
   antialiasing: true,
   radiusUnits: "pixels",
-  getFillColor: (well) => colorMapping[well.organisation_id].color,
+  getFillColor: (well) => colorMapping[well.delivery_accountable_party].color,
   lineWidthMinPixels: 2,
   getLineColor: white,
 
   //   Hide circle when organisation is set to invicible
-  getRadius: (well) => (colorMapping[well.organisation_id].visible ? 10 : 0),
+  getRadius: (well) => (colorMapping[well.delivery_accountable_party].visible ? 10 : 0),
 
   //   On click add a popup as an Mapbox marker at the circle's location
   onClick: (event) => {
     const well = event.object;
     const popup = createPopup(well);
     const newMarker = new mapboxgl.Marker(popup, { anchor: "bottom" })
-      .setLngLat([well.longitude, well.latitude])
+      .setLngLat([well.x, well.y])
       .addTo(map);
     setTimeout(() => (marker = newMarker));
   },
