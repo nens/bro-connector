@@ -83,8 +83,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
     local_vertical_reference_point = models.CharField(
         choices=LOCALVERTICALREFERENCEPOINT, max_length=200, blank=True, null=True
     )
-    well_offset = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    well_offset = models.FloatField(
+        blank=True, null=True
     )
     vertical_datum = models.CharField(
         choices=VERTICALDATUM, max_length=200, blank=True, null=True
@@ -151,8 +151,8 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     well_head_protector = models.CharField(
         choices=WELLHEADPROTECTOR, max_length=200, blank=True, null=True
     )
-    ground_level_position = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    ground_level_position = models.FloatField(
+        blank=True, null=True
     )
     ground_level_positioning_method = models.CharField(
         choices=GROUNDLEVELPOSITIONINGMETHOD, max_length=200, blank=True, null=True
@@ -220,14 +220,14 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     tube_material = models.CharField(
         choices=TUBEMATERIAL, max_length=200, blank=True, null=True
     )
-    screen_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    screen_length = models.FloatField(
+        blank=True, null=True
     )
     sock_material = models.CharField(
         choices=SOCKMATERIAL, max_length=200, blank=True, null=True
     )
-    sediment_sump_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    sediment_sump_length = models.FloatField(
+        blank=True, null=True
     )
 
     @property
@@ -264,8 +264,8 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     tube_status = models.CharField(
         choices=TUBESTATUS, max_length=200, blank=True, null=True
     )
-    tube_top_position = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    tube_top_position = models.FloatField(
+        blank=True, null=True
     )
     tube_top_positioning_method = models.CharField(
         choices=TUBETOPPOSITIONINGMETHOD, max_length=200, blank=True, null=True
@@ -274,14 +274,14 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         choices=TUBEPACKINGMATERIAL, max_length=200, blank=True, null=True
     )
     glue = models.CharField(choices=GLUE, max_length=200, blank=True, null=True)
-    plain_tube_part_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    plain_tube_part_length = models.FloatField(
+        blank=True, null=True
     )  # Lengte stijbuisdeel
-    inserted_part_diameter = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    inserted_part_diameter = models.FloatField(
+        blank=True, null=True
     )  # This field type is a guess.
-    inserted_part_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    inserted_part_length = models.FloatField(
+        blank=True, null=True
     )  # This field type is a guess.
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
 

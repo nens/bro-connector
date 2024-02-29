@@ -12,8 +12,8 @@ from gmw.models import (
 )
 
 from pyproj import Transformer
- 
- 
+
+
 def gmw_map_context(request):
     well_instances = list(GroundwaterMonitoringWellStatic.objects.all())
     organisation_instances = list(Instantie.objects.all())
@@ -21,8 +21,9 @@ def gmw_map_context(request):
     organisations = []
     wells = []
     glds = []
+
     transformer = Transformer.from_crs(crs_from="EPSG:28992", crs_to="EPSG:4326")
- 
+
     for well in well_instances:
         (x, y) = transformer.transform(well.coordinates.x, well.coordinates.y)
 
