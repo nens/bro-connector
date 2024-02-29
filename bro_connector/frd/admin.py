@@ -3,6 +3,7 @@ from django.db.models import fields
 from .models import *
 from reversion_compare.helpers import patch_admin
 
+
 def _register(model: models.Model, admin_class: admin.ModelAdmin):
     admin.site.register(model, admin_class)
 
@@ -14,8 +15,8 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
-class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
+class FormationResistanceDossierAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "frd_bro_id",
@@ -43,30 +44,26 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
     deliver_to_bro.short_description = "Deliver FRD to BRO"
     check_status.short_description = "Check FRD status from BRO"
 
-class InstrumentConfigurationAdmin(admin.ModelAdmin):
 
+class InstrumentConfigurationAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "formation_resistance_dossier", 
+        "formation_resistance_dossier",
         "electromagnetic_measurement_method",
     )
     list_filter = (
         "id",
-        "formation_resistance_dossier", 
+        "formation_resistance_dossier",
         "electromagnetic_measurement_method",
     )
+
 
 class ElectromagneticMeasurementMethodAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+    list_filter = ()
 
-    list_display = (
-        "id",
-    )
-    list_filter = (
-
-    )
 
 class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
-
     list_display = (
         "id",
         "measurement_date",
@@ -81,13 +78,14 @@ class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
         "assessment_procedure",
         "measurement_date",
     )
+
 
 class CalculatedFormationresistanceAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "responsible_party",
         "electromagnetic_measurement_method",
-        "geo_ohm_measurement_method"
+        "geo_ohm_measurement_method",
     )
     list_filter = (
         "responsible_party",
@@ -97,29 +95,24 @@ class CalculatedFormationresistanceAdmin(admin.ModelAdmin):
 
 
 class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
-
     list_display = (
         "id",
         "formationresistance",
         "measurement_configuration",
-        "datetime"
+        "datetime",
     )
     list_filter = (
         "measurement_configuration",
         "datetime",
     )
 
+
 class GMWElectrodeReferenceAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+    list_filter = ()
 
-    list_display = (
-        "id",
-    )
-    list_filter = (
-
-    )
 
 class ElectrodePairAdmin(admin.ModelAdmin):
-
     list_display = (
         "id",
         "elektrode1",
@@ -130,8 +123,8 @@ class ElectrodePairAdmin(admin.ModelAdmin):
         "elektrode2",
     )
 
-class MeasurementConfigurationAdmin(admin.ModelAdmin):
 
+class MeasurementConfigurationAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "bro_id",
@@ -145,35 +138,24 @@ class MeasurementConfigurationAdmin(admin.ModelAdmin):
         "flowcurrent_pair",
     )
 
+
 class ElectromagneticSeriesAdmin(admin.ModelAdmin):
+    list_display = ("id",)
 
-    list_display = (
-    "id",)
-    
-    list_filter = (
+    list_filter = ()
 
-    )
 
 class FormationresistanceSeriesAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+    list_filter = ()
 
-    list_display = (
-        "id",
-    )
-    list_filter = (
-
-    )
 
 class ElectromagneticRecordAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+    list_filter = ()
 
-    list_display = (
-        "id",
-    )
-    list_filter = (
-
-    )
 
 class FormationresistanceRecordAdmin(admin.ModelAdmin):
-
     list_display = (
         "id",
         "series",
@@ -188,15 +170,15 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
         "status_qualitycontrol",
     )
 
-class FrdSyncLogAdmin(admin.ModelAdmin):
 
+class FrdSyncLogAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "event_type",
         "synced",
         "frd",
         "process_status",
-        "delivery_id"
+        "delivery_id",
     )
     list_filter = (
         "event_type",
@@ -218,7 +200,7 @@ _register(FormationresistanceSeries, FormationresistanceSeriesAdmin)
 _register(ElectromagneticSeries, ElectromagneticSeriesAdmin)
 _register(ElectromagneticRecord, ElectromagneticRecordAdmin)
 _register(FormationresistanceRecord, FormationresistanceRecordAdmin)
-_register(FrdSyncLog,FrdSyncLogAdmin)
+_register(FrdSyncLog, FrdSyncLogAdmin)
 
 # Voorbeeld voor offerte
 patch_admin(FormationResistanceDossier)

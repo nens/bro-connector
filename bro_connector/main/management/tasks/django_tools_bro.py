@@ -67,7 +67,7 @@ class DjangoTableToDict:
                 cap_present = "ja"
             elif tube.artesian_well_cap_present == False:
                 cap_present = "nee"
-        
+
         sump_present = "onbekend"
 
         if tube.sediment_sump_present:
@@ -97,13 +97,11 @@ class DjangoTableToDict:
         static_tube_data["geoOhmCables"] = {}
 
         if tube.number_of_geo_ohm_cables > 0:
-
             geo_ohm_cables = GetDjangoObjects.get_all_geo_ohm_cables(
                 tube.groundwater_monitoring_tube_static_id
             )
             geo_ohm_cable_number = 0
             for geo_ohm_cable in geo_ohm_cables:
-
                 geo_ohm_cable_data = self.update_static_geo_ohm_cable(geo_ohm_cable)
 
                 static_tube_data["geoOhmCables"][
@@ -120,7 +118,6 @@ class DjangoTableToDict:
                 ] = {}
 
                 for electrode in electrodes:
-
                     electrodes_data = self.update_static_electrode(electrode)
                     static_tube_data["geoOhmCables"][geo_ohm_cable_number][
                         "electrodes"

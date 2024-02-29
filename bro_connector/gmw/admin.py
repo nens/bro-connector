@@ -25,6 +25,7 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
+
 class InstantieAdmin(admin.ModelAdmin):
     list_display = (
         "id",
@@ -37,6 +38,7 @@ class InstantieAdmin(admin.ModelAdmin):
         "name",
         "company_number",
     )
+
 
 class EventsInline(admin.TabularInline):
     model = gmw_models.Event
@@ -58,9 +60,8 @@ class EventsInline(admin.TabularInline):
     extra = 0
     max_num = 0
 
-class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
-    
 
+class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
 
     list_display = (
@@ -74,7 +75,13 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "in_management",
     )
 
-    list_filter = ("delivery_accountable_party", "bro_id", "nitg_code", "well_code", "in_management")
+    list_filter = (
+        "delivery_accountable_party",
+        "bro_id",
+        "nitg_code",
+        "well_code",
+        "in_management",
+    )
 
     fieldsets = [
         (
@@ -153,7 +160,6 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
-
     form = gmw_forms.GroundwaterMonitoringWellDynamicForm
 
     list_display = (
@@ -170,8 +176,8 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
 
-class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
+class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubesStaticForm
 
     list_display = (
@@ -198,13 +204,14 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
             with reversion.create_revision():
                 obj.deliver_gld_to_bro = True
                 obj.save()
-                reversion.set_comment("Set deliver_gld_to_bro to True by manual action.")
-        
+                reversion.set_comment(
+                    "Set deliver_gld_to_bro to True by manual action."
+                )
 
     deliver_gld_to_true.short_description = "Deliver GLD to True"
 
-class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
+class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubesDynamicForm
 
     list_display = (
@@ -220,7 +227,6 @@ class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
 
 
 class GeoOhmCableAdmin(admin.ModelAdmin):
-
     form = gmw_forms.GeoOhmCableForm
 
     list_display = (
@@ -232,7 +238,6 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
 
 
 class ElectrodeStaticAdmin(admin.ModelAdmin):
-
     form = gmw_forms.ElectrodeStaticForm
 
     list_display = (
@@ -246,7 +251,6 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
-
     form = gmw_forms.ElectrodeDynamicForm
 
     list_display = (
@@ -258,7 +262,6 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
 
 
 class EventAdmin(admin.ModelAdmin):
-
     form = gmw_forms.EventForm
 
     list_display = (
@@ -269,12 +272,17 @@ class EventAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube_dynamic",
         "electrode_dynamic",
     )
-    list_filter = ("change_id", "groundwater_monitoring_well_static", "event_name", "event_date")
+    list_filter = (
+        "change_id",
+        "groundwater_monitoring_well_static",
+        "event_name",
+        "event_date",
+    )
 
 
 class PictureAdmin(admin.ModelAdmin):
     formfield_overrides = {
-        models.BinaryField: {'widget': gmw_forms.BinaryFileInput()},
+        models.BinaryField: {"widget": gmw_forms.BinaryFileInput()},
     }
 
     list_display = (
@@ -288,7 +296,6 @@ class PictureAdmin(admin.ModelAdmin):
 
 
 class MaintenancePartyAdmin(admin.ModelAdmin):
-
     list_display = (
         "first_name",
         "surname",
@@ -300,7 +307,6 @@ class MaintenancePartyAdmin(admin.ModelAdmin):
 
 
 class MaintenanceAdmin(admin.ModelAdmin):
-
     list_display = (
         "kind_of_maintenance",
         "groundwater_monitoring_well_static",
@@ -315,7 +321,6 @@ class MaintenanceAdmin(admin.ModelAdmin):
         "reporter",
         "execution_by",
     )
-
 
 
 class XMLImportAdmin(admin.ModelAdmin):
@@ -398,16 +403,22 @@ class XMLImportAdmin(admin.ModelAdmin):
                         )
                         object.save()
 
+
 class GmwSyncLogAdmin(admin.ModelAdmin):
     list_display = (
-        "date_modified", "last_changed", "bro_id", "process_status", "comments", 
-    )
-    list_filter = (
+        "date_modified",
+        "last_changed",
         "bro_id",
+        "process_status",
+        "comments",
     )
+    list_filter = ("bro_id",)
+
 
 # _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
-_register(gmw_models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin)
+_register(
+    gmw_models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin
+)
 _register(
     gmw_models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
 )

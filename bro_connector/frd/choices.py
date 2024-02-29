@@ -55,7 +55,7 @@ EVENT_TYPE_CHOICES = (
     ("FRD_GEM_Measurement", "FRD_GEM_Measurement"),
     ("FRD_EMM_InstrumentConfiguration", "FRD_EMM_InstrumentConfiguration"),
     ("FRD_EMM_Measurement", "FRD_EMM_Measurement"),
-    )
+)
 
 DELIVERY_TYPE_CHOICES = (
     ("register", "register"),

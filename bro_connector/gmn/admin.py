@@ -7,7 +7,6 @@ def _register(model, admin_class):
 
 
 class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
-
     list_display = (
         "id",
         "gmn_bro_id",
@@ -39,7 +38,6 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
 
 
 class MeasuringPointAdmin(admin.ModelAdmin):
-
     list_display = (
         "code",
         "gmn",
