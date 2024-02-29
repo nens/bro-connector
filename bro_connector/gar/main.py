@@ -29,7 +29,6 @@ kvk = {
 
 @print_timer("--- GeneratingXML ---")
 def generate_xml_file(csv_name):
-
     df = pd.DataFrame(pd.read_csv(csv_name, sep=";"))
     df.loc[df["Limietsymbool"] == "<", "Limietsymbool"] = "LT"
     df.loc[df["Paramnummer"] == "374,00", "Eenheid"] = "mg/l"

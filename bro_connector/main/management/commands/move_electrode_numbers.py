@@ -5,15 +5,16 @@ from gmw.models import (
 )
 import reversion
 
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
         electrodes = ElectrodeStatic.objects.all()
-        
+
         for electrode in electrodes:
             print(electrode)
-            
+
             dynamic = ElectrodeDynamic.objects.filter(
-                electrode_static = electrode
+                electrode_static=electrode
             ).first()
 
             print(dynamic)
@@ -24,4 +25,6 @@ class Command(BaseCommand):
             with reversion.create_revision():
                 electrode.electrode_number = dynamic.electrode_number
                 electrode.save()
-                reversion.set_comment("Used a script to copy the electrode number from the dynamic to the static object.")
+                reversion.set_comment(
+                    "Used a script to copy the electrode number from the dynamic to the static object."
+                )

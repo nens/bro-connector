@@ -42,7 +42,8 @@ class GMWHandler(BROHandler):
             fh = "nee"
 
         gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
-
+        print(gmw_verzoek.content)
+        print(id)
         self.root = ET.fromstring(gmw_verzoek.content)
 
     def root_data_to_dictionary(self):
@@ -150,11 +151,15 @@ class GLDHandler(BROHandler):
             if split[1] == f"observation":
                 if self.number_of_observations != 0:
                     if self.number_of_observations == 1:
-                        self.count_dictionary[self.number_of_observations] = self.number_of_points
-                        
-                    else:
-                        self.count_dictionary[self.number_of_observations] = self.number_of_points - self.count_dictionary[self.number_of_observations - 1]
+                        self.count_dictionary[
+                            self.number_of_observations
+                        ] = self.number_of_points
 
+                    else:
+                        self.count_dictionary[self.number_of_observations] = (
+                            self.number_of_points
+                            - self.count_dictionary[self.number_of_observations - 1]
+                        )
 
                 self.number_of_observations = self.number_of_observations + 1
                 prefix = f"{self.number_of_observations}_"

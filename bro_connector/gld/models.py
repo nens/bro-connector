@@ -8,14 +8,20 @@
 from django.db import models
 from .choices import *
 from gmw.models import GroundwaterMonitoringTubeStatic
+import datetime
 
 
-#%% GLD Models
+# %% GLD Models
 
 
 class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
-    groundwater_monitoring_tube = models.ForeignKey(GroundwaterMonitoringTubeStatic, on_delete = models.CASCADE, null = True, blank = False)
+    groundwater_monitoring_tube = models.ForeignKey(
+        GroundwaterMonitoringTubeStatic,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=False,
+    )
     gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
@@ -54,7 +60,6 @@ class Observation(models.Model):
     status = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
-
         try:
             starttime = str(self.observation_starttime.date())
         except:
@@ -71,6 +76,31 @@ class Observation(models.Model):
             dossier = "Registratie onbekend"
 
         return "{} ({} - {})".format(dossier, starttime, endtime)
+
+    def save(self, *args, **kwargs):
+        if self.pk == None:
+            super().save(*args, **kwargs)
+            return
+
+        if self.observation_endtime <= datetime.datetime.now().astimezone():
+            super().save(*args, **kwargs)
+
+            # Create a duplicate metadata
+            metadata = self.observation_metadata
+            metadata.observation_metadata_id = None
+            metadata.save()
+
+            # Create a duplicate process
+            process = self.observation_process
+            process.observation_process_id = None
+            process.save()
+
+            obs = Observation.objects.create(
+                observation_starttime=self.observation_endtime,
+                groundwater_level_dossier=self.groundwater_level_dossier,
+                observation_metadata=metadata,
+                observation_process=process,
+            )
 
     class Meta:
         managed = True
@@ -200,7 +230,7 @@ class ResponsibleParty(models.Model):
         return "{}".format(self.organisation_name)
 
 
-#%% Aanlevering models
+# %% Aanlevering models
 
 
 class gld_registration_log(models.Model):

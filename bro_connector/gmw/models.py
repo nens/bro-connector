@@ -1,6 +1,45 @@
 from django.db import models
 from django.contrib.gis.db import models as geo_models
 from .choices import *
+import random
+
+
+def get_color_value():
+    # Generate random values for red, green, and blue components
+    red = random.randint(0, 255)
+    green = random.randint(0, 255)
+    blue = random.randint(0, 255)
+
+    # Convert decimal values to hexadecimal and format them
+    color_code = "#{:02x}{:02x}{:02x}".format(red, green, blue)
+
+    return color_code
+
+
+class Instantie(models.Model):
+    name = models.CharField(max_length=50, null=True, blank=True)
+    company_number = models.IntegerField(blank=True)
+    color = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'gmw"."instantie'
+        verbose_name = "Instantie"
+        verbose_name_plural = "Instanties"
+
+    def __str__(self):
+        if self.name:
+            return self.name
+        elif self.company_number:
+            return self.company_number
+        else:
+            return self.id
+
+    def save(self, *args, **kwargs):
+        # Set a default color only if it's not already set
+        if not self.color:
+            self.color = get_color_value()
+        super().save(*args, **kwargs)
 
 
 class GroundwaterMonitoringWellStatic(models.Model):
@@ -8,8 +47,20 @@ class GroundwaterMonitoringWellStatic(models.Model):
     registration_object_type = models.CharField(max_length=256, blank=True, null=True)
     bro_id = models.CharField(max_length=15, blank=True, null=True)
     request_reference = models.CharField(max_length=255, blank=True, null=True)
-    delivery_accountable_party = models.IntegerField(blank=True, null=True)
-    delivery_responsible_party = models.IntegerField(blank=True, null=True)
+    delivery_accountable_party = models.ForeignKey(
+        Instantie,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="delivery_accountable_party",
+    )
+    delivery_responsible_party = models.ForeignKey(
+        Instantie,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="delivery_responsible_party",
+    )
     quality_regime = models.CharField(max_length=256, blank=True, null=True)
     under_privilege = models.CharField(max_length=256, blank=True, null=True)
     delivery_context = models.CharField(
@@ -35,9 +86,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
     local_vertical_reference_point = models.CharField(
         choices=LOCALVERTICALREFERENCEPOINT, max_length=200, blank=True, null=True
     )
-    well_offset = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
-    )
+    well_offset = models.FloatField(blank=True, null=True)
     vertical_datum = models.CharField(
         choices=VERTICALDATUM, max_length=200, blank=True, null=True
     )
@@ -103,9 +152,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     well_head_protector = models.CharField(
         choices=WELLHEADPROTECTOR, max_length=200, blank=True, null=True
     )
-    ground_level_position = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
-    )
+    ground_level_position = models.FloatField(blank=True, null=True)
     ground_level_positioning_method = models.CharField(
         choices=GROUNDLEVELPOSITIONINGMETHOD, max_length=200, blank=True, null=True
     )
@@ -137,15 +184,18 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     @property
     def number_of_standpipes(self):
         return GroundwaterMonitoringTubeStatic.objects.filter(
-            groundwater_monitoring_well_static = self.groundwater_monitoring_well_static
+            groundwater_monitoring_well_static=self.groundwater_monitoring_well_static
         ).count()
-    
+
     @property
     def deliver_gld_to_bro(self):
-        return GroundwaterMonitoringTubeStatic.objects.filter(
-            deliver_gld_to_bro = True,
-            groundwater_monitoring_well_static = self.groundwater_monitoring_well_static
-        ).count() > 0
+        return (
+            GroundwaterMonitoringTubeStatic.objects.filter(
+                deliver_gld_to_bro=True,
+                groundwater_monitoring_well_static=self.groundwater_monitoring_well_static,
+            ).count()
+            > 0
+        )
 
     class Meta:
         managed = True
@@ -172,20 +222,16 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     tube_material = models.CharField(
         choices=TUBEMATERIAL, max_length=200, blank=True, null=True
     )
-    screen_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
-    )
+    screen_length = models.FloatField(blank=True, null=True)
     sock_material = models.CharField(
         choices=SOCKMATERIAL, max_length=200, blank=True, null=True
     )
-    sediment_sump_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
-    )
+    sediment_sump_length = models.FloatField(blank=True, null=True)
 
     @property
     def number_of_geo_ohm_cables(self):
         return GeoOhmCable.objects.filter(
-            groundwater_monitoring_tube_static = self
+            groundwater_monitoring_tube_static=self
         ).count()
 
     def __str__(self):
@@ -216,9 +262,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     tube_status = models.CharField(
         choices=TUBESTATUS, max_length=200, blank=True, null=True
     )
-    tube_top_position = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
-    )
+    tube_top_position = models.FloatField(blank=True, null=True)
     tube_top_positioning_method = models.CharField(
         choices=TUBETOPPOSITIONINGMETHOD, max_length=200, blank=True, null=True
     )
@@ -226,14 +270,14 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         choices=TUBEPACKINGMATERIAL, max_length=200, blank=True, null=True
     )
     glue = models.CharField(choices=GLUE, max_length=200, blank=True, null=True)
-    plain_tube_part_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    plain_tube_part_length = models.FloatField(
+        blank=True, null=True
     )  # Lengte stijbuisdeel
-    inserted_part_diameter = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    inserted_part_diameter = models.FloatField(
+        blank=True, null=True
     )  # This field type is a guess.
-    inserted_part_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+    inserted_part_length = models.FloatField(
+        blank=True, null=True
     )  # This field type is a guess.
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
 
@@ -249,9 +293,12 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         )
 
     def __str__(self):
-
-        if self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id:
-            well = str(self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id)
+        if (
+            self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id
+        ):
+            well = str(
+                self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id
+            )
         else:
             well = str(self.groundwater_monitoring_tube_dynamic_id)
 
@@ -299,9 +346,7 @@ class ElectrodeStatic(models.Model):
         choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True
     )
     electrode_position = models.CharField(max_length=200, blank=True, null=True)
-    electrode_number = models.IntegerField(
-        blank=True, null=True
-    )
+    electrode_number = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.geo_ohm_cable.groundwater_monitoring_tube_static}-K{self.geo_ohm_cable.cable_number}E{self.electrode_number}"
@@ -462,16 +507,27 @@ class Maintenance(models.Model):
     picture = models.ForeignKey(
         Picture, on_delete=models.CASCADE, null=True, blank=True
     )
-    reporter = models.ForeignKey(MaintenanceParty, on_delete=models.SET_NULL, blank=True, null=True, related_name = "Reporter")  # Maintenance_party_id
+    reporter = models.ForeignKey(
+        MaintenanceParty,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="Reporter",
+    )  # Maintenance_party_id
     execution_date = models.DateField(blank=True, null=True)
-    execution_by = models.ForeignKey(MaintenanceParty, on_delete=models.SET_NULL, blank=True, null=True, related_name = "Executioner")  # Maintenance_party_id
+    execution_by = models.ForeignKey(
+        MaintenanceParty,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="Executioner",
+    )  # Maintenance_party_id
 
     class Meta:
         managed = True
         db_table = 'gmw"."maintenance'
         verbose_name = "Onderhoudsmoment"
         verbose_name_plural = "Onderhoudsmomenten"
-
 
 
 class XMLImport(models.Model):
@@ -501,6 +557,7 @@ class XMLImport(models.Model):
     class Meta:
         verbose_name = "XML import"
         verbose_name_plural = "XML imports"
+
 
 def format_integer(num):
     if num < 10:

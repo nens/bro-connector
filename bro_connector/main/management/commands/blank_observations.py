@@ -5,6 +5,7 @@ from gld.models import (
 )
 import datetime
 
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
         """
