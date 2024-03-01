@@ -282,6 +282,12 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
 
     @property
+    def tube_inserted(self):
+        if self.inserted_part_diameter or self.inserted_part_length or self.inserted_part_material:
+            return True
+        return False
+
+    @property
     def screen_top_position(self):
         return self.tube_top_position - self.plain_tube_part_length
 
