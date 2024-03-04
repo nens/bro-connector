@@ -256,12 +256,16 @@ else:
 gld_SETTINGS = {
     "bro_info_demo": {
         "projectnummer": 3012,
-        "user": bro_acceptatie_user_v2,
-        "pass": bro_acceptatie_password_v2,
+        "token": {
+            "user": bro_acceptatie_user_v2,
+            "pass": bro_acceptatie_password_v2,
+        },
     },
     "bro_info_bro_connector": {
-        "user": bro_production_user,
-        "pass": bro_production_password,
+        "token": {
+            "user": bro_production_user,
+            "pass": bro_production_password,
+        },
     },
     "monitoringnetworks": None,
     "demo": demo,
