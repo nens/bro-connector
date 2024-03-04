@@ -448,7 +448,7 @@ class GldSyncHandler:
                 # Even if a document is invalid, the validation process has succeeded and won't be reattempted
                 if (
                     get_registration_process_status(registration_id)
-                    == "failed_to_validate_source_documents"
+                    == "failed_to_validate_sourcedocument"
                 ):
                     # If we failed to validate the sourcedocument, try again
                     # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
@@ -504,4 +504,4 @@ class Command(BaseCommand):
 
         # print('check status')
         # Check existing registrations
-        gld.check_existing_startregistrations(access_info)
+        gld.check_existing_startregistrations()
