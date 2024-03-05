@@ -8,16 +8,17 @@
 {% block extrahead %}
   <link rel="icon" href="{{STATIC_URL}}img/favicon.ico" sizes="48x48" />
   <!-- Add CSS and JavaScript for chatbot pop-up -->
-  <button id="chatbot-button">BRO Co-Pilot</button>
+  <button type="button" id="chatbot-button">BRO Co-Pilot</button>
 
   <!-- HTML code for the chatbot container -->
-  <div id="chatbot-container">
-      <!-- Chat messages will be displayed here -->
-      <div id="chat-messages" class="chat-messages">
-        <button type="button" id="clear-button">Clear</button>
-      </div>
-      <!-- User input area -->
-      <textarea id="user-input" placeholder="Type your message..."></textarea>
+  <div id="chatbot-container" class="chatbot-container">
+    <div id="chat-messages" class="chat-messages">
+      <button type="button" id="clear-button">Clear</button>
+    </div>
+    
+    <div class="chat-input">
+      <textarea id="user-input" class="user-input" placeholder="Type your message here..."></textarea>
+    </div>
   </div>
 
   
@@ -37,4 +38,5 @@
 {% block nav-global %}
   <!-- Add chatbot button here -->
   <button id="chatbot-button">BRO Co-Pilot</button>
+
 {% endblock %}

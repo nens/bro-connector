@@ -1,0 +1,74 @@
+/* chatbot.css */
+
+/* Style for the chatbot button */
+#chatbot-button {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background-color: #b6b6b6;
+    border: 1px solid #000000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+/* Style for the chatbot container */
+#chatbot-container {
+    position: fixed;
+    bottom: 80px; /* Adjust this value to adjust chatbox height */
+    right: 20px;
+    width: 300px; /* Adjust this value to adjust chatbox width */
+    background-color: #adadad;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    overflow: hidden;
+    z-index: 1000;
+    display: None; /* Initially hidden */
+}
+
+/* Style for chat messages */
+#chat-messages {
+    height: 200px; /* Adjust this value to adjust chatbox message area height */
+    overflow-y: auto;
+}
+
+/* Style for user input */
+#user-input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: none;
+    border-top: 1px solid #000000;
+    resize: none;
+    position: relative;
+    left: 3%;
+}
+
+/* Style for chatbot response */
+.bot-message {
+    background-color: #b9f0fe;
+    border: 1px solid #000000;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px;
+    max-width: 70%;
+    float: right;
+}
+
+/* Style for user message */
+.user-message {
+    background-color: #cefcc8;
+    border: 1px solid #000000;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px;
+    max-width: 70%;
+    overflow-wrap: break-word;
+}
+
+.clear-button {
+    display: flex;
+    background-color: white;
+    border: 1px solid #000000;
+}
