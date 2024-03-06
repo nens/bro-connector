@@ -6,6 +6,9 @@ const organisations = JSON.parse(
 const glds = JSON.parse(
   document.getElementById("groundwater_level_dossiers_json").textContent
 );
+const maptilerApiKey = JSON.parse(
+  document.getElementById("maptiler_key_json").textContent
+);
 
 // Color map
 const colorMapping = {};
@@ -21,9 +24,7 @@ Object.keys(organisations).forEach((orgKey) => {
   const { color, id } = organisations[orgKey];
 
   // Apply color to html checkbox
-  const organisationCheckbox = document.getElementById(
-    `checkbox-${id}`
-  );
+  const organisationCheckbox = document.getElementById(`checkbox-${id}`);
   organisationCheckbox.style.accentColor = color;
   organisationCheckbox.style.background = color;
 
@@ -32,25 +33,34 @@ Object.keys(organisations).forEach((orgKey) => {
   colorMapping[id] = { color: rgbColor, visible: true };
 });
 
+// Show check or cross
+const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
+
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
   const popupContent = `
               <div style="background-color: white; padding: 1em; border-radius: 10px">
-                <a href="${objectPageUrl}" target="_blank"><strong>${well.bro_id}</strong></a><br>
+                <a href="${objectPageUrl}" target="_blank"><strong>${
+    well.bro_id
+  }</strong></a><br>
                 Well Code: ${well.well_code}<br>
                 Quality regime: ${well.quality_regime}<br>
                 Registration Object Type: ${well.registration_object_type}<br>
                 Delivery Context: ${well.delivery_context}<br>
                 Construction Standard: ${well.construction_standard}<br>
                 Initial Function: ${well.initial_function}<br>
-                Horizontal Positioning Method: ${well.horizontal_positioning_method}<br>
-                Local Vertical Reference Point: ${well.local_vertical_reference_point}<br>
+                Horizontal Positioning Method: ${
+                  well.horizontal_positioning_method
+                }<br>
+                Local Vertical Reference Point: ${
+                  well.local_vertical_reference_point
+                }<br>
                 Vertical Datum: ${well.vertical_datum}<br>
-                Deliver GMW to BRO: ${well.deliver_gmw_to_bro}<br>
-                Complete BRO: ${well.complete_bro}<br>
-                In Management: ${well.in_management}<br>
+                Deliver GMW to BRO: ${checkOrCross(well.deliver_gmw_to_bro)}<br>
+                Complete BRO: ${checkOrCross(well.complete_bro)}<br>
+                In Management: ${checkOrCross(well.in_management)}<br>
               </div>
               <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
                 <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
@@ -84,7 +94,8 @@ const myScatterplotLayer = new deck.MapboxLayer({
   getLineColor: white,
 
   //   Hide circle when organisation is set to invicible
-  getRadius: (well) => (colorMapping[well.delivery_accountable_party].visible ? 10 : 0),
+  getRadius: (well) =>
+    colorMapping[well.delivery_accountable_party].visible ? 10 : 0,
 
   //   On click add a popup as an Mapbox marker at the circle's location
   onClick: (event) => {
@@ -100,8 +111,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
 // Create the map
 const map = new mapboxgl.Map({
   container: "deck-gl-canvas",
-  style:
-    "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
+  style: `https://api.maptiler.com/maps/2d36cb9d-e3c5-4143-9052-ef95527a21e7/style.json?key=${maptilerApiKey}`,
   antialias: true,
   center: [3.945697, 51.522601],
   zoom: 9,
