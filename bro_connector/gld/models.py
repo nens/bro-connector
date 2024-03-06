@@ -194,13 +194,16 @@ class MeasurementTvp(models.Model):
 
 class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
-    qualifier_by_category = models.CharField(
+    status_quality_control = models.CharField(
         choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True
     )
-    censored_reason = models.CharField(
+    censor_reason = models.CharField(
         choices=CENSORREASON, max_length=200, blank=True, null=True
     )
-    qualifier_by_quantity = models.DecimalField(
+    censor_reason_artesia = models.CharField(
+        max_length=200, blank=True, null=True
+    )
+    value_limit = models.DecimalField(
         max_digits=100, decimal_places=10, blank=True, null=True
     )
     interpolation_code = models.CharField(
@@ -213,6 +216,9 @@ class MeasurementPointMetadata(models.Model):
         db_table = 'gld"."measurement_point_metadata'
         verbose_name = "Meetpunt Metadata"
         verbose_name_plural = "Meetpunt Metadata"
+
+    def __str__(self):
+        return str(self.measurement_point_metadata_id)
 
 
 class ResponsibleParty(models.Model):
