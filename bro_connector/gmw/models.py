@@ -61,8 +61,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
         blank=True,
         related_name="delivery_responsible_party",
     )
-    quality_regime = models.CharField(max_length=256, blank=True, null=True)
-    under_privilege = models.CharField(max_length=256, blank=True, null=True)
+    quality_regime = models.CharField(choices=QUALITYREGIME, max_length=256, blank=True, null=True)
+    under_privilege = models.CharField(choices=UNDERPRIVILIGE, max_length=256, blank=True, null=True)
     delivery_context = models.CharField(
         choices=DELIVERYCONTEXT, max_length=200, blank=True, null=True
     )
