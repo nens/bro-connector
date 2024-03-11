@@ -233,11 +233,12 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
         | tubeStatus_events
         | wellHeadProtector_events
     )
-
+    print(events)
     for event in events:
         registration = gmw_registration_log.objects.get(
             event_id=event.change_id,
         )
+        print(registration)
         gmw_check_registrations(registration)
 
 
