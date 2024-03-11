@@ -1,5 +1,5 @@
 from gld.models import GroundwaterLevelDossier, gld_registration_log
-from gmw.models import GroundwaterMonitoringTubeStatic
+from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 import os
 import reversion
 
@@ -31,46 +31,66 @@ def create_registrations_folder():
             print(f"Folder '{folder}' already exists.")
 
 
-def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
-
-    create_registrations_folder()
+def handle_start_registrations(
+    dossier: GroundwaterLevelDossier,
+    deliver: bool,
+) -> None:
+    
+    well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+    # Handle start registrations
+    tube_number = dossier.groundwater_monitoring_tube.tube_number
 
     gld = gld_registrations_create.GldSyncHandler(gld_SETTINGS)
 
-    tube = dossier.groundwater_monitoring_tube
-    well = tube.groundwater_monitoring_well_static
-    # Handle start registrations
-    tube_id = tube.tube_number
-
-    # Ignore filters that should not be delivered to BRO
-    if tube.deliver_gld_to_bro == False:
-        print(tube.deliver_gld_to_bro)
-        return
+    gld_registration_logs = gld_registration_log.objects.filter(
+        gwm_bro_id=well.bro_id,
+        filter_id=tube_number,
+        quality_regime=well.quality_regime,
+    )
 
     # Check if there is already a registration for this tube
-    if not gld_registration_log.objects.filter(
-        gwm_bro_id=well.bro_id,
-        filter_id=tube_id,
-        quality_regime=well.quality_regime,
-    ).exists():
-        print("log does not exist.")
+    if not gld_registration_logs.exists():
         # There is not a GLD registration object with this configuration
         # Create a new configuration by creating startregistration sourcedocs
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
+        if deliver:
+            # Only if the deliver function is used, a new start registration should be created
+            # Otherwise, only existing registrations should be checked.
+            gld.create_start_registration_sourcedocs(
+                well,
+                tube_number,
+                monitoringnetworks,
+            )
 
-        gld.create_start_registration_sourcedocs(
-            well.quality_regime,
-            str(well.delivery_accountable_party),
-            well.bro_id,
-            tube_id,
-            well.nitg_code,
-            monitoringnetworks,
-        )
+    gld.check_existing_startregistrations(gld_registration_logs)
 
-    print("check existing")
-    gld.check_existing_startregistrations()
+def handle_additions():
+    ...
+
+def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
+
+    create_registrations_folder()
+
+    tube = dossier.groundwater_monitoring_tube
+    # Ignore filters that should not be delivered to BRO
+    if tube.deliver_gld_to_bro == False:
+        print(tube.deliver_gld_to_bro)
+        return
+    
+    handle_start_registrations(dossier, deliver=True)
+
+    handle_additions()
 
 
 def check_status(dossier: GroundwaterLevelDossier) -> None:
-    pass
+    tube = dossier.groundwater_monitoring_tube
+    # Ignore filters that should not be delivered to BRO
+    if tube.deliver_gld_to_bro == False:
+        print(tube.deliver_gld_to_bro)
+        return
+    
+    handle_start_registrations(dossier, deliver=False)
+
+    handle_additions()
+    
