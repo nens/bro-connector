@@ -34,40 +34,41 @@ class GldSyncHandler:
 
     def create_start_registration_sourcedocs(
         self,
-        quality_regime,
-        deliveryaccountableparty,
-        broidgmw,
+        well: gmw_models.GroundwaterMonitoringWellStatic,
         filtrnr,
-        locationcode,  # nitg code
         monitoringnetworks,
     ):
         """
         Try to create startregistration sourcedocuments for a well/tube/quality regime
         Startregistration requests are saved to .xml file in startregistrations folder
         """
+        bro_id_gmw = well.bro_id
+        location_code = well.nitg_code
+        quality_regime = well.quality_regime
+        delivery_accountable_party = well.delivery_accountable_party
 
         try:
-            monitoringpoints = [{"broId": broidgmw, "tubeNumber": filtrnr}]
+            monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filtrnr}]
 
             if monitoringnetworks == None:
                 srcdocdata = {
-                    "objectIdAccountableParty": locationcode + str(filtrnr),
+                    "objectIdAccountableParty": location_code + str(filtrnr),
                     "monitoringPoints": monitoringpoints,
                 }
             else:
                 srcdocdata = {
-                    "objectIdAccountableParty": locationcode + str(filtrnr),
+                    "objectIdAccountableParty": location_code + str(filtrnr),
                     "groundwaterMonitoringNets": monitoringnetworks,  #
                     "monitoringPoints": monitoringpoints,
                 }
 
             request_reference = "GLD_StartRegistration_{}_tube_{}".format(
-                broidgmw, str(filtrnr)
+                bro_id_gmw, str(filtrnr)
             )
             gld_startregistration_request = brx.gld_registration_request(
                 srcdoc="GLD_StartRegistration",
                 requestReference=request_reference,
-                deliveryAccountableParty=deliveryaccountableparty,
+                deliveryAccountableParty=delivery_accountable_party,
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -80,7 +81,7 @@ class GldSyncHandler:
 
             process_status = "succesfully_generated_startregistration_request"
             record, created = models.gld_registration_log.objects.update_or_create(
-                gwm_bro_id=broidgmw,
+                gwm_bro_id=bro_id_gmw,
                 filter_id=filtrnr,
                 quality_regime=quality_regime,
                 defaults=dict(
@@ -95,7 +96,7 @@ class GldSyncHandler:
         except Exception as e:
             process_status = "failed_to_generate_source_documents"
             record, created = models.gld_registration_log.objects.update_or_create(
-                gwm_bro_id=broidgmw,
+                gwm_bro_id=bro_id_gmw,
                 filter_id=filtrnr,
                 quality_regime=quality_regime,
                 defaults=dict(
@@ -389,16 +390,14 @@ class GldSyncHandler:
                     # This registration is used to track the progress of the delivery in further steps
 
                     self.create_start_registration_sourcedocs(
-                        quality_regime,
-                        str(well.delivery_accountable_party),
-                        well.bro_id,
+                        well,
                         tube_id,
-                        well.nitg_code,
                         monitoringnetworks,
                     )
 
     def check_existing_startregistrations(
         self,
+        registration_logs,
     ):
         """
         This function loops over all exists startregistrations in the database
@@ -417,10 +416,7 @@ class GldSyncHandler:
         None.
 
         """
-        # Get all the current registrations
-        gld_registrations = models.gld_registration_log.objects.all()
-
-        for registration in gld_registrations:
+        for registration in registration_logs:
             # We check the status of the registration and either validate/deliver/check status/do nothing
             registration_id = registration.id
 
@@ -502,6 +498,8 @@ class Command(BaseCommand):
         # Check the database for new wells/tubes and start a GLD registration for these objects if its it needed
         gld.create_sourcedocs_start_registrations(monitoringnetworks)
 
-        # print('check status')
+        # Get all the current registrations
+        gld_registrations = models.gld_registration_log.objects.all()
+
         # Check existing registrations
-        gld.check_existing_startregistrations()
+        gld.check_existing_startregistrations(gld_registrations)
