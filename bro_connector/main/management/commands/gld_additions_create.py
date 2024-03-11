@@ -3,29 +3,19 @@
 NOTE: INITIALISES THE GLD REGISTER IN DE CSV DATABASE AND IN LIZARD
 """
 from django.core.management.base import BaseCommand
-from django.db import transaction
 
-import pandas as pd
-import requests
 import bro_exchange as brx
-import json
-import os
-import sys
-import traceback
 import datetime
-import math
-import xmltodict
 import itertools
-from pathlib import Path
-import pytz
-import time
 from copy import deepcopy
 import logging
+import reversion
 
 logger = logging.getLogger(__name__)
 
 from main.settings.base import gld_SETTINGS
 from gld import models
+from gmw import models as gmw_models
 
 field_value_division_dict = {"cm": 100, "mm": 1000, "m": 1}
 
@@ -39,52 +29,13 @@ def grouper(n, iterable):
         yield chunk
 
 
-def get_measurement_point_metadata_for_measurement(measurement_point_metadata_id):
-    measurement_point_metadata = models.MeasurementPointMetadata.objects.get(
-        measurement_point_metadata_id=measurement_point_metadata_id
-    )
-
-    if models.TypeStatusQualityControl.objects.filter(
-        id=measurement_point_metadata.qualifier_by_category_id
-    ).exists():
-        status_qualitycontrol_data = models.TypeStatusQualityControl.objects.get(
-            id=measurement_point_metadata.qualifier_by_category_id
-        )
-        status_qualitycontrol = status_qualitycontrol_data.value
-    else:
-        status_qualitycontrol = None
-
-    if models.TypeInterpolationCode.objects.filter(
-        id=measurement_point_metadata.interpolation_code_id
-    ).exists():
-        interpolation_type_data = models.TypeInterpolationCode.objects.get(
-            id=measurement_point_metadata.interpolation_code_id
-        )
-        interpolation_type = interpolation_type_data.value
-    else:
-        interpolation_type = None
-
-    if models.TypeCensoredReasonCode.objects.filter(
-        id=measurement_point_metadata.censored_reason_id
-    ).exists():
-        censored_reason_data = models.TypeCensoredReasonCode.objects.get(
-            id=measurement_point_metadata.censored_reason_id
-        )
-        censored_reason = censored_reason_data.value
-    else:
-        censored_reason = None
-
-    if censored_reason is not None:
-        metadata = {
-            "StatusQualityControl": status_qualitycontrol,
-            "interpolationType": interpolation_type,
-            "censoredReason": censored_reason,
-        }
-    else:
-        metadata = {
-            "StatusQualityControl": status_qualitycontrol,
-            "interpolationType": interpolation_type,
-        }
+def get_measurement_point_metadata_for_measurement(measurement_point_metadata: models.MeasurementPointMetadata):
+    metadata = {
+        "StatusQualityControl": measurement_point_metadata.status_quality_control,
+        "interpolationType": measurement_point_metadata.interpolation_code,
+    }
+    if measurement_point_metadata.censor_reason:
+        metadata["censoredReason"] = measurement_point_metadata.censor_reason
 
     return metadata
 
@@ -105,6 +56,20 @@ def order_measurements_list(measurement_list):
     # print(measurement_list_ordered)
     return measurement_list_ordered
 
+def convert_value_to_meter(measurement: models.MeasurementTvp) -> models.MeasurementTvp:
+    waterstand_waarde = float(measurement.field_value)
+    waterstand_waarde_converted = (
+        waterstand_waarde
+        / field_value_division_dict[measurement.field_value_unit]
+    )
+
+    with reversion.create_revision():
+        measurement.calculated_value = waterstand_waarde_converted
+        measurement.save()
+
+        reversion.set_comment("Calculated the measurment value (conversion to m).")
+
+    return measurement
 
 def get_timeseries_tvp_for_observation_id(observation_id):
     """
@@ -117,47 +82,34 @@ def get_timeseries_tvp_for_observation_id(observation_id):
     )
     measurements_list = []
     for measurement in measurement_tvp:
-        measurement_point_metadata_id = measurement.measurement_point_metadata_id
         metadata = get_measurement_point_metadata_for_measurement(
-            measurement_point_metadata_id
+            measurement.measurement_point_metadata
         )
 
         # discard a measurement with quality control type 1 (afgekeurd)
-        if metadata["StatusQualityControl"] == 1:
+        if metadata["StatusQualityControl"] == "afgekeurd":
             continue
+        
         # If the measurement value is None, this value must have been censored
-        if measurement.calculated_value is None:
+        if measurement.field_value is None:
             if metadata["censoredReason"] is None:
                 # We can't include a missing value without a censoring reason
                 continue
-            else:
-                waterstand_waarde = None
         else:
-            waterstand_waarde = float(measurement.calculated_value)
-            waterstand_waarde_converted = (
-                waterstand_waarde
-                / field_value_division_dict[measurement.field_value_unit]
-            )
+            convert_value_to_meter(measurement)
+            
 
         measurement_data = {
             "time": measurement.measurement_time.isoformat(),
-            "value": waterstand_waarde_converted,
+            "value": measurement.calculated_value,
             "metadata": metadata,
         }
 
         measurements_list += [measurement_data]
 
     measurements_list_ordered = order_measurements_list(measurements_list)
-    # print(measurements_list_ordered)
+
     return measurements_list_ordered
-
-
-def get_observation_with_measurement_time_series_id(measurement_time_series_id):
-    observation = models.Observations.objects.get(
-        measurement_time_series_id=measurement_time_series_id
-    )
-    return observation
-
 
 def get_observation_metadata(observation_metadata_id):
     observation_metadata = models.ObservationMetadata.objects.get(
@@ -254,18 +206,15 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
     return observation_procedure_data
 
 
-def get_observation_gld_source_document_data(observation):
+def get_observation_gld_source_document_data(observation: models.Observation):
     """
     Generate the GLD addition sourcedocs, without result data
     """
-    gld_id_database = observation.groundwater_level_dossier_id
-    gld_data = models.GroundwaterLevelDossier.objects.get(
-        groundwater_level_dossier_id=gld_id_database
-    )
-    gmw_bro_id = gld_data.gmw_bro_id
+    gld = observation.groundwater_level_dossier
+    gmw_bro_id = gld.gmw_bro_id
 
     # Get the quality regime for the well
-    gmw_well = models.GroundwaterMonitoringWells.objects.get(bro_id=gmw_bro_id)
+    gmw_well = gmw_models.GroundwaterMonitoringWellStatic.objects.get(bro_id=gmw_bro_id)
     quality_regime = gmw_well.quality_regime
 
     # Get the GLD registration id for this measurement timeseries
@@ -317,7 +266,7 @@ def get_observation_gld_source_document_data(observation):
     return source_document_data, addition_type
 
 
-def get_gld_registration_data_for_observation(observation):
+def get_gld_registration_data_for_observation(observation: models.Observation):
     """
     Each observation has a GLD id and GWM id
     When delivering the observations we get the GLD id from the observation
@@ -325,17 +274,14 @@ def get_gld_registration_data_for_observation(observation):
     """
 
     # Get the GLD bro id
-    gld_id_database = observation.groundwater_level_dossier_id
-    gld_data = models.GroundwaterLevelDossier.objects.get(
-        groundwater_level_dossier_id=gld_id_database
-    )
-    gld_bro_id = gld_data.gld_bro_id
-    gmw_bro_id = gld_data.gmw_bro_id
+    gld = observation.groundwater_level_dossier
+    gld_bro_id = gld.gld_bro_id
+    gmw_bro_id = gld.gmw_bro_id
 
     # Get the quality regime for the well
     # TODO quality regime changes, new well in database?
-    gmw_well = models.GroundwaterMonitoringWells.objects.get(bro_id=gmw_bro_id)
-    quality_regime = "IMBRO"  # gmw_well.quality_regime
+    gmw_well = gmw_models.GroundwaterMonitoringWellStatic.objects.get(bro_id=gmw_bro_id)
+    quality_regime = gmw_well.quality_regime
 
     return gld_bro_id, quality_regime
 
@@ -485,16 +431,12 @@ def create_addition_sourcedocuments_for_observations(
 
     for observation in observation_set:
         # If there is not a GLD registration present in the database we can't create sourcedocs
-        gld_id_database = observation.groundwater_level_dossier_id
-        if not models.GroundwaterLevelDossier.objects.filter(
-            groundwater_level_dossier_id=gld_id_database
-        ).exists():
+        gld = observation.groundwater_level_dossier
+        if not gld:
             continue
 
         # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
-        if not models.GroundwaterLevelDossier.objects.get(
-            groundwater_level_dossier_id=gld_id_database
-        ).gld_bro_id:
+        if not gld.gld_bro_id:
             continue
 
         observation_tvps = models.MeasurementTvp.objects.filter(
@@ -505,14 +447,9 @@ def create_addition_sourcedocuments_for_observations(
 
         # observation contains tvps, check observation status and type
         # Get the observation metadata
-        observation_metadata_id = observation.observation_metadata_id
-        observation_metadata = models.ObservationMetadata.objects.get(
-            observation_metadata_id=observation_metadata_id
-        )
-        observation_type = models.TypeObservationType.objects.get(
-            id=observation_metadata.parameter_measurement_serie_type_id
-        ).value
-        if observation.status is None and observation_type == "controlemeting":
+        observation_metadata = observation.observation_metadata
+        observation_type = observation_metadata.observation_type
+        if observation_type == "controlemeting":
             # No QC check is performed on controlemeting
             (
                 observation_source_document_data,
