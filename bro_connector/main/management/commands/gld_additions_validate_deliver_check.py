@@ -5,12 +5,10 @@ import os
 import datetime
 import bisect
 import logging
-from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
 from main.settings.base import gld_SETTINGS
-from main import settings
 from gld import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
