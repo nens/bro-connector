@@ -62,13 +62,16 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
     list_display = (
         "measurement_point_metadata_id",
-        "qualifier_by_category",
-        "censored_reason",
+        "status_quality_control",
+        "censor_reason",
+        "censor_reason_artesia",
+        "value_limit",
     )
+
     list_filter = (
         "measurement_point_metadata_id",
-        "qualifier_by_category",
-        "censored_reason",
+        "status_quality_control",
+        "censor_reason",
     )
 
 
@@ -82,6 +85,8 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
 
     list_filter = ("observation",)
 
+    readonly_fields = ("measurement_point_metadata",)
+
 
 class ObservationAdmin(admin.ModelAdmin):
     list_display = (
@@ -90,8 +95,8 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_starttime",
         "observation_endtime",
         "result_time",
-        "status",
         "observation_type",
+        "status",
     )
     list_filter = (
         "observation_id",
@@ -99,8 +104,9 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_endtime",
         "groundwater_level_dossier",
         "result_time",
-        "status",
     )
+
+    readonly_fields = ["status"]
 
     def observation_type(self, obj: models.Observation):
         return obj.observation_metadata.observation_type

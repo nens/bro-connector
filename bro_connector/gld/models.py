@@ -57,7 +57,10 @@ class Observation(models.Model):
     groundwater_level_dossier = models.ForeignKey(
         "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
     )
-    status = models.CharField(max_length=255, blank=True, null=True)
+
+    @property
+    def status(self):
+        return self.observation_metadata.status
 
     def __str__(self):
         try:
