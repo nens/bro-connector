@@ -22,3 +22,4 @@ urllib3
 uuid
 xmltodict
 git+https://github.com/nens/bro-exchange#egg=bro-exchange
+django-reversion-compare

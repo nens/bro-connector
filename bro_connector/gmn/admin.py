@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import *
+from main.management.tasks.gmn_sync import sync_gmn
+
 
 
 def _register(model, admin_class):
@@ -27,14 +29,13 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
 
     actions = ["deliver_to_bro", "check_status"]
 
+    @admin.action(description="Deliver GMW to BRO")
     def deliver_to_bro(self, request, queryset):
-        pass
+        sync_gmn(queryset)
 
+    @admin.action(description="Check GMW status from BRO")
     def check_status(self, request, queryset):
-        pass
-
-    deliver_to_bro.short_description = "Deliver GMN to BRO"
-    check_status.short_description = "Check GMN status from BRO"
+        sync_gmn(queryset, check_only=True)
 
 
 class MeasuringPointAdmin(admin.ModelAdmin):

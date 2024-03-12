@@ -24,7 +24,7 @@ class StartRegistrationGMN:
         self.monitoring_network = event.gmn
         self.gmn_bro_register_log_obj = None
 
-    def handle(self):
+    def handle(self, check_only):
         """
         Main function to handle the startregistration of a GMN.
         The status of the delivery is registered in a gmn_bro_sync_log instance.
@@ -39,53 +39,57 @@ class StartRegistrationGMN:
             event_type="GMN_StartRegistration",
         )
 
-        # Create startregistration xml file if required
-        if (
-            not gmn_bro_sync_log_qs.exists()
-            or gmn_bro_sync_log_qs.first().process_status
-            == "failed_to_generate_source_documents"
-        ):
-            print(
-                f"Geen succesvolle registratie gevonden voor {self.monitoring_network}. Er wordt nu een registratie bestand aangemaakt."
-            )
-            self.create_registration_file()
-        else:
-            self.gmn_bro_register_log_obj = gmn_bro_sync_log_qs.first()
+        if not check_only:
 
-        # Validate startregistration if required
-        if self.gmn_bro_register_log_obj.process_status in [
-            "succesfully_generated_startregistration_request",
-            "failed_to_validate_sourcedocument",
-        ]:
-            print(f"{self.monitoring_network} word gevalideerd.")
+            # Create startregistration xml file if required
+            if (
+                not gmn_bro_sync_log_qs.exists()
+                or gmn_bro_sync_log_qs.first().process_status
+                == "failed_to_generate_source_documents"
+            ):
+                print(
+                    f"Geen succesvolle registratie gevonden voor {self.monitoring_network}. Er wordt nu een registratie bestand aangemaakt."
+                )
+                self.create_registration_file()
+            else:
+                self.gmn_bro_register_log_obj = gmn_bro_sync_log_qs.first()
 
-            self.validate_registration()
+            # Validate startregistration if required
+            if self.gmn_bro_register_log_obj.process_status in [
+                "succesfully_generated_startregistration_request",
+                "failed_to_validate_sourcedocument",
+            ]:
+                print(f"{self.monitoring_network} word gevalideerd.")
 
-        # Deliver startregistration if validation succeeded, or previous deliveries failed (to a max of 3)
-        if (
-            self.gmn_bro_register_log_obj.process_status
-            == "source_document_validation_succesful"
-            and self.gmn_bro_register_log_obj.validation_status == "VALIDE"
-        ) or (
-            self.gmn_bro_register_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_register_log_obj.levering_status in ["1", "2"]
-        ):
-            print(f"De registratie van {self.monitoring_network} word aangeleverd.")
-            self.deliver_registration()
+                self.validate_registration()
 
-        # If delivery failed 3 times: break the process
-        if (
-            self.gmn_bro_register_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_register_log_obj.levering_status == "3"
-        ):
-            print(
-                f'De registratie van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
-            )
-            return
+            # Deliver startregistration if validation succeeded, or previous deliveries failed (to a max of 3)
+            if (
+                self.gmn_bro_register_log_obj.process_status
+                == "source_document_validation_succesful"
+                and self.gmn_bro_register_log_obj.validation_status == "VALIDE"
+            ) or (
+                self.gmn_bro_register_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_register_log_obj.levering_status in ["1", "2"]
+            ):
+                print(f"De registratie van {self.monitoring_network} word aangeleverd.")
+                self.deliver_registration()
+
+            # If delivery failed 3 times: break the process
+            if (
+                self.gmn_bro_register_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_register_log_obj.levering_status == "3"
+            ):
+                print(
+                    f'De registratie van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
+                )
+                return
 
         # Check the delivery status
+        if not self.gmn_bro_register_log_obj:
+            return
         if (
             self.gmn_bro_register_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
@@ -465,14 +469,13 @@ class MeasuringPointAddition:
         self.measuringpoint = event.measuring_point
         self.gmn_bro_addition_log_obj = None
 
-    def handle(self):
+    def handle(self, check_only):
         """
         Main function to handle the addition of a meauringpoint to a GMN.
         The status of the delivery is registered in a GMN_sync_log instance.
         When the addition delivery has successfully been handled, the synced_to_bro of the event is set to True.
         As long as synced_to_bro is False, this function will be triggered, and the delivery process will be picked up, depending on the status found in the log.
         """
-
         # If gmn bro id doesnt exist yet, the network hasnt been registered yet
         if self.monitoring_network.gmn_bro_id is None:
             return
@@ -485,57 +488,61 @@ class MeasuringPointAddition:
             measuringpoint=self.measuringpoint,
         )
 
-        # Create addition xml file if required
-        if (
-            not gmn_bro_sync_log_qs.exists()
-            or gmn_bro_sync_log_qs.first().process_status
-            == "failed_to_generate_source_documents"
-        ):
-            print(
-                f"Geen succesvolle addition gevonden voor {self.event.measuring_point}. Er wordt nu een addition bestand aangemaakt."
-            )
-            self.create_addition_file()
-        else:
-            self.gmn_bro_addition_log_obj = gmn_bro_sync_log_qs.first()
+        if not check_only:
 
-        # Validate addition registration if required
-        if self.gmn_bro_addition_log_obj.process_status in [
-            "succesfully_generated_addition_request",
-            "failed_to_validate_sourcedocument",
-        ]:
-            print(
-                f"De toevoeging van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd."
-            )
+            # Create addition xml file if required
+            if (
+                not gmn_bro_sync_log_qs.exists()
+                or gmn_bro_sync_log_qs.first().process_status
+                == "failed_to_generate_source_documents"
+            ):
+                print(
+                    f"Geen succesvolle addition gevonden voor {self.event.measuring_point}. Er wordt nu een addition bestand aangemaakt."
+                )
+                self.create_addition_file()
+            else:
+                self.gmn_bro_addition_log_obj = gmn_bro_sync_log_qs.first()
 
-            self.validate_registration()
+            # Validate addition registration if required
+            if self.gmn_bro_addition_log_obj.process_status in [
+                "succesfully_generated_addition_request",
+                "failed_to_validate_sourcedocument",
+            ]:
+                print(
+                    f"De toevoeging van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd."
+                )
 
-        # Deliver addition registratino if validation succeeded, or previous deliveries failed (to a max of 3)
-        if (
-            self.gmn_bro_addition_log_obj.process_status
-            == "source_document_validation_succesful"
-            and self.gmn_bro_addition_log_obj.validation_status == "VALIDE"
-        ) or (
-            self.gmn_bro_addition_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_addition_log_obj.levering_status in ["1", "2"]
-        ):
-            print(
-                f"De registratie van de addition aan {self.monitoring_network} word aangeleverd."
-            )
-            self.deliver_registration()
+                self.validate_registration()
 
-        # If delivery failed 3 times: break the process
-        if (
-            self.gmn_bro_addition_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_addition_log_obj.levering_status == "3"
-        ):
-            print(
-                f'De registratie van de addition aan  {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
-            )
-            return
+            # Deliver addition registratino if validation succeeded, or previous deliveries failed (to a max of 3)
+            if (
+                self.gmn_bro_addition_log_obj.process_status
+                == "source_document_validation_succesful"
+                and self.gmn_bro_addition_log_obj.validation_status == "VALIDE"
+            ) or (
+                self.gmn_bro_addition_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_addition_log_obj.levering_status in ["1", "2"]
+            ):
+                print(
+                    f"De registratie van de addition aan {self.monitoring_network} word aangeleverd."
+                )
+                self.deliver_registration()
+
+            # If delivery failed 3 times: break the process
+            if (
+                self.gmn_bro_addition_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_addition_log_obj.levering_status == "3"
+            ):
+                print(
+                    f'De registratie van de addition aan  {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
+                )
+                return
 
         # Check the delivery status
+        if not self.gmn_bro_addition_log_obj:
+            return
         if (
             self.gmn_bro_addition_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
@@ -769,6 +776,7 @@ class MeasuringPointAddition:
         """
         Function to check and log the status of the delivery
         """
+        print(323)
         try:
             delivery_status_info = brx.check_delivery_status(
                 self.gmn_bro_addition_log_obj.levering_id,
@@ -874,86 +882,88 @@ class MeasuringPointRemoval:
         self.measuringpoint = event.measuring_point
         self.gmn_bro_removal_log_obj = None
 
-    def handle(self):
+    def handle(self, check_only):
         """
         Main function to handle the removal of a meauringpoint from a GMN.
         The status of the delivery is registered in a GMN_sync_log instance.
         When the removal delivery has successfully been handled, the synced_to_bro of the event is set to True.
         As long as synced_to_bro is False, this function will be triggered, and the delivery process will be picked up, depending on the status found in the log.
         """
+        if not check_only:
+            # If gmn bro id doesnt exist yet, the network hasnt been registered yet
+            if self.monitoring_network.gmn_bro_id is None:
+                return
 
-        # If gmn bro id doesnt exist yet, the network hasnt been registered yet
-        if self.monitoring_network.gmn_bro_id is None:
-            return
+            # Check if measuring point has allready been added to the network
+            addition_event = IntermediateEvent.objects.filter(
+                gmn=self.monitoring_network,
+                measuring_point=self.measuringpoint,
+                event_type="GMN_MeasuringPoint",
+            ).first()
+            if not addition_event or addition_event.synced_to_bro is False:
+                return
 
-        # Check if measuring point has allready been added to the network
-        addition_event = IntermediateEvent.objects.filter(
-            gmn=self.monitoring_network,
-            measuring_point=self.measuringpoint,
-            event_type="GMN_MeasuringPoint",
-        ).first()
-        if not addition_event or addition_event.synced_to_bro is False:
-            return
-
-        # Check for an existing removal log.
-        gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
-            gmn_bro_id=self.monitoring_network.gmn_bro_id,
-            object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
-            event_type="GMN_MeasuringPointEndDate",
-            measuringpoint=self.measuringpoint,
-        )
-
-        # Create removal xml file if required
-        if (
-            not gmn_bro_sync_log_qs.exists()
-            or gmn_bro_sync_log_qs.first().process_status
-            == "failed_to_generate_source_documents"
-        ):
-            print(
-                f"Geen succesvolle removal gevonden voor {self.event.measuring_point}. Er wordt nu een removal bestand aangemaakt."
-            )
-            self.create_removal_file()
-        else:
-            self.gmn_bro_removal_log_obj = gmn_bro_sync_log_qs.first()
-
-        # Validate Removal registration if required
-        if self.gmn_bro_removal_log_obj.process_status in [
-            "succesfully_generated_removal_request",
-            "failed_to_validate_sourcedocument",
-        ]:
-            print(
-                f"De verwijdering van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd."
+            # Check for an existing removal log.
+            gmn_bro_sync_log_qs = gmn_bro_sync_log.objects.filter(
+                gmn_bro_id=self.monitoring_network.gmn_bro_id,
+                object_id_accountable_party=self.monitoring_network.object_id_accountable_party,
+                event_type="GMN_MeasuringPointEndDate",
+                measuringpoint=self.measuringpoint,
             )
 
-            self.validate_registration()
+            # Create removal xml file if required
+            if (
+                not gmn_bro_sync_log_qs.exists()
+                or gmn_bro_sync_log_qs.first().process_status
+                == "failed_to_generate_source_documents"
+            ):
+                print(
+                    f"Geen succesvolle removal gevonden voor {self.event.measuring_point}. Er wordt nu een removal bestand aangemaakt."
+                )
+                self.create_removal_file()
+            else:
+                self.gmn_bro_removal_log_obj = gmn_bro_sync_log_qs.first()
 
-        # Deliver removal registration if validation succeeded, or previous deliveries failed (to a max of 3)
-        if (
-            self.gmn_bro_removal_log_obj.process_status
-            == "source_document_validation_succesful"
-            and self.gmn_bro_removal_log_obj.validation_status == "VALIDE"
-        ) or (
-            self.gmn_bro_removal_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_removal_log_obj.levering_status in ["1", "2"]
-        ):
-            print(
-                f"De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} word aangeleverd."
-            )
-            self.deliver_registration()
+            # Validate Removal registration if required
+            if self.gmn_bro_removal_log_obj.process_status in [
+                "succesfully_generated_removal_request",
+                "failed_to_validate_sourcedocument",
+            ]:
+                print(
+                    f"De verwijdering van {self.measuringpoint} aan het {self.monitoring_network} word gevalideerd."
+                )
 
-        # If delivery failed 3 times: break the process
-        if (
-            self.gmn_bro_removal_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_removal_log_obj.levering_status == "3"
-        ):
-            print(
-                f'De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
-            )
-            return
+                self.validate_registration()
+
+            # Deliver removal registration if validation succeeded, or previous deliveries failed (to a max of 3)
+            if (
+                self.gmn_bro_removal_log_obj.process_status
+                == "source_document_validation_succesful"
+                and self.gmn_bro_removal_log_obj.validation_status == "VALIDE"
+            ) or (
+                self.gmn_bro_removal_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_removal_log_obj.levering_status in ["1", "2"]
+            ):
+                print(
+                    f"De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} word aangeleverd."
+                )
+                self.deliver_registration()
+
+            # If delivery failed 3 times: break the process
+            if (
+                self.gmn_bro_removal_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_removal_log_obj.levering_status == "3"
+            ):
+                print(
+                    f'De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
+                )
+                return
 
         # Check the delivery status
+        if not self.gmn_bro_removal_log_obj:
+            return
         if (
             self.gmn_bro_removal_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
@@ -1282,7 +1292,7 @@ class ClosureGMN:
         self.measuringpoint = event.measuring_point
         self.gmn_bro_closure_log_obj = None
 
-    def handle(self):
+    def handle(self,check_only):
         """
         Main function to handle the Closure of a GMN.
         The status of the delivery is registered in a GMN_sync_log instance.
@@ -1301,53 +1311,57 @@ class ClosureGMN:
             event_type="GMN_Closure",
         )
 
-        # Create closure xml file if required
-        if (
-            not gmn_bro_sync_log_qs.exists()
-            or gmn_bro_sync_log_qs.first().process_status
-            == "failed_to_generate_source_documents"
-        ):
-            print(
-                f"Geen succesvolle closure gevonden voor {self.monitoring_network}. Er wordt nu een closure bestand aangemaakt."
-            )
-            self.create_closure_file()
-        else:
-            self.gmn_bro_closure_log_obj = gmn_bro_sync_log_qs.first()
+        if not check_only:
+                
+            # Create closure xml file if required
+            if (
+                not gmn_bro_sync_log_qs.exists()
+                or gmn_bro_sync_log_qs.first().process_status
+                == "failed_to_generate_source_documents"
+            ):
+                print(
+                    f"Geen succesvolle closure gevonden voor {self.monitoring_network}. Er wordt nu een closure bestand aangemaakt."
+                )
+                self.create_closure_file()
+            else:
+                self.gmn_bro_closure_log_obj = gmn_bro_sync_log_qs.first()
 
-        # Validate closure if required
-        if self.gmn_bro_closure_log_obj.process_status in [
-            "succesfully_generated_closure_request",
-            "failed_to_validate_sourcedocument",
-        ]:
-            print(f"{self.monitoring_network} word gevalideerd.")
+            # Validate closure if required
+            if self.gmn_bro_closure_log_obj.process_status in [
+                "succesfully_generated_closure_request",
+                "failed_to_validate_sourcedocument",
+            ]:
+                print(f"{self.monitoring_network} word gevalideerd.")
 
-            self.validate_closure()
+                self.validate_closure()
 
-        # Deliver closure if validation succeeded, or previous deliveries failed (to a max of 3)
-        if (
-            self.gmn_bro_closure_log_obj.process_status
-            == "source_document_validation_succesful"
-            and self.gmn_bro_closure_log_obj.validation_status == "VALIDE"
-        ) or (
-            self.gmn_bro_closure_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_closure_log_obj.levering_status in ["1", "2"]
-        ):
-            print(f"De closure van {self.monitoring_network} word aangeleverd.")
-            self.deliver_closure()
+            # Deliver closure if validation succeeded, or previous deliveries failed (to a max of 3)
+            if (
+                self.gmn_bro_closure_log_obj.process_status
+                == "source_document_validation_succesful"
+                and self.gmn_bro_closure_log_obj.validation_status == "VALIDE"
+            ) or (
+                self.gmn_bro_closure_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_closure_log_obj.levering_status in ["1", "2"]
+            ):
+                print(f"De closure van {self.monitoring_network} word aangeleverd.")
+                self.deliver_closure()
 
-        # If delivery failed 3 times: break the process
-        if (
-            self.gmn_bro_closure_log_obj.process_status
-            == "failed_to_deliver_sourcedocuments"
-            and self.gmn_bro_closure_log_obj.levering_status == "3"
-        ):
-            print(
-                f'De closure van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
-            )
-            return
+            # If delivery failed 3 times: break the process
+            if (
+                self.gmn_bro_closure_log_obj.process_status
+                == "failed_to_deliver_sourcedocuments"
+                and self.gmn_bro_closure_log_obj.levering_status == "3"
+            ):
+                print(
+                    f'De closure van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
+                )
+                return
 
         # Check the delivery status
+        if not self.gmn_bro_closure_log_obj:
+            return
         if (
             self.gmn_bro_closure_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
