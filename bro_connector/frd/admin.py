@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db.models import fields
 from .models import *
 from reversion_compare.helpers import patch_admin
+from main.management.commands.frd_sync_to_bro import FRDSync
 
 
 def _register(model: models.Model, admin_class: admin.ModelAdmin):
@@ -35,14 +36,16 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     actions = ["deliver_to_bro", "check_status"]
 
+    @admin.action(description="Deliver FRD to BRO")
     def deliver_to_bro(self, request, queryset):
-        pass
-
+        syncer = FRDSync()
+        syncer.handle(queryset)
+    
+    @admin.action(description="Check FRD status from BRO")
     def check_status(self, request, queryset):
-        pass
+        syncer = FRDSync()
+        syncer.handle(queryset, check_only=True)
 
-    deliver_to_bro.short_description = "Deliver FRD to BRO"
-    check_status.short_description = "Check FRD status from BRO"
 
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):

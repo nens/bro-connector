@@ -29,11 +29,11 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
 
     actions = ["deliver_to_bro", "check_status"]
 
-    @admin.action(description="Deliver GMW to BRO")
+    @admin.action(description="Deliver GMN to BRO")
     def deliver_to_bro(self, request, queryset):
         sync_gmn(queryset)
 
-    @admin.action(description="Check GMW status from BRO")
+    @admin.action(description="Check GMN status from BRO")
     def check_status(self, request, queryset):
         sync_gmn(queryset, check_only=True)
 
