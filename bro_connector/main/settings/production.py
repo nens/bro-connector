@@ -27,6 +27,6 @@ DATABASES = {
         "PASSWORD": p_password,
         "HOST": p_host,
         "PORT": p_port,
-        "OPTIONS": {"options": "-c search_path=django_admin"},
+        "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
     }
 }
