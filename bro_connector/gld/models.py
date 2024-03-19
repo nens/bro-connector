@@ -269,18 +269,21 @@ class gld_registration_log(models.Model):
 
 class gld_addition_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
-    observation_id = models.CharField(max_length=254, null=True, blank=True)
-    start = models.CharField(max_length=254, null=True, blank=True)
-    end = models.CharField(max_length=254, null=True, blank=True)
     broid_registration = models.CharField(max_length=254, null=True, blank=True)
-    procedure_uuid = models.CharField(max_length=254, null=True, blank=True)
-    procedure_initialized = models.CharField(max_length=254, null=True, blank=True)
+    observation_id = models.CharField(max_length=254, null=True, blank=True)
+    start_date = models.DateTimeField(max_length=254, null=True, blank=True)
+    end_date = models.DateTimeField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
+    levering_type = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=50000, null=True, blank=True)
+    last_changed = models.CharField(max_length=254, null=True, blank=True)
+    corrections_applied = models.BooleanField(blank=True, null=True)
     file = models.CharField(max_length=254, null=True, blank=True)
     addition_type = models.CharField(max_length=254, null=True, blank=True)
+    process_status = models.CharField(max_length=254, null=True, blank=True)
+
 
     class Meta:
         db_table = 'aanlevering"."gld_addition_log'
