@@ -1,4 +1,4 @@
-from gld.models import GroundwaterLevelDossier, gld_registration_log
+from gld.models import GroundwaterLevelDossier, gld_registration_log, gld_addition_log, Observation
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 import os
 import reversion
@@ -65,8 +65,34 @@ def handle_start_registrations(
 
     gld.check_existing_startregistrations(gld_registration_logs)
 
-def handle_additions():
-    ...
+def handle_additions(
+        dossier: GroundwaterLevelDossier, 
+        deliver: bool
+    ):
+    # Get observations
+    observations = Observation.objects.filter(
+        groundwater_level_dossier = dossier
+    )
+
+    for observation in observations:
+        gld_addition_logs = gld_addition_log.objects.filter(
+            observation_id = observation.observation_id
+        )
+        # Check if there is already a registration for this tube
+        if not gld_addition_logs.exists():
+            # There is not a GLD addition object with this configuration
+            # Create a new configuration by creating addition sourcedocs
+            # By creating the sourcedocs (or failng to do so), an addition is made in the database
+            # This addition is used to track the progress of the delivery in further steps
+            if deliver:
+                ...
+                # Create sourcedocs
+
+                # Deliver sourcedocs
+
+        # Check if the sync_logs have been deliverd
+    
+    return
 
 def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
 
@@ -80,7 +106,7 @@ def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
     
     handle_start_registrations(dossier, deliver=True)
 
-    handle_additions()
+    handle_additions(dossier, deliver=True)
 
 
 def check_status(dossier: GroundwaterLevelDossier) -> None:
@@ -92,5 +118,5 @@ def check_status(dossier: GroundwaterLevelDossier) -> None:
     
     handle_start_registrations(dossier, deliver=False)
 
-    handle_additions()
+    handle_additions(dossier, deliver=False)
     
