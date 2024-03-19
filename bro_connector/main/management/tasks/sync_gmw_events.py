@@ -1239,15 +1239,18 @@ def gmw_check_existing_registrations(bro_info, registrations_dir, demo):
 
     """
     # Get all the current registrations, order by event id so construction is handled first.
-    gmw_registrations = models.gmw_registration_log.objects.filter(
-        id__gt=93480,
-    )
+    gmw_registrations = models.gmw_registration_log.objects.all()
 
     # Get BRO-IDs
-
     for registration in gmw_registrations:
         # We check the status of the registration and either validate/deliver/check status/do nothing
         registration_id = registration.id
+
+        event = models.Event.objects.get(change_id=registration.event_id)
+        if event.delivered_to_bro:
+            # Already delivered, so can skip.
+            continue
+
         source_doc_type = registration.levering_type
 
         if delivered_but_not_approved(registration):
@@ -1333,8 +1336,6 @@ def gmw_check_existing_registrations(bro_info, registrations_dir, demo):
 
         # Make sure the event is adjusted correctly if the information is delivered to the BRO.
         if registration.levering_status == "OPGENOMEN_LVBRO":
-            event = models.Event.objects.get(change_id=registration.event_id)
-
             with reversion.create_revision():
                 event.delivered_to_bro = True
                 event.save(update_fields=["delivered_to_bro"])
