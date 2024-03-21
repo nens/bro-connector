@@ -147,16 +147,15 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         # Sla het model op
         obj.save()
 
+    @admin.action(description="Deliver GMW to BRO")
     def deliver_to_bro(self, request, queryset):
         for well in queryset:
             gmw_actions.check_and_deliver(well)
 
+    @admin.action(description="Check GMW status from BRO")
     def check_status(self, request, queryset):
         for well in queryset:
             gmw_actions.check_status(well)
-
-    deliver_to_bro.short_description = "Deliver GMW to BRO"
-    check_status.short_description = "Check GMW status from BRO"
 
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
@@ -280,7 +279,7 @@ class EventAdmin(admin.ModelAdmin):
         "event_name",
         "event_date",
     )
-
+    ordering = ['-change_id'] 
     autocomplete_fields = (
         "groundwater_monitoring_well_static",
         "groundwater_monitoring_well_dynamic",

@@ -39,32 +39,54 @@ def get_xml_payload(xml_filepath):
     return xml_payload
 
 
-def get_unsynced_dossiers():
-    return FormationResistanceDossier.objects.filter(
-        frd_bro_id=None, closed_in_bro=False
+def get_unsynced_dossiers(frd_queryset):
+    if frd_queryset:
+        return frd_queryset.filter(
+            frd_bro_id=None, closed_in_bro=False
+        )
+    else:
+        return FormationResistanceDossier.objects.filter(
+            frd_bro_id=None, closed_in_bro=False
+        )
+
+
+def get_unsynced_configurations(frd_queryset):
+    if frd_queryset:
+        return MeasurementConfiguration.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
+    else:
+        return MeasurementConfiguration.objects.filter(bro_id=None)
+
+
+def get_closed_dossiers(frd_queryset):
+    if frd_queryset:
+        return frd_queryset.filter(
+        closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
     )
-
-
-def get_unsynced_configurations():
-    return MeasurementConfiguration.objects.filter(bro_id=None)
-
-
-def get_closed_dossiers():
-    return FormationResistanceDossier.objects.filter(
+    else:
+        return FormationResistanceDossier.objects.filter(
         closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
     )
 
 
-def get_unsynced_gem_measurement_methods():
-    return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
+def get_unsynced_gem_measurement_methods(frd_queryset):
+    if frd_queryset:
+        return GeoOhmMeasurementMethod.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
+    else:
+        return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
 
 
-def get_unsynced_emm_methods():
-    return ElectromagneticMeasurementMethod.objects.filter(bro_id=None)
+def get_unsynced_emm_methods(frd_queryset):
+    if frd_queryset:
+        return ElectromagneticMeasurementMethod.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
+    else:
+        return ElectromagneticMeasurementMethod.objects.filter(bro_id=None)
 
 
-def get_unsynced_emm_configurations():
-    return InstrumentConfiguration.objects.filter(bro_id=None)
+def get_unsynced_emm_configurations(frd_queryset):
+    if frd_queryset:
+        return InstrumentConfiguration.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
+    else:
+        return InstrumentConfiguration.objects.filter(bro_id=None)
 
 
 class Command(BaseCommand):
@@ -76,30 +98,34 @@ class Command(BaseCommand):
     help = "Syncs the FRD data to the BRO"
 
     def handle(self, *args, **kwargs):
-        self.handle_frd_registrations()
-        self.handle_gem_configurations_registration()
-        self.handle_frd_closures()
-        self.handle_gem_measurement_registrations()
-        self.handle_emm_configurations()
-        self.handle_emm_measurements()
+        FRDSync.handle()
+
+class FRDSync:
+    def handle(self, frd_queryset=None, check_only=False):
+        self.handle_frd_registrations(frd_queryset, check_only)
+        self.handle_gem_configurations_registration(frd_queryset, check_only)
+        self.handle_frd_closures(frd_queryset, check_only)
+        self.handle_gem_measurement_registrations(frd_queryset, check_only)
+        self.handle_emm_configurations(frd_queryset, check_only)
+        self.handle_emm_measurements(frd_queryset, check_only)
 
 
-    def handle_frd_registrations(self):
+    def handle_frd_registrations(self, frd_queryset, check_only):
         """
         Handles the startregistrations for all FRD's without bro_id.
         For each unsynced FRD, the FrdStartregistration class is used to handle the registration
         """
-        unsynced_startregistration_dossiers = get_unsynced_dossiers()
+        unsynced_startregistration_dossiers = get_unsynced_dossiers(frd_queryset)
 
         for dossier in unsynced_startregistration_dossiers:
             startregistration = FrdStartRegistration(dossier)
-            startregistration.sync()
+            startregistration.sync(check_only)
 
-    def handle_gem_configurations_registration(self):
+    def handle_gem_configurations_registration(self, frd_queryset, check_only):
         """
         Handles the measurement configurations for all configurations without bro_id.
         """
-        unsynced_configurations = get_unsynced_configurations()
+        unsynced_configurations = get_unsynced_configurations(frd_queryset)
         per_dossier = defaultdict(list[dict])
         for measurement_configuration in unsynced_configurations:
             per_dossier[
@@ -108,49 +134,48 @@ class Command(BaseCommand):
 
         for key, values in per_dossier.items():
             configuration_registration = GEMConfigurationRegistration(values)
-            configuration_registration.sync()
+            configuration_registration.sync(check_only)
 
-    def handle_emm_configurations(self):
+    def handle_emm_configurations(self, frd_queryset,check_only):
         """
         Handles the emm instrument configurations
         """
-        unsynced_configurations = get_unsynced_emm_configurations()
+        unsynced_configurations = get_unsynced_emm_configurations(frd_queryset)
 
         for configuration in unsynced_configurations:
             emm_configuration_registration = EMMConfigurationRegistration(configuration)
-            emm_configuration_registration.sync()
+            emm_configuration_registration.sync(check_only)
 
-    def handle_frd_closures(self):
+    def handle_frd_closures(self,frd_queryset, check_only):
         """
         Closes all FRDs with a closure date.
         Checks if any FRD have a closure date.
         If so, and no allready existing log on a closure is found, a Closure request is done.
         """
-        closed_startregistration_dossiers = get_closed_dossiers()
+        closed_startregistration_dossiers = get_closed_dossiers(frd_queryset)
         for dossier in closed_startregistration_dossiers:
             closure = ClosureRegistration(dossier)
-            closure.sync()
+            closure.sync(check_only)
 
-    def handle_gem_measurement_registrations(self):
+    def handle_gem_measurement_registrations(self, frd_queryset, check_only):
         """
         Handles measurements, this is based on the measurement method, without a bro_id.
         """
-        unsynced_measurements_methods = get_unsynced_gem_measurement_methods()
+        unsynced_measurements_methods = get_unsynced_gem_measurement_methods(frd_queryset)
 
         for method in unsynced_measurements_methods:
             measurement_registration = GEMMeasurementRegistration(method)
-            measurement_registration.sync()
+            measurement_registration.sync(check_only)
 
-    def handle_emm_measurements(self):
+    def handle_emm_measurements(self, frd_queryset, check_only):
         """
         Handles measurements, this is based on the measurement method, without a bro_id.
         """
-        unsynced_emm_methods = get_unsynced_emm_methods()
+        unsynced_emm_methods = get_unsynced_emm_methods(frd_queryset)
 
         for method in unsynced_emm_methods:
             emm_measurement_registration = EMMMeasurementRegistration(method)
-            emm_measurement_registration.sync()
-
+            emm_measurement_registration.sync(check_only)
 
 class Registration(ABC):
     log = FrdSyncLog
@@ -166,27 +191,35 @@ class Registration(ABC):
         else:
             self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
 
-    def sync(self):
+    def check_status(self):
+        print(self.log)
+        if self.log:
+            self.check_delivery()
+
+    def sync(self, check_only):
         """
         Checks if a log on the Dossier already exists.
         If not, creates one and handles the complete startregistrations.
         If so, checks the status, and picks up the startregistration process where it was left.
         """
+        if check_only:
+            self.check_status()
 
-        status_function_mapping = {
-            None: self.generate_xml_file,
-            "failed_to_generate_registration_xml": self.generate_xml_file,
-            "failed_to_validate_sourcedocument": self.validate_xml_file,
-            "succesfully_generated_registration_xml": self.validate_xml_file,
-            "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
-            "source_document_validation_succesful": self.deliver_xml_file,
-            "succesfully_delivered_sourcedocuments": self.check_delivery,
-            "delivery_approved": self.check_delivery,
-        }
+        else:
+            status_function_mapping = {
+                None: self.generate_xml_file,
+                "failed_to_generate_registration_xml": self.generate_xml_file,
+                "failed_to_validate_sourcedocument": self.validate_xml_file,
+                "succesfully_generated_registration_xml": self.validate_xml_file,
+                "failed_to_deliver_sourcedocuments": self.deliver_xml_file,
+                "source_document_validation_succesful": self.deliver_xml_file,
+                "succesfully_delivered_sourcedocuments": self.check_delivery,
+                "delivery_approved": self.check_delivery,
+            }
 
-        current_status = self.log.process_status
-        method_to_call = status_function_mapping.get(current_status)
-        method_to_call()
+            current_status = self.log.process_status
+            method_to_call = status_function_mapping.get(current_status)
+            method_to_call()
 
     def generate_xml_file(self):
         """
