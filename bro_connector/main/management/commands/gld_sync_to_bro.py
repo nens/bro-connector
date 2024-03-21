@@ -674,7 +674,7 @@ class GldSyncHandler:
 
     def check_existing_startregistrations(
         self,
-        registration_logs,
+        registration_log: models.gld_registration_log,
     ):
         """
         This function loops over all exists startregistrations in the database
@@ -693,69 +693,68 @@ class GldSyncHandler:
         None.
 
         """
-        for registration in registration_logs:
-            # We check the status of the registration and either validate/deliver/check status/do nothing
-            registration_id = registration.id
+        # We check the status of the registration and either validate/deliver/check status/do nothing
+        registration_id = registration_log.id
 
+        if (
+            get_registration_process_status(registration_id)
+            == "succesfully_delivered_sourcedocuments"
+            and registration_log.levering_status != "OPGENOMEN_LVBRO"
+            and registration_log.levering_id is not None
+        ):
+            # The registration has been delivered, but not yet approved
+            self.check_delivery_status_levering(registration_id)
+
+        else:
+            # Succesfully generated a startregistration sourcedoc in the previous step
+            # Validate the created sourcedocument
+            if (
+                get_registration_process_status(registration_id)
+                == "succesfully_generated_startregistration_request"
+            ):
+                self.validate_gld_startregistration_request(registration_id)
+
+            # If an error occured during validation, try again
+            # Failed to validate sourcedocument doesn't mean the document is valid/invalid
+            # It means something went wrong during validation (e.g BRO server error)
+            # Even if a document is invalid, the validation process has succeeded and won't be reattempted
+            if (
+                get_registration_process_status(registration_id)
+                == "failed_to_validate_sourcedocument"
+            ):
+                # If we failed to validate the sourcedocument, try again
+                # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
+                self.validate_gld_startregistration_request(registration_id)
+
+            # If validation is succesful and the document is valid, try a delivery
+            if (
+                get_registration_process_status(registration_id)
+                == "source_document_validation_succesful"
+                and get_registration_validation_status(registration_id) == "VALIDE"
+            ):
+                self.deliver_startregistration_sourcedocuments(registration_id)
+
+            # If delivery is succesful, check the status of the delivery
             if (
                 get_registration_process_status(registration_id)
                 == "succesfully_delivered_sourcedocuments"
-                and registration.levering_status != "OPGENOMEN_LVBRO"
-                and registration.levering_id is not None
+                and registration_log.levering_status != "OPGENOMEN_LVBRO"
+                and registration_log.levering_id is not None
             ):
                 # The registration has been delivered, but not yet approved
                 self.check_delivery_status_levering(registration_id)
 
-            else:
-                # Succesfully generated a startregistration sourcedoc in the previous step
-                # Validate the created sourcedocument
-                if (
-                    get_registration_process_status(registration_id)
-                    == "succesfully_generated_startregistration_request"
-                ):
-                    self.validate_gld_startregistration_request(registration_id)
-
-                # If an error occured during validation, try again
-                # Failed to validate sourcedocument doesn't mean the document is valid/invalid
-                # It means something went wrong during validation (e.g BRO server error)
-                # Even if a document is invalid, the validation process has succeeded and won't be reattempted
-                if (
-                    get_registration_process_status(registration_id)
-                    == "failed_to_validate_sourcedocument"
-                ):
-                    # If we failed to validate the sourcedocument, try again
-                    # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
-                    self.validate_gld_startregistration_request(registration_id)
-
-                # If validation is succesful and the document is valid, try a delivery
-                if (
-                    get_registration_process_status(registration_id)
-                    == "source_document_validation_succesful"
-                    and get_registration_validation_status(registration_id) == "VALIDE"
-                ):
-                    self.deliver_startregistration_sourcedocuments(registration_id)
-
-                # If delivery is succesful, check the status of the delivery
-                if (
-                    get_registration_process_status(registration_id)
-                    == "succesfully_delivered_sourcedocuments"
-                    and registration.levering_status != "OPGENOMEN_LVBRO"
-                    and registration.levering_id is not None
-                ):
-                    # The registration has been delivered, but not yet approved
-                    self.check_delivery_status_levering(registration_id)
-
-                # If the delivery failed previously, we can retry
-                if (
-                    get_registration_process_status(registration_id)
-                    == "failed_to_deliver_sourcedocuments"
-                ):
-                    # This will not be the case on the first try
-                    if registration.levering_status == "failed_thrice":
-                        # TODO report with mail?
-                        continue
-                    else:
-                        self.deliver_startregistration_sourcedocuments(registration.id)
+            # If the delivery failed previously, we can retry
+            if (
+                get_registration_process_status(registration_id)
+                == "failed_to_deliver_sourcedocuments"
+            ):
+                # This will not be the case on the first try
+                if registration_log.levering_status == "failed_thrice":
+                    # TODO report with mail?
+                    return
+                else:
+                    self.deliver_startregistration_sourcedocuments(registration_log.id)
 
 ### ADDITIONS ###
     def generate_gld_addition_sourcedoc_data(
@@ -834,101 +833,50 @@ class GldSyncHandler:
             # all_records_created = False
             record, created = models.gld_addition_log.objects.update_or_create(
                 observation_id=observation.observation_id,
-                date_modified=datetime.datetime.now(),
-                broid_registration=gld_bro_id,
-                comments="Failed to generate XML source document, {}".format(e),
-                process_status = "failed_to_create_source_document",
+                defaults=dict(
+                    date_modified=datetime.datetime.now(),
+                    broid_registration=gld_bro_id,
+                    comments="Failed to generate XML source document, {}".format(e),
+                    process_status = "failed_to_create_source_document",
+                ),
             )
+        
+        return (record, created)
 
-    def create_addition_sourcedocuments_for_observations(
-        self
+    def create_addition_sourcedocuments_for_observation(
+        self,
+        observation: models.Observation
     ):
         """
         Check the database for new observations and create new source documents
         """
+        # If there is not a GLD registration present in the database we can't create sourcedocs
+        gld = observation.groundwater_level_dossier
+        if not gld:
+            return
 
-        observation_set = models.Observation.objects.all()
+        # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
+        if not gld.gld_bro_id:
+            return
 
-        for observation in observation_set:
-            # If there is not a GLD registration present in the database we can't create sourcedocs
-            gld = observation.groundwater_level_dossier
-            if not gld:
-                continue
+        observation_tvps = models.MeasurementTvp.objects.filter(
+            observation_id=observation.observation_id
+        )
+        if not observation_tvps:  # if there are no tvps in the observation
+            return  # then do nothing
 
-            # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
-            if not gld.gld_bro_id:
-                continue
+        (
+            observation_source_document_data,
+            addition_type,
+        ) = get_observation_gld_source_document_data(observation)
 
-            observation_tvps = models.MeasurementTvp.objects.filter(
-                observation_id=observation.observation_id
-            )
-            if not observation_tvps:  # if there are no tvps in the observation
-                continue  # then do nothing
+        (gld_addition, created) = self.generate_gld_addition_sourcedoc_data(
+            observation,
+            observation_source_document_data,
+            addition_type,
+        )
 
-            # observation contains tvps, check observation status and type
-            # Get the observation metadata
-            observation_metadata = observation.observation_metadata
-            observation_type = observation_metadata.observation_type
-            if observation_type == "controlemeting":
-                # No QC check is performed on controlemeting
-                (
-                    observation_source_document_data,
-                    addition_type,
-                ) = get_observation_gld_source_document_data(observation)
-
-                self.generate_gld_addition_sourcedoc_data(
-                    observation,
-                    observation_source_document_data,
-                    self.additions_dir,
-                    addition_type,
-                )
-
-            elif observation.status is None and observation_type == "reguliereMeting":
-                # no sourcedoc created for reguliere meting without status
-                continue
-
-            elif (
-                observation.status == "observation_qc_completed"
-                and observation_type == "reguliereMeting"
-            ):
-                # If the QC check has been succesfully completed
-                (
-                    observation_source_document_data,
-                    addition_type,
-                ) = get_observation_gld_source_document_data(observation)
-
-                self.generate_gld_addition_sourcedoc_data(
-                    observation,
-                    observation_source_document_data,
-                    self.additions_dir,
-                    addition_type,
-                )
-
-            elif observation.status == "failed_to_create_source_document":
-                # if the sourcedoc creation has failed, try again
-                # this will probably keep failing until changes are made to the database
-                (
-                    observation_source_document_data,
-                    addition_type,
-                ) = get_observation_gld_source_document_data(observation)
-
-                self.generate_gld_addition_sourcedoc_data(
-                    observation,
-                    observation_source_document_data,
-                    self.additions_dir,
-                    addition_type,
-                )
-
-            elif observation.status == "observation_volledig_beoordeeld":
-                # TODO if observations are volledig beoordeeld, deliver to the BRO
-                # An observation with this status has to be added by the Provincie including this status flag!
-                pass
-
-            elif observation.status == "observation_corrected":
-                # TODO Change request
-                # This is basically the same as an addition with corrected values and corrected reason
-                # We can recreate the same delivery sourcedocs with corrected values and deliver to the same GLD research
-                pass
+        return (gld_addition, created)
 
     def validate_gld_addition_source_document(
             self,
@@ -938,7 +886,7 @@ class GldSyncHandler:
         """
         Validate the generated GLD addition sourcedoc
         """
-        source_doc_file = os.path.join(gld_SETTINGS["additions_dir"], filename)
+        source_doc_file = os.path.join(self.additions_dir, filename)
         payload = open(source_doc_file)
 
         try:
@@ -949,7 +897,7 @@ class GldSyncHandler:
             validation_status = validation_info["status"]
 
             if "errors" in validation_info:
-                comments = f"Validated sourcedocument, found errors: {validation_info["errors"]}"
+                comments = f"Validated sourcedocument, found errors: {validation_info['errors']}"
                 addition.process_status = "source_document_validation_failed"
 
             else:
@@ -1025,15 +973,14 @@ class GldSyncHandler:
 
     def check_status_gld_addition(
             self,
-            gld_addition: models.gld_addition_log, 
-            levering_id: str, 
+            gld_addition: models.gld_addition_log,
         ):
         """
         Check the status of a delivery and log to the database what the status is
         """
         try:
             upload_info = brx.check_delivery_status(
-                levering_id, self.access_info, demo=self.demo
+                gld_addition.levering_id, self.access_info, demo=self.demo
             )
             delivery_status = upload_info.json()["status"]
         except Exception as e:
@@ -1110,10 +1057,9 @@ class GldSyncHandler:
         If the delivery has been approved, remove the source document
         """
         file_name = gld_addition.file
-        levering_id = gld_addition.levering_id
 
         new_delivery_status = self.check_status_gld_addition(
-            gld_addition, levering_id
+            gld_addition
         )
 
         try:
@@ -1121,7 +1067,7 @@ class GldSyncHandler:
                 sourcedoc_filepath = os.path.join(gld_SETTINGS["additions_dir"], file_name)
                 os.remove(sourcedoc_filepath)
         except:
-            logger.info(f"File {file_name} could not be removed from {gld_SETTINGS["additions_dir"]}. Likely manually removed or renamed.")
+            logger.info(f"File {file_name} could not be removed from {gld_SETTINGS['additions_dir']}. Likely manually removed or renamed.")
             pass  # no file to remove
 
         return new_delivery_status
@@ -1129,55 +1075,55 @@ class GldSyncHandler:
 
     def gld_validate_and_deliver(
             self,
+            gld_addition: models.gld_addition_log,
         ):
         """
         Main algorithm that checks the observations and performs actions based on the status
         """
+        validated = False
+        # For all the observations in the database, check the status and continue with the BRO delivery process
+        if gld_addition.process_status == "source_document_created":
+            # TODO check if procedure is same as other observations, use the same procedure uuid
+            validation_status = self.validate_addition(
+                gld_addition
+            )
 
-        additions = models.gld_addition_log.objects.all()
+            validated = True
 
-        for addition in additions:
-            # For all the observations in the database, check the status and continue with the BRO delivery process
-            if addition.process_status == "source_document_created":
-                # TODO check if procedure is same as other observations, use the same procedure uuid
-                validation_status = self.validate_addition(
-                    addition
-                )
+        elif (
+            gld_addition.process_status == "source_document_validation_succeeded"
+            and gld_addition.validation_status == "VALIDE"
+            ):
+            # This observation source document has been validated before
+            # If result was NIET_VALIDE try again, otherwise try delivery
+            # In total three attempts will be made for the delivery.
+            delivery_status = self.deliver_addition(
+                gld_addition
+            )
 
-            elif (
-                addition.process_status == "source_document_validation_succeeded"
-                and addition.validation_status == "VALIDE"
-                ):
-                # This observation source document has been validated before
-                # If result was NIET_VALIDE try again, otherwise try delivery
-                # In total three attempts will be made for the delivery.
-                delivery_status = self.deliver_addition(
-                    addition
-                )
+        elif gld_addition.process_status == "source_document_validation_failed" and validated == False:
+            # Something went wrong during document validation, try again
+            validation_status = self.validate_addition(
+                gld_addition
+            )
 
-            elif addition.process_status == "source_document_validation_failed":
-                # Something went wrong during document validation, try again
-                validation_status = self.validate_addition(
-                    addition
-                )
+            validated = True
 
-            elif addition.process_status == "source_document_delivered":
-                delivery_status = self.check_status_addition(
-                    addition
-                )
 
-            elif addition.process_status == "delivery_approved":
-                delivery_status = self.check_status_addition(
-                    addition
-                )
+        if gld_addition.process_status == "source_document_delivered":
+            delivery_status = self.check_status_addition(
+                gld_addition
+            )
 
-            elif addition.process_status == "flagged_for_deletion":
-                # TODO Delete request
-                continue
+        elif gld_addition.process_status == "delivery_approved":
+            logger.info(f"Delivery already approved (DOORGELEVERD): {gld_addition}")
 
-            else:
-                continue
+        elif gld_addition.process_status == "flagged_for_deletion":
+            # TODO Delete request
+            return
 
+        else:
+            return
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -1188,9 +1134,17 @@ class Command(BaseCommand):
 
         # Get all the current registrations, check and deliver
         gld_registrations = models.gld_registration_log.objects.all()
-        gld.check_existing_startregistrations(gld_registrations)
+        for registration in gld_registrations:
+            gld.check_existing_startregistrations(registration)
 
         # Create the addition sourcedocuments
-        gld.create_addition_sourcedocuments_for_observations()
+        observation_set = models.Observation.objects.all()
+        for observation in observation_set:
+            addition_log = models.gld_addition_log.objects.filter(
+                observation_id = observation.observation_id
+            ).first()
 
-        gld.gld_validate_and_deliver()
+            if not addition_log:
+                (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
+
+            gld.gld_validate_and_deliver(addition_log)
