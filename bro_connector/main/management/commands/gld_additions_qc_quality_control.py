@@ -21,21 +21,15 @@
 # Censor values outside measuring range, include parameters for this in 'aanlevering' schema?
 
 from django.core.management.base import BaseCommand
-
-import bro_exchange as brx
-import os
 import datetime
-import bisect
 import logging
-from django.core.mail import send_mail
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-from main.settings.base import gld_SETTINGS
 from main.settings import base as settings
 from gld import models
-from gld.management.commands.gld_additions_create import (
+from main.management.commands.gld_additions_create import (
     get_measurement_point_metadata_for_measurement,
 )
 

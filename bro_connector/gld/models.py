@@ -57,7 +57,10 @@ class Observation(models.Model):
     groundwater_level_dossier = models.ForeignKey(
         "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
     )
-    status = models.CharField(max_length=255, blank=True, null=True)
+
+    @property
+    def status(self):
+        return self.observation_metadata.status
 
     def __str__(self):
         try:
@@ -194,13 +197,16 @@ class MeasurementTvp(models.Model):
 
 class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
-    qualifier_by_category = models.CharField(
+    status_quality_control = models.CharField(
         choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True
     )
-    censored_reason = models.CharField(
+    censor_reason = models.CharField(
         choices=CENSORREASON, max_length=200, blank=True, null=True
     )
-    qualifier_by_quantity = models.DecimalField(
+    censor_reason_artesia = models.CharField(
+        max_length=200, blank=True, null=True
+    )
+    value_limit = models.DecimalField(
         max_digits=100, decimal_places=10, blank=True, null=True
     )
     interpolation_code = models.CharField(
@@ -213,6 +219,9 @@ class MeasurementPointMetadata(models.Model):
         db_table = 'gld"."measurement_point_metadata'
         verbose_name = "Meetpunt Metadata"
         verbose_name_plural = "Meetpunt Metadata"
+
+    def __str__(self):
+        return str(self.measurement_point_metadata_id)
 
 
 class ResponsibleParty(models.Model):
@@ -237,11 +246,11 @@ class gld_registration_log(models.Model):
     id = models.AutoField(primary_key=True)
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     gwm_bro_id = models.CharField(max_length=254, null=True, blank=True)
+    gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
     filter_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
-    gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
@@ -260,18 +269,21 @@ class gld_registration_log(models.Model):
 
 class gld_addition_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
-    observation_id = models.CharField(max_length=254, null=True, blank=True)
-    start = models.CharField(max_length=254, null=True, blank=True)
-    end = models.CharField(max_length=254, null=True, blank=True)
     broid_registration = models.CharField(max_length=254, null=True, blank=True)
-    procedure_uuid = models.CharField(max_length=254, null=True, blank=True)
-    procedure_initialized = models.CharField(max_length=254, null=True, blank=True)
+    observation_id = models.CharField(max_length=254, null=True, blank=True)
+    start_date = models.DateTimeField(max_length=254, null=True, blank=True)
+    end_date = models.DateTimeField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
+    levering_type = models.CharField(max_length=254, null=True, blank=True)
     levering_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=50000, null=True, blank=True)
+    last_changed = models.CharField(max_length=254, null=True, blank=True)
+    corrections_applied = models.BooleanField(blank=True, null=True)
     file = models.CharField(max_length=254, null=True, blank=True)
     addition_type = models.CharField(max_length=254, null=True, blank=True)
+    process_status = models.CharField(max_length=254, null=True, blank=True)
+
 
     class Meta:
         db_table = 'aanlevering"."gld_addition_log'

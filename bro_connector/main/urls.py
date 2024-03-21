@@ -20,6 +20,6 @@ from gmw.views import gmw_map_context
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("gmw/gmw-map/", gmw_map_context, name="gmw_map"),
+    path("map/", gmw_map_context, name="map"),
     path("", RedirectView.as_view(url=reverse_lazy("admin:index"))),
 ]

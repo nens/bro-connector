@@ -256,12 +256,16 @@ else:
 gld_SETTINGS = {
     "bro_info_demo": {
         "projectnummer": 3012,
-        "user": bro_acceptatie_user_v2,
-        "pass": bro_acceptatie_password_v2,
+        "token": {
+            "user": bro_acceptatie_user_v2,
+            "pass": bro_acceptatie_password_v2,
+        },
     },
     "bro_info_bro_connector": {
-        "user": bro_production_user,
-        "pass": bro_production_password,
+        "token": {
+            "user": bro_production_user,
+            "pass": bro_production_password,
+        },
     },
     "monitoringnetworks": None,
     "demo": demo,
@@ -342,20 +346,45 @@ QUICK_SCAN_SETTINGS = {
 JAZZMIN_SETTINGS = {
     "site_logo": os.path.join(BASE_DIR, "static/img/broconnector.png"),
     "welcome_sign": welcome_sign,
+    # Links to put along the top menu
+    "topmenu_links": [
+
+        # model admin to link to (Permissions checked against model)
+        {"name": "Map", "url": "map", "permissions": ["auth.view_user"]},
+
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "gmw"},
+
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "gmn"},
+
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "gld"},
+
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "frd"},
+    ],
+
+    "usermenu_links": [
+        {"name": "Support", "url": "https://github.com/nens/bro-connector", "new_window": True},
+        {"model": "auth.user"}
+    ],
+
+    # Whether to aut expand the menu
+    "navigation_expanded": False,
+
     "order_with_respect_to": [
         "auth",
-        "gld.gld_registration_log",
-        "gld.gld_addition_log",
-        "gld.GroundwaterLevelDossier",
-        "gld.Observation",
-        "gld.ObservationMetadata",
-        "gld.MeasurementTvp",
-        "gld.MeasurementPointMetadata",
+        "gmn",
+        "gmw",
+        "gld",
+        "frd",
     ],
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
+        "gld": "fas fa-book-open",
         "gld.gld_registration_log": "fas fa-book",
         "gld.gld_addition_log": "fas fa-book-medical",
         "gld.Observation": "fas fa-search-location",
@@ -375,6 +404,7 @@ JAZZMIN_SETTINGS = {
         "gld.TypeStatusCode": "fas fa-book-open",
         "gld.ObservationProcess": "fas fa-book-open",
         "gld.TypeStatusQualityControl": "fas fa-book-open",
+        "gmw": "fas fa-search-location",
         "gmw.Map: fas fa-book-open"
         "gmw.GroundwaterMonitoringWellStatic": "fas fa-ruler-vertical",
         "gmw.GroundwaterMonitoringWellDynamic": "fas fa-ruler-vertical",
@@ -385,10 +415,12 @@ JAZZMIN_SETTINGS = {
         "gmw.ElectrodeDynamic": "fas fa-bolt",
         "gmw.Event": "fas fa-book-open",
         "gmw.Instantie": "fas fa-solid fa-building",
+        "gmn": "fas fa-regular fa-object-group",
         "gmn.GroundwaterMonitoringNet": "fas fa-project-diagram",
         "gmn.MeasuringPoint": "fas fa-ruler-vertical",
         "gmn.IntermediateEvent": "fas fa-calendar",
         "gmn.gmn_bro_sync_log": "fas fa-sync",
+        "frd": "fas fa-regular fa-bolt",
         "frd.FormationResistanceDossier": "fas fa-solid fa-folder",
         "frd.InstrumentConfiguration": "fas fa-server",
         "frd.ElectromagneticMeasurementMethod": "fas fa-book-open",

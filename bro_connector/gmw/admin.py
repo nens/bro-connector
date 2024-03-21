@@ -63,7 +63,7 @@ class EventsInline(admin.TabularInline):
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
-
+    search_fields = ("groundwater_monitoring_well_static_id", "__str__")
     list_display = (
         "groundwater_monitoring_well_static_id",
         "bro_id",
@@ -160,6 +160,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellDynamicForm
+    search_fields = ("groundwater_monitoring_well_dynamic_id", "__str__")
 
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
@@ -176,8 +177,8 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
 
 
-class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
-    form = gmw_forms.GroundwaterMonitoringTubesStaticForm
+class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
+    form = gmw_forms.GroundwaterMonitoringTubeStaticForm
 
     list_display = (
         "groundwater_monitoring_tube_static_id",
@@ -210,9 +211,9 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
     deliver_gld_to_true.short_description = "Deliver GLD to True"
 
 
-class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
-    form = gmw_forms.GroundwaterMonitoringTubesDynamicForm
-
+class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
+    form = gmw_forms.GroundwaterMonitoringTubeDynamicForm
+    search_fields = ("groundwater_monitoring_tube_static_id", "__str__")
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static",
@@ -251,6 +252,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.ElectrodeDynamicForm
+    search_fields = ("electrode_dynamic_id", "__str__")
 
     list_display = (
         "electrode_dynamic_id",
@@ -278,6 +280,13 @@ class EventAdmin(admin.ModelAdmin):
         "event_date",
     )
     ordering = ['-change_id'] 
+    autocomplete_fields = (
+        "groundwater_monitoring_well_static",
+        "groundwater_monitoring_well_dynamic",
+        "groundwater_monitoring_tube_dynamic",
+        "electrode_dynamic",
+    )
+
 
 class PictureAdmin(admin.ModelAdmin):
     formfield_overrides = {
@@ -422,10 +431,10 @@ _register(
     gmw_models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
 )
 _register(
-    gmw_models.GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubesStaticAdmin
+    gmw_models.GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubeStaticAdmin
 )
 _register(
-    gmw_models.GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubesDynamicAdmin
+    gmw_models.GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubeDynamicAdmin
 )
 _register(gmw_models.GeoOhmCable, GeoOhmCableAdmin)
 _register(gmw_models.ElectrodeStatic, ElectrodeStaticAdmin)

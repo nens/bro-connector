@@ -1,3 +1,8 @@
+UNDERPRIVILIGE = (
+    ("ja", "ja"),
+    ("nee", "nee"),
+)
+
 TUBEPACKINGMATERIAL = (
     ("bentoniet", "bentoniet"),
     ("bentonietFiltergrind", "bentonietFiltergrind"),
@@ -228,6 +233,11 @@ REGISTRATIONSTATUS = (
     ("aangevuld", "aangevuld"),
     ("geregistreerd", "geregistreerd"),
     ("voltooid", "voltooid"),
+)
+
+QUALITYREGIME = (
+    ("IMBRO", "IMBRO"),
+    ("IMBRO/A", "IMBRO/A"),
 )
 
 VERTICALDATUM = (("NAP", "NAP"),)

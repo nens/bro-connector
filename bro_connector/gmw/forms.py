@@ -72,7 +72,7 @@ class GroundwaterMonitoringWellDynamicForm(forms.ModelForm):
                 field.disabled = True
 
 
-class GroundwaterMonitoringTubesStaticForm(forms.ModelForm):
+class GroundwaterMonitoringTubeStaticForm(forms.ModelForm):
     class Meta:
         model = models.GroundwaterMonitoringTubeStatic
         fields = "__all__"
@@ -89,7 +89,7 @@ class GroundwaterMonitoringTubesStaticForm(forms.ModelForm):
                 field.disabled = True
 
 
-class GroundwaterMonitoringTubesDynamicForm(forms.ModelForm):
+class GroundwaterMonitoringTubeDynamicForm(forms.ModelForm):
     class Meta:
         model = models.GroundwaterMonitoringTubeDynamic
         fields = "__all__"

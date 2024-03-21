@@ -262,7 +262,7 @@ class InitializeData:
                     f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
                 )
         else:
-            self.gmwd = GroundwaterMonitoringWellDynamic.objects.create(
+            self.gmwd = GroundwaterMonitoringWellDynamic.objects.update_or_create(
                 groundwater_monitoring_well_static=self.gmws,
                 defaults={
                     "deliver_gld_to_bro": self.gmw_dict.get("deliverGldToBro", False),
@@ -353,7 +353,7 @@ class InitializeData:
                 )
 
         else:
-            self.gmtd, created = GroundwaterMonitoringTubeDynamic.objects.create(
+            self.gmtd, created = GroundwaterMonitoringTubeDynamic.objects.update_or_create(
                 groundwater_monitoring_tube_static=self.gmts,
                 defaults={
                     "glue": self.gmw_dict.get(self.prefix + "glue", None),
@@ -421,7 +421,7 @@ class InitializeData:
                     f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
                 )
         else:
-            self.eled = ElectrodeDynamic.objects.create(
+            self.eled = ElectrodeDynamic.objects.update_or_create(
                 electrode_static=self.eles,
                 defaults={
                     "electrode_status": self.gmw_dict.get(
