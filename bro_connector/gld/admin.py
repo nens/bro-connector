@@ -448,8 +448,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     list_display = (
         "date_modified",
         "observation_id",
-        "start",
-        "end",
+        "start_date",
+        "end_date",
         "broid_registration",
         "validation_status",
         "levering_id",
