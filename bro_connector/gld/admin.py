@@ -429,8 +429,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             ]
 
         for addition_log in queryset:
-            levering_id = addition_log.levering_id
-            if levering_id is None:
+            if addition_log.levering_id is None:
                 self.message_user(
                     request,
                     "Can't check status of a delivery with no 'levering_id'",
@@ -438,7 +437,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 )
             else:
                 gld.check_status_gld_addition(
-                    addition_log, levering_id
+                    addition_log
                 )
                 self.message_user(
                     request, "Succesfully attemped status check", messages.INFO
