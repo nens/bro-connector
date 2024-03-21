@@ -6,19 +6,7 @@ from main.settings.base import gld_SETTINGS
 from main.management.tasks import gld_actions
 
 
-from main.management.commands.gld_registrations_create import GldSyncHandler
-
-
-from main.management.commands.gld_additions_create import (
-    get_observation_gld_source_document_data,
-    generate_gld_addition_sourcedoc_data,
-)
-
-from main.management.commands.gld_additions_validate_deliver_check import (
-    validate_gld_addition_source_document,
-    deliver_gld_addition_source_document,
-    check_status_gld_addition,
-)
+from main.management.commands.gld_sync_to_bro import GldSyncHandler, get_observation_gld_source_document_data
 
 
 def _register(model, admin_class):
@@ -27,6 +15,7 @@ def _register(model, admin_class):
 
 # %% GLD model registration
 
+gld = GldSyncHandler(gld_SETTINGS)
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -174,14 +163,10 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     @admin.action(description="Regenerate startregistration sourcedocument")
     def regenerate_start_registration_sourcedocument(self, request, queryset):
         for registration_log in queryset:
-            bro_id_well = registration_log.gwm_bro_id
             tube = models.GroundwaterMonitoringTubeStatic.objects.get(
-                groundwater_monitoring_well_static__bro_id=bro_id_well
+                groundwater_monitoring_well_static__bro_id=registration_log.gwm_bro_id
             )
-            location_code = tube.groundwater_monitoring_well_static.nitg_code
-            delivery_accountable_party = str(
-                tube.groundwater_monitoring_well_static.delivery_accountable_party
-            )
+            well = tube.groundwater_monitoring_well_static
 
             gld = GldSyncHandler(gld_SETTINGS)
 
@@ -193,12 +178,8 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 )
             else:
                 startregistration = gld.create_start_registration_sourcedocs(
-                    registration_log.quality_regime,
-                    delivery_accountable_party,
-                    bro_id_well,
-                    registration_log.filter_id,
-                    location_code,
-                    gld_SETTINGS["monitoringnetworks"],
+                    well,
+                    tube.tube_number
                 )
                 self.message_user(
                     request,
@@ -245,8 +226,6 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
     @admin.action(description="Deliver startregistration sourcedocument")
     def deliver_startregistration_sourcedocument(self, request, queryset):
-        gld = GldSyncHandler(gld_SETTINGS)
-
         for registration_log in queryset:
             if registration_log.levering_id is not None:
                 self.message_user(
@@ -343,15 +322,13 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 observation = models.Observation.objects.get(
                     observation_id=observation_id
                 )
-                additions_dir = gld_SETTINGS["additions_dir"]
                 (
                     observation_source_document_data,
                     addition_type,
                 ) = get_observation_gld_source_document_data(observation)
-                generate_gld_addition_sourcedoc_data(
+                gld.generate_gld_addition_sourcedoc_data(
                     observation,
                     observation_source_document_data,
-                    additions_dir,
                     addition_type,
                 )
 
@@ -371,6 +348,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             acces_token_bro_portal = gld_SETTINGS[
                 "acces_token_bro_portal_bro_connector"
             ]
+
+        gld = GldSyncHandler(gld_SETTINGS)
 
         for addition_log in queryset:
             observation_id = addition_log.observation_id
@@ -393,8 +372,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 )
                 # Validate the sourcedocument for this observation
             else:
-                validation_status = validate_gld_addition_source_document(
-                    observation_id, filename, acces_token_bro_portal, demo
+                validation_status = gld.validate_gld_addition_source_document(
+                    observation_id, filename
                 )
                 self.message_user(
                     request, "Succesfully attemped document validation", messages.INFO
@@ -431,8 +410,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                delivery_status = deliver_gld_addition_source_document(
-                    observation_id, filename, acces_token_bro_portal, demo
+                delivery_status = gld.deliver_gld_addition_source_document(
+                    observation_id, filename
                 )
                 self.message_user(
                     request, "Succesfully attemped document delivery", messages.INFO
@@ -450,7 +429,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             ]
 
         for addition_log in queryset:
-            observation_id = addition_log.observation_id
             levering_id = addition_log.levering_id
             if levering_id is None:
                 self.message_user(
@@ -459,8 +437,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                check_status_gld_addition(
-                    observation_id, levering_id, acces_token_bro_portal, demo
+                gld.check_status_gld_addition(
+                    addition_log, levering_id
                 )
                 self.message_user(
                     request, "Succesfully attemped status check", messages.INFO
