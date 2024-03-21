@@ -1,11 +1,13 @@
 from gld.models import GroundwaterLevelDossier, gld_registration_log, gld_addition_log, Observation
-from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 import os
-import reversion
+import logging
 
-from main.management.commands import gld_registrations_create
+from main.management.commands import gld_sync_to_bro
+
 
 from main.settings.base import gld_SETTINGS
+
+logger = logging.getLogger(__name__)
 
 demo = gld_SETTINGS["demo"]
 if demo:
@@ -40,7 +42,7 @@ def handle_start_registrations(
     # Handle start registrations
     tube_number = dossier.groundwater_monitoring_tube.tube_number
 
-    gld = gld_registrations_create.GldSyncHandler(gld_SETTINGS)
+    gld = gld_sync_to_bro.GldSyncHandler(gld_SETTINGS)
 
     gld_registration_logs = gld_registration_log.objects.filter(
         gwm_bro_id=well.bro_id,
@@ -71,28 +73,46 @@ def handle_additions(
     ):
     # Get observations
     observations = Observation.objects.filter(
-        groundwater_level_dossier = dossier
+        groundwater_level_dossier = dossier,
+        observation_endtime__isnull = False
     )
 
+    gld = gld_sync_to_bro.GldSyncHandler(gld_SETTINGS)
+
     for observation in observations:
-        gld_addition_logs = gld_addition_log.objects.filter(
-            observation_id = observation.observation_id
-        )
-        # Check if there is already a registration for this tube
-        if not gld_addition_logs.exists():
-            # There is not a GLD addition object with this configuration
-            # Create a new configuration by creating addition sourcedocs
-            # By creating the sourcedocs (or failng to do so), an addition is made in the database
-            # This addition is used to track the progress of the delivery in further steps
-            if deliver:
-                ...
-                # Create sourcedocs
+        print(f"Observation: {observation}; End_date: {observation.observation_endtime}")
+        addition_log = gld_addition_log.objects.filter(
+            observation_id = observation.observation_id,
+        ).first()
 
-                # Deliver sourcedocs
+        if deliver:
+            if not addition_log:
+                (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
 
-        # Check if the sync_logs have been deliverd
+            elif (
+                addition_log.process_status == "failed_to_create_source_document"
+                or addition_log.process_status == "source_document_validation_failed"
+                ):
+                # If the previous failed to create, or if the validation failed, try to regenerate.
+                (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
+
+            gld.gld_validate_and_deliver(addition_log)
+
+        if not addition_log:
+            logger.error(f"Tried to check status for Observation ({observation}), but no addition log exists. Generate an addition log first. ")
+            continue
+        
+        if addition_log.process_status == "delivery_approved":
+            logger.info(f"Delivery already approved (DOORGELEVERD): {addition_log}")
+            continue
+        
+        status = gld.check_status_gld_addition(addition_log)
+            
+
+        
     
     return
+
 
 def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
 
