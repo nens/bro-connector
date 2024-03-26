@@ -16,10 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, reverse_lazy, include
 from django.views.generic.base import RedirectView
-from gmw.views import gmw_map_context
+from gmw.urls import urlpatterns as gmwurls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("map/", gmw_map_context, name="map"),
     path("", RedirectView.as_view(url=reverse_lazy("admin:index"))),
+    path("", include(("gmw.urls", "gmw"), namespace='gmw'))
 ]
