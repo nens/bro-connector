@@ -45,10 +45,12 @@ INSTALLED_APPS = [
     "gmw",
     "gmn",
     "frd",
+    "django_extensions",
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
+    "dpd_static_support",
     "reversion",
     "reversion_compare",
     "admin_reorder",
-    "django_extensions",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -82,6 +84,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "reversion.middleware.RevisionMiddleware",
+    "django_plotly_dash.middleware.BaseMiddleware",
+    "django_plotly_dash.middleware.ExternalRedirectionMiddleware",
 ]
 
 ROOT_URLCONF = "main.urls"
@@ -118,7 +122,7 @@ DATABASES = {
         "PASSWORD": p_password,
         "HOST": p_host,
         "PORT": p_port,
-        "OPTIONS": {"options": "-c search_path=django_admin"},
+        "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
     }
 }
 
@@ -156,10 +160,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = "static/"
-
+STATIC_FILES_LOCATION = "static"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+]
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "django_plotly_dash.finders.DashAssetFinder",
+    "django_plotly_dash.finders.DashComponentFinder",
+    "django_plotly_dash.finders.DashAppDirectoryFinder",
 ]
 
 # Default primary key field type
@@ -350,7 +364,10 @@ JAZZMIN_SETTINGS = {
     "topmenu_links": [
 
         # model admin to link to (Permissions checked against model)
-        {"name": "Map", "url": "map", "permissions": ["auth.view_user"]},
+        {"name": "Map", "url": "/map", "permissions": ["auth.view_user"]},
+
+        # model admin to link to (Permissions checked against model)
+        {"name": "QC Tool", "url": "/qc-tool", "permissions": ["auth.view_user"]},
 
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmw"},
@@ -438,6 +455,7 @@ JAZZMIN_SETTINGS = {
     "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
 }
 
+ASGI_APPLICATION = "qc_tool.routing.application"
 
 GRAPH_MODELS = {
     "all_applications": True,
