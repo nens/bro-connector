@@ -12,3 +12,4 @@ bro_connector/bro_connector/migrations
 bro_connector/gmw_aanlevering/migrations
 venv
 **/migrations/**
+**/qc_tool/**
