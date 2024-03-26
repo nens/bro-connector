@@ -1,0 +1,51 @@
+---
+nl:
+  cancel: "Annuleren"
+  app_title: QC Grondwaterstanden
+  tab_overview: Overzicht
+  tab_model: Tijdreeksmodel
+  tab_qc: QC
+  tab_qc_result: QC Resultaat
+  no_data: Geen data
+  no_data_selection: Geen data in geselecteerde tijdreeks.
+  no_selection: Geen tijdreeks geselecteerd.
+  no_plot: Geen tijdreeks om weer te geven
+  no_model: Geen model
+  no_traval: Geen QC resultaat
+  # tab-model
+  select_location: Selecteer een locatie
+  generate: Maak model
+  save: Opslaan model
+  powered_by: Berekend met
+  # tab-qc
+  show_parameters: Toon parameters
+  hide_parameters: Verberg parameters
+  run_traval: Run TRAVAL
+  select_series: Selecteer een tijdreeks ...
+  select_series2: Selecteer extra tijdreeksen ... 
+  select_rule: Selecteer een regel om toe te voegen
+  add_rule_button: Toevoegen regel
+  load: Open
+  export: Exporteer
+  export_params: Exporteer Parameters
+  # tab-result
+  datetime: Datum
+  observations: Meting
+  comment: Opmerking
+  reliable: Meting betrouwbaar
+  qc_label: QC label
+  show_all: Toon alle metingen
+  show_all_tooltip: "Klik hier om alle OF alleen verdachte metingen weer te geven."
+  export_csv: Exporteer CSV
+  export_db: Exporteer naar DB
+  accept: Accepteer suggestie
+  reject: Afwijzen suggestie
+  category: "Selecteer een passende code volgens het QC Protocol."
+  tmin: Startdatum
+  tmax: Einddatum
+  mark_unreliable: "Meting(en) onbetrouwbaar"
+  mark_reliable: "Meting(en) betrouwbaar"
+  clear_selection: "Deselecteer alles in tabel"
+  alert_failed_labeling: Kan labels niet updaten voor niet-zichtbare metingen in tabel. Gebruik 'Toon alle metingen' om alle metingen weer te geven.
+  run_only_on_unvalidated: Alleen niet beoordeelde metingen
+  reset_status: "Meting(en) onbekend"

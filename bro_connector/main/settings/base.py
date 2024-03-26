@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "frd",
     "django_extensions",
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
-    "dpd_static_support",
+    "qc_tool",
     "reversion",
     "reversion_compare",
     "admin_reorder",
@@ -367,7 +367,7 @@ JAZZMIN_SETTINGS = {
         {"name": "Map", "url": "/map", "permissions": ["auth.view_user"]},
 
         # model admin to link to (Permissions checked against model)
-        {"name": "QC Tool", "url": "/qc-tool", "permissions": ["auth.view_user"]},
+        {"name": "QC Tool", "url": "/qc_tool", "permissions": ["auth.view_user"]},
 
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmw"},
@@ -462,5 +462,5 @@ GRAPH_MODELS = {
     "group_models": True,
 }
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
+# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
 GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"

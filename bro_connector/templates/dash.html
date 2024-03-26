@@ -1,0 +1,11 @@
+{%  extends 'admin/base.html' %}
+{% load static %}
+{% block content %}
+    {% load plotly_dash %}
+<h1>Home Page</h1>
+
+<div>
+    {% plotly_app name='qc_tool' ratio=0.45 %}
+</div>
+
+{% endblock %}
