@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "frd",
     "django_extensions",
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
-    "qc_tool",
+    'dpd_static_support',
     "reversion",
     "reversion_compare",
     "admin_reorder",
@@ -167,6 +167,26 @@ STATICFILES_DIRS = [
 ]
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+PLOTLY_COMPONENTS = [
+    'dash_core_components',
+    'dash_html_components',
+    'dash_renderer',
+    'dpd_static_support',
+    'dpd_components',
+    'dash_bootstrap_components',
+]
+
+PLOTLY_DASH = {
+    "ws_route" :   "dpd/ws/channel",
+    "http_route" : "dpd/views",
+    "http_poke_enabled" : True,
+    "insert_demo_migrations" : False,
+    "cache_timeout_initial_arguments": 60,
+    "view_decorator": None,
+    "cache_arguments": True,
+    "serve_locally": False,
+}
 
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",

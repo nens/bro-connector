@@ -74,19 +74,10 @@ else:
 
 # %% build app
 
-# create app
-app = DjangoDash("qc_tool")
+app = DjangoDash('SimpleExample')
+
 app.title = i18n.t("general.app_title")
 app.layout = create_layout(app, data)
 
 # register callbacks
 register_callbacks(app, data)
-
-# # initialize cache
-# cache.init_app(
-#     app.server,
-#     config={
-#         "CACHE_TYPE": "filesystem",
-#         "CACHE_DIR": ".cache",
-#     },
-# )

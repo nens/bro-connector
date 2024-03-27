@@ -23,5 +23,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", RedirectView.as_view(url=reverse_lazy("admin:index"))),
     path("", include(("gmw.urls", "gmw"), namespace='gmw')),
-    path("", include(("qc_tool.urls", "qc_tool"), namespace='qc_tool')),
+    path("", include(("qc_tool.urls", "qc_tool"), namespace='qc_urls')),
+    path('django_plotly_dash/', include('django_plotly_dash.urls')),
 ]
