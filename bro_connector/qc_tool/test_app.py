@@ -74,7 +74,7 @@ else:
 
 # %% build app
 
-app = DjangoDash('SimpleExample')
+app = DjangoDash('QCTool')
 
 app.title = i18n.t("general.app_title")
 app.layout = create_layout(app, data)
