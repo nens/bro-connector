@@ -110,9 +110,10 @@ class GroundwaterMonitoringWellStatic(models.Model):
         srid=28992, blank=True, null=True, editable=False
     )  # This field type is a guess.
 
+    @property
     def x(self):
         return self.coordinates.x
-
+    @property
     def y(self):
         return self.coordinates.y
 
