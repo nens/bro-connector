@@ -80,7 +80,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
         srid=28992, blank=True, null=True, editable=False
     )  # This field type is a guess.
     coordinates_4236 = geo_models.PointField(
-        srid=4326, blank=True, null=True, editable=True
+        srid=4326, blank=True, null=True, editable=False, help_text="Passief veld. Vul deze niet in. Wordt automatisch berekend op basis van de RD coordinaten in het coordinates field."
     )
     reference_system = models.CharField(max_length=256, blank=True, null=True)
     horizontal_positioning_method = models.CharField(
