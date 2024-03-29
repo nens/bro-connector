@@ -3,18 +3,18 @@ from . import models as gmw_models
 from gld import models as gld_models
 
 class GMWSerializer(serializers.ModelSerializer):
-    x = serializers.SerializerMethodField()
-    y = serializers.SerializerMethodField()
+    lon = serializers.SerializerMethodField()
+    lat = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
         fields = '__all__'
 
-    def get_x(self, obj):
-        return obj.x
+    def get_lon(self, obj):
+        return obj.lon
     
-    def get_y(self, obj):
-        return obj.y
+    def get_lat(self, obj):
+        return obj.lat
         
     
 class InstantieSerializer(serializers.ModelSerializer):

@@ -79,6 +79,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
     coordinates = geo_models.PointField(
         srid=28992, blank=True, null=True, editable=False
     )  # This field type is a guess.
+    coordinates_4236 = geo_models.PointField(
+        srid=4326, blank=True, null=True, editable=True
+    )
     reference_system = models.CharField(max_length=256, blank=True, null=True)
     horizontal_positioning_method = models.CharField(
         choices=HORIZONTALPOSITIONINGMETHOD, max_length=200, blank=True, null=True
@@ -116,6 +119,13 @@ class GroundwaterMonitoringWellStatic(models.Model):
     @property
     def y(self):
         return self.coordinates.y
+    
+    @property
+    def lat(self):
+        return self.coordinates_4236.y
+    @property
+    def lon(self):
+        return self.coordinates_4236.x
 
     def cx(self):
         return self.construction_coordinates.x
@@ -129,6 +139,16 @@ class GroundwaterMonitoringWellStatic(models.Model):
         else:
             return str(self.groundwater_monitoring_well_static_id)
 
+    def save(self, *args, **kwargs):
+        # Call the parent class's save method
+        super().save(*args, **kwargs)
+
+        # If coordinates are available, convert and save them to coordinates_4236
+        if self.coordinates:
+            self.coordinates_4236 = self.coordinates.transform(4326, clone=True)
+            # Save the updated instance
+            super().save(update_fields=['coordinates_4236'])
+    
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_static'

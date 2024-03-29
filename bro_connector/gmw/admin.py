@@ -82,6 +82,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "well_code",
         "in_management",
     )
+    readonly_fields = ('lat', 'lon',)
 
     fieldsets = [
         (
@@ -114,7 +115,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         (
             "Coordinates",
             {
-                "fields": ["x", "y"],
+                "fields": ["x", "y", "lat", "lon"],
             },
         ),
         (

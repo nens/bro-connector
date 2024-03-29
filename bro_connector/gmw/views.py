@@ -31,6 +31,8 @@ def gmw_map_context(request):
     gld_serializer = serializers.GLDSerializer(gld_qs, many=True)
     glds = gld_serializer.data
 
+    print(wells)
+
     context = {
         "wells": wells,
         "organisations": instanties,
