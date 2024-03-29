@@ -13,82 +13,31 @@ from gmw.models import (
 from main import localsecret as ls
 import django.db.models as models
 from django.contrib.gis.db import models as geo_models
+from . import serializers
 
-
-from pyproj import Transformer
-
-
-def model_to_dict(instance):
-    """
-    Convert a Django model instance to a dictionary
-    """
-    fields = instance._meta.get_fields()
-    field_dict = {}
-    for field in fields:
-        field_name = field.name
-
-        if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
-            continue
-
-        field_value = getattr(instance, field_name)
-
-        if isinstance(field, geo_models.PointField) and field_value is not None:
-            transformer = Transformer.from_crs(
-                crs_from="EPSG:28992", crs_to="EPSG:4326"
-            )
-            (x, y) = transformer.transform(field_value.x, field_value.y)
-            field_dict["x"] = x
-            field_dict["y"] = y
-            continue
-
-        if isinstance(field, models.ForeignKey) and field_value is not None:
-            field_dict[field_name] = field_value.pk
-            continue
-
-        field_dict[field_name] = field_value
-
-    return field_dict
-
+from django.contrib.gis.db.models.functions import Transform
 
 def gmw_map_context(request):
-    well_instances = list(GroundwaterMonitoringWellStatic.objects.all())
-    organisation_instances = list(Instantie.objects.all())
-    gld_instances = list(GroundwaterLevelDossier.objects.all())
-    organisations = []
-    wells = []
-    glds = []
+    gmw_qs = GroundwaterMonitoringWellStatic.objects.all()
+    gmw_serializer = serializers.GMWSerializer(gmw_qs, many=True)
+    wells = gmw_serializer.data
 
-    for well in well_instances:
-        filter_instances = GroundwaterMonitoringTubeStatic.objects.filter(
-            groundwater_monitoring_well_static=well
-        )
-        filters = []
 
-        for filter in filter_instances:
-            measuring_point = MeasuringPoint.objects.filter(
-                groundwater_monitoring_tube=filter
-            ).first()
+    instantie_qs = Instantie.objects.all()
+    instantie_serializer = serializers.InstantieSerializer(instantie_qs, many=True)
+    instanties = instantie_serializer.data
 
-            meetnet = None
-            if measuring_point:
-                meetnet = measuring_point.gmn
+    gld_qs = GroundwaterLevelDossier.objects.all()
+    gld_serializer = serializers.GLDSerializer(gld_qs, many=True)
+    glds = gld_serializer.data
 
-            filters.append(model_to_dict(filter))
-
-        wells.append(model_to_dict(well))
-
-    for gld in gld_instances:
-        observations = Observation.objects.filter(groundwater_level_dossier=gld)
-
-        glds.append(model_to_dict(gld))
-
-    for organisation in organisation_instances:
-        organisations.append(model_to_dict(organisation))
+    print(wells[0])
 
     context = {
         "wells": wells,
-        "organisations": organisations,
+        "organisations": instanties,
         "groundwater_level_dossiers": glds,
         "maptiler_key": ls.maptiler_key,
     }
+
     return render(request, "map.html", context)

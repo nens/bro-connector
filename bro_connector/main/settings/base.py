@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "gmw",
     "gmn",
     "frd",
+    "rest_framework",
     "reversion",
     "reversion_compare",
     "admin_reorder",
