@@ -68,7 +68,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
   id: "scatterplot-layer",
   data: wells,
   type: deck.ScatterplotLayer,
-  getPosition: (well) => [well.lon, well.lat],
+  getPosition: (well) => [well.y, well.x],
   pickable: true,
   radiusMaxPixels: 6.5,
   radiusUnits: "meters",
@@ -91,7 +91,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
     const well = event.object;
     const popup = createPopup(well);
     const newMarker = new mapboxgl.Marker(popup, { anchor: "bottom" })
-      .setLngLat([well.lon, well.lat])
+      .setLngLat([well.y, well.x])
       .addTo(map);
     setTimeout(() => (marker = newMarker));
   },
