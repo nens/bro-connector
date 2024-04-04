@@ -1124,6 +1124,11 @@ class GldSyncHandler:
 
         else:
             return
+        
+
+    def create_replace_sourcedocuments(self, observation: models.Observation) -> models.gld_addition_log:
+        # In development
+        ...
 
 class Command(BaseCommand):
     def handle(self, *args, **options):

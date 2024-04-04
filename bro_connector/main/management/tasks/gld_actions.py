@@ -92,9 +92,15 @@ def handle_additions(
             elif (
                 addition_log.process_status == "failed_to_create_source_document"
                 or addition_log.process_status == "source_document_validation_failed"
-                ):
+            ):
                 # If the previous failed to create, or if the validation failed, try to regenerate.
                 (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
+            
+            elif (
+                observation.up_to_date_in_bro == False
+            ):
+                #(addition_log) = gld.create_replace_sourcedocuments(observation)
+                pass
 
             gld.gld_validate_and_deliver(addition_log)
 
