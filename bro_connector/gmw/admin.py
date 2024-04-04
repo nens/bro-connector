@@ -5,12 +5,11 @@ from main.management.tasks.xml_import import xml_import
 from zipfile import ZipFile
 import os
 import reversion
-
+from reversion_compare.helpers import patch_admin 
 from django.db import models
 
 from . import models as gmw_models
 import main.management.tasks.gmw_actions as gmw_actions
-from main.settings.base import gmw_SETTINGS
 from . import forms as gmw_forms
 
 
@@ -423,7 +422,6 @@ class GmwSyncLogAdmin(admin.ModelAdmin):
     list_filter = ("bro_id",)
 
 
-# _register(models.GroundwaterMonitoringTubes, GroundwaterMonitoringTubesAdmin)
 _register(
     gmw_models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin
 )
@@ -445,3 +443,17 @@ _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
 _register(gmw_models.gmw_registration_log, GmwSyncLogAdmin)
 _register(gmw_models.Instantie, InstantieAdmin)
+
+patch_admin(gmw_models.GroundwaterMonitoringWellStatic)
+patch_admin(gmw_models.GroundwaterMonitoringWellDynamic)
+patch_admin(gmw_models.GroundwaterMonitoringTubeStatic)
+patch_admin(gmw_models.GroundwaterMonitoringTubeDynamic)
+patch_admin(gmw_models.GeoOhmCable)
+patch_admin(gmw_models.ElectrodeStatic)
+patch_admin(gmw_models.ElectrodeDynamic)
+patch_admin(gmw_models.Event)
+patch_admin(gmw_models.Picture)
+patch_admin(gmw_models.MaintenanceParty)
+patch_admin(gmw_models.Maintenance)
+patch_admin(gmw_models.gmw_registration_log)
+patch_admin(gmw_models.Instantie)

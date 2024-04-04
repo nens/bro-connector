@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import *
 from main.management.tasks.gmn_sync import sync_gmn
-
+from reversion_compare.helpers import patch_admin
 
 
 def _register(model, admin_class):
@@ -91,3 +91,8 @@ _register(GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
 _register(MeasuringPoint, MeasuringPointAdmin)
 _register(IntermediateEvent, IntermediateEventAdmin)
 _register(gmn_bro_sync_log, gmn_bro_sync_logAdmin)
+
+patch_admin(GroundwaterMonitoringNet)
+patch_admin(MeasuringPoint)
+patch_admin(IntermediateEvent)
+patch_admin(gmn_bro_sync_log)
