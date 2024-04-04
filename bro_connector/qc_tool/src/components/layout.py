@@ -1,10 +1,10 @@
 from dash import Dash, dcc, html
-
+from django_plotly_dash import DjangoDash
 from ..data.source import DataInterface
 from . import alert, button_help_modal, ids, tabs
 
 
-def create_layout(app: Dash, data: DataInterface) -> html.Div:
+def create_layout(app: DjangoDash, data: DataInterface) -> html.Div:
     """Create app layout.
 
     Parameters
@@ -20,7 +20,7 @@ def create_layout(app: Dash, data: DataInterface) -> html.Div:
         html containing app layout.
     """
     return html.Div(
-        id="qc_tool",
+        id="main",
         children=[
             dcc.Store(id=ids.SELECTED_OSERIES_STORE),
             dcc.Store(id=ids.PASTAS_MODEL_STORE),
