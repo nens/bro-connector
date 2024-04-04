@@ -12,8 +12,6 @@ from .src.cache import cache
 from .src.components.layout import create_layout
 from .src.data.source import DataInterface,  DataSource, TravalInterface
 
-from django.apps import AppConfig
-
 
 
 logger = logging.getLogger("waitress")
@@ -75,7 +73,7 @@ else:
 # %% build app
 
 # create app
-app = DjangoDash("qc_tool")
+app = DjangoDash("QC_Tool")
 app.title = i18n.t("general.app_title")
 app.layout = create_layout(app, data)
 
