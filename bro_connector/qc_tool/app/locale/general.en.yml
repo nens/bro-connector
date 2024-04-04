@@ -1,0 +1,54 @@
+---
+en:
+  cancel: "Cancel"
+  app_title: QC Head Observations
+  tab_overview: Overview
+  tab_model: Time Series Model
+  tab_qc: QC
+  tab_qc_result: QC Result
+  no_data: No data
+  no_data_selection: No data in selected time series.
+  no_selection: No series selected.
+  no_plot: No series to plot.
+  no_model: No model
+  no_model_alert: 
+  no_traval: No QC result
+  # tab-model
+  select_location: Select a location
+  generate: Generate model
+  save: Save model
+  powered_by: Powered by
+  # tab-qc
+  show_parameters: Show parameters
+  hide_parameters: Hide parameters
+  run_traval: Run TRAVAL
+  select_series: Select time series ...
+  select_series2: Select additional time series ... 
+  select_rule: Select a rule to add
+  add_rule_button: Add rule
+  load: Load
+  export: Export
+  export_params: Export Parameters
+  # tab-result
+  datetime: Datetime
+  observations: Observation
+  comment: Comment
+  qc_label: QC label
+  show_all: Show all observations
+  show_all_tooltip: "Toggle to show all OR only suspect measurements."
+  export_csv: Export CSV
+  export_db: Export to DB
+  reliable: Reliable
+  unreliable: Unreliable
+  unknown: Unknown
+  category: "Select an appropriate code/label according to QC Protocol."
+  tmin: Start Date
+  tmax: End Date
+  mark_unreliable: "Mark unreliable"
+  mark_reliable: "Mark reliable"
+  clear_selection: "Deselect all in table"
+  alert_failed_labeling: Cannot update labels for observations not visisble in table. Toggle 'Show all measurements.
+  run_only_on_unvalidated: Run only for unvalidated observations
+  reset_status: Mark unknown
+  max_selection_warning: "Too many selected points! Maximum no. of selected points is 10!"
+  model_use_only_validated: "Use only validated observations"

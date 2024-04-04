@@ -1,25 +1,14 @@
 import logging
 import os
+
 import dash_bootstrap_components as dbc
 import i18n
 import pastastore as pst
-from dash import CeleryManager, DiskcacheManager
+from .callbacks import register_callbacks
+from dash import CeleryManager, Dash, DiskcacheManager
 from django_plotly_dash import DjangoDash
-import dash
-from .src.data.source import DataInterface,  DataSource, TravalInterface
-from dash import dcc, html
 
-
-
-logger = logging.getLogger("waitress")
-logger.setLevel(logging.ERROR)
-
-# %% build app
-
-app = DjangoDash(
-    'QC_Tool',
-    serve_locally=False,
-)
+app = DjangoDash('SimpleExample')   # replaces dash.Dash
 
 app.layout = html.Div([
     dcc.RadioItems(

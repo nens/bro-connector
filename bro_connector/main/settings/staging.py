@@ -20,7 +20,7 @@ SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!
 
 DATABASES = {
     "default": {
-        "NAME": "grondwatermeetnet",
+        "NAME": "gmw",
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "USER": s_user,
         "PASSWORD": s_password,
