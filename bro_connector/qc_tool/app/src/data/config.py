@@ -1,6 +1,6 @@
 # This file contains the configuration for the Database
-database = "gmw"
-user = "david"
-password = "admin"
+database = "grondwatermeetnet"
+user = "postgres"
+password = "postgres"
 host = "localhost"
 port = 5432
