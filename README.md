@@ -75,14 +75,16 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
    
 *Als je een .pfx bestand hebt kan je OpenSSL gebruiken om deze te splitsen (https://stackoverflow.com/questions/15413646/converting-pfx-to-pem-using-openssl).
 
-   `openssl pkcs12 -in file.pfx -out **file.pem** -nodes`
+   `openssl pkcs12 -in file.pfx -out file.pem -nodes`
+   
    `openssl pkcs12 -in file.pfx -out file.withkey.pem`
-   `openssl rsa -in file.withkey.pem -out **file.key**`
+   
+   `openssl rsa -in file.withkey.pem -out file.key`
 
    file.pem en file.key gebruiken we uit dit voorbeeld.
 
 6) Draai je server met het runserver_plus command:
 
-   e.g. runserver_plus hosting.example.url:8000 --cert-file file.pem --key-file file.key
+   e.g. `runserver_plus hosting.example.url:8000 --cert-file file.pem --key-file file.key`
 
-   With this command the server runs on port 8000.
+   In dit voorbeeld draait de server op port 8000.
