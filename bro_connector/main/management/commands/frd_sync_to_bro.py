@@ -470,12 +470,12 @@ class FrdStartRegistration(Registration):
         }
         srcdocdata = {
             "object_id_accountable_party": self.frd_obj.object_id_accountable_party,
-            "gmn_bro_id": gmn_bro_id,
+            "gmn_bro_id": [gmn_bro_id],
             "gmw_bro_id": gmw_bro_id,
             "gmw_tube_number": gmw_tube_number,
         }
         startregistration_tool = brx.FRDStartRegistrationTool(
-            metadata, srcdocdata, "registrationRequest"
+            metadata, srcdocdata, "registration"
         )
         self.xml_file = startregistration_tool.generate_xml_file()
 
@@ -556,7 +556,7 @@ class GEMConfigurationRegistration(Registration):
         }
 
         configuration_registration_tool = brx.GEMConfigurationTool(
-            metadata, srcdocdata, "registrationRequest"
+            metadata, srcdocdata, "registration"
         )
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
@@ -592,7 +592,7 @@ class ClosureRegistration(Registration):
         }
 
         closure_registration_tool = brx.FRDClosureTool(
-            metadata=metadata, request_type="registrationRequest"
+            metadata=metadata, request_type="registration"
         )
         self.xml_file = closure_registration_tool.generate_xml_file()
 
@@ -646,7 +646,7 @@ class GEMMeasurementRegistration(Registration):
         }
 
         measurment_registration_tool = brx.GEMMeasurementTool(
-            metadata, srcdocdata, "registrationRequest"
+            metadata, srcdocdata, "registration"
         )
         self.xml_file = measurment_registration_tool.generate_xml_file()
 
@@ -759,7 +759,7 @@ class EMMConfigurationRegistration(Registration):
             srcdocdata["coilfrequency"] = self.instrument_configuration.coilfrequency
 
         configuration_registration_tool = brx.EMMConfigurationTool(
-            metadata, srcdocdata, "registrationRequest"
+            metadata, srcdocdata, "registration"
         )
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
@@ -821,7 +821,7 @@ class EMMMeasurementRegistration(Registration):
         }
 
         emm_measurment_registration_tool = brx.EMMMeasurementTool(
-            metadata, srcdocdata, "registrationRequest"
+            metadata, srcdocdata, "registration"
         )
         self.xml_file = emm_measurment_registration_tool.generate_xml_file()
 

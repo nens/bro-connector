@@ -45,9 +45,7 @@ INSTALLED_APPS = [
     "gmw",
     "gmn",
     "frd",
-    "django_extensions",
-    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
-    "dpd_static_support",
+    "rest_framework",
     "reversion",
     "reversion_compare",
     "admin_reorder",
@@ -59,6 +57,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_admin_generator",
+    "django_extensions",
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
+    "dpd_static_support",
     "bootstrap4",
 ]
 
