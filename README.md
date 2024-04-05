@@ -55,6 +55,7 @@ Om een HTTPS verbinding op te zetten zijn er een aantal stappen noodzakelijk:
 
 1) Voeg SSL settings toe aan base:
 
+```python
 CSRF_TRUSTED_ORIGINS = [
     "https://hosting.example.url/",
     "https://hosting.example.url/admin",
@@ -64,6 +65,7 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+```
 
 2) Installeer pyOpenSSL (pip install pyOpenSSL)
 
@@ -72,9 +74,10 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 4) Splits het certificaat in een .pem en een .key file.*
    
 *Als je een .pfx bestand hebt kan je OpenSSL gebruiken om deze te splitsen (https://stackoverflow.com/questions/15413646/converting-pfx-to-pem-using-openssl).
-   openssl pkcs12 -in file.pfx -out **file.pem** -nodes
-   openssl pkcs12 -in file.pfx -out file.withkey.pem
-   openssl rsa -in file.withkey.pem -out **file.key**
+
+   `openssl pkcs12 -in file.pfx -out **file.pem** -nodes`
+   `openssl pkcs12 -in file.pfx -out file.withkey.pem`
+   `openssl rsa -in file.withkey.pem -out **file.key**`
 
    file.pem en file.key gebruiken we uit dit voorbeeld.
 
