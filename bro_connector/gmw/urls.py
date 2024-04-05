@@ -17,5 +17,5 @@ from django.urls import path
 from gmw.views import gmw_map_context
 
 urlpatterns = [
-    path("gmw-map/", gmw_map_context, name="gmw_map"),
+    path("map/", gmw_map_context, name="gmw_map"),
 ]

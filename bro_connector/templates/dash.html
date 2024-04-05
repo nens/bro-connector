@@ -1,0 +1,16 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% block content %}
+
+{% load plotly_dash%}
+
+{%plotly_app_bootstrap name="QCTool" aspect="16by9" %}
+
+
+<!-- <header>
+    {% plotly_header %}
+</header> -->
+<!-- {%plotly_direct name="QCTool" %} -->
+<!-- {% plotly_footer %} -->
+
+{% endblock %}

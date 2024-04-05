@@ -18,6 +18,16 @@ DEBUG = True
 ROOT_URLCONF = "main.urls"
 SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://bro-prod.zeeland.nl/",
+    "https://bro-prod.zeeland.nl/admin",
+]
+
+
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 DATABASES = {
     "default": {

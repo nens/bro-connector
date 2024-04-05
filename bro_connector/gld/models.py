@@ -57,6 +57,7 @@ class Observation(models.Model):
     groundwater_level_dossier = models.ForeignKey(
         "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
     )
+    up_to_date_in_bro = models.BooleanField(default=True, editable=False)
 
     @property
     def status(self):
@@ -82,6 +83,10 @@ class Observation(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk == None:
+            super().save(*args, **kwargs)
+            return
+
+        if self.observation_endtime is None:
             super().save(*args, **kwargs)
             return
 

@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     "reversion",
     "reversion_compare",
     "admin_reorder",
-    "django_extensions",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -58,6 +57,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_admin_generator",
+    "django_extensions",
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
+    "dpd_static_support",
+    "bootstrap4",
 ]
 
 MAP_WIDGETS = {
@@ -83,6 +86,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "reversion.middleware.RevisionMiddleware",
+    "django_plotly_dash.middleware.ExternalRedirectionMiddleware",
+    "django_plotly_dash.middleware.BaseMiddleware",
 ]
 
 ROOT_URLCONF = "main.urls"
@@ -115,11 +120,11 @@ DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "grondwatermeetnet",
-        "USER": p_user,
-        "PASSWORD": p_password,
-        "HOST": p_host,
-        "PORT": p_port,
-        "OPTIONS": {"options": "-c search_path=django_admin"},
+        "USER": s_user,
+        "PASSWORD": s_password,
+        "HOST": s_host,
+        "PORT": s_port,
+        "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
     }
 }
 
@@ -157,10 +162,37 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = "static/"
-
+STATIC_FILES_LOCATION = "static"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+]
+
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+PLOTLY_COMPONENTS = [
+    "dpd_static_support",
+    "dpd_components",
+    "dash_bootstrap_components",
+]
+
+PLOTLY_DASH = {
+    "ws_route": "dpd/ws/channel",
+    "http_route": "dpd/views",
+    "http_poke_enabled": True,
+    "insert_demo_migrations": False,
+    "cache_timeout_initial_arguments": 60,
+    "view_decorator": None,
+    "cache_arguments": False,
+    "serve_locally": False,
+}
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "django_plotly_dash.finders.DashAssetFinder",
+    "django_plotly_dash.finders.DashComponentFinder",
+    "django_plotly_dash.finders.DashAppDirectoryFinder",
 ]
 
 # Default primary key field type
@@ -343,37 +375,37 @@ QUICK_SCAN_SETTINGS = {
     # 'max_change_two_measurements':1,
     # 'liveliness_maximum_flatline_duration':100
 }
+print(BASE_DIR)
 
 JAZZMIN_SETTINGS = {
-    "site_logo": os.path.join(BASE_DIR, "static/img/broconnector.png"),
+    # "site_logo": os.path.join(BASE_DIR, "static/img/broconnector.png"),
+    "site_logo": "img/broconnector.png",
     "welcome_sign": welcome_sign,
     # Links to put along the top menu
     "topmenu_links": [
-
         # model admin to link to (Permissions checked against model)
-        {"name": "Map", "url": "map", "permissions": ["auth.view_user"]},
-
+        {"name": "Map", "url": "/map", "permissions": ["auth.view_user"]},
+        # model admin to link to (Permissions checked against model)
+        {"name": "QC Tool", "url": "/qc_tool", "permissions": ["auth.view_user"]},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmw"},
-
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmn"},
-
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gld"},
-
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "frd"},
     ],
-
     "usermenu_links": [
-        {"name": "Support", "url": "https://github.com/nens/bro-connector", "new_window": True},
-        {"model": "auth.user"}
+        {
+            "name": "Support",
+            "url": "https://github.com/nens/bro-connector",
+            "new_window": True,
+        },
+        {"model": "auth.user"},
     ],
-
     # Whether to aut expand the menu
     "navigation_expanded": False,
-
     "order_with_respect_to": [
         "auth",
         "gmn",
@@ -439,11 +471,12 @@ JAZZMIN_SETTINGS = {
     "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
 }
 
+ASGI_APPLICATION = "qc_tool.routing.application"
 
 GRAPH_MODELS = {
     "all_applications": True,
     "group_models": True,
 }
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
-GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
+# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
+# GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"

@@ -4,8 +4,8 @@ import os
 from . import models
 from main.settings.base import gld_SETTINGS
 from main.management.tasks import gld_actions
-
-
+from reversion_compare.helpers import patch_admin
+import reversion
 from main.management.commands.gld_sync_to_bro import GldSyncHandler, get_observation_gld_source_document_data
 
 
@@ -86,6 +86,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "result_time",
         "observation_type",
         "status",
+        "up_to_date_in_bro",
     )
     list_filter = (
         "observation_id",
@@ -97,9 +98,22 @@ class ObservationAdmin(admin.ModelAdmin):
 
     readonly_fields = ["status"]
 
+    actions = ["change_up_to_date_status"]
+
     def observation_type(self, obj: models.Observation):
         return obj.observation_metadata.observation_type
 
+    @admin.action(description="Change up-to-date status.")
+    def change_up_to_date_status(self, request, queryset):
+        for item in queryset:
+            with reversion.create_revision():
+                if item.up_to_date_in_bro:
+                    item.up_to_date_in_bro = False
+                else:
+                    item.up_to_date_in_bro = True
+                
+                item.save(update_fields=["up_to_date_in_bro"])
+                reversion.set_comment("Changed up_to_date_in_bro with a manual action.")
 
 class ObservationMetadataAdmin(admin.ModelAdmin):
     list_display = (
@@ -470,14 +484,22 @@ _register(models.MeasurementTvp, MeasurementTvpAdmin)
 _register(models.ObservationMetadata, ObservationMetadataAdmin)
 _register(models.ObservationProcess, ObservationProcessAdmin)
 _register(models.ResponsibleParty, ResponsiblePartyAdmin)
-
 _register(models.Observation, ObservationAdmin)
-
-
 _register(models.gld_registration_log, gld_registration_logAdmin)
 _register(models.gld_addition_log, gld_addition_log_Admin)
 
+patch_admin(models.GroundwaterLevelDossier)
+patch_admin(models.MeasurementPointMetadata)
+patch_admin(models.MeasurementTvp)
+patch_admin(models.ObservationMetadata)
+patch_admin(models.ObservationProcess)
+patch_admin(models.ResponsibleParty)
+patch_admin(models.Observation)
+patch_admin(models.gld_registration_log)
+patch_admin(models.gld_addition_log)
 
 admin.site.site_header = "BRO connector"
 admin.site.site_title = "Dashboard"
 admin.site.index_title = "BRO connector"
+
+# %%
