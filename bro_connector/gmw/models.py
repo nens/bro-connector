@@ -164,6 +164,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         null=True,
         blank=True,
     )
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
     well_stability = models.CharField(
         choices=WELLSTABILITY, max_length=200, blank=True, null=True
@@ -201,6 +202,17 @@ class GroundwaterMonitoringWellDynamic(models.Model):
             return f"{self.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_well_dynamic_id}"
         else:
             return f"{self.groundwater_monitoring_well_dynamic_id}"
+
+    @property
+    def date_till(self):
+        next_dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
+            groundwater_monitoring_well_static = self.groundwater_monitoring_well_static,
+            date_from__gt = self.date_from
+        ).order_by("date_from").first()
+
+        if next_dynamic:
+            return next_dynamic.date_from
+        return None
 
     @property
     def number_of_standpipes(self):
@@ -278,6 +290,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         null=True,
         blank=True,
     )
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     tube_top_diameter = models.IntegerField(blank=True, null=True)
     variable_diameter = models.CharField(max_length=200, blank=True, null=True)
     tube_status = models.CharField(
@@ -301,6 +314,17 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         blank=True, null=True
     )  # This field type is a guess.
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
+
+    @property
+    def date_till(self):
+        next_dynamic = GroundwaterMonitoringTubeDynamic.objects.filter(
+            groundwater_monitoring_tube_static = self.groundwater_monitoring_tube_static,
+            date_from__gt = self.date_from
+        ).order_by("date_from").first()
+
+        if next_dynamic:
+            return next_dynamic.date_from
+        return None
 
     @property
     def tube_inserted(self):
@@ -390,12 +414,24 @@ class ElectrodeDynamic(models.Model):
     electrode_static = models.ForeignKey(
         ElectrodeStatic, on_delete=models.CASCADE, null=True, blank=True
     )
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     electrode_status = models.CharField(
         choices=ELECTRODESTATUS, max_length=200, blank=True, null=True
     )
 
     def __str__(self):
         return str(self.electrode_static.electrode_static_id)
+
+    @property
+    def date_till(self):
+        next_dynamic = ElectrodeDynamic.objects.filter(
+            electrode_static = self.electrode_static,
+            date_from__gt = self.date_from
+        ).order_by("date_from").first()
+
+        if next_dynamic:
+            return next_dynamic.date_from
+        return None
 
     class Meta:
         managed = True
