@@ -126,19 +126,12 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
 
     return eles_id
 
-
 def get_tube_static(groundwater_monitoring_well, tube_number):
     gmts_id = GroundwaterMonitoringTubeStatic.objects.get(
         groundwater_monitoring_well_static=groundwater_monitoring_well,
         tube_number=tube_number,
     )
     return gmts_id
-
-
-def get_tube_dynamic_history(well_static: GroundwaterMonitoringWellStatic, event: Event, updates):
-    
-
-    return new_gmtds
 
 
 class Updater:
