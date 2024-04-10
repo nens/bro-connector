@@ -246,8 +246,16 @@ class TableUpdater(Updater):
         event.groundwater_monitoring_tube_dynamic = new_gmtd
         event.save()
 
-    def electrode_data(well_static, event, updates):
+    def electrode_data(well_static: GroundwaterMonitoringWellStatic, event: Event, updates):
         try:
+            # Clone row and make new primary key with save
+            new_eled = ElectrodeDynamic.objects.get(
+                electrode_static=get_electrode_static(
+                    well_static, updates["tubeNumber"]
+                ),
+                date_from = event.event_date,
+            )
+        except ElectrodeDynamic.DoesNotExist:
             # Clone row and make new primary key with save
             new_eleds = ElectrodeDynamic.objects.filter(
                 electrode_static=get_electrode_static(
@@ -270,36 +278,27 @@ class TableUpdater(Updater):
                     get_tube_static(well_static, updates["tubeNumber"]),
                 )
 
-            # Check what has to be changed
-            new_eled = electrode_dynamic(new_eled, updates)
+        # Check what has to be changed
+        new_eled = electrode_dynamic(new_eled, updates)
 
-            # Save and add new key to event
-            new_eled.save()
+        # Save and add new key to event
+        new_eled.save()
 
-            # Add to the event.
-            event.electrode_dynamic = new_eled
-            event.groundwater_monitoring_well_static = well_static
-            event.save()
-
-        except:
-            raise Exception(f"Failed to update electrode data: {updates}")
+        # Add to the event.
+        event.electrode_dynamic = new_eleds
+        event.save()
 
     def well_data(well_static, event, updates):
         # Clone row and make new primary key with save
         try:
-            new_gmwds = GroundwaterMonitoringWellDynamic.objects.get(
+            new_gmwd = GroundwaterMonitoringWellDynamic.objects.get(
                 groundwater_monitoring_well_static=well_static,
                 date_from = event.event_date,
             )
-            create = False
         except GroundwaterMonitoringWellDynamic.DoesNotExist:
             new_gmwds = GroundwaterMonitoringWellDynamic.objects.filter(
                 groundwater_monitoring_well_static=well_static
             )
-            create = True
-
-        # This assumes the gmwds are sorted based on creation date.
-        if create:
             if len(new_gmwds) == 1:
                 new_gmwd = new_gmwds.first()
                 new_gmwd.groundwater_monitoring_well_dynamic_id = None
@@ -321,7 +320,6 @@ class TableUpdater(Updater):
         new_gmwd.save()
 
         # Add to the event.
-        event.groundwater_monitoring_well_static = well_static
         event.groundwater_monitoring_well_dynamic = new_gmwd
         event.save()
 
