@@ -62,6 +62,8 @@ class EventsInline(admin.TabularInline):
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
+    change_form_template = "admin\change_form_well.html"
+
     search_fields = ("groundwater_monitoring_well_static_id", "__str__")
     list_display = (
         "groundwater_monitoring_well_static_id",
@@ -165,6 +167,8 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
         "groundwater_monitoring_well_static",
+        "date_from",
+        "date_till",
         "number_of_standpipes",
         "owner",
         "well_head_protector",
@@ -217,6 +221,8 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static",
+        "date_from",
+        "date_till",
         "tube_top_diameter",
         "variable_diameter",
         "tube_status",
@@ -257,6 +263,8 @@ class ElectrodeDynamicAdmin(admin.ModelAdmin):
     list_display = (
         "electrode_dynamic_id",
         "electrode_static",
+        "date_from",
+        "date_till",
         "electrode_status",
     )
     list_filter = ("electrode_dynamic_id", "electrode_static")
