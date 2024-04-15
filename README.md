@@ -48,3 +48,43 @@ Het script kan als volgt gebruikt worden: bro_gegevens_ophalen.bat [kvk_nummer] 
 
 - kvk_nummer: het kvk nummer van de organisatie waaronder de gegevens staan.
 - type_bericht: het type BRO bericht, zoals gmw of gld.
+
+## HTTPS verbinding opzetten voor je applicatie
+
+Om een HTTPS verbinding op te zetten zijn er een aantal stappen noodzakelijk:
+
+1) Voeg SSL settings toe aan base:
+
+```python
+CSRF_TRUSTED_ORIGINS = [
+    "https://hosting.example.url/",
+    "https://hosting.example.url/admin",
+]
+
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+```
+
+2) Installeer pyOpenSSL (pip install pyOpenSSL)
+
+3) Verkrijg een HTTPS certificaat voor je domein.
+
+4) Splits het certificaat in een .pem en een .key file.*
+   
+*Als je een .pfx bestand hebt kan je OpenSSL gebruiken om deze te splitsen (https://stackoverflow.com/questions/15413646/converting-pfx-to-pem-using-openssl).
+
+   `openssl pkcs12 -in file.pfx -out file.pem -nodes`
+   
+   `openssl pkcs12 -in file.pfx -out file.withkey.pem`
+   
+   `openssl rsa -in file.withkey.pem -out file.key`
+
+   file.pem en file.key gebruiken we uit dit voorbeeld.
+
+6) Draai je server met het runserver_plus command:
+
+   e.g. `runserver_plus hosting.example.url:8000 --cert-file file.pem --key-file file.key`
+
+   In dit voorbeeld draait de server op port 8000.

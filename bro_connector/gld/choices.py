@@ -83,6 +83,14 @@ STATUSQUALITYCONTROL = (
     ("onbekend", "onbekend"),
 )
 
+flag_schema_qc = {
+    "0": "nogNietBeoordeeld",
+    "1": "goedgekeurd",
+    "9": "afgekeurd",
+    "99": "onbeslist",
+    "100": "onbekend",
+}
+
 CENSORREASON = (
     ("groterDanLimietwaarde", "groterDanLimietwaarde"),
     ("kleinerDanLimietwaarde", "kleinerDanLimietwaarde"),

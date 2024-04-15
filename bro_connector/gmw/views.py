@@ -38,5 +38,4 @@ def gmw_map_context(request):
         "groundwater_level_dossiers": glds,
         "maptiler_key": ls.maptiler_key,
     }
-
     return render(request, "map.html", context)
