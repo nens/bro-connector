@@ -16,7 +16,10 @@ Including another URLconf
 from django.urls import path
 from gmw.views import gmw_map_context
 from main.dash import visualisatie_meetopstelling
+from django.contrib import admin
 
+# Some initialisation/discovery stuff
+admin.autodiscover()
 visualisatie_meetopstelling # noqa
 
 urlpatterns = [
