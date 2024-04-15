@@ -22,6 +22,7 @@ def gmw_map_context(request):
     gmw_serializer = serializers.GMWSerializer(gmw_qs, many=True)
     wells = gmw_serializer.data
 
+    print(wells[0])
 
     instantie_qs = Instantie.objects.all()
     instantie_serializer = serializers.InstantieSerializer(instantie_qs, many=True)
@@ -30,8 +31,6 @@ def gmw_map_context(request):
     gld_qs = GroundwaterLevelDossier.objects.all()
     gld_serializer = serializers.GLDSerializer(gld_qs, many=True)
     glds = gld_serializer.data
-
-    print(wells[0])
 
     context = {
         "wells": wells,
