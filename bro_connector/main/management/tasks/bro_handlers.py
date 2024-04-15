@@ -61,14 +61,19 @@ class GMWHandler(BROHandler):
 
             if split[1] == "intermediateEvent":
                 number_of_events = number_of_events + 1
-                prefix = "event_" + str(number_of_events) + "_"
+                number_of_event_tubes = 0
+                prefix = f"event_{str(number_of_events)}_"
+
+            if split[1] == "tubeData":
+                number_of_event_tubes = number_of_event_tubes + 1
+                prefix = f"event_{str(number_of_events)}_{str(number_of_event_tubes)}_"
 
             if split[1] == "wellRemovalDate":
                 prefix = "removal_"
 
             if split[1] == "monitoringTube":
                 self.number_of_tubes = self.number_of_tubes + 1
-                prefix = "tube_" + str(self.number_of_tubes) + "_"
+                prefix = f"tube_{str(self.number_of_tubes)}_"
 
             if split[1] == "geoOhmCable":
                 self.number_of_geo_ohm_cables = self.number_of_geo_ohm_cables + 1
