@@ -59,8 +59,7 @@ INSTALLED_APPS = [
     "django_admin_generator",
     "django_extensions",
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
-    "dpd_static_support",
-    "bootstrap4",
+    "django_static_jquery",
 ]
 
 MAP_WIDGETS = {
@@ -169,31 +168,6 @@ STATICFILES_DIRS = [
 ]
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
-
-PLOTLY_COMPONENTS = [
-    "dpd_static_support",
-    "dpd_components",
-    "dash_bootstrap_components",
-]
-
-PLOTLY_DASH = {
-    "ws_route": "dpd/ws/channel",
-    "http_route": "dpd/views",
-    "http_poke_enabled": True,
-    "insert_demo_migrations": False,
-    "cache_timeout_initial_arguments": 60,
-    "view_decorator": None,
-    "cache_arguments": False,
-    "serve_locally": False,
-}
-
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "django_plotly_dash.finders.DashAssetFinder",
-    "django_plotly_dash.finders.DashComponentFinder",
-    "django_plotly_dash.finders.DashAppDirectoryFinder",
-]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -385,8 +359,6 @@ JAZZMIN_SETTINGS = {
     "topmenu_links": [
         # model admin to link to (Permissions checked against model)
         {"name": "Map", "url": "/map", "permissions": ["auth.view_user"]},
-        # model admin to link to (Permissions checked against model)
-        {"name": "QC Tool", "url": "/qc_tool", "permissions": ["auth.view_user"]},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmw"},
         # App with dropdown menu to all its models pages (Permissions checked against models)
@@ -471,12 +443,10 @@ JAZZMIN_SETTINGS = {
     "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
 }
 
-ASGI_APPLICATION = "qc_tool.routing.application"
-
 GRAPH_MODELS = {
     "all_applications": True,
     "group_models": True,
 }
 
-# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
-# GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
+GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
+GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
