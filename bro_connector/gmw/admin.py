@@ -64,7 +64,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
     change_form_template = "admin\change_form_well.html"
 
-    search_fields = ("groundwater_monitoring_well_static_id", "__str__")
+    search_fields = ("groundwater_monitoring_well_static_id",)
+
     list_display = (
         "groundwater_monitoring_well_static_id",
         "bro_id",
@@ -278,6 +279,7 @@ class EventAdmin(admin.ModelAdmin):
         "event_name",
         "event_date",
         "groundwater_monitoring_well_static",
+        "groundwater_monitoring_well_dynamic",
         "groundwater_monitoring_tube_dynamic",
         "electrode_dynamic",
     )
