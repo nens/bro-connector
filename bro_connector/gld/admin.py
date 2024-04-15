@@ -24,6 +24,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "research_start_date",
         "research_last_date",
         "gld_bro_id",
+        "first_measurement",
+        "most_recent_measurement"
     )
     list_filter = (
         "groundwater_level_dossier_id",
