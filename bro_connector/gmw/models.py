@@ -164,6 +164,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         null=True,
         blank=True,
     )
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
     well_stability = models.CharField(
         choices=WELLSTABILITY, max_length=200, blank=True, null=True
@@ -197,10 +198,21 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     remark = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        if self.groundwater_monitoring_well_static.bro_id:
-            return f"{self.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_well_dynamic_id}"
-        else:
-            return f"{self.groundwater_monitoring_well_dynamic_id}"
+        if self.date_till:
+            till = self.date_till.date()
+            return f"{self.groundwater_monitoring_well_static.__str__()} ({self.date_from.date()} - {till})"
+        return f"{self.groundwater_monitoring_well_static.__str__()} ({self.date_from.date()} - Present)"
+
+    @property
+    def date_till(self):
+        next_dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
+            groundwater_monitoring_well_static = self.groundwater_monitoring_well_static,
+            date_from__gt = self.date_from
+        ).order_by("date_from").first()
+
+        if next_dynamic:
+            return next_dynamic.date_from
+        return None
 
     @property
     def number_of_standpipes(self):
@@ -256,12 +268,8 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         ).count()
 
     def __str__(self):
-        if self.groundwater_monitoring_well_static.bro_id:
-            well = str(self.groundwater_monitoring_well_static.bro_id)
-        else:
-            well = f"{str(self.groundwater_monitoring_tube_static_id)}"
-
-        return "{}-{}".format(well, format_integer(self.tube_number))
+        well = f"{self.groundwater_monitoring_well_static.__str__()}"
+        return f"{well}-{format_integer(self.tube_number)}"
 
     class Meta:
         managed = True
@@ -278,6 +286,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         null=True,
         blank=True,
     )
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     tube_top_diameter = models.IntegerField(blank=True, null=True)
     variable_diameter = models.CharField(max_length=200, blank=True, null=True)
     tube_status = models.CharField(
@@ -303,6 +312,17 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
 
     @property
+    def date_till(self):
+        next_dynamic = GroundwaterMonitoringTubeDynamic.objects.filter(
+            groundwater_monitoring_tube_static = self.groundwater_monitoring_tube_static,
+            date_from__gt = self.date_from
+        ).order_by("date_from").first()
+
+        if next_dynamic:
+            return next_dynamic.date_from
+        return None
+
+    @property
     def tube_inserted(self):
         if self.inserted_part_diameter or self.inserted_part_length or self.inserted_part_material:
             return True
@@ -314,24 +334,20 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
 
     @property
     def screen_bottom_position(self):
-        return self.tube_top_position - (
-            self.plain_tube_part_length
-            + self.groundwater_monitoring_tube_static.screen_length
-        )
+        return self.screen_top_position - self.groundwater_monitoring_tube_static.screen_length
+    
+    @property
+    def tube_bottom_position(self):
+        if self.groundwater_monitoring_tube_static.sediment_sump_present:
+            return self.screen_bottom_position 
+        return self.screen_bottom_position - self.groundwater_monitoring_tube_static.sediment_sump_length
 
     def __str__(self):
-        if (
-            self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id
-        ):
-            well = str(
-                self.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.bro_id
-            )
-        else:
-            well = str(self.groundwater_monitoring_tube_dynamic_id)
+        if self.date_till:
+            till = self.date_till.date()
+            return f"{self.groundwater_monitoring_tube_static.__str__()} ({self.date_from.date()} - {till})"
 
-        return "{}-{}".format(
-            well, format_integer(self.groundwater_monitoring_tube_static.tube_number)
-        )
+        return f"{self.groundwater_monitoring_tube_static.__str__()} ({self.date_from.date()} - Present)"
 
     class Meta:
         managed = True
@@ -390,12 +406,24 @@ class ElectrodeDynamic(models.Model):
     electrode_static = models.ForeignKey(
         ElectrodeStatic, on_delete=models.CASCADE, null=True, blank=True
     )
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     electrode_status = models.CharField(
         choices=ELECTRODESTATUS, max_length=200, blank=True, null=True
     )
 
     def __str__(self):
         return str(self.electrode_static.electrode_static_id)
+
+    @property
+    def date_till(self):
+        next_dynamic = ElectrodeDynamic.objects.filter(
+            electrode_static = self.electrode_static,
+            date_from__gt = self.date_from
+        ).order_by("date_from").first()
+
+        if next_dynamic:
+            return next_dynamic.date_from
+        return None
 
     class Meta:
         managed = True

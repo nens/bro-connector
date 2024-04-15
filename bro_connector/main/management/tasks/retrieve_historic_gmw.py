@@ -35,33 +35,6 @@ def within_bbox(coordinates) -> bool:
     return False
 
 
-def delete_non_construction_dynamics(groundwater_monitoring_well_static):
-    well_dynamics = GroundwaterMonitoringWellDynamic.objects.filter(
-        groundwater_monitoring_well_static=groundwater_monitoring_well_static
-    ).order_by("groundwater_monitoring_well_dynamic_id")[1:]
-    for well_dynamic in well_dynamics:
-        well_dynamic.delete()
-
-    tubes = GroundwaterMonitoringTubeStatic.objects.filter(
-        groundwater_monitoring_well_static=groundwater_monitoring_well_static
-    )
-    for tube in tubes:
-        tube_dynamics = GroundwaterMonitoringTubeDynamic.objects.filter(
-            groundwater_monitoring_tube_static=tube
-        ).order_by("groundwater_monitoring_tube_dynamic_id")[1:]
-        for tube_dynamic in tube_dynamics:
-            tube_dynamic.delete()
-        cables = GeoOhmCable.objects.filter(groundwater_monitoring_tube_static=tube)
-        for cable in cables:
-            electrodes = ElectrodeStatic.objects.filter(geo_ohm_cable=cable)
-            for electrode in electrodes:
-                electrode_dynamics = ElectrodeDynamic.objects.filter(
-                    electrode_static=electrode
-                ).order_by("electrode_dynamic_id")[1:]
-                for electrode_dynamic in electrode_dynamics:
-                    electrode_dynamic.delete()
-
-
 def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
     progressor = Progress()
     gmw = GMWHandler()
@@ -121,7 +94,6 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
             ini.reset_geo_ohm_number()
 
         construction_event = events_handler.create_construction_event(gmw_dict, gmws)
-        delete_non_construction_dynamics(gmws)
 
         # Update based on the events
         updater = events_handler.Updater(gmw.dict, gmws)
@@ -142,6 +114,16 @@ def get_or_create_instantie(instantie: str):
     else:
         return Instantie.objects.get_or_create(name=instantie)
 
+
+def convert_event_date_str_to_datetime(event_date: str) -> datetime:
+    try:
+        date = datetime.datetime.strptime(event_date,'%Y-%m-%d')
+    except ValueError:
+        date = datetime.datetime.strptime(event_date,'%Y')
+    except TypeError:
+        date = datetime.datetime.strptime("1900-01-01",'%Y-%m-%d')
+
+    return date
 
 class InitializeData:
     """
@@ -234,56 +216,36 @@ class InitializeData:
         self.gmws.save()
 
     def well_dynamic(self):
-        dynamic = GroundwaterMonitoringWellDynamic.objects.filter(
-            groundwater_monitoring_well_static=self.gmws
-        ).first()
+        if "construction_date" in self.gmw_dict:
+            date = self.gmw_dict["construction_date"]
 
-        if dynamic:
-            with reversion.create_revision():
-                dynamic.ground_level_position = self.gmw_dict.get(
-                    "groundLevelPosition", None
-                )
-                dynamic.ground_level_positioning_method = self.gmw_dict.get(
-                    "groundLevelPositioningMethod", None
-                )
-                dynamic.ground_level_stable = self.gmw_dict.get(
-                    "groundLevelStable", None
-                )
-                dynamic.maintenance_responsible_party = get_or_create_instantie(
-                    self.gmw_dict.get("maintenanceResponsibleParty", None)
-                )[0]
-                dynamic.owner = self.gmw_dict.get("owner", None)
-                dynamic.well_head_protector = self.gmw_dict.get(
-                    "wellHeadProtector", None
-                )
-                dynamic.well_stability = self.gmw_dict.get("wellStability", None)
-                dynamic.save()
-                reversion.set_comment(
-                    f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
-                )
+        elif "construction_year" in self.gmw_dict:
+            date = self.gmw_dict["construction_year"]
+
         else:
-            self.gmwd = GroundwaterMonitoringWellDynamic.objects.update_or_create(
-                groundwater_monitoring_well_static=self.gmws,
-                defaults={
-                    "deliver_gld_to_bro": self.gmw_dict.get("deliverGldToBro", False),
-                    "ground_level_position": self.gmw_dict.get(
-                        "groundLevelPosition", None
-                    ),
-                    "ground_level_positioning_method": self.gmw_dict.get(
-                        "groundLevelPositioningMethod", None
-                    ),
-                    "ground_level_stable": self.gmw_dict.get("groundLevelStable", None),
-                    "maintenance_responsible_party": get_or_create_instantie(
-                        self.gmw_dict.get("maintenanceResponsibleParty", None)
-                    )[0],
-                    "number_of_standpipes": self.gmw_dict.get(
-                        "numberOfStandpipes", None
-                    ),
-                    "owner": self.gmw_dict.get("owner", None),
-                    "well_head_protector": self.gmw_dict.get("wellHeadProtector", None),
-                    "well_stability": self.gmw_dict.get("wellStability", None),
-                },
-            )
+            date = None
+
+        date = convert_event_date_str_to_datetime(date)
+        
+        self.gmwd, created = GroundwaterMonitoringWellDynamic.objects.update_or_create(
+            groundwater_monitoring_well_static=self.gmws,
+            date_from = date,
+            defaults={
+                "ground_level_position": self.gmw_dict.get(
+                    "groundLevelPosition", None
+                ),
+                "ground_level_positioning_method": self.gmw_dict.get(
+                    "groundLevelPositioningMethod", None
+                ),
+                "ground_level_stable": self.gmw_dict.get("groundLevelStable", None),
+                "maintenance_responsible_party": get_or_create_instantie(
+                    self.gmw_dict.get("maintenanceResponsibleParty", None)
+                )[0],
+                "owner": self.gmw_dict.get("owner", None),
+                "well_head_protector": self.gmw_dict.get("wellHeadProtector", None),
+                "well_stability": self.gmw_dict.get("wellStability", None),
+            },
+        )
 
     def tube_static(self):
         self.gmts, created = GroundwaterMonitoringTubeStatic.objects.update_or_create(
@@ -310,83 +272,41 @@ class InitializeData:
         )
 
     def tube_dynamic(self):
-        dynamic = GroundwaterMonitoringTubeDynamic.objects.filter(
-            groundwater_monitoring_tube_static=self.gmts
-        ).first()
-
-        if dynamic:
-            with reversion.create_revision():
-                dynamic.glue = self.gmw_dict.get(self.prefix + "glue", None)
-                dynamic.inserted_part_diameter = self.gmw_dict.get(
+        self.gmtd, created = GroundwaterMonitoringTubeDynamic.objects.update_or_create(
+            groundwater_monitoring_tube_static=self.gmts,
+            date_from=self.gmwd.date_from,
+            defaults={
+                "glue": self.gmw_dict.get(self.prefix + "glue", None),
+                "inserted_part_diameter": self.gmw_dict.get(
                     self.prefix + "insertedPartDiameter", None
-                )
-                dynamic.inserted_part_length = self.gmw_dict.get(
+                ),
+                "inserted_part_length": self.gmw_dict.get(
                     self.prefix + "insertedPartLength", None
-                )
-                dynamic.inserted_part_material = self.gmw_dict.get(
+                ),
+                "inserted_part_material": self.gmw_dict.get(
                     self.prefix + "insertedPartMaterial", None
-                )
-                dynamic.plain_tube_part_length = self.gmw_dict.get(
+                ),
+                "plain_tube_part_length": self.gmw_dict.get(
                     self.prefix + "plainTubePartLength", None
-                )
-                dynamic.tube_packing_material = self.gmw_dict.get(
+                ),
+                "tube_packing_material": self.gmw_dict.get(
                     self.prefix + "tubePackingMaterial", None
-                )
-                dynamic.tube_status = self.gmw_dict.get(
-                    self.prefix + "tubeStatus", None
-                )
-                dynamic.tube_top_diameter = self.gmw_dict.get(
+                ),
+                "tube_status": self.gmw_dict.get(self.prefix + "tubeStatus", None),
+                "tube_top_diameter": self.gmw_dict.get(
                     self.prefix + "tubeTopDiameter", None
-                )
-                dynamic.tube_top_position = self.gmw_dict.get(
+                ),
+                "tube_top_position": self.gmw_dict.get(
                     self.prefix + "tubeTopPosition", None
-                )
-                dynamic.tube_top_positioning_method = self.gmw_dict.get(
+                ),
+                "tube_top_positioning_method": self.gmw_dict.get(
                     self.prefix + "tubeTopPositioningMethod", None
-                )
-                dynamic.variable_diameter = self.gmw_dict.get(
+                ),
+                "variable_diameter": self.gmw_dict.get(
                     self.prefix + "variableDiameter", None
-                )
-                dynamic.save()
-                reversion.set_comment(
-                    f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
-                )
-
-        else:
-            self.gmtd, created = GroundwaterMonitoringTubeDynamic.objects.update_or_create(
-                groundwater_monitoring_tube_static=self.gmts,
-                defaults={
-                    "glue": self.gmw_dict.get(self.prefix + "glue", None),
-                    "inserted_part_diameter": self.gmw_dict.get(
-                        self.prefix + "insertedPartDiameter", None
-                    ),
-                    "inserted_part_length": self.gmw_dict.get(
-                        self.prefix + "insertedPartLength", None
-                    ),
-                    "inserted_part_material": self.gmw_dict.get(
-                        self.prefix + "insertedPartMaterial", None
-                    ),
-                    "plain_tube_part_length": self.gmw_dict.get(
-                        self.prefix + "plainTubePartLength", None
-                    ),
-                    "tube_packing_material": self.gmw_dict.get(
-                        self.prefix + "tubePackingMaterial", None
-                    ),
-                    "tube_status": self.gmw_dict.get(self.prefix + "tubeStatus", None),
-                    "tube_top_diameter": self.gmw_dict.get(
-                        self.prefix + "tubeTopDiameter", None
-                    ),
-                    "tube_top_position": self.gmw_dict.get(
-                        self.prefix + "tubeTopPosition", None
-                    ),
-                    "tube_top_positioning_method": self.gmw_dict.get(
-                        self.prefix + "tubeTopPositioningMethod", None
-                    ),
-                    "variable_diameter": self.gmw_dict.get(
-                        self.prefix + "variableDiameter", None
-                    ),
-                },
-            )
+                ),
+            },
+        )
 
     def geo_ohm(self):
         self.geoc, created = GeoOhmCable.objects.update_or_create(
