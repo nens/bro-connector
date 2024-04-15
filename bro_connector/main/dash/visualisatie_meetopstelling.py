@@ -13,7 +13,6 @@ from django_plotly_dash import DjangoDash
 from plotly.subplots import make_subplots
 
 from gmw.models import (
-    ElectrodeDynamic,
     ElectrodeStatic,
     GroundwaterMonitoringTubeDynamic,
     GroundwaterMonitoringTubeStatic,
@@ -26,12 +25,19 @@ from gmw.models import (
 logger = logging.getLogger(__name__)
 
 
-def datetime_convert(gmt_datetime):
-    amsterdam_timezone = pytz.timezone("Europe/Amsterdam")
-    amsterdam_datetime = gmt_datetime.astimezone(amsterdam_timezone)
-    amsterdam_date = amsterdam_datetime.date()
-    return amsterdam_date
+def convert_event_date_str_to_datetime(event_date: str) -> datetime.datetime:
+    try:
+        date = datetime.datetime.strptime(event_date,'%Y-%m-%d')
+    except ValueError:
+        date = datetime.datetime.strptime(event_date,'%Y')
+    except TypeError:
+        date = datetime.datetime.strptime("1900-01-01",'%Y-%m-%d')
 
+    return date
+
+def datetime_convert(gmt_datetime: str) -> datetime.date:
+    date = convert_event_date_str_to_datetime(gmt_datetime)
+    return date.astimezone().date()
 
 def gen_gebeurtenis(event):
     if event["constructie"]:
@@ -48,7 +54,7 @@ def gen_gebeurtenis(event):
 def transform_electrodedata_to_df(electrodedata):
     if len(electrodedata) == 0:
         electrode_dataframe = pd.DataFrame(
-            columns=["filter", "kabel", "elektrode", "positie", "status"]
+            columns=["filter", "kabel", "elektrode", "positie"]
         )
     else:
         electrode_dataframe = pd.DataFrame(electrodedata)
@@ -60,7 +66,6 @@ def transform_putdata_to_df(putdata):
         "datum",
         "gebeurtenis",
         "maaiveldhoogte",
-        "filtercode",
         "filternummer",
         "bovenkant buis",
         "bovenkant filter",
@@ -82,7 +87,6 @@ def transform_putdata_to_df(putdata):
         row["beschermconstructie"] = event["filters"][i]["beschermconstructie"]
         row["gebeurtenis"] = gen_gebeurtenis(event)
         row["maaiveldhoogte"] = event["put"]["maaiveld"]
-        row["filtercode"] = event["filters"][i]["code"]
         row["filternummer"] = event["filters"][i]["nummer"]
         row["bovenkant buis"] = event["filters"][i]["bovenkant buis"]
         row["onderkant buis"] = event["filters"][i]["onderkant buis"]
@@ -193,7 +197,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         startpunten = list(selection["startpunten"].values)
 
         flter = list(selection["filter"].values)
-        print(flter)
+        print("FILTER: ", flter)
         stijgbuis = list(selection["stijgbuis"].values)
         ingeplaatst_deel = list(selection["ingeplaatst deel"].values)
         ok_filter = list(selection["onderkant filter"].astype(str).values)
@@ -225,14 +229,10 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             mode="lines",
             opacity=0.0,
             customdata=np.transpose([maaiveld_y]),
-            hovertext=maaiveld_y,
-            hovertemplate="<br>".join(
-                [
-                    "Hoogte: %{customdata[0]}",
-                ]
-            ),
             line=dict(color="green", width=2),
         )
+
+        print("NOT SCATTER")
 
         buis = go.Bar(
             x=list(range(1, len(startpunten) + 3)),
@@ -253,6 +253,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                 ]
             ),
         )
+        
+        print("NOT BUIS")
+
 
         filter = go.Bar(
             x=list(range(1, len(startpunten) + 3)),
@@ -279,6 +282,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                 ]
             ),
         )
+
+        print("NOT FILTER")
+
         try:
             ingeplaatst_deel = go.Bar(
                 x=list(range(1, len(startpunten) + 3)),
@@ -303,6 +309,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             logger.exception("Bare except, hierdoor bestaat ingeplaatst_deel niet")
             ingeplaatst_deel = None
             pass
+        
+        print("NOT INGEPLAATST DEEL")
+        
 
         # Maak een lijst met de traces
         barchart = make_subplots(
@@ -316,8 +325,10 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             ],
         )
 
+        print("NOT SUBPLOTS")
+
         barchart.update_layout(
-            title_text="{} - {}".format(selection["filtercode"].values[0][:-3], event),
+            title_text=f"{selection['gmw'].values[0]} - {event}",
             title_x=0.5,
         )
         if ingeplaatst_deel:
@@ -356,6 +367,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                     col=1,
                 )
 
+        print("NOT TRACES 1")
+
+
         barchart.update_traces(
             marker=dict(
                 size=8,
@@ -365,58 +379,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             selector=dict(mode="markers"),
         )
 
-        # Meetinstrument dieptes
-        for f in selection["filternummer"]:
-            diepte_meetinstrument = selection["diepte meetinstrument"][
-                selection["filternummer"] == f
-            ].values[0]
+        print("NOT TRACES 2")
 
-            bovenkant_buis = selection["bovenkant buis"][
-                selection["filternummer"] == f
-            ].values[0]
-            try:
-                if selection["lengte ingeplaatst deel"][f - 1] != 0:
-                    positie_meetinstrument = (
-                        bk_ingeplaatst_deel[f - 1] - diepte_meetinstrument
-                    )
-
-                else:
-                    positie_meetinstrument = bovenkant_buis - diepte_meetinstrument
-                    y = [bovenkant_buis, positie_meetinstrument]
-
-            except:  # noqa: E722
-                logger.exception("Bare except")
-                positie_meetinstrument = bovenkant_buis - diepte_meetinstrument
-                y = [bovenkant_buis, positie_meetinstrument]
-            x = [f, f]
-            if f == 1:
-                showlegend = True
-            else:
-                showlegend = False
-
-            if referentie == "m t.o.v. mv":
-                name = 'Inhangdiepte -t.o.v. maaiveld'
-            else:
-                name="Inhangdiepte - t.o.v. mNAP"
-
-            barchart.add_trace(
-                go.Scatter(
-                    x=x,
-                    y=y,
-                    legendgroup="diepte meetinstrument",
-                    showlegend=showlegend,
-                    hoverinfo="y,text",
-                    text=name,
-                    marker=dict(
-                        color="purple",
-                        size=10,
-                        symbol="arrow-bar-up",
-                        angleref="previous",
-                    ),
-                ),
-                row=1,
-                col=1,
-            )
 
         # Voeg een gekleurd vak op de achtergrond toe
         y_position = selection["maaiveldhoogte"].values[
@@ -449,8 +413,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                 type="line",
                 x0=0,
                 x1=len(startpunten) + 1,
-                y0=selection["maaiveldhoogte"].values[0],
-                y1=selection["maaiveldhoogte"].values[0],
+                y0=y_position,
+                y1=y_position,
                 line=dict(color="green", width=2),
                 layer="below",
             ),
@@ -472,16 +436,18 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             col=1,  # Make sure to adjust the row and col values based on your subplot configuration
         )
 
+        print("NOT SHAPES")
+
+
         # n
         columns = [
-            "filtercode",
+            "filternummer",
             "maaiveldhoogte",
             "bovenkant buis",
             "bovenkant filter",
             "onderkant filter",
             "onderkant buis",
             "positie meetinstrument",
-            "meetinstrumentsdiepte",
             "beschermconstructie",
         ]
 
@@ -496,22 +462,24 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         positions_dict = {}
         for i in range(len(selection_with_column_names_row)):
             positions_dict[
-                selection_with_column_names_row.iloc[i]["filtercode"]
+                selection_with_column_names_row.iloc[i]["filternummer"]
             ] = selection_with_column_names_row.iloc[i].to_dict()
         position_table = pd.DataFrame(positions_dict)
         position_table.index = range(len(position_table))
         position_table.drop(0, inplace=True)
-        position_table = position_table.rename(columns={"filtercode": ""})
+        position_table = position_table.rename(columns={"filternummer": ""})
         position_table[""] = [
-            "Maaiveldhoogte (m t.o.v. mv)",
+            f"Maaiveldhoogte ({referentie})",
             f"Bovenkant buis ({referentie})",
             f"Bovenkant filter ({referentie})",
             f"Onderkant filter ({referentie})",
             f"Onderkant buis ({referentie})",
             f"Hoogte meetinstrument ({referentie})",
-            "Meetinstrumentsdiepte (m t.o.v. bvk buis)",
             "Beschermconstructie",
         ]
+
+        print("NOT TABLE")
+
 
         barchart.add_trace(
             go.Table(
@@ -532,6 +500,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             col=1,
             # row=1, col=1
         )
+
+        print("NOT TRACES 3")
+
 
         # Update de layout van de grafiek
         barchart.update_layout(
@@ -560,6 +531,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
 
         barchart.update_layout(barmode="relative")
 
+        print("NOT LAYOUT")
+
 
         # Update the x-axis layout to set the tick positions and labels
         barchart.update_xaxes(
@@ -568,7 +541,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         
 
     except Exception as e:
-        print(e)
+        print("EXCEPTION: ", e)
+
+    barchart
 
     return barchart
 
@@ -585,11 +560,11 @@ app.layout = html.Div(
         dcc.Store(id="event-electrodes-view"),
         html.Div(
             [
-                html.Div(id="business-id", children="", style={"display": "none"}),
+                html.Div(id="groundwater-monitoring-well-static-id", children="", style={"display": "none"}),
                 html.Div(
                     children=[
                         html.Br(),
-                        html.Label("Geregistreerde werkzaamheden / wijzigingen"),
+                        html.Label("Geregistreerde werkzaamheden"),
                         dcc.Dropdown(id="event-list"),
                         html.Br(),
                         html.Label("Referentie"),
@@ -602,7 +577,7 @@ app.layout = html.Div(
                     style={"padding": 10, "flex": 1},
                 ),
                 html.Div(
-                    children=[dcc.Graph(id="graph")],
+                    children=[dcc.Graph(id="graphic")],
                     style={"padding-left": 20, "padding-right": 50, "flex": 4},
                 ),
             ],
@@ -624,7 +599,7 @@ def toggle_collapse(n, is_open):
 
 
 @app.callback(
-    Output("graph", "figure"),
+    Output("graphic", "figure"),
     [
         Input("event-tubes-view", "data"),
         Input("event-electrodes-view", "data"),
@@ -643,201 +618,148 @@ def update_output_div(data_tube, data_electrodes, event, options, referentie):
 
 @app.callback(
     [Output("event-list", "options"), Output("event-list", "value")],
-    [Input("business-id", "children")],
+    [Input("groundwater-monitoring-well-static-id", "children")],
 )
-def get_dropdown_events(well_id):
-    monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, groundwater_monitoring_well_static_id=well_id)
-    meetpunt_date = monitoring_well.datum_plaatsing
+def get_dropdown_events(groundwater_monitoring_well_static_id):
+    monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, bro_id=groundwater_monitoring_well_static_id)
     events = []
 
-    def add_event(event_datetime, event_type, onderhoud, events):
-        if onderhoud:
-            label = (
-                f"Onderhoud, {event_datetime}"
-                if event_type != "Inrichting"
-                else f"{event_type}, {event_datetime}"
-            )
-        else:
-            label = (
-                f"Onbekend, {event_datetime}"
-                if event_type != "Inrichting"
-                else f"{event_type}, {event_datetime}"
-            )
-        try:
-            if label not in pd.DataFrame(events)["label"].values:
-                events.append(
-                    {
-                        "datumtijd": str(event_datetime),
-                        "label": label,
-                        "strptime": event_datetime,
-                    }
-                )
-        except:  # noqa: E722
-            logger.exception("Bare except")
-            events.append(
-                {
-                    "datumtijd": str(event_datetime),
-                    "label": label,
-                    "strptime": event_datetime,
-                }
-            )
-        return events
-
-    # Meetpuntgeschiedenis records
-    well_histories = GroundwaterMonitoringWellDynamic.objects.filter(
-        groundwater_monitoring_well_static=monitoring_well
-    )
-    for well_history in well_histories:
-        event_datetime = datetime_convert(well_history.datum_vanaf)
-        if event_datetime < monitoring_well.datum_plaatsing:
-            event_datetime = monitoring_well.datum_plaatsing
-        event_type = "Inrichting" if event_datetime <= meetpunt_date else "Onbekend"
-
-        events = add_event(event_datetime, event_type, False, events)
+    def format_event(event_datetime:datetime.date, event: Event) -> dict:
+        label = (
+            f"{event.event_name} ({event_datetime})"
+        )
+        return {
+            "datumtijd": str(event_datetime),
+            "label": label,
+            "strptime": event_datetime,
+            "event_id": event.change_id,
+        }
 
     # Onderhoudsmoment records
-    onderhoud = Event.objects.filter(
-        meetpunt_id=monitoring_well.id, datum__gte=meetpunt_date
+    onderhoudsmomenten = Event.objects.filter(
+        groundwater_monitoring_well_static=monitoring_well,
     )
-    for well_history in onderhoud:
-        event_datetime = datetime_convert(well_history.datum)
-        events = add_event(event_datetime, well_history.id, True, events)
-
-    # Filtergeschiedenis records
-    for filtr in GroundwaterMonitoringTubeStatic.objects.filter(meetpunt_id=monitoring_well.id):
-        filtr_historie = GroundwaterMonitoringTubeDynamic.objects.filter(filter_id=filtr.id)
-        for filtr_historie_record in filtr_historie:
-            event_datetime = datetime_convert(filtr_historie_record.datum_vanaf)
-            if event_datetime < monitoring_well.datum_plaatsing:
-                event_datetime = monitoring_well.datum_plaatsing
-            if event_datetime not in [e["datumtijd"] for e in events]:
-                event_type = filtr_historie_record.onderhoudsmoment_id
-                events = add_event(event_datetime, event_type, False, events)
+    for onderhoud in onderhoudsmomenten:
+        event_datetime = datetime_convert(onderhoud.event_date)
+        events.append(format_event(event_datetime, onderhoud))
 
     # Post-processing (removing duplicates and formatting)
     events = pd.DataFrame(events)
-    duplicates_events = events[events.duplicated(subset=["strptime"])]
-    for i in duplicates_events.index:
-        label = duplicates_events["label"][i].replace("Onderhoud", "Onbekend")
-        events_i = events[events["label"] == label].index.values[0]
-        events.drop(events_i, inplace=True)
 
     events = events.sort_values(by=["strptime"])
     events = events.to_dict(orient="records")
     value = len(events) - 1
-    options = [{"label": event["label"], "value": i} for i, event in enumerate(events)]
+    options = [{"label": event["label"], "value": i, "event": event} for i, event in enumerate(events)]
     return options, value
 
+def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
+    if event.groundwater_monitoring_well_dynamic:
+        return event.groundwater_monitoring_well_dynamic
+    
+    datetime_event = convert_event_date_str_to_datetime(event.event_date)
+
+    return GroundwaterMonitoringWellDynamic.objects.filter(
+        groundwater_monitoring_well_static = event.groundwater_monitoring_well_static,
+        date_from__lte =  datetime_event,
+    ).order_by("date_from").last()
 
 @app.callback(
     [Output("event-tubes-view", "data"), Output("event-electrodes-view", "data")],
     [
-        Input("business-id", "children"),
+        Input("groundwater-monitoring-well-static-id", "children"),
         Input("event-list", "options"),
         Input("event-list", "value"),
     ],
 )
-def get_event(business_id, eventlist, event):
+def get_event(groundwater_monitoring_well_static_id, eventlist, event):
     eventframe = pd.DataFrame(eventlist)
-    event_label = eventframe["label"][eventframe["value"] == event].values[0]
-    time = datetime.datetime.strptime(
-        event_label.split(", ")[1] + "T23:59:59Z", "%Y-%m-%dT%H:%M:%SZ"
-    )
-    meetpunt = GroundwaterMonitoringWellStatic.objects.get(business_id=business_id)
-    meetpunt_hist = GroundwaterMonitoringWellDynamic.objects.filter(
-        meetpunt_id=meetpunt.id, datum_vanaf__lte=time
-    ).latest("datum_vanaf")
-    beschermconstructie = meetpunt_hist.beschermconstructie
+    event_id = eventframe["event"][eventframe["value"] == event].values[0]["event_id"]
+    monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, bro_id=groundwater_monitoring_well_static_id)
+    event = get_object_or_404(Event, change_id=event_id)
+    well_dynamic = get_well_dynamic(event)
+    datetime_event = convert_event_date_str_to_datetime(event.event_date)
+    well_head_protector = well_dynamic.well_head_protector
+
 
     putdata = {
-        "date": meetpunt.datum_plaatsing,
-        "constructie": True,
+        "date": datetime_event,
+        "constructie": (event.event_name == "constructie"),
         "onderhoud": [],
         "put": {
-            "maaiveld": meetpunt_hist.maaiveldhoogte,
+            "maaiveld": well_dynamic.ground_level_position,
         },
         "filters": [],
     }
 
     elektrode_data = []
 
-    filters = GroundwaterMonitoringTubeStatic.objects.filter(meetpunt_id=meetpunt.id)
+    filters = GroundwaterMonitoringTubeStatic.objects.filter(groundwater_monitoring_well_static=monitoring_well)
     for filtr in filters:
-        filtr_gesch = GroundwaterMonitoringTubeDynamic.objects.filter(
-            filter_id=filtr.id, datum_vanaf__lte=time
-        ).latest("datum_vanaf")
-        filtr_gesch_tot_inplaatsing = GroundwaterMonitoringTubeDynamic.objects.filter(
-            filter_id=filtr.id, ingeplaatst_deel=False, datum_vanaf__lte=time
-        ).latest("datum_vanaf")
-        if not filtr_gesch.ingeplaatst_deel:
-            putdata["filters"] += (
+        filtr_history = GroundwaterMonitoringTubeDynamic.objects.filter(
+            groundwater_monitoring_tube_static=filtr, date_from__lte=datetime_event
+        ).order_by("date_from").last()
+        
+        filt_dict = (
+            {
+                "nummer": filtr.tube_number,
+                "bovenkant buis": filtr_history.tube_top_position,
+                "bovenkant filter": filtr_history.screen_top_position,
+                "onderkant filter": filtr_history.screen_bottom_position,
+                # Onderkant buis wordt niet geregistreerd, daarom neem ik aan dat de onderkant van het filter de onderkant van de buis is.
+                "onderkant buis": filtr_history.screen_bottom_position, 
+
+                # Meet instrument diepte wordt op het moment ook nog niet geregistreerd (dummy waarde)
+                "diepte meetinstrument": filtr_history.screen_top_position,
+
+                # Zandvang wordt op het moment nog niks mee gedaan
+                "zandvang": filtr.sediment_sump_present,
+                "zandvang lengte": filtr.sediment_sump_length,
+                "beschermconstructie": well_head_protector,
+            },
+        )
+
+        if filtr_history.tube_inserted:
+            filt_dict.update(
                 {
-                    "code": filtr.business_id,
-                    "nummer": filtr.filternummer,
-                    "bovenkant buis": filtr_gesch.referentiehoogte,
-                    "bovenkant filter": filtr.diepte_bovenkant_filter,
-                    "onderkant filter": filtr.diepte_onderkant_filter,
-                    "onderkant buis": filtr.diepte_onderkant_buis,
-                    "diepte meetinstrument": filtr_gesch.meetinstrumentdiepte,
-                    "zandvang": filtr.zandvang,
-                    "zandvang lengte": filtr.zandvanglengte,
-                    "beschermconstructie": beschermconstructie,
-                },
-            )
-        else:
-            putdata["filters"] += (
-                {
-                    "code": filtr.business_id,
-                    "nummer": filtr.filternummer,
-                    "bovenkant buis": filtr_gesch_tot_inplaatsing.referentiehoogte,
-                    "bovenkant ingeplaatst deel": filtr_gesch.referentiehoogte,
-                    "lengte ingeplaatst deel": filtr_gesch.lengte_ingeplaatst_deel,
-                    "bovenkant filter": filtr.diepte_bovenkant_filter,
-                    "onderkant filter": filtr.diepte_onderkant_filter,
-                    "onderkant buis": filtr.diepte_onderkant_buis,
-                    "diepte meetinstrument": filtr_gesch.meetinstrumentdiepte,
-                    "zandvang": filtr.zandvang,
-                    "zandvang lengte": filtr.zandvanglengte,
-                    "beschermconstructie": beschermconstructie,
-                },
+                    "bovenkant ingeplaatst deel": filtr_history.tube_top_position,
+                    "lengte ingeplaatst deel": filtr_history.inserted_part_length,
+                }
             )
 
-        geo_ohmkabels = GeoOhmCable.objects.filter(filter_id=filtr.id)
+        putdata["filters"] += filt_dict
+
+        geo_ohmkabels = GeoOhmCable.objects.filter(groundwater_monitoring_tube_static=filtr)
         for kabel in geo_ohmkabels:
-            elektrodes = ElectrodeStatic.objects.filter(geo_ohmkabel__id=kabel.id)
+            elektrodes = ElectrodeStatic.objects.filter(geo_ohm_cable=kabel)
             for elektrode in elektrodes:
                 elektrode_data += [
                     {
-                        "filter": filtr.filternummer,
-                        "kabel": kabel.kabelnummer,
-                        "elektrode": elektrode.elektrodenummer,
-                        "positie": elektrode.elektrodepositie,
-                        "status": elektrode.elektrodestatus,
+                        "filter": filtr.tube_number,
+                        "kabel": kabel.cable_number,
+                        "elektrode": elektrode.electrode_number,
+                        "positie": elektrode.electrode_position,
                     }
                 ]
+    
     try:
         putdataframe = transform_putdata_to_df(putdata)
-    except Exception:
+    except:
         putdataframe = pd.DataFrame()
 
     electrodedataframe = transform_electrodedata_to_df(elektrode_data)
+    
     event_dates = list(putdataframe["datum"].unique())
 
     event = event_dates[0]
 
     width_original = 0.15
     selection = putdataframe[putdataframe["datum"] == event]
+    selection["gmw"] = monitoring_well.__str__()
     selection["startpunten"] = putdataframe["onderkant buis"]
 
     for column in [
-        "bovenkant buis",
         "onderkant buis",
-        "bovenkant filter",
-        "onderkant filter",
-        "bovenkant ingeplaatst deel",
-        "diepte meetinstrument",
         "onderkant ingeplaatst deel",
-        "lengte ingeplaatst deel",
     ]:
         if column == "onderkant buis":
             selection[column] = selection[column].fillna(selection["onderkant filter"])
@@ -846,11 +768,6 @@ def get_event(business_id, eventlist, event):
                 selection["bovenkant filter"] + 0.1
             )
         selection[column] = selection[column].fillna(0)
-
-    nul_filter = 0
-    for value in selection["filternummer"]:
-        if value == 0:
-            nul_filter = 1
 
     selection["stijgbuis_onder_filter"] = (
         selection["onderkant filter"] - selection["onderkant buis"]
@@ -876,7 +793,7 @@ def get_event(business_id, eventlist, event):
 
     selection_electrode = electrodedataframe.copy()
 
-    selection_electrode["x"] = selection_electrode["filter"] + (width_original / 2) + nul_filter
+    selection_electrode["x"] = selection_electrode["filter"] + (width_original / 2)
     return (selection.to_dict("records"), selection_electrode.to_dict("records"))
 
 
