@@ -1,5 +1,7 @@
 import django.forms as forms
 from . import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 class BinaryFileInput(forms.ClearableFileInput):
 
@@ -26,6 +28,7 @@ class BinaryFileInput(forms.ClearableFileInput):
             return upload.read()
 
 class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
+    
     x = forms.CharField(required=True)
     y = forms.CharField(required=True)
     cx = forms.CharField(required=False)

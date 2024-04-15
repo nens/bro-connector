@@ -5,6 +5,7 @@ from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
 from zipfile import ZipFile
 import os
+import logging
 
 from django.db import models
 
@@ -12,6 +13,13 @@ from . import models as gmw_models
 
 from main.settings.base import gmw_SETTINGS
 from . import forms as gmw_forms
+from gmn.models import MeasuringPoint
+
+import main.utils.validators_admin as validators_admin
+
+
+
+logger = logging.getLogger(__name__)
 
 
 def _register(model, admin_class):
@@ -104,9 +112,11 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         # Haal de waarden van de afgeleide attributen op uit het formulier
-        x = form.cleaned_data["x"]
-        y = form.cleaned_data["y"]
 
+        
+        x = form.cleaned_data["x"]   
+        y = form.cleaned_data["y"]
+        
         cx = form.cleaned_data["cx"]
         cy = form.cleaned_data["cy"]
 
@@ -115,11 +125,47 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         if cx != "" and cy != "":
             obj.construction_coordinates = GEOSGeometry(
                 f"POINT ({cx} {cy})", srid=28992
-            )
+            )   
 
+        # Als er een put is met het obj id
+        originele_put = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id).first()
+        
+        # x- & y-coördinate check within dutch boundaries EPSG:28992
+        (valid, message) = validators_admin.x_within_netherlands(obj)
+        if valid is False:
+            self.message_user(request, message, level="WARNING")
+            if originele_put is not None:
+                obj.coordinates[0] = originele_put.coordinates[0]
+            else:
+                obj.coordinates[0] = -999
+
+        (valid, message) = validators_admin.y_within_netherlands(obj)
+        if valid is False:
+            self.message_user(request, message, level="WARNING")
+            if originele_put is not None:
+                obj.coordinates[1] = originele_put.coordinates[1]
+            else:
+                obj.coordinates[1] = -999
+        
+        # test if new coordinate is within distance from previous coordinates
+        if originele_put is not None:          
+            # .coordinates consist of x [0] and y [1]   
+            (valid, message) = validators_admin.validate_x_coordinaat(obj)
+            if valid is False:
+                self.message_user(request, message, level="ERROR")
+                obj.coordinates[0] = originele_put.coordinates[0]
+            
+            (valid, message) = validators_admin.validate_y_coordinaat(obj)
+            if valid is False:
+                self.message_user(request, message, level="ERROR")
+                obj.coordinates[1] = originele_put.coordinates[1]
+
+
+        
         # Sla het model op
         obj.save()
 
+        
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
@@ -141,6 +187,24 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     list_filter = ("groundwater_monitoring_well_static", "deliver_gld_to_bro", "owner")
 
 
+    def save_model(self, request, obj, form, change):
+        try:
+            originele_meetpuntgeschiedenis = gmw_models.GroundwaterMonitoringWellDynamic.objects.get(
+                groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
+            )
+        except:  # noqa: E722
+            logger.exception("Bare except")
+            originele_meetpuntgeschiedenis = None
+
+        (valid, message) = validators_admin.validate_surface_height_ahn(obj)
+        if valid is False:
+            self.message_user(request, message, level="ERROR")
+            if originele_meetpuntgeschiedenis is not None:
+                obj.ground_level_position = originele_meetpuntgeschiedenis.ground_level_position
+
+        obj.save()
+
+
 class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
 
     form = gmw_forms.GroundwaterMonitoringTubesStaticForm
@@ -158,8 +222,44 @@ class GroundwaterMonitoringTubesStaticAdmin(admin.ModelAdmin):
         "screen_length",
         "sock_material",
         "sediment_sump_length",
+        "in_use",
+        # "screen_top_position",
+        # "screen_bottom_position"
     )
     list_filter = ("deliver_gld_to_bro",)
+
+    readonly_fields =["in_use"]
+    
+    def in_use(self, obj):
+        return len(MeasuringPoint.objects.filter(
+            groundwater_monitoring_tube = obj
+        )) > 0
+
+    def save_model(self, request, obj, form, change):
+
+        # Origine filter waardes
+        try:
+            filter_oud =gmw_models.GroundwaterMonitoringTubeStatic.objects.get(
+                groundwater_monitoring_tube_static_id=obj.groundwater_monitoring_tube_static_id
+            )
+
+        except:  # noqa: E722
+            logger.exception("Bare except")
+            filter_oud = None
+
+        # De eerste validatiecontroles zijn hard. Dat betekend dat foutieve waarden niet opgeslagen mogen worden,
+        # en op een foutieve waarde volgt een waarschuwing. De originele waarde blijft behouden
+            
+        print("This is the object: ", obj)
+        # Opeenvolgende filterdiepte
+        # TODO
+        
+
+        # Bovenkant filterdiepte
+
+        
+
+
 
 
 class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
@@ -183,6 +283,31 @@ class GroundwaterMonitoringTubesDynamicAdmin(admin.ModelAdmin):
     )
     list_filter = ("groundwater_monitoring_tube_static_id",)
 
+    readonly_fields =["screen_top_position", "screen_bottom_position"]
+
+    def save_model(self, request, obj, form, change):
+        try:
+            originele_filtergeschiedenis = gmw_models.GroundwaterMonitoringTubeDynamic.objects.get(
+                groundwater_monitoring_tube_dynamic_id=obj.groundwater_monitoring_tube_dynamic_id
+            )
+        except:  # noqa: E722
+            message = "Er bestaat geen historie voor het filter"
+            self.message_user(request, message, level="ERROR")
+            originele_filtergeschiedenis = None
+
+        # TODO validate_logger_depth_filter
+        
+        (valid, message) = validators_admin.validate_reference_height(obj)
+        if valid is False:
+            self.message_user(request, message, level="ERROR")
+            if originele_filtergeschiedenis is not None:
+                obj.screen_top_position = originele_filtergeschiedenis.screen_top_position
+
+        (valid, message) = validators_admin.validate_reference_height_ahn(obj)
+        if valid is False:
+            self.message_user(request, message, level="ERROR")
+
+        obj.save()
 
 class GeoOhmCableAdmin(admin.ModelAdmin):
 
@@ -192,7 +317,11 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
         "geo_ohm_cable_id",
         "groundwater_monitoring_tube_static_id",
         "cable_number",
+        # "electrode_count",
     )
+
+    readonly_fields =["electrode_count"]
+
     list_filter = ("groundwater_monitoring_tube_static_id",)
 
 
@@ -207,7 +336,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
         "electrode_packing_material",
         "electrode_position",
     )
-    list_filter = ("electrode_static_id",)
+    list_filter = ("electrode_static_id","geo_ohm_cable_id",)
 
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
@@ -231,10 +360,11 @@ class EventAdmin(admin.ModelAdmin):
         "event_name",
         "event_date",
         "groundwater_monitoring_well_static",
+        "groundwater_monitoring_well_dynamic",
         "groundwater_monitoring_tube_dynamic",
         "electrode_dynamic",
     )
-    list_filter = ("change_id",)
+    list_filter = ("change_id","groundwater_monitoring_well_static")
 
 
 class PictureAdmin(admin.ModelAdmin):

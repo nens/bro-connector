@@ -49,14 +49,6 @@ class FormationResistanceDossier(models.Model):
         blank=True,
     )
 
-    ### DO WE WANT TO ADD THESE?  NOT REQUIRED ###
-
-    # first_measurement = models.DateField()
-    # most_recent_measurement = models.DateField()
-    # registration_history = models.ForeignKey()
-
-    ##############################################
-
     # References to other tables
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
@@ -70,9 +62,62 @@ class FormationResistanceDossier(models.Model):
 
     deliver_to_bro = models.BooleanField(blank=False, null=True)
 
-    closure_date = models.DateField(blank=True, null=True)
+    ##############################################
+    ### DO WE WANT TO ADD THESE?  NOT REQUIRED ###
+    # first_measurement = models.DateField()
+    # most_recent_measurement = models.DateField()
+    # registration_history = models.ForeignKey()
 
-    closed_in_bro = models.BooleanField(blank=False, null=False, editable=True, default=False)
+    # closure_date = models.DateField(blank=True, null=True)
+
+    # closed_in_bro = models.BooleanField(blank=False, null=False, editable=True, default=False)
+    @property
+    def first_measurement(self):
+        # TODO: add functionality to standard function?
+        geo_ohm_method = GeoOhmMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("measurement_date").first()
+
+        electro_magnetic_method = ElectromagneticMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("measurement_date").first()
+        
+        geo_ohm_method_date = getattr(geo_ohm_method, 'measurement_date', None)
+        electro_magnetic_method_date = getattr(electro_magnetic_method, 'measurement_date', None)
+    
+        if geo_ohm_method_date and electro_magnetic_method:
+            return min(geo_ohm_method_date, electro_magnetic_method_date)
+        elif geo_ohm_method_date:
+            return geo_ohm_method_date
+        elif electro_magnetic_method_date:
+            return electro_magnetic_method_date
+        else:
+            return None
+               
+    @property
+    def most_recent_measurement(self):
+        
+        geo_ohm_method = GeoOhmMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("-measurement_date").first()
+
+        electro_magnetic_method = ElectromagneticMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("-measurement_date").first()
+        
+        geo_ohm_method_date = getattr(geo_ohm_method, 'measurement_date', None)
+        electro_magnetic_method_date = getattr(electro_magnetic_method, 'measurement_date', None)
+    
+        if geo_ohm_method_date and electro_magnetic_method:
+            return min(geo_ohm_method_date, electro_magnetic_method_date)
+        elif geo_ohm_method_date:
+            return geo_ohm_method_date
+        elif electro_magnetic_method_date:
+            return electro_magnetic_method_date
+        else:
+            return None
+               
+    
 
 
     def __str__(self):
@@ -83,10 +128,9 @@ class FormationResistanceDossier(models.Model):
 
     @property
     def name(self):
-        if self.frd_bro_id != None:
+        if self.frd_bro_id:
             return f"{self.frd_bro_id}"
         return f"FRD_{self.object_id_accountable_party}"
-        
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding

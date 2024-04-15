@@ -45,14 +45,14 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "research_last_date",
         "gmw_bro_id",
         "gld_bro_id",
+        "first_measurement",
+        "most_recent_measurement"
     )
     list_filter = (
         "research_start_date",
         "research_last_date",
         "groundwater_level_dossier_id",
         "groundwater_monitoring_tube_id",
-        "research_start_date",
-        "research_last_date",
     )
 
 
@@ -81,30 +81,10 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "observation_id",
         "measurement_time",
         "field_value",
-        "field_value_unit",
-        "calculated_value",
-        "corrected_value",
-        "correction_time",
-        "correction_reason",
-        # "measurement_point_metadata_id",
-        "measurement_point_metadata",
     )
     list_filter = (
-        "measurement_time",
-        "correction_time",
-        "measurement_tvp_id",
         "observation_id",
-        "measurement_time",
-        "field_value",
-        "field_value_unit",
-        "calculated_value",
-        "corrected_value",
-        "correction_time",
-        "correction_reason",
-        # "measurement_point_metadata_id",
-        "measurement_point_metadata",
     )
-
 
 class ObservationAdmin(admin.ModelAdmin):
 
@@ -126,10 +106,11 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_endtime",
         "observation_metadata_id",
         "observation_process",  #
-        "groundwater_level_dossier_id",
+        "groundwater_level_dossier_id", #groundwater_level_dossier_id
         "result_time",
         "status",
     )
+    
 
 
 class ObservationMetadataAdmin(admin.ModelAdmin):

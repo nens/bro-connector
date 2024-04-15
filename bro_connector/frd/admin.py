@@ -21,10 +21,13 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
         "frd_bro_id",
         "object_id_accountable_party",
         "quality_regime",
+
     )
     list_filter = (
         "object_id_accountable_party",
     )
+
+    readonly_fields = ["first_measurement", "most_recent_measurement"]
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):
 
@@ -45,9 +48,10 @@ class ElectromagneticMeasurementMethodAdmin(admin.ModelAdmin):
     )
 
 class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
-
+    # form  = ...
     list_display = (
         "id",
+        "formation_resistance_dossier",
         "measurement_date",
         "measuring_responsible_party",
         "measuring_procedure",

@@ -22,8 +22,46 @@ class GroundwaterLevelDossier(models.Model):
     research_last_date = models.DateField(blank=True, null=True)
     research_last_correction = models.DateTimeField(blank=True, null=True)
 
+    @property
+    def first_measurement(self):
+        first_measurement = Observation.objects.filter(
+            groundwater_level_dossier = self
+        ).order_by("observation_starttime").first()
+        first_measurement_date= getattr(first_measurement, 'observation_starttime', None)
+
+        return first_measurement_date
+    
+    @property
+    def most_recent_measurement(self):
+
+        observations_groundwaterleveldossier = Observation.objects.filter(
+            groundwater_level_dossier = self
+        ).order_by("-observation_starttime")
+
+        for observation_groundwaterleveldossier in observations_groundwaterleveldossier:
+            
+            # last_measurementTVP
+            most_recent_measurement = MeasurementTvp.objects.filter(
+            observation_id = observation_groundwaterleveldossier.observation_id
+            ).order_by("-measurement_time").first()
+
+            if most_recent_measurement is not None:
+                return most_recent_measurement.measurement_time
+            
+        return None    
+            
+
+        # most_recent_observation = Observation.objects.filter(
+        #     groundwater_level_dossier = self
+        # ).exclude(observation_endtime=None).order_by("-observation_endtime").first()
+        # most_recent_observation_date = getattr(most_recent_observation, 'observation_endtime', None)
+
+        # return most_recent_observation_date
+
     def __str__(self):
         return "{}".format(str(self.gld_bro_id))
+
+    
 
     class Meta:
         managed = True

@@ -405,6 +405,8 @@ JAZZMIN_SETTINGS = {
     "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
 }
 
+BRO_API_VERSION = "v2"
+
 
 GRAPH_MODELS = {
     "all_applications": True,

@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.gis.db import models as geo_models
 from .choices import *
+from django.core.validators import MaxValueValidator, MinValueValidator
+import main.utils.validators_models as validators_models
+
 
 
 class GroundwaterMonitoringWellStatic(models.Model):
@@ -94,6 +97,16 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         null=True,
         blank=True,
     )
+    date_from = models.DateField(
+        null=True, 
+        blank=True,
+        help_text="Formaat: YYYY-MM-DD", 
+    )
+    date_until = models.DateField(
+        null=True, 
+        blank=True,
+        help_text=("Wordt automatisch gezet " 'op "datum vanaf" van volgende record.'), 
+    )
     number_of_standpipes = models.IntegerField(blank=True, null=True)
     ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
     well_stability = models.CharField(
@@ -106,7 +119,12 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     )
     deliver_gld_to_bro = models.BooleanField(blank=False, default=False)
     ground_level_position = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+        max_digits=6, 
+        decimal_places=3, 
+        blank=True, 
+        null=True,
+        help_text="eenheid: mNAP in 3 decimalen",
+        validators=[validators_models.maaiveldhoogte_validation],
     )
     ground_level_positioning_method = models.CharField(
         choices=GROUNDLEVELPOSITIONINGMETHOD, max_length=200, blank=True, null=True
@@ -152,7 +170,9 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         blank=True,
     )
     deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
-    tube_number = models.IntegerField(blank=True, null=True)
+    tube_number = models.IntegerField(
+        blank=True, null=True, validators=[validators_models.tube_number_validation]
+    )
     tube_type = models.CharField(
         choices=TUBETYPE, max_length=200, blank=True, null=True
     )
@@ -169,19 +189,12 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         choices=SOCKMATERIAL, max_length=200, blank=True, null=True
     )
     sediment_sump_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+        max_digits=6, 
+        decimal_places=3, 
+        blank=True, 
+        null=True,
+        validators=[validators_models.zandvanglengte_validator]
     )
-
-    @property
-    def screen_top_position(self):
-        return self.tube_top_position - self.plain_tube_part_length
-
-    @property
-    def screen_bottom_position(self):
-        return self.tube_top_position - (
-            self.plain_tube_part_length
-            + self.groundwater_monitoring_tube_static.screen_length
-        )
 
     def __str__(self):
 
@@ -207,13 +220,32 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         null=True,
         blank=True,
     )
-    tube_top_diameter = models.IntegerField(blank=True, null=True)
+    date_from = models.DateField(
+        null=True, 
+        blank=True,
+        help_text="Formaat: YYYY-MM-DD", 
+    )
+    date_until = models.DateField(
+        null=True, 
+        blank=True,
+        help_text=("Wordt automatisch gezet " 'op "datum vanaf" van volgende record.'), 
+    )
+    tube_top_diameter = models.IntegerField(
+        blank=True, 
+        null=True,
+        validators=[validators_models.buisdiameter_validator],
+        )
     variable_diameter = models.CharField(max_length=200, blank=True, null=True)
     tube_status = models.CharField(
         choices=TUBESTATUS, max_length=200, blank=True, null=True
     )
     tube_top_position = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+        max_digits=6, 
+        decimal_places=3, 
+        blank=True, 
+        null=True,
+        validators=[validators_models.referentiehoogte_validation],
+        help_text="Hoogte bovenkant buis. Eenheid: mNAP"
     )
     tube_top_positioning_method = models.CharField(
         choices=TUBETOPPOSITIONINGMETHOD, max_length=200, blank=True, null=True
@@ -226,10 +258,18 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         max_digits=6, decimal_places=3, blank=True, null=True
     )  # Lengte stijbuisdeel
     inserted_part_diameter = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+        max_digits=6, 
+        decimal_places=3, 
+        blank=True, 
+        null=True,
+        validators=[validators_models.diameter_bovenkant_ingeplaatst_deel_validation],
     )  # This field type is a guess.
     inserted_part_length = models.DecimalField(
-        max_digits=6, decimal_places=3, blank=True, null=True
+        max_digits=6, 
+        decimal_places=3, 
+        blank=True, 
+        null=True,
+        validators=[validators_models.lengte_ingeplaatst_deel_validation],
     )  # This field type is a guess.
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
 
@@ -251,9 +291,8 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         else:
             well = str(self.groundwater_monitoring_tube_dynamic_id)
 
-        return "{}, tube {}".format(
-            well, self.groundwater_monitoring_tube_static.tube_number
-        )
+        return f"{well}--{self.groundwater_monitoring_tube_static.tube_number}-{self.groundwater_monitoring_tube_dynamic_id}"
+        
 
     class Meta:
         managed = True
@@ -277,7 +316,13 @@ class GeoOhmCable(models.Model):
 
     @property
     def electrode_count(self):
-        return ElectrodeStatic.objects.filter(geo_ohm_cable=self).count()
+        
+        number_of_electrodes = ElectrodeStatic.objects.filter(geo_ohm_cable=self).count()
+        # validators_models.aantal_elektrodes_validator(number_of_electrodes)
+        if number_of_electrodes < 2:
+            return "minimaal aantal elektrodes van 2 nog niet gelinkt aan Geo-ohmkabel"
+        else:
+            return number_of_electrodes
 
     class Meta:
         managed = True
@@ -294,7 +339,12 @@ class ElectrodeStatic(models.Model):
     electrode_packing_material = models.CharField(
         choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True
     )
-    electrode_position = models.CharField(max_length=200, blank=True, null=True)
+    electrode_position = models.CharField(
+        max_length=200, 
+        blank=True, 
+        null=True,
+        validators=[validators_models.elektrodepositie_validator],
+    )
     electrode_number = models.IntegerField(
         blank=True, null=True
     )
@@ -313,6 +363,16 @@ class ElectrodeDynamic(models.Model):
     electrode_dynamic_id = models.AutoField(primary_key=True)
     electrode_static = models.ForeignKey(
         ElectrodeStatic, on_delete=models.CASCADE, null=True, blank=True
+    )
+    date_from = models.DateField(
+        null=True, 
+        blank=True,
+        help_text="Formaat: YYYY-MM-DD", 
+    )
+    date_until = models.DateField(
+        null=True, 
+        blank=True,
+        help_text=("Wordt automatisch gezet " 'op "datum vanaf" van volgende record.'), 
     )
     electrode_status = models.CharField(
         choices=ELECTRODESTATUS, max_length=200, blank=True, null=True
@@ -334,6 +394,12 @@ class Event(models.Model):
         choices=EVENTNAME, max_length=200, blank=True, null=True
     )
     event_date = models.CharField(max_length=254, blank=True, null=True)
+    event_date_new = models.DateField(
+        null=True, 
+        blank=True,
+        help_text="Formaat: YYYY-MM-DD", 
+        validators=[validators_models.datetime_validation],
+    )
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
