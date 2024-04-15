@@ -92,7 +92,6 @@ class FormationResistanceDossier(models.Model):
                
     @property
     def most_recent_measurement(self):
-        
         geo_ohm_method = GeoOhmMeasurementMethod.objects.filter(
             formation_resistance_dossier = self
         ).order_by("-measurement_date").first()
