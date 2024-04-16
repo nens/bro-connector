@@ -1,7 +1,39 @@
 {% extends "admin/base_site.html" %} {% block content %} {% load static %}
 <!-- HTML -->
 <div id="deck-gl-canvas">
-  <div id="legend">
+  <!-- This code handles the gmn hamburger menu -->
+  <div id="legend-top">
+    <div
+      id="hamburger-button"
+      onclick="this.parentElement.classList.toggle('hamburger-open')"
+    >
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+    </div>
+    <div id="gmn-wrapper">
+      {% for gmn in gmns %}
+      <div
+        class="mapbox-checkbox-wrapper"
+        onclick="event.preventDefault(); handleGmnClick('{{ gmn }}', this)"
+      >
+        <label class="mapbox-checkbox-label" for="checkbox-{{gmn}}">
+          <input
+            type="checkbox"
+            class="mapbox-checkbox"
+            id="checkbox-{{gmn}}"
+            name="checkbox-{{gmn}}"
+            checked
+            onclick="handleCheckboxClick(this)"
+          />
+          {{gmn}}
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div id="legend-bottom">
     {% for organisation in organisations %}
     <div
       class="mapbox-checkbox-wrapper"
@@ -25,6 +57,7 @@
 
 <!-- Add json information -->
 <div class="json">{{ wells|json_script:"wells_json" }}</div>
+<div class="json">{{ gmns|json_script:"gmns_json" }}</div>
 <div class="json">{{ organisations|json_script:"organisations_json" }}</div>
 <div class="json">
   {{ groundwater_level_dossiers|json_script:"groundwater_level_dossiers_json" }}
@@ -40,8 +73,7 @@
   rel="stylesheet"
 />
 <script src="
-https://unpkg.com/deck.gl@8.9.35/dist.min.js"
-></script>
+https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
 <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
 
 <!-- Link to javascript -->
