@@ -269,6 +269,11 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
 
     actions = ["deliver_gld_to_true"]
 
+    def in_use(self, obj):
+        return len(MeasuringPoint.objects.filter(
+            groundwater_monitoring_tube = obj
+        )) > 0
+
     def deliver_gld_to_true(self, request, queryset):
         for obj in queryset:
             with reversion.create_revision():
@@ -371,7 +376,6 @@ class EventAdmin(admin.ModelAdmin):
     list_display = (
         "change_id",
         "event_name",
-        "event_date",
         "groundwater_monitoring_well_static",
         "groundwater_monitoring_well_dynamic",
         "groundwater_monitoring_tube_dynamic",
@@ -381,7 +385,6 @@ class EventAdmin(admin.ModelAdmin):
         "change_id",
         "groundwater_monitoring_well_static",
         "event_name",
-        "event_date",
     )
     ordering = ['-change_id'] 
     autocomplete_fields = (
