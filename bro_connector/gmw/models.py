@@ -472,8 +472,7 @@ class Event(models.Model):
     event_name = models.CharField(
         choices=EVENTNAME, max_length=200, blank=True, null=True
     )
-    event_date = models.CharField(max_length=254, blank=True, null=True)
-    event_date_new = models.DateField(
+    event_date = models.DateField(
         null=True, 
         blank=True,
         help_text="Formaat: YYYY-MM-DD", 
