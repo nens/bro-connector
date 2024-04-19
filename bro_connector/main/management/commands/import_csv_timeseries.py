@@ -1,0 +1,121 @@
+import csv
+import logging
+import reversion
+from django.core.management.base import BaseCommand
+import datetime
+from gmw import models as gmw_models
+from gld import models as gld_models
+
+logger = logging.getLogger(__name__)
+
+def create_measurement(observation: gld_models.Observation, data: dict, datum: datetime.datetime):
+    meta = gld_models.MeasurementPointMetadata.objects.update_or_create(
+        status_quality_control = "onbekend",
+        interpolation_code = "discontinu",
+    )
+
+    tvp = gld_models.MeasurementTvp.objects.update_or_create(
+        observation = observation,
+        measurement_time = datum,
+        field_value = data["value"],
+        measurement_point_metadata = meta,
+    )
+
+def create_new_observation(data: dict, tube: gmw_models.GroundwaterMonitoringTubeStatic, datum: datetime.datetime):
+    print(tube)
+    # Find GLD
+    gld = gld_models.GroundwaterLevelDossier.objects.get(
+        groundwater_monitoring_tube = tube
+    )
+
+    # Create Observatie process
+    obs_process, created = gld_models.ObservationProcess.objects.update_or_create(
+        process_reference = "onbekend",
+        measurement_instrument_type = "onbekend",
+        air_pressure_compensation_type = "onbekend",
+        process_type = "algoritme",
+        evaluation_procedure = "oordeelDeskundige",
+    )
+
+    # Create Observatie metadata
+    obs_metadata, created = gld_models.ObservationMetadata.objects.update_or_create(
+        status = "voorlopig",
+        observation_type = "controlemeting",
+        date_stamp = datum.date(),
+        responsible_party_id = 21,
+    )
+    print(obs_metadata, obs_process, gld)
+    # Create Observatie
+    observatie, created = gld_models.Observation.objects.create(
+        observation_starttime = datum,
+        observation_metadata = obs_metadata,
+        observation_process = obs_process,
+        groundwater_level_dossier = gld,
+        up_to_date_in_bro = False,
+    )
+
+    return observatie
+
+class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--file", type=str, help="the location of the csv file you would like to use."
+        )
+
+    def handle(self, *args, **kwargs):
+        # First it should accept a csv file
+        file_path = kwargs.get("file")
+        nitg_oud = "None"
+        new = False
+
+        if not file_path:
+            raise ValueError("No file_path provided.")
+        
+        with open(file_path, encoding='utf-8') as file:
+            try:
+                dialect = csv.Sniffer().sniff(file.readline())
+            except OSError as e:
+                logger.error(f"{e}")
+
+            file.seek(0, 0)
+            reader = csv.reader(file, dialect)
+            for index, row in enumerate(reader):
+                print(f"{index}: {row}")
+
+                if index == 0:
+                    header = [column_name.replace("\ufeff", "") for column_name in row]
+                    continue
+
+                data = dict(zip(header, row))
+                
+                if data["NITG"] != nitg_oud:
+                    new = True
+
+                datum = datetime.datetime.strptime(data["date"], "%d/%m/%Y %H:%M")
+                
+                well = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
+                    nitg_code = data["NITG"]
+                ).first()
+
+                if well is None:
+                    logger.info(f"Well not found for {data['NITG']}")
+                    continue
+
+                tube = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
+                    groundwater_monitoring_well_static = well,
+                    tube_number = data["filter"],
+                )
+
+                if new is True:
+                    nitg_oud = data["NITG"]
+                    observatie = create_new_observation(data, tube, datum)
+
+                    create_measurement(observatie, data, datum)
+                    
+                    new = False
+
+                else:
+                    # Create metadata and measurement
+                    create_measurement(observatie, data, datum)
+
+
