@@ -130,7 +130,7 @@ class GLDHandler(BROHandler):
         else:
             f = "NEE"
 
-        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={f}")
+        gmw_verzoek = requests.get(f"{basis_url}{id}?filtered={f}")
         print(gmw_verzoek)
         self.root = ET.fromstring(gmw_verzoek.content)
 
