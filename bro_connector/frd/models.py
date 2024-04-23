@@ -583,8 +583,16 @@ def create_electromagnetic_series(instance: CalculatedFormationresistanceMethod)
         )
 
 
+def calculate_ohm_from_ohmm(
+    calculated_resistance: float, electrode_distance: float
+) -> float:
+    """
+    Inverse if the calculated formation resistance, to return the actual ohm value, instead of Ohm m
+    """
+    return (calculated_resistance / (4 * math.pi * electrode_distance))
+
 def calculate_formationresistance_geo_ohm(
-    resistance: float, area: float, electrode_distance: float
+    resistance: float, electrode_distance: float
 ) -> float:
     """
     Calculate the formation resistance in Ohm.m \n
@@ -637,20 +645,6 @@ def retrieve_electrode_position(
 
     return positie_float
 
-
-def retrieve_geo_ohm_cable_area(
-    electrode_reference: GMWElectrodeReference,
-    monitoring_tube: GroundwaterMonitoringTubeStatic,
-) -> float:
-    geo_ohm_cable = GeoOhmCable.objects.filter(
-        cable_number=electrode_reference.cable_number,
-        groundwater_monitoring_tube_static=monitoring_tube,
-    ).first()
-
-    # Will be retrieving the area if this is gonna be registered under geo ohm cables
-    return 0.01
-
-
 def calculate_electode_distance(electrode_position_1, electrode_position_2) -> float:
     print(electrode_position_1, electrode_position_2)
     if electrode_position_1 == None or electrode_position_2 == None:
@@ -677,10 +671,9 @@ def create_or_update_geo_record(
     electrode_distance = calculate_electode_distance(
         electrode_position_1, electrode_position_2
     )
-    area = retrieve_geo_ohm_cable_area(measurement_pair.elektrode1, monitoring_tube)
+
     calculated_resistance = calculate_formationresistance_geo_ohm(
         resistance=float(measurement_value.formationresistance),
-        area=area,
         electrode_distance=electrode_distance,
     )
 
