@@ -17,6 +17,7 @@ from . import serializers
 
 from django.contrib.gis.db.models.functions import Transform
 
+
 def gmw_map_context(request):
     gmw_qs = GroundwaterMonitoringWellStatic.objects.all()
     gmw_serializer = serializers.GMWSerializer(gmw_qs, many=True)
@@ -32,8 +33,18 @@ def gmw_map_context(request):
     gld_serializer = serializers.GLDSerializer(gld_qs, many=True)
     glds = gld_serializer.data
 
+    # Get all the gmns from the wells
+    gmns = []
+    for index in range(len(wells)):
+        linked_gmns = wells[index]["linked_gmns"]
+        for index in range(len(linked_gmns)):
+            linked_gmn = linked_gmns[index]
+            if linked_gmn not in gmns:
+                gmns.append(linked_gmn)
+
     context = {
         "wells": wells,
+        "gmns": gmns,
         "organisations": instanties,
         "groundwater_level_dossiers": glds,
         "maptiler_key": ls.maptiler_key,

@@ -3,9 +3,18 @@
   width: 1000px;
 }
 
-#legend {
+#legend-top {
   position: absolute;
-  right: 0;
+  right: 20px;
+  top: 20px;
+  z-index: 100;
+  background-color: white;
+  padding: 1em;
+}
+
+#legend-bottom {
+  position: absolute;
+  right: 20px;
   bottom: 20px;
   z-index: 100;
   background-color: white;
@@ -14,6 +23,16 @@
 
 .mapbox-checkbox-wrapper {
   cursor: pointer;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.mapbox-checkbox-wrapper:first-of-type {
+  margin-top: 0;
+}
+
+.mapbox-checkbox-wrapper:last-of-type {
+  margin-bottom: 0;
 }
 
 .mapbox-checkbox-label {
@@ -22,6 +41,7 @@
   user-select: none;
   display: flex;
   align-items: center;
+  margin-bottom: 0;
 }
 
 .mapbox-checkbox {
@@ -51,4 +71,54 @@
 }
 .mapboxgl-canvas.grabbing {
   cursor: grabbing !important;
+}
+
+#hamburger-button {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+}
+
+.hamburger-line {
+  flex-grow: 0;
+  height: 1px;
+  width: 100%;
+  border: 1px solid black;
+}
+
+#gmn-wrapper {
+  display: none;
+  top: 50px;
+  position: absolute;
+  right: 0;
+  background-color: white;
+  padding: 1em;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.hamburger-open #gmn-wrapper {
+  display: flex;
+}
+
+.hamburger-open .hamburger-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.hamburger-open .hamburger-line:first-of-type {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.hamburger-open .hamburger-line:nth-child(2) {
+  display: none;
+}
+
+.hamburger-open .hamburger-line:last-of-type {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }

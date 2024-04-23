@@ -1,5 +1,6 @@
 // Get information
 const wells = JSON.parse(document.getElementById("wells_json").textContent);
+const gmns = JSON.parse(document.getElementById("gmns_json").textContent);
 const organisations = JSON.parse(
   document.getElementById("organisations_json").textContent
 );
@@ -93,9 +94,12 @@ const myScatterplotLayer = new deck.MapboxLayer({
   lineWidthMinPixels: 2,
   getLineColor: white,
 
-  //   Hide circle when organisation is set to invicible
+  // Hide circle when gmn or organisation is set to invisible
   getRadius: (well) =>
-    colorMapping[well.delivery_accountable_party].visible ? 10 : 0,
+    well.linked_gmns.find((gmn) => gmnMapping[gmn].visible) &&
+    colorMapping[well.delivery_accountable_party].visible
+      ? 10
+      : 0,
 
   //   On click add a popup as an Mapbox marker at the circle's location
   onClick: (event) => {
@@ -146,12 +150,31 @@ map.on("mousemove", (e) => {
   if (!isHovering && cursor === "pointer") return setCursorStyle("grab");
 });
 
-// Handle if someone toggles and organisation
+const gmnMapping = {};
+
+gmns.forEach((gmn) => {
+  gmnMapping[gmn] = { visible: true };
+});
+
+// Handle if someone toggles an gmn
+const handleGmnClick = (id, element) => {
+  const checkbox = element.querySelector('input[type="checkbox"]');
+  const gmnMap = gmnMapping[id];
+  gmnMap.visible = !gmnMap.visible;
+  checkbox.checked = gmnMap.visible;
+  updateGetRadius();
+};
+
+// Handle if someone toggles an organisation
 const handleOrganisationClick = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
   const colorMap = colorMapping[id];
   colorMap.visible = !colorMap.visible;
   checkbox.checked = colorMap.visible;
+  updateGetRadius();
+};
+
+const updateGetRadius = () => {
   //   Updating the update triggers to Date.now() makes sure the getRadius gets recaluclated
   myScatterplotLayer.setProps({
     updateTriggers: {
