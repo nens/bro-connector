@@ -1,18 +1,6 @@
 from django.core.management.base import BaseCommand
-from django.db import transaction
 
-import pandas as pd
-import requests
-import bro_exchange as brx
-import json
-import os
-import sys
-import traceback
-import datetime
-import logging
-import bisect
 
-from main.settings.base import gld_SETTINGS
 from gld import models
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]

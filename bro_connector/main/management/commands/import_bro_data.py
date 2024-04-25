@@ -9,7 +9,6 @@ from ..tasks import (
     retrieve_historic_frd,
     retrieve_historic_gld,
     retrieve_historic_gmn,
-    retrieve_historic_gar,
 )
 
 

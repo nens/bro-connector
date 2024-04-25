@@ -1,21 +1,15 @@
 # Create your views here.
 from django.shortcuts import render
-from gmn.models import MeasuringPoint
 from gld.models import (
     GroundwaterLevelDossier,
-    Observation,
 )
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
     Instantie,
-    GroundwaterMonitoringTubeStatic,
 )
 from main import localsecret as ls
-import django.db.models as models
-from django.contrib.gis.db import models as geo_models
 from . import serializers
 
-from django.contrib.gis.db.models.functions import Transform
 
 def gmw_map_context(request):
     gmw_qs = GroundwaterMonitoringWellStatic.objects.all()

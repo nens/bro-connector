@@ -2,7 +2,6 @@ import logging
 
 import requests
 from django.conf import settings
-from django.db.models import Q
 
 from gmw import models as gmw_models
 
@@ -220,7 +219,7 @@ def x_within_netherlands(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tup
     valid = True
     min_x = 0
     max_x = 270000
-    message = f"x-coordinaat ligt niet binnen de grenzen van Nederland voor EPSG:28892"
+    message = "x-coordinaat ligt niet binnen de grenzen van Nederland voor EPSG:28892"
     
     if obj.coordinates[0]< min_x or obj.coordinates[0] > max_x:
         valid = False
@@ -231,7 +230,7 @@ def y_within_netherlands(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tup
     valid = True
     min_x = 150000
     max_x = 620000
-    message = f"y-coordinaat ligt niet binnen de grenzen van Nederland voor EPSG:28892"
+    message = "y-coordinaat ligt niet binnen de grenzen van Nederland voor EPSG:28892"
     
     if obj.coordinates[0]< min_x or obj.coordinates[0] > max_x:
         valid = False

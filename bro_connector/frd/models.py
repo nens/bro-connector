@@ -1,13 +1,11 @@
 from django.db import models
 import logging
 import reversion
-import re
 import math
 from .choices import *
 from django.core.validators import MaxValueValidator, MinValueValidator
 from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, ElectrodeStatic
 from gmn.models import GroundwaterMonitoringNet
-from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 
 logger = logging.getLogger(__name__)
 

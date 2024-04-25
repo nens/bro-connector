@@ -1,6 +1,5 @@
 import django.forms as forms
 from . import models
-from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 

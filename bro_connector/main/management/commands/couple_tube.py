@@ -3,7 +3,6 @@ from django.core.management.base import BaseCommand
 from gld.models import GroundwaterLevelDossier
 from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 from ..tasks.bro_handlers import GLDHandler
-import reversion
 
 
 class Command(BaseCommand):

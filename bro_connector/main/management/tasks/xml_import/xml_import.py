@@ -3,7 +3,6 @@ from .progressor import Progress
 import gmw.models as bro
 import datetime
 from string import punctuation, whitespace
-import reversion
 
 
 def import_xml(file: str, path: str) -> tuple:

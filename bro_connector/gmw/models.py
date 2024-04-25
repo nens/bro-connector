@@ -1,7 +1,6 @@
 from django.db import models
 import django.contrib.gis.db.models as geo_models
 from .choices import *
-from django.core.validators import MaxValueValidator, MinValueValidator
 import main.utils.validators_models as validators_models
 
 import random
@@ -628,7 +627,7 @@ class Maintenance(models.Model):
 class XMLImport(models.Model):
     id = models.AutoField(primary_key=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
-    file = models.FileField(upload_to=f"bulk", validators=[])
+    file = models.FileField(upload_to="bulk", validators=[])
     report = models.TextField(
         help_text="process description",
         blank=True,

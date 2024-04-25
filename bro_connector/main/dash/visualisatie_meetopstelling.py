@@ -5,7 +5,6 @@ import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-import pytz
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 from django.shortcuts import get_object_or_404
