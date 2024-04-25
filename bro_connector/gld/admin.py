@@ -87,6 +87,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_endtime",
         "result_time",
         "observation_type",
+        "measurement_type",
         "status",
         "up_to_date_in_bro",
     )

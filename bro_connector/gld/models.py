@@ -91,6 +91,14 @@ class Observation(models.Model):
     up_to_date_in_bro = models.BooleanField(default=True, editable=False)
 
     @property
+    def measurement_type(self):
+        return self.observation_process.measurement_instrument_type
+
+    @property
+    def observation_type(self):
+        return self.observation_metadata.observation_type
+
+    @property
     def status(self):
         return self.observation_metadata.status
 
