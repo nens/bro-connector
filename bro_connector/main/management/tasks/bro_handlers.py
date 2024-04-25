@@ -156,7 +156,7 @@ class GLDHandler(BROHandler):
             tag = element.tag
             split = tag.split("}")
 
-            if split[1] == f"observation":
+            if split[1] == "observation":
                 if self.number_of_observations != 0:
                     if self.number_of_observations == 1:
                         self.count_dictionary[
@@ -172,16 +172,16 @@ class GLDHandler(BROHandler):
                 self.number_of_observations = self.number_of_observations + 1
                 prefix = f"{self.number_of_observations}_"
 
-            if split[1] == f"broId":
+            if split[1] == "broId":
                 self.bro_ids.append(element.text)
 
             # If point, add prefix
-            if split[1] == f"point":
+            if split[1] == "point":
                 self.number_of_points = self.number_of_points + 1
                 prefix = f"{self.number_of_observations}_point_"
                 self.append_censoring()
 
-            if split[1] == f"NamedValue":
+            if split[1] == "NamedValue":
                 prefix = f"{self.number_of_observations}_nv_"
 
             # If qualifier values add different prefix

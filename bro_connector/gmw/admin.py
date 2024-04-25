@@ -492,7 +492,7 @@ class XMLImportAdmin(admin.ModelAdmin):
                 file_name = str(object.file)[13:-4]
                 print(file_name)
 
-                path = f"."
+                path = "."
 
                 for file in os.listdir(path):
                     if file.endswith("csv"):

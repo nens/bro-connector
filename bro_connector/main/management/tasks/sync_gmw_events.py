@@ -726,7 +726,7 @@ def create_sourcedocs(
         )
 
     except Exception as e:
-        process_status = f"failed_to_generate_source_documents"
+        process_status = "failed_to_generate_source_documents"
         record, created = models.gmw_registration_log.objects.update_or_create(
             bro_id=srcdocdata["broId"],
             event_id=event.change_id,
@@ -776,7 +776,7 @@ def create_construction_sourcedocs(
     # Registrate with history
     try:
         construction_request = brx.gmw_registration_request(
-            srcdoc=f"GMW_Construction",
+            srcdoc="GMW_Construction",
             requestReference=request_reference,
             deliveryAccountableParty=str(delivery_accountable_party),
             qualityRegime=well.quality_regime,
@@ -790,14 +790,14 @@ def create_construction_sourcedocs(
             output_dir=registrations_dir, filename=filename
         )
 
-        process_status = f"succesfully_generated_Construction_request"
+        process_status = "succesfully_generated_Construction_request"
         record, created = models.gmw_registration_log.objects.update_or_create(
             bro_id=srcdocdata["broId"],
             event_id=event.change_id,
             levering_type="Construction",
             quality_regime=well.quality_regime,
             defaults=dict(
-                comments=f"succesfully generated Construction request",
+                comments="succesfully generated Construction request",
                 date_modified=datetime.datetime.now(),
                 validation_status=None,
                 process_status=process_status,
