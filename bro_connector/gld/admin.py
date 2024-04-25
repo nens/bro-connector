@@ -28,7 +28,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "most_recent_measurement"
     )
     list_filter = (
-        "groundwater_level_dossier_id",
+        "gld_bro_id",
         "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
@@ -126,7 +126,6 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "responsible_party_id",
     )
     list_filter = (
-        "date_stamp",
         "observation_metadata_id",
         "date_stamp",
         "observation_type",
