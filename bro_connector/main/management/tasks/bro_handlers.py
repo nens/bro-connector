@@ -2,6 +2,7 @@ import requests
 import requests.auth
 from abc import ABC, abstractmethod
 import xml.etree.ElementTree as ET
+import datetime
 
 DB_NAME = "grondwatermeetnet"
 DB_USER = "postgres"
@@ -125,12 +126,14 @@ class GLDHandler(BROHandler):
     def get_data(self, id: str, filtered: bool):
         basis_url = "https://publiek.broservices.nl/gm/gld/v1/objects/"
 
+        now = datetime.datetime.now().date()
+
         if filtered:
             f = "JA"
         else:
             f = "NEE"
-
-        gmw_verzoek = requests.get(f"{basis_url}{id}?filtered={f}")
+            
+        gmw_verzoek = requests.get(f"{basis_url}{id}?requestReference=BRO-Import-script-{now}&observationPeriodBeginDate=1900-01-01&observationPeriodEndDate={now}&filtered={f}")
         print(gmw_verzoek)
         self.root = ET.fromstring(gmw_verzoek.content)
 
