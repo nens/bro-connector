@@ -1,6 +1,6 @@
 import csv
 import logging
-import reversion
+from typing import Union
 from django.core.management.base import BaseCommand
 import datetime
 from gmw import models as gmw_models
@@ -8,16 +8,24 @@ from gld import models as gld_models
 
 logger = logging.getLogger(__name__)
 
+def convert_value_to_float(val: str) -> Union[float, None]:
+    try:
+        return float(str(val).replace(",", "."))
+    except ValueError:
+        return None
+
 def create_measurement(observation: gld_models.Observation, data: dict, datum: datetime.datetime):
-    meta = gld_models.MeasurementPointMetadata.objects.update_or_create(
+    meta = gld_models.MeasurementPointMetadata.objects.create(
         status_quality_control = "onbekend",
         interpolation_code = "discontinu",
     )
 
-    tvp = gld_models.MeasurementTvp.objects.update_or_create(
+    measurement_value = convert_value_to_float(data["value"])
+
+    tvp = gld_models.MeasurementTvp.objects.create(
         observation = observation,
         measurement_time = datum,
-        field_value = data["value"],
+        field_value = measurement_value,
         measurement_point_metadata = meta,
     )
 
@@ -38,15 +46,16 @@ def create_new_observation(data: dict, tube: gmw_models.GroundwaterMonitoringTub
     )
 
     # Create Observatie metadata
-    obs_metadata, created = gld_models.ObservationMetadata.objects.update_or_create(
+    obs_metadata, created = gld_models.ObservationMetadata.objects.get_or_create(
         status = "voorlopig",
         observation_type = "controlemeting",
         date_stamp = datum.date(),
-        responsible_party_id = 21,
+        responsible_party_id = 26,
     )
+
     print(obs_metadata, obs_process, gld)
     # Create Observatie
-    observatie, created = gld_models.Observation.objects.create(
+    observatie = gld_models.Observation.objects.create(
         observation_starttime = datum,
         observation_metadata = obs_metadata,
         observation_process = obs_process,
@@ -104,7 +113,7 @@ class Command(BaseCommand):
                 tube = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
                     groundwater_monitoring_well_static = well,
                     tube_number = data["filter"],
-                )
+                ).first()
 
                 if new is True:
                     nitg_oud = data["NITG"]
