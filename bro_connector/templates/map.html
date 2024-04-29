@@ -7,11 +7,46 @@
       id="hamburger-button"
       onclick="this.parentElement.classList.toggle('hamburger-open')"
     >
-      <div class="hamburger-line"></div>
-      <div class="hamburger-line"></div>
-      <div class="hamburger-line"></div>
+      <div id="hamburger-button-innner">
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+      </div>
     </div>
     <div id="gmn-wrapper">
+      <h4>Other:</h4>
+      <div
+        class="mapbox-checkbox-wrapper"
+        onclick="event.preventDefault(); handleWellValue('complete_bro', this)"
+      >
+        <label class="mapbox-checkbox-label" for="checkbox-complete_bro">
+          <input
+            type="checkbox"
+            class="mapbox-checkbox default-indeterminate"
+            id="checkbox-complete_bro"
+            name="checkbox-complete_bro"
+            onclick="handleWellValueCheckboxClick(this)"
+          />
+          Complete bro
+        </label>
+      </div>
+      <div
+        class="mapbox-checkbox-wrapper"
+        onclick="event.preventDefault(); handleWellValue('deliver_gmw_to_bro', this)"
+      >
+        <label class="mapbox-checkbox-label" for="checkbox-deliver_gmw_to_bro">
+          <input
+            type="checkbox"
+            class="mapbox-checkbox default-indeterminate"
+            id="checkbox-deliver_gmw_to_bro"
+            name="checkbox-deliver_gmw_to_bro"
+            onclick="handleWellValueCheckboxClick(this)"
+          />
+          Deliver GMW to BRO
+        </label>
+      </div>
+      <hr />
+      <h4>GMN's:</h4>
       {% for gmn in gmns %}
       <div
         class="mapbox-checkbox-wrapper"
@@ -34,6 +69,7 @@
   </div>
 
   <div id="legend-bottom">
+    <h4>Organisations:</h4>
     {% for organisation in organisations %}
     <div
       class="mapbox-checkbox-wrapper"

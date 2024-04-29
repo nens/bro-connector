@@ -3,13 +3,22 @@
   width: 1000px;
 }
 
+#deck-gl-canvas hr {
+  height: 1px;
+  margin: 5px 0 5px 0;
+}
+
+#deck-gl-canvas h4 {
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+
 #legend-top {
   position: absolute;
   right: 20px;
   top: 20px;
   z-index: 100;
   background-color: white;
-  padding: 1em;
 }
 
 #legend-bottom {
@@ -42,15 +51,25 @@
   display: flex;
   align-items: center;
   margin-bottom: 0;
+  font-weight: 200 !important;
 }
 
 .mapbox-checkbox {
   cursor: pointer;
 
   margin-right: 0.5em;
+  accent-color: grey;
+  background: grey;
+  height: 1em;
+  width: 1em;
 }
 
-.mapbox-checkbox[type="checkbox"]:not(:checked):not(:disabled) {
+.mapbox-checkbox[type="checkbox"]:indeterminate {
+  background: white;
+  border: 2px grey solid;
+}
+
+.mapbox-checkbox[type="checkbox"]:not(:checked) {
   appearance: none;
   margin-bottom: 0;
   width: 1em;
@@ -74,12 +93,16 @@
 }
 
 #hamburger-button {
+  padding: 1em;
+  cursor: pointer;
+}
+
+#hamburger-button-innner {
   width: 20px;
   height: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  cursor: pointer;
   position: relative;
 }
 
@@ -99,6 +122,8 @@
   padding: 1em;
   max-height: 500px;
   overflow: auto;
+  flex-direction: column;
+  width: 200px;
 }
 
 .hamburger-open #gmn-wrapper {
