@@ -287,7 +287,7 @@ class ElectrodePair(models.Model):
     )
 
     def __str__(self):
-        return f"{self.elektrode1} - {self.elektrode2}"
+        return f"{self.elektrode1}-{self.elektrode2}"
 
     class Meta:
         managed = True

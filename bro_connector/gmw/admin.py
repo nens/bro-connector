@@ -13,7 +13,7 @@ from . import forms as gmw_forms
 from gmn.models import MeasuringPoint
 
 import main.utils.validators_admin as validators_admin
-
+from main.utils.fieldform import FieldFormGenerator
 
 
 logger = logging.getLogger(__name__)
@@ -136,7 +136,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     inlines = (EventsInline,)
 
-    actions = ["deliver_to_bro", "check_status"]
+    actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
 
     def save_model(self, request, obj, form, change):
         # Haal de waarden van de afgeleide attributen op uit het formulier
@@ -202,6 +202,13 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     def check_status(self, request, queryset):
         for well in queryset:
             gmw_actions.check_status(well)
+
+    @admin.action(description="Generate FRD FieldForm")
+    def generate_fieldform(self, request, queryset):
+        generator = FieldFormGenerator()
+        generator.inputfields = ["weerstand", "opmerking"]
+        generator.wells=queryset
+        generator.generate()
 
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):

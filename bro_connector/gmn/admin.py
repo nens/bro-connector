@@ -3,6 +3,8 @@ from .models import *
 from main.management.tasks.gmn_sync import sync_gmn
 from reversion_compare.helpers import patch_admin
 
+from main.utils.fieldform import FieldFormGenerator
+
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
@@ -27,7 +29,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
-    actions = ["deliver_to_bro", "check_status"]
+    actions = ["deliver_to_bro", "check_status", "generate_frd_fieldform"]
 
     @admin.action(description="Deliver GMN to BRO")
     def deliver_to_bro(self, request, queryset):
@@ -36,6 +38,13 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
     @admin.action(description="Check GMN status from BRO")
     def check_status(self, request, queryset):
         sync_gmn(queryset, check_only=True)
+
+    @admin.action(description="Generate FRD FieldForm")
+    def generate_frd_fieldform(self, request, queryset):
+        generator = FieldFormGenerator()
+        generator.inputfields = ["weerstand", "opmerking"]
+        generator.monitoringnetworks=queryset
+        generator.generate()
 
 
 class MeasuringPointAdmin(admin.ModelAdmin):
