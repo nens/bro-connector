@@ -3,7 +3,7 @@ from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
 import datetime
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
-
+import logging
 
 from gld.models import (
     GroundwaterLevelDossier,
@@ -14,6 +14,8 @@ from gld.models import (
     MeasurementPointMetadata,
     ResponsibleParty,
 )
+
+logger = logging.getLogger(__name__)
 
 # BBOX VALUES ZEELAND
 XMIN = 10000
@@ -50,6 +52,7 @@ def within_bbox(coordinates) -> bool:
     return False
 
 
+
 def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
     progressor = Progress()
     gld = GLDHandler()
@@ -59,6 +62,7 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
         ids = DR.gld_ids
+
         ids_ini_count = len(ids)
 
     print(f"{ids_ini_count} bro ids found for organisation.")
@@ -68,8 +72,17 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
 
     # Import the well data
     for id in range(ids_count):
-        print(ids[id])
-        gld.get_data(ids[id], True)
+        
+
+        glds = GroundwaterLevelDossier.objects.filter(
+            gld_bro_id = ids[id]
+        )
+
+        if len(glds) > 0:
+            logger.info(f"{ids[id]} already in database.")
+            continue
+
+        gld.get_data(ids[id], False)
         # To debug the error
         gld.root_data_to_dictionary()
         gmw_dict = gld.dict
@@ -77,11 +90,6 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
         # Start at observation 1
         ini = InitializeData(gmw_dict)
         ini.groundwater_level_dossier()
-        gld.reset_values()
-        ini.reset_values()
-        progressor.next()
-        progressor.progress()
-        continue
         ini.responsible_party()
 
         print("total points: ", gld.number_of_points)
@@ -99,6 +107,7 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
         count = 1
         for observation_number in range(1, (1 + gld.number_of_observations)):
             ini.increment_observation_number()
+
             ini.observation_process()
             ini.metadata_observation()
             ini.observation()
@@ -168,20 +177,18 @@ class InitializeData:
         tube = get_tube(self.gmw_dict["0_broId"][1], self.gmw_dict["0_tubeNumber"])
         print(tube)
         self.groundwater_level_dossier_instance = (
-            GroundwaterLevelDossier.objects.update_or_create(
+            GroundwaterLevelDossier.objects.create(
                 gld_bro_id=self.gmw_dict["0_broId"][0],
-                defaults=dict(
-                    gmw_bro_id=self.gmw_dict["0_broId"][1],
-                    groundwater_monitoring_tube=tube,
-                    research_start_date=self.gmw_dict.get("0_researchFirstDate", None),
-                    research_last_date=self.gmw_dict.get("0_researchLastDate", None),
-                    research_last_correction=self.gmw_dict.get(
-                        "0_latestCorrectionTime", None
-                    ),
-                )
+                gmw_bro_id=self.gmw_dict["0_broId"][1],
+                groundwater_monitoring_tube=tube,
+                research_start_date=self.gmw_dict.get("0_researchFirstDate", None),
+                research_last_date=self.gmw_dict.get("0_researchLastDate", None),
+                research_last_correction=self.gmw_dict.get(
+                    "0_latestCorrectionTime", None
+                ),
             )
         )
-        print(self.groundwater_level_dossier_instance[0], self.groundwater_level_dossier_instance[0].groundwater_monitoring_tube)
+        print(self.groundwater_level_dossier_instance, self.groundwater_level_dossier_instance.groundwater_monitoring_tube)
 
     def responsible_party(self) -> None:
         kvk = self.gmw_dict.get("0_deliveryAccountableParty", None)
@@ -202,14 +209,14 @@ class InitializeData:
             # Return without creating a new instance. Assign the found instance
             return
 
-        # If None is found, update_or_create a new instance.
+        # If None is found, get_or_create a new instance.
         self.responsible_party_instance = ResponsibleParty.objects.create(
             identification=kvk,
             organisation_name=None,  # Naam staat niet in XML, achteraf zelf veranderen
         )
 
     def metadata_observation(self) -> None:
-        self.observation_metadate_instance = ObservationMetadata.objects.update_or_create(
+        self.observation_metadate_instance = ObservationMetadata.objects.create(
             date_stamp=self.gmw_dict.get(f"{self.observation_number}_Date", None),
             observation_type=self.gmw_dict.get(
                 f"{self.observation_number}_ObservationType", None
@@ -219,7 +226,7 @@ class InitializeData:
         )
 
     def observation_process(self) -> None:
-        self.observation_process_instance = ObservationProcess.objects.update_or_create(
+        self.observation_process_instance = ObservationProcess.objects.create(
             process_reference=self.gmw_dict.get(
                 f"{self.observation_number}_processReference", None
             ),
@@ -242,7 +249,7 @@ class InitializeData:
                 end, "%Y-%m-%d"
             ) - datetime.datetime.strptime(start, "%Y-%m-%d")
 
-        self.observation_instance = Observation.objects.update_or_create(
+        self.observation_instance = Observation.objects.create(
             observationperiod=interval,
             observation_starttime=start,
             result_time=self.gmw_dict.get(
@@ -252,24 +259,22 @@ class InitializeData:
             observation_metadata=self.observation_metadate_instance,
             observation_process=self.observation_process_instance,
             groundwater_level_dossier=self.groundwater_level_dossier_instance,
-            status=self.gmw_dict.get(f"{self.observation_number}_status", None),
         )
 
     def metadata_measurement_tvp(self, measurement_number: int) -> None:
         censor_reason = get_censor_reason(
             self.gmw_dict, self.observation_number, measurement_number
         )
-        self.metadata_measurement_tvp_instance = MeasurementPointMetadata.objects.update_or_create(
-            qualifier_by_category=self.gmw_dict.get(
+        self.metadata_measurement_tvp_instance = MeasurementPointMetadata.objects.create(
+            status_quality_control=self.gmw_dict.get(
                 f"{self.observation_number}_point_qualifier_value", [None]
             )[measurement_number],
             interpolation_code="discontinu",  # Standard, only option
-            censored_reason=censor_reason,
-            # qualifier_by_quantity = self.gmw_dict.get("", None),      # Currently not known how to handle
+            censor_reason=censor_reason,
         )
 
     def measurement_tvp(self, measurement_number: int) -> None:
-        self.measurement_tvp_instance = MeasurementTvp.objects.update_or_create(
+        self.measurement_tvp_instance = MeasurementTvp.objects.create(
             observation=self.observation_instance,
             measurement_time=self.gmw_dict.get(
                 f"{self.observation_number}_point_time", [None]
@@ -281,10 +286,6 @@ class InitializeData:
                 measurement_number
             ],
             measurement_point_metadata=self.metadata_measurement_tvp_instance,
-            # calculated_value = self.gmw_dict.get("", None),           # nvt
-            # corrected_value = self.gmw_dict.get("", None),            # nvt
-            # correction_time = self.gmw_dict.get("", None),            # nvt
-            # correction_reason = self.gmw_dict.get("", None),          # nvt
         )
 
     def reset_values(self) -> None:

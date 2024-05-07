@@ -1,6 +1,8 @@
 from django.db import models
 import django.contrib.gis.db.models as geo_models
 from .choices import *
+import main.utils.validators_models as validators_models
+
 import random
 
 
@@ -31,9 +33,9 @@ class Instantie(models.Model):
         if self.name:
             return self.name
         elif self.company_number:
-            return self.company_number
+            return str(self.company_number)
         else:
-            return self.id
+            return str(self.id)
 
     def save(self, *args, **kwargs):
         # Set a default color only if it's not already set
@@ -174,7 +176,11 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     well_head_protector = models.CharField(
         choices=WELLHEADPROTECTOR, max_length=200, blank=True, null=True
     )
-    ground_level_position = models.FloatField(blank=True, null=True)
+    ground_level_position = models.FloatField(
+        blank=True, 
+        null=True,
+        validators=[validators_models.maaiveldhoogte_validation],
+    )
     ground_level_positioning_method = models.CharField(
         choices=GROUNDLEVELPOSITIONINGMETHOD, max_length=200, blank=True, null=True
     )
@@ -246,7 +252,9 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         blank=True,
     )
     deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
-    tube_number = models.IntegerField(blank=True, null=True)
+    tube_number = models.IntegerField(
+        blank=True, null=True, validators=[validators_models.tube_number_validation]
+    )
     tube_type = models.CharField(
         choices=TUBETYPE, max_length=200, blank=True, null=True
     )
@@ -259,7 +267,11 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     sock_material = models.CharField(
         choices=SOCKMATERIAL, max_length=200, blank=True, null=True
     )
-    sediment_sump_length = models.FloatField(blank=True, null=True)
+    sediment_sump_length = models.FloatField(
+        blank=True, 
+        null=True, 
+        validators=[validators_models.zandvanglengte_validator]
+    )
 
     @property
     def number_of_geo_ohm_cables(self):
@@ -292,7 +304,12 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     tube_status = models.CharField(
         choices=TUBESTATUS, max_length=200, blank=True, null=True
     )
-    tube_top_position = models.FloatField(blank=True, null=True)
+    tube_top_position = models.FloatField(
+        blank=True, 
+        null=True,
+        validators=[validators_models.referentiehoogte_validation],
+        help_text="Hoogte bovenkant buis. Eenheid: mNAP"
+    )
     tube_top_positioning_method = models.CharField(
         choices=TUBETOPPOSITIONINGMETHOD, max_length=200, blank=True, null=True
     )
@@ -304,10 +321,14 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         blank=True, null=True
     )  # Lengte stijbuisdeel
     inserted_part_diameter = models.FloatField(
-        blank=True, null=True
+        blank=True, 
+        null=True, 
+        validators=[validators_models.diameter_bovenkant_ingeplaatst_deel_validation],
     )  # This field type is a guess.
     inserted_part_length = models.FloatField(
-        blank=True, null=True
+        blank=True, 
+        null=True,
+        validators=[validators_models.lengte_ingeplaatst_deel_validation],
     )  # This field type is a guess.
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
 
@@ -371,7 +392,13 @@ class GeoOhmCable(models.Model):
 
     @property
     def electrode_count(self):
-        return ElectrodeStatic.objects.filter(geo_ohm_cable=self).count()
+        
+        number_of_electrodes = ElectrodeStatic.objects.filter(geo_ohm_cable=self).count()
+        # validators_models.aantal_elektrodes_validator(number_of_electrodes)
+        if number_of_electrodes < 2:
+            return "minimaal aantal elektrodes van 2 nog niet gelinkt aan Geo-ohmkabel"
+        else:
+            return number_of_electrodes
 
     class Meta:
         managed = True
@@ -388,8 +415,15 @@ class ElectrodeStatic(models.Model):
     electrode_packing_material = models.CharField(
         choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True
     )
-    electrode_position = models.CharField(max_length=200, blank=True, null=True)
-    electrode_number = models.IntegerField(blank=True, null=True)
+    electrode_position = models.CharField(
+        max_length=200, 
+        blank=True, 
+        null=True,
+        validators=[validators_models.elektrodepositie_validator],
+    )
+    electrode_number = models.IntegerField(
+        blank=True, null=True
+    )
 
     def __str__(self):
         return f"{self.geo_ohm_cable.groundwater_monitoring_tube_static}-K{self.geo_ohm_cable.cable_number}E{self.electrode_number}"
@@ -437,7 +471,12 @@ class Event(models.Model):
     event_name = models.CharField(
         choices=EVENTNAME, max_length=200, blank=True, null=True
     )
-    event_date = models.CharField(max_length=254, blank=True, null=True)
+    event_date = models.DateField(
+        null=True, 
+        blank=True,
+        help_text="Formaat: YYYY-MM-DD", 
+        validators=[validators_models.datetime_validation],
+    )
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
@@ -583,36 +622,6 @@ class Maintenance(models.Model):
         db_table = 'gmw"."maintenance'
         verbose_name = "Onderhoudsmoment"
         verbose_name_plural = "Onderhoudsmomenten"
-
-
-class XMLImport(models.Model):
-    id = models.AutoField(primary_key=True)
-    created = models.DateTimeField(auto_now_add=True, editable=False)
-    file = models.FileField(upload_to=f"bulk", validators=[])
-    report = models.TextField(
-        help_text="process description",
-        blank=True,
-        null=True,
-    )
-    checked = models.BooleanField(
-        help_text="checked",
-        editable=False,
-        default=False,
-        blank=True,
-        null=True,
-    )
-    imported = models.BooleanField(
-        verbose_name="fully imported",
-        default=False,
-        editable=False,
-        blank=True,
-        null=True,
-    )
-
-    class Meta:
-        verbose_name = "XML import"
-        verbose_name_plural = "XML imports"
-
 
 def format_integer(num):
     if num < 10:

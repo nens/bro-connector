@@ -227,10 +227,10 @@ class StartRegistrationGMN:
                 comments = f"Found errors during the validation of {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 500:
-                comments = f"BRO server is down. Please try again later"
+                comments = "BRO server is down. Please try again later"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 400:
-                comments = f"Something went wrong while validating. Try again."
+                comments = "Something went wrong while validating. Try again."
                 process_status = "failed_to_validate_sourcedocument"
             else:
                 comments = f"Succesfully validated sourcedocument for meetnet {self.monitoring_network}."
@@ -660,10 +660,10 @@ class MeasuringPointAddition:
                 comments = f"Found errors during the validation of the addition to {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 500:
-                comments = f"BRO server is down. Please try again later"
+                comments = "BRO server is down. Please try again later"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 400:
-                comments = f"Something went wrong while validating. Try again."
+                comments = "Something went wrong while validating. Try again."
                 process_status = "failed_to_validate_sourcedocument"
             else:
                 comments = f"Succesfully validated sourcedocument for addition to meetnet {self.monitoring_network}."
@@ -1073,10 +1073,10 @@ class MeasuringPointRemoval:
                 comments = f"Found errors during the validation of the removal from {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 500:
-                comments = f"BRO server is down. Please try again later"
+                comments = "BRO server is down. Please try again later"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 400:
-                comments = f"Something went wrong while validating. Try again."
+                comments = "Something went wrong while validating. Try again."
                 process_status = "failed_to_validate_sourcedocument"
             else:
                 comments = f"Succesfully validated sourcedocument for removal from meetnet {self.monitoring_network}."
@@ -1468,10 +1468,10 @@ class ClosureGMN:
                 comments = f"Found errors during the validation of {self.monitoring_network}: {validation_errors}"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 500:
-                comments = f"BRO server is down. Please try again later"
+                comments = "BRO server is down. Please try again later"
                 process_status = "failed_to_validate_sourcedocument"
             elif validation_status == 400:
-                comments = f"Something went wrong while validating. Try again."
+                comments = "Something went wrong while validating. Try again."
                 process_status = "failed_to_validate_sourcedocument"
             else:
                 comments = f"Succesfully validated sourcedocument for meetnet {self.monitoring_network}."

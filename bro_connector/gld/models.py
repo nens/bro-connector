@@ -32,8 +32,39 @@ class GroundwaterLevelDossier(models.Model):
     def tube_number(self):
         return self.groundwater_monitoring_tube.tube_number
 
+    @property
+    def first_measurement(self):
+        first_measurement = Observation.objects.filter(
+            groundwater_level_dossier = self
+        ).order_by("observation_starttime").first()
+        first_measurement_date= getattr(first_measurement, 'observation_starttime', None)
+
+        return first_measurement_date
+    
+    @property
+    def most_recent_measurement(self):
+
+        observations_groundwaterleveldossier = Observation.objects.filter(
+            groundwater_level_dossier = self
+        ).order_by("-observation_starttime")
+
+        for observation_groundwaterleveldossier in observations_groundwaterleveldossier:
+            
+            # last_measurementTVP
+            most_recent_measurement = MeasurementTvp.objects.filter(
+            observation_id = observation_groundwaterleveldossier.observation_id
+            ).order_by("-measurement_time").first()
+
+            if most_recent_measurement is not None:
+                return most_recent_measurement.measurement_time
+            
+        return None    
+            
+
     def __str__(self):
         return f"{self.gld_bro_id}"
+
+    
 
     class Meta:
         managed = True
@@ -58,6 +89,14 @@ class Observation(models.Model):
         "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
     )
     up_to_date_in_bro = models.BooleanField(default=True, editable=False)
+
+    @property
+    def measurement_type(self):
+        return self.observation_process.measurement_instrument_type
+
+    @property
+    def observation_type(self):
+        return self.observation_metadata.observation_type
 
     @property
     def status(self):

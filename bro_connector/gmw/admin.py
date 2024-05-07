@@ -1,16 +1,22 @@
 from django.contrib import admin
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
-from main.management.tasks.xml_import import xml_import
-from zipfile import ZipFile
-import os
 import reversion
 from reversion_compare.helpers import patch_admin 
+import logging
+
 from django.db import models
 
 from . import models as gmw_models
 import main.management.tasks.gmw_actions as gmw_actions
 from . import forms as gmw_forms
+from gmn.models import MeasuringPoint
+
+import main.utils.validators_admin as validators_admin
+from main.utils.fieldform import FieldFormGenerator
+
+
+logger = logging.getLogger(__name__)
 
 
 def _register(model, admin_class):
@@ -130,13 +136,15 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     inlines = (EventsInline,)
 
-    actions = ["deliver_to_bro", "check_status"]
+    actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
 
     def save_model(self, request, obj, form, change):
         # Haal de waarden van de afgeleide attributen op uit het formulier
-        x = form.cleaned_data["x"]
-        y = form.cleaned_data["y"]
 
+        
+        x = form.cleaned_data["x"]   
+        y = form.cleaned_data["y"]
+        
         cx = form.cleaned_data["cx"]
         cy = form.cleaned_data["cy"]
 
@@ -145,8 +153,43 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         if cx != "" and cy != "":
             obj.construction_coordinates = GEOSGeometry(
                 f"POINT ({cx} {cy})", srid=28992
-            )
+            )   
 
+        # Als er een put is met het obj id
+        originele_put = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id).first()
+        
+        # x- & y-coördinate check within dutch boundaries EPSG:28992
+        (valid, message) = validators_admin.x_within_netherlands(obj)
+        if valid is False:
+            self.message_user(request, message, level="WARNING")
+            if originele_put is not None:
+                obj.coordinates[0] = originele_put.coordinates[0]
+            else:
+                obj.coordinates[0] = -999
+
+        (valid, message) = validators_admin.y_within_netherlands(obj)
+        if valid is False:
+            self.message_user(request, message, level="WARNING")
+            if originele_put is not None:
+                obj.coordinates[1] = originele_put.coordinates[1]
+            else:
+                obj.coordinates[1] = -999
+        
+        # test if new coordinate is within distance from previous coordinates
+        if originele_put is not None:          
+            # .coordinates consist of x [0] and y [1]   
+            (valid, message) = validators_admin.validate_x_coordinaat(obj)
+            if valid is False:
+                self.message_user(request, message, level="ERROR")
+                obj.coordinates[0] = originele_put.coordinates[0]
+            
+            (valid, message) = validators_admin.validate_y_coordinaat(obj)
+            if valid is False:
+                self.message_user(request, message, level="ERROR")
+                obj.coordinates[1] = originele_put.coordinates[1]
+
+
+        
         # Sla het model op
         obj.save()
 
@@ -159,6 +202,13 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     def check_status(self, request, queryset):
         for well in queryset:
             gmw_actions.check_status(well)
+
+    @admin.action(description="Generate FRD FieldForm")
+    def generate_fieldform(self, request, queryset):
+        generator = FieldFormGenerator()
+        generator.inputfields = ["weerstand", "opmerking"]
+        generator.wells=queryset
+        generator.generate()
 
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
@@ -182,6 +232,24 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
 
 
+    def save_model(self, request, obj, form, change):
+        try:
+            originele_meetpuntgeschiedenis = gmw_models.GroundwaterMonitoringWellDynamic.objects.get(
+                groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
+            )
+        except:  # noqa: E722
+            logger.exception("Bare except")
+            originele_meetpuntgeschiedenis = None
+
+        (valid, message) = validators_admin.validate_surface_height_ahn(obj)
+        if valid is False:
+            self.message_user(request, message, level="ERROR")
+            if originele_meetpuntgeschiedenis is not None:
+                obj.ground_level_position = originele_meetpuntgeschiedenis.ground_level_position
+
+        obj.save()
+
+
 class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeStaticForm
 
@@ -197,12 +265,18 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
         "sediment_sump_present",
         "sediment_sump_length",
         "deliver_gld_to_bro",
+        "in_use",
     )
     list_filter = ("groundwater_monitoring_well_static", "deliver_gld_to_bro")
 
-    readonly_fields = ["number_of_geo_ohm_cables"]
+    readonly_fields = ["number_of_geo_ohm_cables", "in_use"]
 
     actions = ["deliver_gld_to_true"]
+
+    def in_use(self, obj):
+        return len(MeasuringPoint.objects.filter(
+            groundwater_monitoring_tube = obj
+        )) > 0
 
     def deliver_gld_to_true(self, request, queryset):
         for obj in queryset:
@@ -232,6 +306,31 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     )
     list_filter = ("groundwater_monitoring_tube_static",)
 
+    readonly_fields =["screen_top_position", "screen_bottom_position"]
+
+    def save_model(self, request, obj, form, change):
+        try:
+            originele_filtergeschiedenis = gmw_models.GroundwaterMonitoringTubeDynamic.objects.get(
+                groundwater_monitoring_tube_dynamic_id=obj.groundwater_monitoring_tube_dynamic_id
+            )
+        except:  # noqa: E722
+            message = "Er bestaat geen historie voor het filter"
+            self.message_user(request, message, level="ERROR")
+            originele_filtergeschiedenis = None
+
+        # TODO validate_logger_depth_filter
+        
+        (valid, message) = validators_admin.validate_reference_height(obj)
+        if valid is False:
+            self.message_user(request, message, level="ERROR")
+            if originele_filtergeschiedenis is not None:
+                obj.screen_top_position = originele_filtergeschiedenis.screen_top_position
+
+        (valid, message) = validators_admin.validate_reference_height_ahn(obj)
+        if valid is False:
+            self.message_user(request, message, level="ERROR")
+
+        obj.save()
 
 class GeoOhmCableAdmin(admin.ModelAdmin):
     form = gmw_forms.GeoOhmCableForm
@@ -240,7 +339,11 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
         "geo_ohm_cable_id",
         "groundwater_monitoring_tube_static",
         "cable_number",
+        # "electrode_count",
     )
+
+    readonly_fields =["electrode_count"]
+
     list_filter = ("groundwater_monitoring_tube_static_id",)
 
 
@@ -277,7 +380,6 @@ class EventAdmin(admin.ModelAdmin):
     list_display = (
         "change_id",
         "event_name",
-        "event_date",
         "groundwater_monitoring_well_static",
         "groundwater_monitoring_well_dynamic",
         "groundwater_monitoring_tube_dynamic",
@@ -287,7 +389,6 @@ class EventAdmin(admin.ModelAdmin):
         "change_id",
         "groundwater_monitoring_well_static",
         "event_name",
-        "event_date",
     )
     ordering = ['-change_id'] 
     autocomplete_fields = (
@@ -339,87 +440,6 @@ class MaintenanceAdmin(admin.ModelAdmin):
         "reporter",
         "execution_by",
     )
-
-
-class XMLImportAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "created",
-        "file",
-        "checked",
-        "imported",
-    )
-
-    actions = [
-        "update_database",
-    ]
-
-    def save_model(self, request, obj, form, change):
-        try:
-            originele_constructie_import = models.XMLImport.objects.get(id=obj.id)
-            file = originele_constructie_import.file
-        except models.XMLImport.DoesNotExist:
-            originele_constructie_import = None
-            file = None
-
-        if obj.file != file and file is not None:
-            # If a new csv is set into the ConstructieImport row.
-            obj.imported = False
-            obj.checked = False
-            obj.report = (
-                obj.report + f"\nswitched the csv file from {file} to {obj.file}."
-            )
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
-
-        else:
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
-
-    def update_database(self, request, QuerySet):
-        for object in QuerySet:
-            if str(object.file).endswith("xml"):
-                print("Handling XML file")
-                (completed, message) = xml_import.import_xml(object.file, ".")
-                object.checked = True
-                object.imported = completed
-                object.report += message
-                object.save()
-
-            elif str(object.file).endswith("zip"):
-                print("Handling ZIP file")
-                # First unpack the zip
-                with ZipFile(object.file, "r") as zip:
-                    zip.printdir()
-                    zip.extractall(path=f"./{object.name}/")
-
-                # Remove constructies/ and .zip from the filename
-                file_name = str(object.file)[13:-4]
-                print(file_name)
-
-                path = f"."
-
-                for file in os.listdir(path):
-                    if file.endswith("csv"):
-                        print(
-                            f"Bulk import of filetype of {file} not yet supported not yet supported."
-                        )
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
-                        pass
-
-                    elif file.endswith("xml"):
-                        (completed, message) = xml_import.import_xml(file, path)
-                        object.checked = True
-                        object.imported = completed
-                        object.report += message
-                        object.save()
-
-                    else:
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
 
 
 class GmwSyncLogAdmin(admin.ModelAdmin):

@@ -2,6 +2,7 @@ import django.forms as forms
 from . import models
 
 
+
 class BinaryFileInput(forms.ClearableFileInput):
     def is_initial(self, value):
         """
@@ -26,6 +27,7 @@ class BinaryFileInput(forms.ClearableFileInput):
 
 
 class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
+    
     x = forms.CharField(required=True)
     y = forms.CharField(required=True)
     cx = forms.CharField(required=False)

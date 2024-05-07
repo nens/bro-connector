@@ -2,6 +2,7 @@ import requests
 import requests.auth
 from abc import ABC, abstractmethod
 import xml.etree.ElementTree as ET
+import datetime
 
 DB_NAME = "grondwatermeetnet"
 DB_USER = "postgres"
@@ -125,12 +126,14 @@ class GLDHandler(BROHandler):
     def get_data(self, id: str, filtered: bool):
         basis_url = "https://publiek.broservices.nl/gm/gld/v1/objects/"
 
+        now = datetime.datetime.now().date()
+
         if filtered:
             f = "JA"
         else:
             f = "NEE"
-
-        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={f}")
+            
+        gmw_verzoek = requests.get(f"{basis_url}{id}?requestReference=BRO-Import-script-{now}&observationPeriodBeginDate=1900-01-01&observationPeriodEndDate={now}&filtered={f}")
         print(gmw_verzoek)
         self.root = ET.fromstring(gmw_verzoek.content)
 
@@ -153,7 +156,7 @@ class GLDHandler(BROHandler):
             tag = element.tag
             split = tag.split("}")
 
-            if split[1] == f"observation":
+            if split[1] == "observation":
                 if self.number_of_observations != 0:
                     if self.number_of_observations == 1:
                         self.count_dictionary[
@@ -169,16 +172,16 @@ class GLDHandler(BROHandler):
                 self.number_of_observations = self.number_of_observations + 1
                 prefix = f"{self.number_of_observations}_"
 
-            if split[1] == f"broId":
+            if split[1] == "broId":
                 self.bro_ids.append(element.text)
 
             # If point, add prefix
-            if split[1] == f"point":
+            if split[1] == "point":
                 self.number_of_points = self.number_of_points + 1
                 prefix = f"{self.number_of_observations}_point_"
                 self.append_censoring()
 
-            if split[1] == f"NamedValue":
+            if split[1] == "NamedValue":
                 prefix = f"{self.number_of_observations}_nv_"
 
             # If qualifier values add different prefix

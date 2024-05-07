@@ -36,6 +36,8 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     actions = ["deliver_to_bro", "check_status"]
 
+    readonly_fields = ["first_measurement", "most_recent_measurement"]
+
     @admin.action(description="Deliver FRD to BRO")
     def deliver_to_bro(self, request, queryset):
         syncer = FRDSync()
@@ -45,7 +47,6 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
     def check_status(self, request, queryset):
         syncer = FRDSync()
         syncer.handle(queryset, check_only=True)
-
 
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):
@@ -69,6 +70,7 @@ class ElectromagneticMeasurementMethodAdmin(admin.ModelAdmin):
 class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "formation_resistance_dossier",
         "measurement_date",
         "measuring_responsible_party",
         "measuring_procedure",

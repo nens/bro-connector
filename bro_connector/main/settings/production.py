@@ -10,8 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
-import os
 from main.settings.base import *
 from main.localsecret import p_user, p_password, p_host, p_port
 

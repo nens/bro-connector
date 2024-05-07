@@ -37,6 +37,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 # Application definition
+MODULES = ["gmw", "frd", "gld", "gmn"]
 
 INSTALLED_APPS = [
     "jazzmin",
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     "gmw",
     "gmn",
     "frd",
+    "tools",
     "rest_framework",
     "reversion",
     "reversion_compare",
@@ -204,6 +206,10 @@ ADMIN_REORDER = (
             "gmw.Maintenance",
             "gmw.Instantie",
         ),
+    },
+    {
+        "app": "tools",
+        "label": "Tools",
     },
     {
         "app": "gld",
@@ -384,6 +390,7 @@ JAZZMIN_SETTINGS = {
         "gmw",
         "gld",
         "frd",
+        "tools",
     ],
     "icons": {
         "auth": "fas fa-users-cog",
@@ -439,9 +446,13 @@ JAZZMIN_SETTINGS = {
         "frd.ElectromagneticRecord": "fas fa-chart-line",
         "frd.FormationresistanceRecord": "fas fa-chart-line",
         # "gmw.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
+        "tools": "fas fa-wrench",
     },
     "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
 }
+
+BRO_API_VERSION = "v2"
+
 
 GRAPH_MODELS = {
     "all_applications": True,

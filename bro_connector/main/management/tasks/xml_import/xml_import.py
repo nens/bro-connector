@@ -3,7 +3,7 @@ from .progressor import Progress
 import gmw.models as bro
 import datetime
 from string import punctuation, whitespace
-import reversion
+from django.contrib.gis.geos import Point
 
 
 def import_xml(file: str, path: str) -> tuple:
@@ -41,12 +41,9 @@ def import_xml(file: str, path: str) -> tuple:
     ini.well_dynamic()
 
     for tube_number in range(gmw.number_of_tubes):
-        try:
-            ini.increment_tube_number()
-            ini.filter()
-            ini.filter_dynamic()
-        except:
-            raise Exception(f"Failed while trying to create filter objects, {gmw_dict}")
+        ini.increment_tube_number()
+        ini.filter()
+        ini.filter_dynamic()
 
         try:
             for geo_ohm_cable in range(int(gmw.number_of_geo_ohm_cables)):
@@ -128,6 +125,10 @@ def get_artesian_well_cap_present(dict: dict, prefix: str) -> bool | None:
     else:
         return None
 
+def get_float_item_or_none(item):
+    if item is not None:
+        return float(item)
+    return item
 
 class InitializeData:
     """
@@ -165,6 +166,30 @@ class InitializeData:
         self.electrode_number = self.electrode_number + 1
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
+    def get_accountable_party(self) -> bro.Instantie:
+        kvk_nummer = self.gmw_dict.get(
+            "deliveryAccountableParty", None
+        )
+        if kvk_nummer is not None:
+            party, created = bro.Instantie.objects.get_or_create(
+                company_number = kvk_nummer,
+            )
+        else:
+            party = None
+
+        return party
+
+    def get_coordinates(self) -> Point:
+        position = self.gmw_dict.get("pos_1", None)
+        if position is not None:
+            positions = position.split(" ")
+            coords_field = Point(float(positions[0]), float(positions[1]))
+        
+        else:
+            coords_field = Point()
+
+        return coords_field
+
     def well(self):
         kwaliteits = get_quality_regime(self.gmw_dict)
 
@@ -173,15 +198,13 @@ class InitializeData:
             construction_date = datetime.datetime.strptime(
                 construction_date, "%Y-%m-%d"
             )
-
+        
         self.meetpunt_instance = bro.GroundwaterMonitoringWellStatic.objects.create(
             bro_id=self.gmw_dict.get("broId", None),
             request_reference=self.gmw_dict.get("requestReference", None),
-            delivery_accountable_party=self.gmw_dict.get(
-                "deliveryAccountableParty", None
-            ),
+            delivery_accountable_party=self.get_accountable_party(),
             construction_standard=self.gmw_dict.get("constructionStandard", None),
-            coordinates=self.gmw_dict.get("pos_1", None),
+            coordinates=self.get_coordinates(),
             delivery_context=self.gmw_dict.get("deliveryContext", None),
             horizontal_positioning_method=self.gmw_dict.get(
                 "horizontalPositioningMethod", None
@@ -198,7 +221,7 @@ class InitializeData:
             well_code=self.gmw_dict.get("wellCode", None),
             vertical_datum=self.gmw_dict.get("verticalDatum", None),
             last_horizontal_positioning_date=construction_date,
-            construction_coordinates=self.gmw_dict.get("pos_1", None),
+            construction_coordinates=self.get_coordinates(),
         )
 
         self.meetpunt_instance.save()
@@ -208,18 +231,16 @@ class InitializeData:
             event_name="constructie",
             groundwater_monitoring_well_static=self.meetpunt_instance,
             groundwater_monitoring_well_dynamic=self.meetpuntgeschiedenis_instance,
-            groundwater_monitoring_well_tube_dynamic=self.filtergeschiedenis_instance,
+            groundwater_monitoring_tube_dynamic=self.filtergeschiedenis_instance,
             event_date=self.meetpunt_instance.last_horizontal_positioning_date,
             delivered_to_bro=False,
         )
-        self.onderhoudsmoment_instance.save()
 
     def well_dynamic(self):
-        print("dynamic")
-        print(self.meetpunt_instance)
         self.meetpuntgeschiedenis_instance = (
             bro.GroundwaterMonitoringWellDynamic.objects.create(
-                groundwater_monitoring_well=self.meetpunt_instance,
+                groundwater_monitoring_well_static=self.meetpunt_instance,
+                date_from=self.meetpunt_instance.last_horizontal_positioning_date,
                 owner=self.gmw_dict.get("owner", None),
                 ground_level_stable=self.gmw_dict.get("groundLevelStable", None),
                 well_stability=self.gmw_dict.get("wellStability", None),
@@ -241,20 +262,17 @@ class InitializeData:
         )
 
         self.filter_instance = bro.GroundwaterMonitoringTubeStatic.objects.create(
-            groundwater_monitoring_well=self.meetpunt_instance,
+            groundwater_monitoring_well_static=self.meetpunt_instance,
             artesian_well_cap_present=arthesisch_water_aanwezig,
-            screen_length=self.gmw_dict.get(self.prefix + "screenLength", None),
+            screen_length=float(self.gmw_dict.get(self.prefix + "screenLength", None)),
             sediment_sump_length=self.gmw_dict.get(
                 self.prefix + "sedimentSumpLength", None
             ),  # not in XML --> might be because sediment sump not present, if else statement.
             sediment_sump_present=zandvang_aanwezig,
             sock_material=self.gmw_dict.get(self.prefix + "sockMaterial", None),
             tube_material=self.gmw_dict.get(self.prefix + "tubeMaterial", None),
-            tube_number=self.gmw_dict.get(self.prefix + "tubeNumber", None),
+            tube_number=int(self.gmw_dict.get(self.prefix + "tubeNumber", None)),
             tube_type=self.gmw_dict.get(self.prefix + "tubeType", None),
-            number_of_geo_ohm_cables=self.gmw_dict.get(
-                self.prefix + "numberOfGeoOhmCables", None
-            ),
         )
         self.filter_instance.save()
 
@@ -262,6 +280,7 @@ class InitializeData:
         self.filtergeschiedenis_instance = (
             bro.GroundwaterMonitoringTubeDynamic.objects.create(
                 groundwater_monitoring_tube_static=self.filter_instance,
+                date_from=self.meetpunt_instance.last_horizontal_positioning_date,
                 tube_packing_material=self.gmw_dict.get(
                     self.prefix + "tubePackingMaterial", None
                 ),
@@ -279,9 +298,9 @@ class InitializeData:
                     self.prefix + "plainTubePartLength", None
                 ),
                 tube_status=self.gmw_dict.get(self.prefix + "tubeStatus", None),
-                tube_top_diameter=self.gmw_dict.get(
+                tube_top_diameter=get_float_item_or_none(self.gmw_dict.get(
                     self.prefix + "tubeTopDiameter", None
-                ),
+                )),
                 tube_top_position=self.gmw_dict.get(
                     self.prefix + "tubeTopPosition", None
                 ),

@@ -24,9 +24,11 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "research_start_date",
         "research_last_date",
         "gld_bro_id",
+        "first_measurement",
+        "most_recent_measurement"
     )
     list_filter = (
-        "groundwater_level_dossier_id",
+        "gld_bro_id",
         "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
@@ -85,6 +87,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_endtime",
         "result_time",
         "observation_type",
+        "measurement_type",
         "status",
         "up_to_date_in_bro",
     )
@@ -124,7 +127,6 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "responsible_party_id",
     )
     list_filter = (
-        "date_stamp",
         "observation_metadata_id",
         "date_stamp",
         "observation_type",

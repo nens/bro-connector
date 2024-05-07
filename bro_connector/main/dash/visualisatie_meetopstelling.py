@@ -5,7 +5,6 @@ import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-import pytz
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 from django.shortcuts import get_object_or_404
@@ -640,7 +639,7 @@ def get_dropdown_events(groundwater_monitoring_well_static_id):
         groundwater_monitoring_well_static=monitoring_well,
     )
     for onderhoud in onderhoudsmomenten:
-        event_datetime = datetime_convert(onderhoud.event_date)
+        event_datetime = onderhoud.event_date
         events.append(format_event(event_datetime, onderhoud))
 
     # Post-processing (removing duplicates and formatting)

@@ -27,3 +27,16 @@ DATABASES = {
         "OPTIONS": {"options": "-c search_path=django_admin,public"},
     },
 }
+
+
+LIZARD_SETTINGS = {
+    "headers": {
+        "username": "{}".format("__key__"),
+        "password": f"{test_key}",
+        "Content-Type": "application/json",
+    },
+    "organisation_uuid": "e7d66583-43b2-4c90-b118-f2093798885a",
+    "site_url": "https://nens.lizard.net",
+    "BRO_API_VERSION": BRO_API_VERSION,
+}
+

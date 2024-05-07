@@ -1,13 +1,11 @@
 from django.db import models
 import logging
 import reversion
-import re
 import math
 from .choices import *
 from django.core.validators import MaxValueValidator, MinValueValidator
 from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, ElectrodeStatic
 from gmn.models import GroundwaterMonitoringNet
-from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +48,6 @@ class FormationResistanceDossier(models.Model):
         blank=True,
     )
 
-    ### DO WE WANT TO ADD THESE?  NOT REQUIRED ###
-
-    # first_measurement = models.DateField()
-    # most_recent_measurement = models.DateField()
-    # registration_history = models.ForeignKey()
-
-    ##############################################
-
     # References to other tables
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
@@ -71,11 +61,54 @@ class FormationResistanceDossier(models.Model):
 
     deliver_to_bro = models.BooleanField(blank=False, null=True)
 
-    closure_date = models.DateField(blank=True, null=True)
-
     closed_in_bro = models.BooleanField(
         blank=False, null=False, editable=True, default=False
     )
+
+    @property
+    def first_measurement(self):
+        # TODO: add functionality to standard function?
+        geo_ohm_method = GeoOhmMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("measurement_date").first()
+
+        electro_magnetic_method = ElectromagneticMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("measurement_date").first()
+        
+        geo_ohm_method_date = getattr(geo_ohm_method, 'measurement_date', None)
+        electro_magnetic_method_date = getattr(electro_magnetic_method, 'measurement_date', None)
+    
+        if geo_ohm_method_date and electro_magnetic_method:
+            return min(geo_ohm_method_date, electro_magnetic_method_date)
+        elif geo_ohm_method_date:
+            return geo_ohm_method_date
+        elif electro_magnetic_method_date:
+            return electro_magnetic_method_date
+        else:
+            return None
+               
+    @property
+    def most_recent_measurement(self):
+        geo_ohm_method = GeoOhmMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("-measurement_date").first()
+
+        electro_magnetic_method = ElectromagneticMeasurementMethod.objects.filter(
+            formation_resistance_dossier = self
+        ).order_by("-measurement_date").first()
+        
+        geo_ohm_method_date = getattr(geo_ohm_method, 'measurement_date', None)
+        electro_magnetic_method_date = getattr(electro_magnetic_method, 'measurement_date', None)
+    
+        if geo_ohm_method_date and electro_magnetic_method:
+            return min(geo_ohm_method_date, electro_magnetic_method_date)
+        elif geo_ohm_method_date:
+            return geo_ohm_method_date
+        elif electro_magnetic_method_date:
+            return electro_magnetic_method_date
+        else:
+            return None
 
     def __str__(self):
         return self.name
@@ -85,7 +118,7 @@ class FormationResistanceDossier(models.Model):
 
     @property
     def name(self):
-        if self.frd_bro_id != None:
+        if self.frd_bro_id:
             return f"{self.frd_bro_id}"
         return f"FRD_{self.object_id_accountable_party}"
 
@@ -254,7 +287,7 @@ class ElectrodePair(models.Model):
     )
 
     def __str__(self):
-        return f"{self.elektrode1} - {self.elektrode2}"
+        return f"{self.elektrode1}-{self.elektrode2}"
 
     class Meta:
         managed = True
@@ -548,8 +581,16 @@ def create_electromagnetic_series(instance: CalculatedFormationresistanceMethod)
         )
 
 
+def calculate_ohm_from_ohmm(
+    calculated_resistance: float, electrode_distance: float
+) -> float:
+    """
+    Inverse if the calculated formation resistance, to return the actual ohm value, instead of Ohm m
+    """
+    return (calculated_resistance / (4 * math.pi * electrode_distance))
+
 def calculate_formationresistance_geo_ohm(
-    resistance: float, area: float, electrode_distance: float
+    resistance: float, electrode_distance: float
 ) -> float:
     """
     Calculate the formation resistance in Ohm.m \n
@@ -602,20 +643,6 @@ def retrieve_electrode_position(
 
     return positie_float
 
-
-def retrieve_geo_ohm_cable_area(
-    electrode_reference: GMWElectrodeReference,
-    monitoring_tube: GroundwaterMonitoringTubeStatic,
-) -> float:
-    geo_ohm_cable = GeoOhmCable.objects.filter(
-        cable_number=electrode_reference.cable_number,
-        groundwater_monitoring_tube_static=monitoring_tube,
-    ).first()
-
-    # Will be retrieving the area if this is gonna be registered under geo ohm cables
-    return 0.01
-
-
 def calculate_electode_distance(electrode_position_1, electrode_position_2) -> float:
     print(electrode_position_1, electrode_position_2)
     if electrode_position_1 == None or electrode_position_2 == None:
@@ -642,10 +669,9 @@ def create_or_update_geo_record(
     electrode_distance = calculate_electode_distance(
         electrode_position_1, electrode_position_2
     )
-    area = retrieve_geo_ohm_cable_area(measurement_pair.elektrode1, monitoring_tube)
+
     calculated_resistance = calculate_formationresistance_geo_ohm(
         resistance=float(measurement_value.formationresistance),
-        area=area,
         electrode_distance=electrode_distance,
     )
 
