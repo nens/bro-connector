@@ -11,8 +11,19 @@ const maptilerApiKey = JSON.parse(
   document.getElementById("maptiler_key_json").textContent
 );
 
-// Color map
-const colorMapping = {};
+// Visible mapping
+const visibleMap = {
+  gmns: {},
+  organisations: {},
+  wellValue: {},
+};
+
+gmns.forEach((gmn) => {
+  visibleMap.gmns[gmn] = true;
+});
+
+const colorMap = {};
+
 const hexToRgb = (hex) => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -20,7 +31,7 @@ const hexToRgb = (hex) => {
   return [r, g, b];
 };
 
-// Add color map for each organisation
+// Add color and visible map for each organisation
 Object.keys(organisations).forEach((orgKey) => {
   const { color, id } = organisations[orgKey];
 
@@ -31,7 +42,8 @@ Object.keys(organisations).forEach((orgKey) => {
 
   // Add color to color map
   const rgbColor = hexToRgb(color);
-  colorMapping[id] = { color: rgbColor, visible: true };
+  colorMap[id] = rgbColor;
+  visibleMap.organisations[id] = true;
 });
 
 // Show check or cross
@@ -90,16 +102,29 @@ const myScatterplotLayer = new deck.MapboxLayer({
   filled: true,
   antialiasing: true,
   radiusUnits: "pixels",
-  getFillColor: (well) => colorMapping[well.delivery_accountable_party].color,
+  getFillColor: (well) => colorMap[well.delivery_accountable_party],
   lineWidthMinPixels: 2,
   getLineColor: white,
 
   // Hide circle when gmn or organisation is set to invisible
-  getRadius: (well) =>
-    well.linked_gmns.find((gmn) => gmnMapping[gmn].visible) &&
-    colorMapping[well.delivery_accountable_party].visible
-      ? 10
-      : 0,
+  getRadius: (well) => {
+    const show = (() => {
+      if (!well.linked_gmns.find((gmn) => visibleMap.gmns[gmn])) return;
+      if (!visibleMap.organisations[well.delivery_accountable_party]) return;
+      const wellValueKeys = Object.keys(visibleMap.wellValue);
+      if (
+        wellValueKeys.find(
+          (valueKey) =>
+            (visibleMap.wellValue[valueKey] === true && !well[valueKey]) ||
+            (visibleMap.wellValue[valueKey] === false && well[valueKey])
+        )
+      )
+        return;
+      return true;
+    })();
+
+    return show ? 10 : 0;
+  },
 
   //   On click add a popup as an Mapbox marker at the circle's location
   onClick: (event) => {
@@ -150,27 +175,42 @@ map.on("mousemove", (e) => {
   if (!isHovering && cursor === "pointer") return setCursorStyle("grab");
 });
 
-const gmnMapping = {};
-
-gmns.forEach((gmn) => {
-  gmnMapping[gmn] = { visible: true };
-});
+// Handle if someone toggles any other filter
+const handleWellValue = (id, element) => {
+  const checkbox = element.querySelector('input[type="checkbox"]');
+  const { wellValue } = visibleMap;
+  // Well value can either be false, true or null
+  if (wellValue[id] === false) {
+    wellValue[id] = null;
+    checkbox.checked = false;
+    checkbox.indeterminate = true;
+  } else if (wellValue[id] === true) {
+    wellValue[id] = false;
+    checkbox.checked = false;
+    checkbox.indeterminate = false;
+  } else {
+    wellValue[id] = true;
+    checkbox.checked = true;
+    checkbox.indeterminate = false;
+  }
+  updateGetRadius();
+};
 
 // Handle if someone toggles an gmn
 const handleGmnClick = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
-  const gmnMap = gmnMapping[id];
-  gmnMap.visible = !gmnMap.visible;
-  checkbox.checked = gmnMap.visible;
+  const { gmns } = visibleMap;
+  gmns[id] = !gmns[id];
+  checkbox.checked = gmns[id];
   updateGetRadius();
 };
 
 // Handle if someone toggles an organisation
 const handleOrganisationClick = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
-  const colorMap = colorMapping[id];
-  colorMap.visible = !colorMap.visible;
-  checkbox.checked = colorMap.visible;
+  const { organisations } = visibleMap;
+  organisations[id] = !organisations[id];
+  checkbox.checked = organisations[id];
   updateGetRadius();
 };
 
@@ -183,6 +223,29 @@ const updateGetRadius = () => {
   });
 };
 
-// Clicking the checkbox needs to switch the checkbox back because the above function handles that
-const handleCheckboxClick = (checkbox) =>
-  setTimeout(() => (checkbox.checked = !checkbox.checked));
+// Clicking the checkbox needs to switch the checkbox back because the above functions handle that
+const handleWellValueCheckboxClick = (checkbox) => {
+  setTimeout(() => {
+    if (!checkbox.checked && !checkbox.indeterminate) {
+      checkbox.indeterminate = true;
+    } else if (checkbox.checked && !checkbox.indeterminate) {
+      checkbox.checked = false;
+    } else {
+      checkbox.checked = true;
+      checkbox.indeterminate = false;
+    }
+  });
+};
+
+// Clicking the checkbox needs to switch the checkbox back because the above functions handle that
+const handleCheckboxClick = (checkbox) => {
+  setTimeout(() => {
+    checkbox.checked = !checkbox.checked;
+  });
+};
+
+const defaultIndeterminate = document.querySelectorAll(
+  ".default-indeterminate"
+);
+
+defaultIndeterminate.forEach((checkbox) => (checkbox.indeterminate = true));
