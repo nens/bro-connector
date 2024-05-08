@@ -13,7 +13,9 @@ const maptilerApiKey = JSON.parse(
 
 // Visible mapping
 const visibleMap = {
-  gmns: {},
+  gmns: {
+    noLinked: true,
+  },
   organisations: {},
   wellValue: {},
 };
@@ -109,8 +111,18 @@ const myScatterplotLayer = new deck.MapboxLayer({
   // Hide circle when gmn or organisation is set to invisible
   getRadius: (well) => {
     const show = (() => {
-      if (!well.linked_gmns.find((gmn) => visibleMap.gmns[gmn])) return;
+      // Hide if doenst have linked_gmns and notLinked is false or if visibileMap doesnt have any of the linked gmns
+      if (
+        (well.linked_gmns.length === 0 && !visibleMap.gmns.noLinked) ||
+        (well.linked_gmns.length &&
+          !well.linked_gmns.find((gmn) => visibleMap.gmns[gmn]))
+      )
+        return;
+
+      // Hide if organisation is hidden
       if (!visibleMap.organisations[well.delivery_accountable_party]) return;
+
+      // Hide if on of the wellvalues is set to hidden
       const wellValueKeys = Object.keys(visibleMap.wellValue);
       if (
         wellValueKeys.find(
