@@ -1,6 +1,8 @@
 from typing import List, Optional
 import json
+from ftplib import FTP
 
+from main import localsecret as ls
 from gmw import models as gmw_models
 from frd import models as frd_models
 from gmn import models as gmn_models
@@ -19,7 +21,7 @@ input_field_options = {
 }
 
 # From the FieldForm Github
-def write_location_file(data, fname):
+def write_location_file(data, filename):
     """
     Write a FieldForm location file (.json)
 
@@ -36,8 +38,23 @@ def write_location_file(data, fname):
     None.
 
     """
-    with open(fname, "w") as outfile:
+    with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
+
+def write_file_to_ftp(file, remote_filename: str):
+    ftp = FTP(ls.ftp_ip)
+    ftp.login(user=ls.username, passwd=ls.password)
+
+    # Change to correct folder
+    ftp.cwd("ftp_folder")
+
+    # Upload the file
+    with open(file, 'rb') as file:
+        ftp.storbinary(f'STOR {remote_filename}', file)
+
+    # Close the FTP connection
+    ftp.quit()
+    
 
 
 def generate_sublocation_fields(tube) -> List[str]:
@@ -216,7 +233,12 @@ class FieldFormGenerator:
 
         elif hasattr(self, "wells"):
             data["locations"] = self.create_location_dict()
-            print(data)
+            
+            # Store the file locally
+            write_location_file(data=data, filename="./test_fieldform.json")
+
+            # Write local file to FTP
+            write_file_to_ftp(file="./test_fieldform.json", remote_filename="test_fieldform.json")
 
         else:
             # If nothing has been deliverd, create for all wells without a grouping.
