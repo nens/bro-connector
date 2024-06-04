@@ -117,6 +117,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "vertical_datum",
                     "last_horizontal_positioning_date",
                     "in_management",
+                    "complete_bro",
                 ],
             },
         ),
