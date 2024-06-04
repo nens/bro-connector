@@ -47,6 +47,22 @@
       </div>
       <hr />
       <h4>GMN's:</h4>
+      <div
+        class="mapbox-checkbox-wrapper"
+        onclick="event.preventDefault(); handleGmnClick('noLinked', this)"
+      >
+        <label class="mapbox-checkbox-label" for="checkbox-no-linked">
+          <input
+            type="checkbox"
+            class="mapbox-checkbox"
+            id="checkbox-no-linked"
+            name="checkbox-no-linked"
+            checked
+            onclick="handleCheckboxClick(this)"
+          />
+          No linked GMN
+        </label>
+      </div>
       {% for gmn in gmns %}
       <div
         class="mapbox-checkbox-wrapper"
