@@ -80,7 +80,13 @@ def zandvanglengte_validator(value):
 def datetime_validation(value):
     if value is None:
         return
-    if value.date() > dt.datetime.now().date():
+    
+    if type(value) == dt.datetime:
+        date = value.date()
+    elif type(value) == dt.date:
+        date = value
+
+    if date > dt.datetime.now().date():
         raise ValidationError("Tijdstip in de toekomst is niet toegestaan")
-    elif value.date() < dt.datetime(1880, 1, 1).date():
+    elif date < dt.datetime(1880, 1, 1).date():
         raise ValidationError("Tijdstip voor 1-1-1880 is niet toegestaan")
