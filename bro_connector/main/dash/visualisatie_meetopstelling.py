@@ -620,7 +620,11 @@ def update_output_div(data_tube, data_electrodes, event, options, referentie):
     [Input("groundwater-monitoring-well-static-id", "children")],
 )
 def get_dropdown_events(groundwater_monitoring_well_static_id):
-    monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, bro_id=groundwater_monitoring_well_static_id)
+    if str(groundwater_monitoring_well_static_id).isdigit():
+        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, groundwater_monitoring_well_static_id=groundwater_monitoring_well_static_id)
+    else:
+        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, bro_id=groundwater_monitoring_well_static_id)
+
     events = []
 
     def format_event(event_datetime:datetime.date, event: Event) -> dict:
@@ -716,6 +720,8 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
                 "beschermconstructie": well_head_protector,
             },
         )
+
+        print(filt_dict)
 
         if filtr_history.tube_inserted:
             filt_dict.update(
