@@ -2,6 +2,14 @@ from django.db import models
 import django.contrib.gis.db.models as geo_models
 from .choices import *
 import main.utils.validators_models as validators_models
+import os
+import base64
+from django.db.models import CharField
+from cryptography.fernet import Fernet
+from django.conf import settings
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 import random
 
@@ -17,11 +25,61 @@ def get_color_value():
 
     return color_code
 
+class SecureCharField(CharField):
+    """
+    Safe string field that gets encrypted before being stored in the database, and
+    decrypted when retrieved. Since the stored values have a fixed length, using the
+    "max_length" parameter in your field will not work, it will be overridden by default.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs['max_length'] = 512
+        kwargs['null'] = True
+        kwargs['blank'] = True
+        super().__init__(*args, **kwargs)
+
+    salt = bytes(os.environ["SECURE_STRING_SALT"], 'utf-8')
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+
+    # Encode the FERNET encryption key
+    key = base64.urlsafe_b64encode(kdf.derive(
+        bytes(os.environ['FERNET_ENCRYPTION_KEY'], 'utf-8')
+    ))
+
+    # Create a "fernet" object using the key stored in the .env file
+    f = Fernet(key)
+
+    def from_db_value(self, value: str, expression, connection) -> str:
+        """
+        Decrypts the value retrieved from the database.
+        """
+        if type(value) != str:
+            return value
+        value = str(self.f.decrypt(bytes(value, 'cp1252')), encoding='utf-8')
+        return value
+
+    def get_prep_value(self, value: str) -> str:
+        """
+        Encrypts the value before storing it in the database.
+        """
+        if type(value) != str:
+            return value
+        value = str(self.f.encrypt(bytes(value, 'utf-8')), 'cp1252')
+        return value
 
 class Instantie(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     company_number = models.IntegerField(blank=True)
     color = models.CharField(max_length=50, null=True, blank=True)
+    bro_user = SecureCharField()
+    bro_token = SecureCharField()
+
 
     class Meta:
         managed = True
