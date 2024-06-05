@@ -1,6 +1,8 @@
 from typing import List, Optional
 import json
 import pysftp
+import datetime
+import os
 
 from main import localsecret as ls
 from gmw import models as gmw_models
@@ -197,6 +199,20 @@ class FieldFormGenerator:
         for measuringpoint in measuringpoints:
             self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
 
+    def _write_data(self, data: dict):
+        cur_date = datetime.datetime.now().date()
+        date_string = cur_date.strftime("%Y%m%d")
+
+        # Check if fieldforms folder exists
+        if not os.path.exists("../fieldforms"):
+            os.mkdir("../fieldforms")
+
+        # Store the file locally
+        write_location_file(data=data, filename=f"../fieldforms/locations_{date_string}.json")
+
+        # Write local file to FTP
+        write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
+
     def generate(self):
         data = {}
         configs = frd_models.MeasurementConfiguration.objects.all().distinct("configuration_name")
@@ -214,27 +230,25 @@ class FieldFormGenerator:
 
         if hasattr(self, "monitoringnetworks"):
             data["groups"] = self.write_monitoringnetworks_to_dict()
+            locations = {}
             for monitoringnetwork in self.monitoringnetworks:
                 self._flush_wells()
                 self._set_current_group(str(monitoringnetwork.name))
                 self.write_measuringpoints_to_wells(monitoringnetwork)
-                data["locations"] = self.create_location_dict()
-                print(data)
+                locations.update(self.create_location_dict())
+            
+            data["locations"] = locations
+            self._write_data(data)
 
         elif hasattr(self, "wells"):
             data["locations"] = self.create_location_dict()
-            
-            # Store the file locally
-            write_location_file(data=data, filename="./test_fieldform.json")
-
-            # Write local file to FTP
-            write_file_to_ftp(file="./test_fieldform.json", remote_filename="test_fieldform.json")
+            self._write_data(data)
 
         else:
             # If nothing has been deliverd, create for all wells without a grouping.
             self.wells = gmw_models.GroundwaterMonitoringWellStatic.objects.all()
             data["locations"] = self.create_location_dict()
-            print(data)
+            self._write_data(data)
 
             
                         
