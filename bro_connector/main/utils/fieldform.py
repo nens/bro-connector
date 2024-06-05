@@ -1,6 +1,6 @@
 from typing import List, Optional
 import json
-from ftplib import FTP
+import pysftp
 
 from main import localsecret as ls
 from gmw import models as gmw_models
@@ -41,20 +41,10 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
-def write_file_to_ftp(file, remote_filename: str):
-    ftp = FTP(ls.ftp_ip)
-    ftp.login(user=ls.username, passwd=ls.password)
-
-    # Change to correct folder
-    ftp.cwd("ftp_folder")
-
-    # Upload the file
-    with open(file, 'rb') as file:
-        ftp.storbinary(f'STOR {remote_filename}', file)
-
-    # Close the FTP connection
-    ftp.quit()
-    
+def write_file_to_ftp(file: str, remote_filename: str):
+    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password) as sftp:
+        with sftp.cd(ls.ftp_path):
+            sftp.put(localpath=file, remotepath=remote_filename)
 
 
 def generate_sublocation_fields(tube) -> List[str]:
