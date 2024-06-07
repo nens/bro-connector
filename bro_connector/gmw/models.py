@@ -339,7 +339,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
 
     def __str__(self):
         well = f"{self.groundwater_monitoring_well_static.__str__()}"
-        return f"{well}-{format_integer(self.tube_number)}"
+        return f"{well}-{format_integer(int(self.tube_number))}"
 
     class Meta:
         managed = True
