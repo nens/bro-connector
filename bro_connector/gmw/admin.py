@@ -32,6 +32,8 @@ def get_searchable_fields(model_class):
 
 
 class InstantieAdmin(admin.ModelAdmin):
+    form = gmw_forms.InstantieForm
+
     list_display = (
         "id",
         "name",
