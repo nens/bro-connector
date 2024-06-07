@@ -200,7 +200,6 @@ ADMIN_REORDER = (
         "app": "gmw",
         "label": "Grondwatermonitoringput (GMW)",  # Provincie Zeeland GWM - Data
         "models": (
-            "gmw.Map",
             "gmw.GroundwaterMonitoringWellStatic",
             "gmw.GroundwaterMonitoringWellDynamic",
             "gmw.GroundwaterMonitoringTubeStatic",
@@ -283,6 +282,7 @@ gld_SETTINGS = {
         },
     },
     "bro_info_bro_connector": {
+        "projectnummer": 3864,
         "token": {
             "user": bro_production_user,
             "pass": bro_production_password,
@@ -305,6 +305,7 @@ gmw_SETTINGS = {
         "kvk_nummer": 20168636,
     },
     "bro_info_bro_connector": {
+        "projectnummer": 3864,
         "token": {
             "user": bro_production_user,
             "pass": bro_production_password,
@@ -325,8 +326,11 @@ gmn_SETTINGS = {
         "projectnummer": 3012,
     },
     "acces_token_bro_portal_bro_connector": {
-        "user": bro_production_user,
-        "pass": bro_production_password,
+        "token": {
+            "user": bro_production_user,
+            "pass": bro_production_password,
+        },
+        "projectnummer": 3864,
     },
     "monitoringnetworks": None,
     "demo": demo,
@@ -346,6 +350,7 @@ FRD_SETTINGS = {
         "kvk_nummer": 20168636,
     },
     "bro_info_bro_connector": {
+        "projectnummer": 3864,
         "token": {
             "user": bro_production_user,
             "pass": bro_production_password,
@@ -363,7 +368,6 @@ QUICK_SCAN_SETTINGS = {
     # 'max_change_two_measurements':1,
     # 'liveliness_maximum_flatline_duration':100
 }
-print(BASE_DIR)
 
 JAZZMIN_SETTINGS = {
     # "site_logo": os.path.join(BASE_DIR, "static/img/broconnector.png"),
