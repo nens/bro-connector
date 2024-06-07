@@ -4,6 +4,8 @@ from ..tasks.progressor import Progress
 import datetime
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 import logging
+from django.conf import settings
+
 
 from gld.models import (
     GroundwaterLevelDossier,
@@ -16,13 +18,6 @@ from gld.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-# BBOX VALUES ZEELAND
-XMIN = 10000
-XMAX = 80000
-YMIN = 355000
-YMAX = 420000
-
 
 def gmw_get_or_none(bro_id: str):
     try:
@@ -43,10 +38,10 @@ def gmw_get_or_none(bro_id: str):
 def within_bbox(coordinates) -> bool:
     print(f"x: {coordinates.x}, y: {coordinates.y}")
     if (
-        coordinates.x > XMIN
-        and coordinates.x < XMAX
-        and coordinates.y > YMIN
-        and coordinates.y < YMAX
+        coordinates.x > settings["BBOX_SETTINGS"]["xmin"]
+        and coordinates.x < settings["BBOX_SETTINGS"]["xmax"]
+        and coordinates.y > settings["BBOX_SETTINGS"]["ymin"]
+        and coordinates.y < settings["BBOX_SETTINGS"]["ymax"]
     ):
         return True
     return False
@@ -62,8 +57,11 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
         ids = DR.gld_ids
-
         ids_ini_count = len(ids)
+
+    if ids_ini_count == 0:
+        print(f"No IDs found for kvk: {kvk_number}.")
+        return {"ids_found": ids_ini_count, "imported": ids_ini_count}
 
     print(f"{ids_ini_count} bro ids found for organisation.")
 

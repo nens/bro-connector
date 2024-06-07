@@ -21,6 +21,14 @@ from main.localsecret import *
 
 ENVIRONMENT = "staging"
 
+BBOX_SETTINGS = {
+    "use_bbox": True,
+    "xmin": 10000,
+    "xmax": 80000,
+    "ymin": 355000,
+    "ymax": 420000,
+}
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -96,7 +104,7 @@ ROOT_URLCONF = "main.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [f"{BASE_DIR}/main/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
