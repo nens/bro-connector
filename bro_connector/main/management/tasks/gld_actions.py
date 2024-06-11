@@ -62,10 +62,10 @@ def handle_start_registrations(
             gld.create_start_registration_sourcedocs(
                 well,
                 tube_number,
-                monitoringnetworks,
             )
 
-    gld.check_existing_startregistrations(gld_registration_logs)
+    for log in gld_registration_logs:
+        gld.check_existing_startregistrations(log)
 
 def handle_additions(
         dossier: GroundwaterLevelDossier, 
@@ -74,7 +74,7 @@ def handle_additions(
     # Get observations
     observations = Observation.objects.filter(
         groundwater_level_dossier = dossier,
-        observation_endtime__isnull = False
+        observation_endtime__isnull = False,
     )
 
     gld = gld_sync_to_bro.GldSyncHandler(gld_SETTINGS)
@@ -113,9 +113,6 @@ def handle_additions(
             continue
         
         status = gld.check_status_gld_addition(addition_log)
-            
-
-        
     
     return
 

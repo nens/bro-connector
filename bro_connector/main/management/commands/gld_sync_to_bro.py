@@ -115,33 +115,15 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
     This is unique for each observation
     """
 
-    observation_process_data = models.ObservationProcess.objects.get(
+    observation_process = models.ObservationProcess.objects.get(
         observation_process_id=observation_process_id
     )
 
-    parameter_air_pressure_compensation_type_id = (
-        observation_process_data.parameter_air_pressure_compensation_type_id
-    )
-    air_pressure_compensation_data = models.TypeAirPressureCompensation.objects.get(
-        id=parameter_air_pressure_compensation_type_id
-    )
-    air_pressure_compensation_type = air_pressure_compensation_data.value
+    air_pressure_compensation_type = observation_process.air_pressure_compensation_type
 
-    parameter_measurement_instrument_type_id = (
-        observation_process_data.parameter_measurement_instrument_type_id
-    )
-    measurement_instrument_type_data = models.TypeMeasurementInstrumentType.objects.get(
-        id=parameter_measurement_instrument_type_id
-    )
-    measurement_instrument_type = measurement_instrument_type_data.value
+    measurement_instrument_type = observation_process.measurement_instrument_type
 
-    parameter_evaluation_procedure_id = (
-        observation_process_data.parameter_evaluation_procedure_id
-    )
-    evaluation_procedure_data = models.TypeEvaluationProcedure.objects.get(
-        id=parameter_evaluation_procedure_id
-    )
-    evaluation_procedure = evaluation_procedure_data.value
+    evaluation_procedure = observation_process.evaluation_procedure
 
     if quality_regime == "IMBRO":
         if (
@@ -793,7 +775,7 @@ class GldSyncHandler:
             gld_addition_sourcedocument["result"] = list(measurement_timeseries_tvp)
 
             # filename should be unique
-            filename = "GLD_Addition_Observation_{}_GLD_{}.xml".format(
+            filename = "GLD_Addition_Observation_{}_{}.xml".format(
                 observation.observation_id, gld_bro_id
             )
 
@@ -888,12 +870,11 @@ class GldSyncHandler:
         """
         source_doc_file = os.path.join(self.additions_dir, filename)
         payload = open(source_doc_file)
-
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, self.access_info, demo=self.demo
+                payload, self.access_info, demo=self.demo, api="v2"
             )
-            
+            print(validation_info)
             validation_status = validation_info["status"]
 
             if "errors" in validation_info:
@@ -909,12 +890,14 @@ class GldSyncHandler:
             addition.validation_status =  validation_status
             addition.process_status = "source_document_validation_succeeded"
 
+
         except Exception as e:
             addition.date_modified = datetime.datetime.now()
             addition.comments = f"Failed to validate source document: {e}"
             addition.process_status = "source_document_validation_failed"
 
         addition.save()
+        print(addition.comments)
 
         return validation_status
 
@@ -1140,6 +1123,7 @@ class Command(BaseCommand):
         # Get all the current registrations, check and deliver
         gld_registrations = models.gld_registration_log.objects.all()
         for registration in gld_registrations:
+            print(registration)
             gld.check_existing_startregistrations(registration)
 
         # Create the addition sourcedocuments
