@@ -216,7 +216,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellDynamicForm
-    search_fields = ("groundwater_monitoring_well_dynamic_id", "__str__")
+    search_fields = ("groundwater_monitoring_well_dynamic_id", "groundwater_monitoring_well_static__bro_id", "date_from")
 
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
@@ -255,6 +255,9 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeStaticForm
+
+    search_fields = ("groundwater_monitoring_tube_static_id", "groundwater_monitoring_well_static__bro_id", "tube_number")
+
 
     list_display = (
         "groundwater_monitoring_tube_static_id",
@@ -295,7 +298,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeDynamicForm
-    search_fields = ("groundwater_monitoring_tube_static_id", "__str__")
+    search_fields = ("groundwater_monitoring_tube_dynamic_id", "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id", "groundwater_monitoring_tube_static__tube_number", "date_from")
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static",
@@ -365,7 +368,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.ElectrodeDynamicForm
-    search_fields = ("electrode_dynamic_id", "__str__")
+    search_fields = ("electrode_dynamic_id", "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id", "date_from")
 
     list_display = (
         "electrode_dynamic_id",
