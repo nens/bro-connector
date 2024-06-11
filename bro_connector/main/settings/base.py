@@ -290,7 +290,7 @@ gld_SETTINGS = {
     },
     "monitoringnetworks": None,
     "demo": demo,
-    "additions_dir": os.path.join(BASE_DIR, "gld/additions"),
+    "additions_dir": os.path.join(BASE_DIR, "gld\\additions"),
     "startregistrations_dir": os.path.join(BASE_DIR, "gld/startregistrations"),
     "api_version": "v2",
 }
