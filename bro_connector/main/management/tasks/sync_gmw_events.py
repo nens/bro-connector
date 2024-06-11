@@ -31,7 +31,7 @@ def check_if_object_id_in_database(object_id: str) -> bool:
 
 def get_event_date(event: models.Event) -> str:
     try:
-        date = event.event_date
+        date = event.event_date.strftime("%Y-%m-%d")
     except:
         date = None
 
@@ -272,6 +272,7 @@ class GetSourceDocData:
         self.datafile.update({"wellConstructionDate": well_construction_date})
 
         well = event.groundwater_monitoring_well_static
+        self.datafile.update({"id": well.groundwater_monitoring_well_static_id})
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
@@ -771,7 +772,10 @@ def create_construction_sourcedocs(
     # How many records are already registered -> change the reference
     records_in_register = records_in_registrations(srcdocdata["broId"])
 
-    request_reference = f"{srcdocdata['broId']}_Construction_{records_in_register}"
+    if srcdocdata['broId'] is None:
+        request_reference = f"{srcdocdata['id']}_Construction_{records_in_register}"
+    else:
+        request_reference = f"{srcdocdata['broId']}_Construction_{records_in_register}"
     # Check what kind of request is required and make as followed.
     # Registrate with history
     try:
@@ -791,33 +795,35 @@ def create_construction_sourcedocs(
         )
 
         process_status = "succesfully_generated_Construction_request"
+
         record, created = models.gmw_registration_log.objects.update_or_create(
-            bro_id=srcdocdata["broId"],
             event_id=event.change_id,
             levering_type="Construction",
-            quality_regime=well.quality_regime,
             defaults=dict(
+                quality_regime=well.quality_regime,
+                bro_id=srcdocdata["broId"],
                 comments="succesfully generated Construction request",
                 date_modified=datetime.datetime.now(),
                 validation_status=None,
                 process_status=process_status,
                 file=filename,
+                object_id_accountable_party=srcdocdata["objectIdAccountableParty"],
             ),
-            object_id_accountable_party=srcdocdata["objectIdAccountableParty"],
         )
 
     except Exception as e:
         record, created = models.gmw_registration_log.objects.update_or_create(
-            bro_id=srcdocdata["broId"],
             event_id=event.change_id,
             levering_type="Construction",
-            quality_regime=well.quality_regime,
             defaults=dict(
+                bro_id=srcdocdata["broId"],
                 comments=f"Failed to create Construction source document: {e}",
                 date_modified=datetime.datetime.now(),
                 process_status="failed_to_generate_source_documents",
+                quality_regime=well.quality_regime,
             ),
         )
+
 
 
 def handle_not_valid_or_error(registration_id, validation_info):
