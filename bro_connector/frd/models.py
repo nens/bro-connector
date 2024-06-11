@@ -6,6 +6,7 @@ from .choices import *
 from django.core.validators import MaxValueValidator, MinValueValidator
 from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, ElectrodeStatic
 from gmn.models import GroundwaterMonitoringNet
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class FormationResistanceDossier(models.Model):
     )
 
     deliver_to_bro = models.BooleanField(blank=False, null=True)
-
+    closure_date = models.DateField(blank=True, null=True, editable=False)
     closed_in_bro = models.BooleanField(
         blank=False, null=False, editable=True, default=False
     )
@@ -124,6 +125,11 @@ class FormationResistanceDossier(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
+        if self.closed_in_bro is True and self.closure_date is None:
+            self.closure_date = datetime.datetime.now().date()
+        elif self.closed_in_bro is False and self.closure_date is not None:
+            self.closure_date = None
+        
         super().save(*args, **kwargs)
 
     class Meta:
