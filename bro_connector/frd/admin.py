@@ -34,9 +34,11 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
+    autocomplete_fields = ["groundwater_monitoring_tube"]
+
     actions = ["deliver_to_bro", "check_status"]
 
-    readonly_fields = ["first_measurement", "most_recent_measurement"]
+    readonly_fields = ["first_measurement", "most_recent_measurement", "closure_date"]
 
     @admin.action(description="Deliver FRD to BRO")
     def deliver_to_bro(self, request, queryset):
