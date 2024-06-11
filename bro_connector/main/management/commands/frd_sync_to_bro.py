@@ -25,7 +25,7 @@ from frd.models import (
     InstrumentConfiguration,
 )
 from datetime import datetime, date
-from main.settings.base import FRD_SETTINGS
+from main.settings.base import frd_SETTINGS
 
 
 def get_xml_payload(xml_filepath):
@@ -183,13 +183,13 @@ class Registration(ABC):
     def __init__(self):
         self.output_dir = "frd/xml_files/"
         self.xml_file = None
-        self.api_version = FRD_SETTINGS["api_version"]
-        self.demo = FRD_SETTINGS["demo"]
+        self.api_version = frd_SETTINGS["api_version"]
+        self.demo = frd_SETTINGS["demo"]
 
         if self.demo:
-            self.bro_info = FRD_SETTINGS["bro_info_demo"]
+            self.bro_info = frd_SETTINGS["bro_info_demo"]
         else:
-            self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
+            self.bro_info = frd_SETTINGS["bro_info_bro_connector"]
 
     def check_status(self):
         print(self.log)
