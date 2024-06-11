@@ -340,7 +340,7 @@ gmn_SETTINGS = {
     "closures_dir": os.path.join(BASE_DIR, "gmn/closures"),
 }
 
-FRD_SETTINGS = {
+frd_SETTINGS = {
     "bro_info_demo": {
         "projectnummer": 3012,
         "token": {
