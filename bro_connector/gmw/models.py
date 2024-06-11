@@ -505,7 +505,10 @@ class ElectrodeDynamic(models.Model):
     )
 
     def __str__(self):
-        return str(self.electrode_static.electrode_static_id)
+        if self.date_till:
+            till = self.date_till.date()
+            return str(f"{self.electrode_static.__str__()} ({self.date_from} - {till})")
+        return str(f"{self.electrode_static.__str__()} ({self.date_from} - Present)")
 
     @property
     def date_till(self):
