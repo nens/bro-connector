@@ -470,10 +470,13 @@ class FrdStartRegistration(Registration):
         }
         srcdocdata = {
             "object_id_accountable_party": self.frd_obj.object_id_accountable_party,
-            "gmn_bro_id": [gmn_bro_id],
             "gmw_bro_id": gmw_bro_id,
             "gmw_tube_number": gmw_tube_number,
         }
+        
+        if gmn_bro_id is not None:
+            srcdocdata.update({"gmn_bro_id": [gmn_bro_id]})
+
         startregistration_tool = brx.FRDStartRegistrationTool(
             metadata, srcdocdata, "registration"
         )
