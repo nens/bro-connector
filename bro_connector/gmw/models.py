@@ -10,6 +10,7 @@ from django.conf import settings
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import datetime
 
 import random
 
@@ -567,6 +568,9 @@ class Event(models.Model):
         verbose_name = "Tussentijdse Gebeurtenis"
         verbose_name_plural = "Tussentijdse Gebeurtenissen"
 
+def get_current_values(instance):
+    """Get a dictionary of the current field values."""
+    return {field.name: getattr(instance, field.name) for field in instance._meta.fields}
 
 class gmw_registration_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
@@ -589,7 +593,29 @@ class gmw_registration_log(models.Model):
     )
 
     def __str__(self):
+        if self.bro_id is None:
+            return f"{self.id}-{self.levering_type}_log ({self.date_modified})"
         return f"{self.bro_id}-{self.levering_type}_log ({self.date_modified})"
+
+    def _set_original_values(self, instance):
+        self._original_values = get_current_values(instance)
+
+    def has_changed(self):
+        """Check if any field has changed."""
+        current_values = get_current_values(self)
+        return any(current_values[field] != self._original_values[field] for field in current_values)
+
+    def save(self, *args, **kwargs):
+        if self.id is not None:
+            db_instance = gmw_registration_log.objects.get(id=self.id)
+            self._set_original_values(db_instance)
+
+            if self.has_changed():
+                # If there is any change
+                self.last_changed = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        super().save(*args, **kwargs)
+
 
     class Meta:
         managed = True
