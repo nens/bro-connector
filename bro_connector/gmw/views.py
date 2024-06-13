@@ -6,7 +6,7 @@ from gld.models import (
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
 )
-from bro.models import Company
+from bro.models import Organisation
 from . import serializers
 import bro.serializers as bro_serializers
 
@@ -19,8 +19,10 @@ def gmw_map_context(request):
 
     print(wells[0])
 
-    instantie_qs = Company.objects.all()
-    instantie_serializer = bro_serializers.CompanySerializer(instantie_qs, many=True)
+    party_ids = GroundwaterMonitoringWellStatic.objects.values_list('delivery_accountable_party', flat=True).distinct()
+
+    instantie_qs = Organisation.objects.filter(id__in=party_ids)
+    instantie_serializer = bro_serializers.OrganisationSerializer(instantie_qs, many=True)
     instanties = instantie_serializer.data
 
     gld_qs = GroundwaterLevelDossier.objects.all()
