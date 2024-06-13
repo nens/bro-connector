@@ -7,7 +7,6 @@ from gmw.models import (
     GroundwaterMonitoringWellStatic,
 )
 from bro.models import Company
-from main import localsecret as ls
 from . import serializers
 import bro.serializers as bro_serializers
 
@@ -42,6 +41,5 @@ def gmw_map_context(request):
         "gmns": gmns,
         "organisations": instanties,
         "groundwater_level_dossiers": glds,
-        "maptiler_key": ls.maptiler_key,
     }
     return render(request, "map.html", context)

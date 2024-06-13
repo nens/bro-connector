@@ -7,9 +7,6 @@ const organisations = JSON.parse(
 const glds = JSON.parse(
   document.getElementById("groundwater_level_dossiers_json").textContent
 );
-const maptilerApiKey = JSON.parse(
-  document.getElementById("maptiler_key_json").textContent
-);
 
 // Visible mapping
 const visibleMap = {
@@ -152,7 +149,27 @@ const myScatterplotLayer = new deck.MapboxLayer({
 // Create the map
 const map = new mapboxgl.Map({
   container: "deck-gl-canvas",
-  style: `https://api.maptiler.com/maps/2d36cb9d-e3c5-4143-9052-ef95527a21e7/style.json?key=${maptilerApiKey}`,
+  style: {
+    'version': 8,
+    'sources': {
+        'raster-tiles': {
+            'type': 'raster',
+            'tiles': ['https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/water/EPSG:3857/{z}/{x}/{y}.png'],
+            'tileSize': 256,
+            'attribution':
+                'Kaartgegevens &copy; <a href="https://www.kadaster.nl">Kadaster</a>'
+        }
+    },
+    'layers': [
+        {
+            'id': 'simple-tiles',
+            'type': 'raster',
+            'source': 'raster-tiles',
+            'minzoom': 6,
+            'maxzoom': 19
+        }
+    ]
+  },
   antialias: true,
   center: [3.945697, 51.522601],
   zoom: 9,
