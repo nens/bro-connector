@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from gmw.models import Instantie
-from bro.models import Company
+from bro.models import Organisation
 
 class Command(BaseCommand):
     help = 'Move Instantie data from gmw to Company in bro'
@@ -12,7 +12,7 @@ class Command(BaseCommand):
         companies = []
 
         for inst in instanties:
-            companies.append(Company(
+            companies.append(Organisation(
                 name=inst.name,
                 company_number=inst.company_number,
                 color=inst.color,
@@ -20,6 +20,6 @@ class Command(BaseCommand):
                 bro_token=inst.bro_token
             ))
 
-        Company.objects.bulk_create(companies)
+        Organisation.objects.bulk_create(companies)
 
         self.stdout.write('Data transfer completed successfully')

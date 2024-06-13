@@ -69,7 +69,7 @@ class SecureCharField(CharField):
         value = str(self.f.encrypt(bytes(value, 'utf-8')), 'cp1252')
         return value
 
-class Company(models.Model):
+class Organisation(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     company_number = models.IntegerField(blank=True)
     color = models.CharField(max_length=50, null=True, blank=True)
@@ -79,9 +79,9 @@ class Company(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'bro"."company'
-        verbose_name = "Company"
-        verbose_name_plural = "Companies"
+        db_table = 'bro"."organisation'
+        verbose_name = "Organisation"
+        verbose_name_plural = "Organisations"
 
     def __str__(self):
         if self.name:
@@ -100,8 +100,8 @@ class Company(models.Model):
 class BROProject(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     project_number = models.IntegerField(null=False, blank=False)
-    owner = models.ForeignKey(Company,on_delete=models.SET_NULL, null=True, blank=False, related_name='owner')
-    authorized = models.ManyToManyField(Company, blank=True, related_name='authorized_company')
+    owner = models.ForeignKey(Organisation,on_delete=models.SET_NULL, null=True, blank=False, related_name='owner')
+    authorized = models.ManyToManyField(Organisation, blank=True, related_name='authorized_company')
 
     class Meta:
         managed = True

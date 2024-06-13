@@ -167,12 +167,12 @@ class InitializeData:
         self.electrode_number = self.electrode_number + 1
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
-    def get_accountable_party(self) -> bro_models.Company:
+    def get_accountable_party(self) -> bro_models.Organisation:
         kvk_nummer = self.gmw_dict.get(
             "deliveryAccountableParty", None
         )
         if kvk_nummer is not None:
-            party, created = bro_models.Company.objects.get_or_create(
+            party, created = bro_models.Organisation.objects.get_or_create(
                 company_number = kvk_nummer,
             )
         else:

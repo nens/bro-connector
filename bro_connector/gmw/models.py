@@ -2,7 +2,7 @@ from django.db import models
 import django.contrib.gis.db.models as geo_models
 from .choices import *
 import main.utils.validators_models as validators_models
-from bro.models import Company, SecureCharField
+from bro.models import Organisation, SecureCharField
 import datetime
 
 class GroundwaterMonitoringWellStatic(models.Model):
@@ -11,14 +11,14 @@ class GroundwaterMonitoringWellStatic(models.Model):
     bro_id = models.CharField(max_length=15, blank=True, null=True)
     request_reference = models.CharField(max_length=255, blank=True, null=True)
     delivery_accountable_party = models.ForeignKey(
-        Company,
+        Organisation,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="delivery_accountable_party",
     )
     delivery_responsible_party = models.ForeignKey(
-        Company,
+        Organisation,
         on_delete=models.CASCADE,
         null=True,
         blank=True,

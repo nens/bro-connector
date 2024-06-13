@@ -15,7 +15,7 @@ from gmw.models import (
     ElectrodeDynamic,
     ElectrodeStatic,
 )
-from bro.models import Company
+from bro.models import Organisation
 
 
 def within_bbox(coordinates) -> bool:
@@ -110,9 +110,9 @@ def get_or_create_instantie(instantie: str):
     if instantie is None:
         return (None, False)
     if instantie.isdigit():
-        return Company.objects.get_or_create(company_number=instantie)
+        return Organisation.objects.get_or_create(company_number=instantie)
     else:
-        return Company.objects.get_or_create(name=instantie)
+        return Organisation.objects.get_or_create(name=instantie)
 
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime:

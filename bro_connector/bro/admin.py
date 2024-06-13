@@ -49,8 +49,8 @@ class BROProjectAdmin(admin.ModelAdmin):
         "project_number",
     )
 
-_register(bro_models.Company, CompanyAdmin)
+_register(bro_models.Organisation, CompanyAdmin)
 _register(bro_models.BROProject, BROProjectAdmin)
 
-patch_admin(bro_models.Company)
+patch_admin(bro_models.Organisation)
 patch_admin(bro_models.BROProject)
