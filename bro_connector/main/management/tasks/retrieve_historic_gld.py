@@ -257,6 +257,7 @@ class InitializeData:
             observation_metadata=self.observation_metadate_instance,
             observation_process=self.observation_process_instance,
             groundwater_level_dossier=self.groundwater_level_dossier_instance,
+            up_to_date_in_bro=True,
         )
 
     def metadata_measurement_tvp(self, measurement_number: int) -> None:

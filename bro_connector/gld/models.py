@@ -59,7 +59,29 @@ class GroundwaterLevelDossier(models.Model):
                 return most_recent_measurement.measurement_time
             
         return None    
-            
+
+    @property
+    def completely_delivered(self):
+        nr_of_observations_groundwaterleveldossier = Observation.objects.filter(
+            groundwater_level_dossier = self,
+            up_to_date_in_bro = False,
+            observation_endtime__isnull = False,
+        ).count()
+
+        if nr_of_observations_groundwaterleveldossier == 0:
+            return True
+        return False
+
+    @property
+    def has_open_observation(self):
+        nr_of_observations_groundwaterleveldossier = Observation.objects.filter(
+            groundwater_level_dossier = self,
+            observation_endtime__isnull = True,
+        ).count()
+        
+        if nr_of_observations_groundwaterleveldossier == 0:
+            return False
+        return True
 
     def __str__(self):
         return f"GLD_{self.groundwater_monitoring_tube.__str__()}"
@@ -86,7 +108,7 @@ class Observation(models.Model):
     groundwater_level_dossier = models.ForeignKey(
         "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
     )
-    up_to_date_in_bro = models.BooleanField(default=True, editable=False)
+    up_to_date_in_bro = models.BooleanField(default=False, editable=False)
 
     @property
     def measurement_type(self):

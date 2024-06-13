@@ -7,7 +7,8 @@ from main.management.tasks import gld_actions
 from reversion_compare.helpers import patch_admin
 import reversion
 from main.management.commands.gld_sync_to_bro import GldSyncHandler, get_observation_gld_source_document_data
-
+from .custom_filters import HasOpenObservationFilter, CompletelyDeliveredFilter
+import datetime
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
@@ -25,18 +26,32 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "research_last_date",
         "gld_bro_id",
         "first_measurement",
-        "most_recent_measurement"
+        "most_recent_measurement",
+        "completely_delivered",
+        "has_open_observation",
     )
     list_filter = (
         "gld_bro_id",
         "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
+        HasOpenObservationFilter,
+        CompletelyDeliveredFilter,
     )
 
     readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number"]
 
     actions = ["deliver_to_bro", "check_status"]
+
+    @admin.display(boolean=True)
+    def completely_delivered(self, obj):
+        return obj.completely_delivered
+    completely_delivered.short_description = 'Fully Delivered'
+
+    @admin.display(boolean=True)
+    def has_open_observation(self, obj):
+        return obj.has_open_observation
+    has_open_observation.short_description = 'Active Measurements'
 
     def deliver_to_bro(self, request, queryset):
         for dossier in queryset:
@@ -101,10 +116,18 @@ class ObservationAdmin(admin.ModelAdmin):
 
     readonly_fields = ["status"]
 
-    actions = ["change_up_to_date_status"]
+    actions = ["close_observation", "change_up_to_date_status"]
 
     def observation_type(self, obj: models.Observation):
         return obj.observation_metadata.observation_type
+
+    @admin.action(description="Close Observation")
+    def close_observation(self, request, queryset):
+        for item in queryset:
+            with reversion.create_revision():
+                item.observation_endtime = datetime.datetime.now().astimezone() - datetime.timedelta(seconds=1)
+                item.save(update_fields=["observation_endtime"])
+                reversion.set_comment("Closed the observation with a manual action.")
 
     @admin.action(description="Change up-to-date status.")
     def change_up_to_date_status(self, request, queryset):
