@@ -1,6 +1,5 @@
 import django.forms as forms
 from . import models
-from .widgets import PasswordMaskWidget
 
 
 
@@ -25,14 +24,6 @@ class BinaryFileInput(forms.ClearableFileInput):
         upload = super().value_from_datadict(data, files, name)
         if upload:
             return upload.read()
-
-class InstantieForm(forms.ModelForm):
-    class Meta:
-        model = models.Instantie
-        fields = "__all__"
-        widgets = {
-            'bro_token': PasswordMaskWidget(),
-        }
 
 class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
     

@@ -30,12 +30,6 @@ class GMWSerializer(serializers.ModelSerializer):
         
         return linked_measuringpoints
 
-class InstantieSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = gmw_models.Instantie
-        fields = '__all__'
-
 class GLDSerializer(serializers.ModelSerializer):
     class Meta:
         model = gld_models.GroundwaterLevelDossier

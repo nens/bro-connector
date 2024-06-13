@@ -31,22 +31,6 @@ def get_searchable_fields(model_class):
     ]
 
 
-class InstantieAdmin(admin.ModelAdmin):
-    form = gmw_forms.InstantieForm
-
-    list_display = (
-        "id",
-        "name",
-        "company_number",
-        "color",
-    )
-
-    list_filter = (
-        "name",
-        "company_number",
-    )
-
-
 class EventsInline(admin.TabularInline):
     model = gmw_models.Event
     search_fields = get_searchable_fields(gmw_models.Event)
@@ -216,7 +200,10 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellDynamicForm
-    search_fields = ("groundwater_monitoring_well_dynamic_id", "groundwater_monitoring_well_static__bro_id", "date_from")
+    search_fields = (
+        "groundwater_monitoring_well_dynamic_id", "groundwater_monitoring_well_static__bro_id", 
+        "date_from", "groundwater_monitoring_well_static__well_code"
+    )
 
     list_display = (
         "groundwater_monitoring_well_dynamic_id",
@@ -256,7 +243,10 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeStaticForm
 
-    search_fields = ("groundwater_monitoring_tube_static_id", "groundwater_monitoring_well_static__bro_id", "tube_number")
+    search_fields = (
+        "groundwater_monitoring_tube_static_id", "groundwater_monitoring_well_static__bro_id", 
+        "tube_number", "groundwater_monitoring_well_static__well_code"
+    )
 
 
     list_display = (
@@ -298,7 +288,11 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
 
 class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeDynamicForm
-    search_fields = ("groundwater_monitoring_tube_dynamic_id", "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id", "groundwater_monitoring_tube_static__tube_number", "date_from")
+    search_fields = (
+        "groundwater_monitoring_tube_dynamic_id", "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id",
+        "groundwater_monitoring_tube_static__tube_number", "date_from",
+        "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code"
+    )
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static",
@@ -368,7 +362,10 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.ElectrodeDynamicForm
-    search_fields = ("electrode_dynamic_id", "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id", "date_from")
+    search_fields = (
+        "electrode_dynamic_id", "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id", 
+        "date_from", "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code"
+    )
 
     list_display = (
         "electrode_dynamic_id",
@@ -479,7 +476,6 @@ _register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
 _register(gmw_models.gmw_registration_log, GmwSyncLogAdmin)
-_register(gmw_models.Instantie, InstantieAdmin)
 
 patch_admin(gmw_models.GroundwaterMonitoringWellStatic)
 patch_admin(gmw_models.GroundwaterMonitoringWellDynamic)
@@ -493,4 +489,3 @@ patch_admin(gmw_models.Picture)
 patch_admin(gmw_models.MaintenanceParty)
 patch_admin(gmw_models.Maintenance)
 patch_admin(gmw_models.gmw_registration_log)
-patch_admin(gmw_models.Instantie)
