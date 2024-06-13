@@ -202,9 +202,10 @@ class Registration(ABC):
         If not, creates one and handles the complete startregistrations.
         If so, checks the status, and picks up the startregistration process where it was left.
         """
+        
+
         if check_only:
             self.check_status()
-
         else:
             status_function_mapping = {
                 None: self.generate_xml_file,
@@ -270,7 +271,6 @@ class Registration(ABC):
             self.generate_xml_file()
 
         xml_payload = get_xml_payload(self.log.xml_filepath)
-
         try:
             validation_info = brx.validate_sourcedoc(
                 payload=xml_payload,
@@ -450,6 +450,9 @@ class FrdStartRegistration(Registration):
         gmn_bro_id = getattr(
             self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None
         )
+        if gmn_bro_id is not None:
+            gmn_bro_id = [gmn_bro_id]
+
         gmw_bro_id = getattr(
             getattr(
                 self.frd_obj.groundwater_monitoring_tube,
@@ -471,11 +474,9 @@ class FrdStartRegistration(Registration):
         srcdocdata = {
             "object_id_accountable_party": self.frd_obj.object_id_accountable_party,
             "gmw_bro_id": gmw_bro_id,
+            "gmn_bro_id": gmn_bro_id,
             "gmw_tube_number": gmw_tube_number,
         }
-        
-        if gmn_bro_id is not None:
-            srcdocdata.update({"gmn_bro_id": [gmn_bro_id]})
 
         startregistration_tool = brx.FRDStartRegistrationTool(
             metadata, srcdocdata, "registration"
