@@ -62,9 +62,7 @@ class GroundwaterLevelDossier(models.Model):
             
 
     def __str__(self):
-        return f"{self.gld_bro_id}"
-
-    
+        return f"GLD_{self.groundwater_monitoring_tube.__str__()}"
 
     class Meta:
         managed = True
