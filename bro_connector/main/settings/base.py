@@ -50,6 +50,7 @@ MODULES = ["gmw", "frd", "gld", "gmn"]
 INSTALLED_APPS = [
     "jazzmin",
     "main",
+    "bro",
     "gld",
     "gmw",
     "gmn",
@@ -195,6 +196,10 @@ ADMIN_REORDER = (
             "gmn.IntermediateEvent",
             "gmn.gmn_bro_sync_log",
         ),
+    },
+    {
+        "app": "bro",
+        "label": "BRO", 
     },
     {
         "app": "gmw",
@@ -398,6 +403,7 @@ JAZZMIN_SETTINGS = {
     "navigation_expanded": False,
     "order_with_respect_to": [
         "auth",
+        "bro",
         "gmn",
         "gmw",
         "gld",
