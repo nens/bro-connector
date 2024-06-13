@@ -383,6 +383,8 @@ JAZZMIN_SETTINGS = {
         # model admin to link to (Permissions checked against model)
         {"name": "Map", "url": "/map", "permissions": ["auth.view_user"]},
         # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "bro"},
+        # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmw"},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmn"},
