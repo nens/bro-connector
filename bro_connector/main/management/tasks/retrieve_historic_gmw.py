@@ -14,8 +14,8 @@ from gmw.models import (
     GeoOhmCable,
     ElectrodeDynamic,
     ElectrodeStatic,
-    Instantie,
 )
+from bro.models import Company
 
 
 def within_bbox(coordinates) -> bool:
@@ -110,9 +110,9 @@ def get_or_create_instantie(instantie: str):
     if instantie is None:
         return (None, False)
     if instantie.isdigit():
-        return Instantie.objects.get_or_create(company_number=instantie)
+        return Company.objects.get_or_create(company_number=instantie)
     else:
-        return Instantie.objects.get_or_create(name=instantie)
+        return Company.objects.get_or_create(name=instantie)
 
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime:
