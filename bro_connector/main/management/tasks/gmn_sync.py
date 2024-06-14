@@ -1,21 +1,51 @@
-from gmn.models import IntermediateEvent
+from gmn.models import IntermediateEvent, GroundwaterMonitoringNet
 from main.management.commands.tasks.gmn_tasks.gmn_request_handlers import (
     StartRegistrationGMN,
     MeasuringPointAddition,
     MeasuringPointRemoval,
     ClosureGMN,
 )
-from main.settings.base import gmn_SETTINGS
+from bro.models import Organisation
+from typing import Union
+from main.settings.base import ENVIRONMENT
+import logging
+
+logger = logging.getLogger(__name__)
+
+def is_demo():
+    if ENVIRONMENT == "production":
+        return False
+    return True
+
+def _get_token(owner: Organisation):
+    return {
+        "user": owner.bro_user,
+        "pass": owner.bro_token,
+    }
+
+def form_bro_info(gmn: GroundwaterMonitoringNet) -> dict:
+    return {
+        "bro_info": {
+            "token": _get_token(gmn.delivery_accountable_party),
+            "projectnummer": gmn.project_number,
+        }
+    }
+
+def bro_info_missing(bro_info: dict, gmn_name: str) -> bool:
+    skip=False
+    if bro_info["projectnummer"] is None:
+        skip=True
+        logger.info(f'No projectnumber for GMN ({gmn_name})')
+
+    if bro_info["token"]["user"] is None or bro_info["token"]["pass"] is None:
+        skip=True
+        logger.info(f'No user or pass for GMN ({gmn_name})')
+    
+    return skip
+
 
 def sync_gmn(selected_gmn_qs=None, check_only=False):
-    demo = gmn_SETTINGS["demo"]
-    if demo:
-        acces_token_bro_portal = gmn_SETTINGS["acces_token_bro_portal_demo"]
-    else:
-        acces_token_bro_portal = gmn_SETTINGS[
-            "acces_token_bro_portal_bro_connector"
-        ]
-
+    demo = is_demo()
     if selected_gmn_qs:
         events = IntermediateEvent.objects.filter(
                     synced_to_bro=False, deliver_to_bro=True, gmn__in=selected_gmn_qs
@@ -26,6 +56,10 @@ def sync_gmn(selected_gmn_qs=None, check_only=False):
                 )
     
     for event in events:
+        bro_info = form_bro_info(event.gmn)
+        if bro_info_missing(bro_info, event.gmn.id):
+            continue
+
         event.refresh_from_db()
         # Synced_to_bro might be updated during the handling of another event.
         if event.synced_to_bro == True:
@@ -35,26 +69,26 @@ def sync_gmn(selected_gmn_qs=None, check_only=False):
             print(
                 f"De startregistratie van {event.gmn} wordt geinitialiseerd of opgepakt"
             )
-            registration = StartRegistrationGMN(event, demo, acces_token_bro_portal)
+            registration = StartRegistrationGMN(event, demo, bro_info)
             registration.handle(check_only)
 
         if event.event_type == "GMN_MeasuringPoint":
             print(
                 f"De toevoeging van {event.measuring_point} aan het {event.gmn} wordt geinitialiseerd of opgepakt"
             )
-            addition = MeasuringPointAddition(event, demo, acces_token_bro_portal)
+            addition = MeasuringPointAddition(event, demo, bro_info)
             addition.handle(check_only)
 
         if event.event_type == "GMN_MeasuringPointEndDate":
             print(
                 f"De verwijdering van {event.measuring_point} aan het {event.gmn} wordt geinitialiseerd of opgepakt"
             )
-            removal = MeasuringPointRemoval(event, demo, acces_token_bro_portal)
+            removal = MeasuringPointRemoval(event, demo, bro_info)
             removal.handle(check_only)
 
         if event.event_type == "GMN_Closure":
             print(
                 f"De eindregistratie van {event.gmn} wordt geinitialiseerd of opgepakt"
             )
-            closure = ClosureGMN(event, demo, acces_token_bro_portal)
+            closure = ClosureGMN(event, demo, bro_info)
             closure.handle(check_only)
