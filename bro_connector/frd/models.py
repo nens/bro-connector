@@ -7,30 +7,35 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, ElectrodeStatic
 from gmn.models import GroundwaterMonitoringNet
 import datetime
+from bro.models import Organisation
 
 logger = logging.getLogger(__name__)
 
 
 # Create your models here.
 class FormationResistanceDossier(models.Model):
-    frd_bro_id = models.CharField(
-        max_length=200, null=True, blank=True, editable=True, verbose_name="Bro-ID FRD"
-    )
-    delivery_accountable_party = models.CharField(
-        max_length=200,
-        null=True,
-        blank=False,
-    )
     object_id_accountable_party = models.CharField(
         max_length=200,
         null=True,
         blank=False,
     )
-    delivery_responsible_party = models.CharField(
-        max_length=255,
-        null=True,
-        blank=False,
+    frd_bro_id = models.CharField(
+        max_length=200, null=True, blank=True, editable=True, verbose_name="Bro-ID FRD"
     )
+    delivery_accountable_party = models.ForeignKey(
+        Organisation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="delivery_accountable_party_frd",
+    ) # Could be property from tube
+    delivery_responsible_party = models.ForeignKey(
+        Organisation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="delivery_responsible_party_frd",
+    ) # Could be property from tube
     quality_regime = models.CharField(
         choices=(
             ("IMBRO", "IMBRO"),
