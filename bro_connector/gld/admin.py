@@ -16,7 +16,7 @@ def _register(model, admin_class):
 
 # %% GLD model registration
 
-gld = GldSyncHandler(gld_SETTINGS)
+gld = GldSyncHandler()
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -123,7 +123,7 @@ class ObservationAdmin(admin.ModelAdmin):
 
     @admin.action(description="Close Observation")
     def close_observation(self, request, queryset):
-        for item in queryset:
+        for item in queryset.filter(observation_endtime__isnull=True):
             with reversion.create_revision():
                 item.observation_endtime = datetime.datetime.now().astimezone() - datetime.timedelta(seconds=1)
                 item.save(update_fields=["observation_endtime"])
@@ -209,7 +209,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
             gld = GldSyncHandler(gld_SETTINGS)
 
-            if registration_log.levering_id is not None:
+            if registration_log.delivery_id is not None:
                 self.message_user(
                     request,
                     "Can't generate startregistration sourcedocuments for an existing registration",
@@ -247,7 +247,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     "There is no sourcedocument file for this startregistration",
                     messages.ERROR,
                 )
-            elif registration_log.levering_id is not None:
+            elif registration_log.delivery_id is not None:
                 self.message_user(
                     request,
                     "Can't validate a document that has already been delivered",
@@ -266,7 +266,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     @admin.action(description="Deliver startregistration sourcedocument")
     def deliver_startregistration_sourcedocument(self, request, queryset):
         for registration_log in queryset:
-            if registration_log.levering_id is not None:
+            if registration_log.delivery_id is not None:
                 self.message_user(
                     request,
                     "Can't deliver a registration that has already been delivered",
@@ -278,7 +278,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     "Can't deliver an invalid document or not yet validated document",
                     messages.ERROR,
                 )
-            elif registration_log.levering_status is not None:
+            elif registration_log.delivery_status is not None:
                 self.message_user(
                     request,
                     "Can't deliver a document that has been already been delivered",
@@ -300,11 +300,11 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         gld = GldSyncHandler(gld_SETTINGS)
 
         for registration_log in queryset:
-            levering_id = registration_log.levering_id
-            if levering_id is None:
+            delivery_id = registration_log.delivery_id
+            if delivery_id is None:
                 self.message_user(
                     request,
-                    "Can't check status of a delivery with no 'levering_id'",
+                    "Can't check status of a delivery with no 'delivery_id'",
                     messages.ERROR,
                 )
             else:
@@ -320,8 +320,8 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         "filter_id",
         "quality_regime",
         "validation_status",
-        "levering_id",
-        "levering_status",
+        "delivery_id",
+        "delivery_status",
         "process_status",
         "comments",
         "last_changed",
@@ -332,7 +332,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     list_filter = (
         "date_modified",
         "validation_status",
-        "levering_status",
+        "delivery_status",
     )
 
 
@@ -350,7 +350,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     @admin.action(description="Regenerate sourcedocuments")
     def regenerate_sourcedocuments(self, request, queryset):
         for addition_log in queryset:
-            if addition_log.levering_id is not None:
+            if addition_log.delivery_id is not None:
                 self.message_user(
                     request,
                     "Can't create new sourcedocuments for an observation that has already been delivered",
@@ -397,7 +397,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
 
             filename = addition_log.file
             addition_file_path = os.path.join(additions_dir, filename)
-            if addition_log.levering_id is not None:
+            if addition_log.delivery_id is not None:
                 self.message_user(
                     request,
                     "Can't revalidate document for an observation that has already been delivered",
@@ -442,7 +442,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     "Can't deliver an invalid document or not yet validated document",
                     messages.ERROR,
                 )
-            elif addition_log.levering_status is not None:
+            elif addition_log.delivery_status is not None:
                 self.message_user(
                     request,
                     "Can't deliver a document that has been already been delivered",
@@ -468,10 +468,10 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             ]
 
         for addition_log in queryset:
-            if addition_log.levering_id is None:
+            if addition_log.delivery_id is None:
                 self.message_user(
                     request,
-                    "Can't check status of a delivery with no 'levering_id'",
+                    "Can't check status of a delivery with no 'delivery_id'",
                     messages.ERROR,
                 )
             else:
@@ -491,15 +491,15 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "end_date",
         "broid_registration",
         "validation_status",
-        "levering_id",
-        "levering_status",
+        "delivery_id",
+        "delivery_status",
         "addition_type",
         "comments",
         "file",
     )
     list_filter = (
         "validation_status",
-        "levering_status",
+        "delivery_status",
     )
 
 
