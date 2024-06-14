@@ -1,7 +1,17 @@
 from django.core.management.base import BaseCommand
 from ..tasks import sync_gmw_events
-from main.settings.base import gmw_SETTINGS
+from main.settings.base import ENVIRONMENT
+from django.apps import apps
 
+def _is_demo(self):
+        if ENVIRONMENT == "production":
+            return False
+        return True
+
+def _get_registrations_dir(app: str):
+    app_config = apps.get_app_config(app)
+    base_dir = app_config.path
+    return f"{base_dir}\\registrations"
 
 class Command(BaseCommand):
     help = (
@@ -10,13 +20,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Initialize settings
-        demo = gmw_SETTINGS["demo"]
-        if demo:
-            bro_info = gmw_SETTINGS["bro_info_demo"]
-        else:
-            bro_info = gmw_SETTINGS["bro_info_bro_connector"]
-
-        registrations_dir = gmw_SETTINGS["registrations_dir"]
+        demo = _is_demo()
+        registrations_dir = _get_registrations_dir('gmw')
 
         # Check the database for new wells/tubes and start a gmw registration for these objects if its it needed
         sync_gmw_events.gmw_create_sourcedocs_wells(
@@ -25,5 +30,5 @@ class Command(BaseCommand):
 
         # Check existing registrations
         sync_gmw_events.gmw_check_existing_registrations(
-            bro_info, registrations_dir, demo
+            registrations_dir, demo
         )
