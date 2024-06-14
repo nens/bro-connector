@@ -5,19 +5,16 @@ import logging
 from main.management.commands import gld_sync_to_bro
 
 
-from main.settings.base import gld_SETTINGS
+from main.settings.base import ENVIRONMENT
 
 logger = logging.getLogger(__name__)
 
-demo = gld_SETTINGS["demo"]
-if demo:
-    bro_info = gld_SETTINGS["bro_info_demo"]
-else:
-    bro_info = gld_SETTINGS["bro_info_bro_connector"]
-
 folders = ["./additions/", "./startregistrations/"]
-monitoringnetworks = gld_SETTINGS["monitoringnetworks"]
 
+def is_demo():
+    if ENVIRONMENT == "production":
+        return False
+    return True
 
 def create_registrations_folder():
     for folder in folders:
@@ -32,7 +29,6 @@ def create_registrations_folder():
         else:
             print(f"Folder '{folder}' already exists.")
 
-
 def handle_start_registrations(
     dossier: GroundwaterLevelDossier,
     deliver: bool,
@@ -42,7 +38,7 @@ def handle_start_registrations(
     # Handle start registrations
     tube_number = dossier.groundwater_monitoring_tube.tube_number
 
-    gld = gld_sync_to_bro.GldSyncHandler(gld_SETTINGS)
+    gld = gld_sync_to_bro.GldSyncHandler()
 
     gld_registration_logs = gld_registration_log.objects.filter(
         gwm_bro_id=well.bro_id,
@@ -77,7 +73,7 @@ def handle_additions(
         observation_endtime__isnull = False,
     )
 
-    gld = gld_sync_to_bro.GldSyncHandler(gld_SETTINGS)
+    gld = gld_sync_to_bro.GldSyncHandler()
 
     for observation in observations:
         print(f"Observation: {observation}; End_date: {observation.observation_endtime}")
