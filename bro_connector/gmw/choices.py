@@ -200,6 +200,14 @@ GROUNDLEVELPOSITIONINGMETHOD = (
     ("onbekend", "onbekend"),
 )
 
+DELIVERY_TYPE_CHOICES = (
+    ("register", "register"),
+    ("replace", "replace"),
+    ("insert", "insert"),
+    ("move", "move"),
+    ("delete", "delete"),
+)
+
 EVENTNAME = (
     ("constructie", "constructie"),
     ("beschermconstructieVeranderd", "beschermconstructieVeranderd"),

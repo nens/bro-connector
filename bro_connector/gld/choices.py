@@ -45,6 +45,14 @@ AIRPRESSURECOMPENSATIONTYPE = (
 
 PROCESSTYPE = (("algoritme", "algoritme"),)
 
+DELIVERY_TYPE_CHOICES = (
+    ("register", "register"),
+    ("replace", "replace"),
+    ("insert", "insert"),
+    ("move", "move"),
+    ("delete", "delete"),
+)
+
 EVALUATIONPROCEDURE = (
     ("brabantWater2013", "brabantWater2013"),
     ("eijkelkampDataValidatiev0.0.9", "eijkelkampDataValidatiev0.0.9"),
