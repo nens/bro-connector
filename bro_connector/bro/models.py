@@ -80,8 +80,8 @@ class Organisation(models.Model):
     class Meta:
         managed = True
         db_table = 'bro"."organisation'
-        verbose_name = "Organisation"
-        verbose_name_plural = "Organisations"
+        verbose_name = "Organisatie"
+        verbose_name_plural = "Organisaties"
 
     def __str__(self):
         if self.name:
@@ -107,7 +107,7 @@ class BROProject(models.Model):
         managed = True
         db_table = 'bro"."project'
         verbose_name = "Project"
-        verbose_name_plural = "Projects"
+        verbose_name_plural = "Projecten"
 
     def __str__(self):
         if self.name:
