@@ -313,8 +313,13 @@ class gld_registration_log(models.Model):
     gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
     filter_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
-    levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(max_length=254, null=True, blank=True)
+    delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    delivery_type = models.CharField(
+        choices=DELIVERY_TYPE_CHOICES,
+        blank=False,
+        max_length=40,
+    )
+    delivery_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
@@ -338,9 +343,9 @@ class gld_addition_log(models.Model):
     start_date = models.DateTimeField(max_length=254, null=True, blank=True)
     end_date = models.DateTimeField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
-    levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_type = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(max_length=254, null=True, blank=True)
+    delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    delivery_type = models.CharField(max_length=254, null=True, blank=True)
+    delivery_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=50000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)

@@ -1,24 +1,30 @@
 from django.db import models
-from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
+from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL, DELIVERY_TYPE_CHOICES, LEVERINGSTATUS_CHOICES, EVENT_TYPE_CHOICES
 from gmw.models import GroundwaterMonitoringTubeStatic
+from bro.models import Organisation
 
 
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
     id = models.AutoField(primary_key=True)
+    project_number = models.IntegerField(blank=True, null=True)
     deliver_to_bro = models.BooleanField(blank=False, null=True)
     gmn_bro_id = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
     )
-    delivery_accountable_party = models.CharField(
-        max_length=255,
+    delivery_accountable_party = models.ForeignKey(
+        Organisation,
+        on_delete=models.CASCADE,
         null=True,
-        blank=False,
+        blank=True,
+        related_name="delivery_accountable_party_gmn",
     )
-    delivery_responsible_party = models.CharField(
-        max_length=255,
+    delivery_responsible_party = models.ForeignKey(
+        Organisation,
+        on_delete=models.CASCADE,
         null=True,
-        blank=False,
+        blank=True,
+        related_name="delivery_responsible_party_gmn",
     )
     quality_regime = models.CharField(
         choices=(
@@ -111,7 +117,7 @@ class GroundwaterMonitoringNet(models.Model):
 
 
 class MeasuringPoint(models.Model):
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE)
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
@@ -142,7 +148,11 @@ class MeasuringPoint(models.Model):
         return self.code
 
     def save(self, *args, **kwargs):
-        self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_tube.tube_number}"
+        if self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code is None:
+            self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_tube.tube_number}"
+        else:
+            self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code}_{self.groundwater_monitoring_tube.tube_number}"
+
         is_new = self._state.adding
         super().save(*args, **kwargs)
 
@@ -176,15 +186,6 @@ class MeasuringPoint(models.Model):
         _admin_name = "Meetpunt"
         ordering = ("code",)
 
-
-EVENT_TYPE_CHOICES = [
-    ("GMN_StartRegistration", "Start Registration"),
-    ("GMN_MeasuringPoint", "Add MeasuringPoint"),
-    ("GMN_MeasuringPointEndDate", "Remove MeasuringPoint"),
-    ("GMN_Closure", "GMN Closure"),
-]
-
-
 class IntermediateEvent(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
     event_type = models.CharField(
@@ -210,16 +211,6 @@ class IntermediateEvent(models.Model):
         _admin_name = "Tussentijdse Gebeurtenissen"
         ordering = ("event_date",)
 
-
-LEVERINGSTATUS_CHOICES = [
-    ("0", "Nog niet aangeleverd"),
-    ("1", "1 keer gefaald"),
-    ("2", "2 keer gefaald"),
-    ("3", "3 keer gefaald"),
-    ("4", "Succesvol aangeleverd"),
-]
-
-
 class gmn_bro_sync_log(models.Model):
     date_modified = models.DateField(null=True, blank=True)
     event_type = models.CharField(
@@ -233,11 +224,16 @@ class gmn_bro_sync_log(models.Model):
         max_length=255, null=True, blank=True
     )
     validation_status = models.CharField(max_length=254, null=True, blank=True)
-    levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(
+    delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    delivery_type = models.CharField(
+        choices=DELIVERY_TYPE_CHOICES,
+        blank=False,
+        max_length=40,
+    )
+    delivery_status = models.CharField(
         choices=LEVERINGSTATUS_CHOICES, max_length=10, null=True, blank=True, default=0
     )
-    levering_status_info = models.CharField(max_length=254, null=True, blank=True)
+    delivery_status_info = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)

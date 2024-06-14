@@ -4,11 +4,13 @@ from .choices import *
 import main.utils.validators_models as validators_models
 from bro.models import Organisation, SecureCharField
 import datetime
+from .utils import generate_put_code
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
     registration_object_type = models.CharField(max_length=256, blank=True, null=True)
     bro_id = models.CharField(max_length=15, blank=True, null=True)
+    project_number = models.IntegerField(blank=True, null=True)
     request_reference = models.CharField(max_length=255, blank=True, null=True)
     delivery_accountable_party = models.ForeignKey(
         Organisation,
@@ -107,6 +109,10 @@ class GroundwaterMonitoringWellStatic(models.Model):
     def save(self, *args, **kwargs):
         # Call the parent class's save method
         super().save(*args, **kwargs)
+
+        if self.well_code is None and self.nitg_code is not None:
+            self.well_code = generate_put_code(self.nitg_code)
+            super().save(update_fields=['well_code'])
 
         # If coordinates are available, convert and save them to coordinates_4236
         if self.coordinates:
@@ -485,8 +491,12 @@ class gmw_registration_log(models.Model):
     event_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_type = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(max_length=254, null=True, blank=True)
+    delivery_type = models.CharField(
+        choices=DELIVERY_TYPE_CHOICES,
+        blank=False,
+        max_length=40,
+    )
+    delivery_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
@@ -501,8 +511,8 @@ class gmw_registration_log(models.Model):
 
     def __str__(self):
         if self.bro_id is None:
-            return f"{self.id}-{self.levering_type}_log ({self.date_modified})"
-        return f"{self.bro_id}-{self.levering_type}_log ({self.date_modified})"
+            return f"{self.id}-{self.delivery_type}_log ({self.date_modified})"
+        return f"{self.bro_id}-{self.delivery_type}_log ({self.date_modified})"
 
     def _set_original_values(self, instance):
         self._original_values = get_current_values(instance)
