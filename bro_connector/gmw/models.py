@@ -490,7 +490,7 @@ class gmw_registration_log(models.Model):
     bro_id = models.CharField(max_length=254, null=True, blank=True)
     event_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
-    levering_id = models.CharField(max_length=254, null=True, blank=True)
+    delivery_id = models.CharField(max_length=254, null=True, blank=True)
     delivery_type = models.CharField(
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
