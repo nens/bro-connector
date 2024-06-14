@@ -2,7 +2,7 @@ from django.db import models
 import django.contrib.gis.db.models as geo_models
 from .choices import *
 import main.utils.validators_models as validators_models
-from bro.models import Organisation, SecureCharField
+from bro.models import Organisation, BROProject, SecureCharField
 import datetime
 from .utils import generate_put_code
 
@@ -10,7 +10,12 @@ class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
     registration_object_type = models.CharField(max_length=256, blank=True, null=True)
     bro_id = models.CharField(max_length=15, blank=True, null=True)
-    project_number = models.IntegerField(blank=True, null=True)
+    project = models.ForeignKey(
+        BROProject,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     request_reference = models.CharField(max_length=255, blank=True, null=True)
     delivery_accountable_party = models.ForeignKey(
         Organisation,
@@ -91,6 +96,13 @@ class GroundwaterMonitoringWellStatic(models.Model):
     @property
     def lon(self):
         return self.coordinates_4236.x
+
+    @property
+    def project_number(self):
+        if self.project:
+            return self.project.project_number
+        else:
+            None
 
     def cx(self):
         return self.construction_coordinates.x

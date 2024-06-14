@@ -1,13 +1,18 @@
 from django.db import models
 from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL, DELIVERY_TYPE_CHOICES, LEVERINGSTATUS_CHOICES, EVENT_TYPE_CHOICES
 from gmw.models import GroundwaterMonitoringTubeStatic
-from bro.models import Organisation
+from bro.models import Organisation, BROProject
 
 
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
     id = models.AutoField(primary_key=True)
-    project_number = models.IntegerField(blank=True, null=True)
+    project = models.ForeignKey(
+        BROProject,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     deliver_to_bro = models.BooleanField(blank=False, null=True)
     gmn_bro_id = models.CharField(
         max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
@@ -78,6 +83,13 @@ class GroundwaterMonitoringNet(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def project_number(self):
+        if self.project:
+            return self.project.project_number
+        else:
+            None
 
     @property
     def measuring_point_count(self):
