@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from django.core.management.base import BaseCommand
 import bro_exchange as brx
-
+from django.apps import apps
 from frd.models import (
     FormationResistanceDossier,
     FrdSyncLog,
@@ -24,9 +24,25 @@ from frd.models import (
     ElectromagneticSeries,
     InstrumentConfiguration,
 )
+from bro.models import Organisation
+from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 from datetime import datetime, date
-from main.settings.base import frd_SETTINGS
+from main.settings.base import ENVIRONMENT
 
+
+def _get_token(owner: Organisation):
+    return {
+        "user": owner.bro_user,
+        "pass": owner.bro_token,
+    }
+
+def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
+    return {
+        "bro_info": {
+            "token": _get_token(well.delivery_accountable_party),
+            "projectnummer": well.project_number,
+        }
+    }
 
 def get_xml_payload(xml_filepath):
     """
@@ -181,15 +197,17 @@ class Registration(ABC):
     log = FrdSyncLog
 
     def __init__(self):
-        self.output_dir = "frd/xml_files/"
+        self.demo = self._is_demo()
         self.xml_file = None
-        self.api_version = frd_SETTINGS["api_version"]
-        self.demo = frd_SETTINGS["demo"]
 
-        if self.demo:
-            self.bro_info = frd_SETTINGS["bro_info_demo"]
-        else:
-            self.bro_info = frd_SETTINGS["bro_info_bro_connector"]
+    def _is_demo(self):
+        if ENVIRONMENT == "production":
+            return False
+        return True
+
+    def _set_folder_dir(self, app: str):
+        app_config = apps.get_app_config(app)
+        self.base_dir = app_config.path
 
     def check_status(self):
         print(self.log)
@@ -203,6 +221,7 @@ class Registration(ABC):
         If so, checks the status, and picks up the startregistration process where it was left.
         """
         
+        self._set_bro_info(self.log.frd)
 
         if check_only:
             self.check_status()
@@ -257,8 +276,24 @@ class Registration(ABC):
         """
         Saves the xmltree as xml file in the filepath as defined in self.
         """
-        self.filepath = os.path.join(self.output_dir, self.filename)
+        self.filepath = os.path.join(self.base_dir, self.filename)
         self.xml_file.write(self.filepath, pretty_print=True)
+
+    def _set_bro_info(self, obj):
+        if type(obj) == FormationResistanceDossier:
+            self.bro_info = form_bro_info(obj.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+        elif type(obj) == GroundwaterMonitoringWellStatic:
+            self.bro_info = form_bro_info(obj)
+        elif type(obj) == GroundwaterMonitoringTubeStatic:
+            self.bro_info = form_bro_info(obj.groundwater_monitoring_well_static)
+        else:
+            self.bro_info = {
+                "token": {
+                    "user": None,
+                    "pass": None,
+                },
+                "projectnummer": None,
+            }
 
     def validate_xml_file(self):
         """
@@ -276,7 +311,7 @@ class Registration(ABC):
                 payload=xml_payload,
                 bro_info=self.bro_info,
                 demo=self.demo,
-                api=self.api_version,
+                api="v2",
             )
 
         except Exception as e:
@@ -326,7 +361,7 @@ class Registration(ABC):
                 token=self.bro_info["token"],
                 demo=self.demo,
                 project_id=self.bro_info["projectnummer"],
-                api=self.api_version,
+                api="v2",
             )
 
         except Exception as e:
@@ -369,7 +404,7 @@ class Registration(ABC):
                 identifier=self.log.delivery_id,
                 token=self.bro_info["token"],
                 demo=self.demo,
-                api=self.api_version,
+                api="v2",
                 project_id=self.bro_info["projectnummer"],
             )
         except Exception as e:
