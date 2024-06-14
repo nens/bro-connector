@@ -135,9 +135,9 @@ class FormationResistanceDossier(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."formationresistance_dossier'
-        verbose_name = "Formationresistance Dossier"
-        verbose_name_plural = "Formationresistance Dossier"
-        _admin_name = "BRO formationresistance dossier"
+        verbose_name = "Formatieweerstand Dossier"
+        verbose_name_plural = "Formatieweerstand Dossiers"
+        _admin_name = "BRO Formatieweerstand Dossier"
 
 
 class ElectromagneticMeasurementMethod(models.Model):
@@ -162,7 +162,7 @@ class ElectromagneticMeasurementMethod(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."electromagnetic_measurement_method'
-        verbose_name_plural = "Electromagnetic Measurement Method"
+        verbose_name_plural = "Electromagnetisch Meetmethode"
 
 
 class InstrumentConfiguration(models.Model):
@@ -215,7 +215,7 @@ class InstrumentConfiguration(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."instrument_configuration'
-        verbose_name_plural = "Instrument Configurations"
+        verbose_name_plural = "Instrument Configuraties"
 
 
 class GeoOhmMeasurementMethod(models.Model):
@@ -241,7 +241,7 @@ class GeoOhmMeasurementMethod(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."geo_ohm_measurement_method'
-        verbose_name_plural = "Geo Ohm Measurement Method"
+        verbose_name_plural = "Geo Ohm Meetmethodes"
 
     def save(self, *args, **kwargs):
         if self.pk != None:
@@ -272,7 +272,7 @@ class GMWElectrodeReference(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."gmw_electrode_reference'
-        verbose_name_plural = "GMW Electrode Reference"
+        verbose_name_plural = "GMW Elektrode Referenties"
 
 
 class ElectrodePair(models.Model):
@@ -298,7 +298,7 @@ class ElectrodePair(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."electrode_pair'
-        verbose_name_plural = "Electrode Pair"
+        verbose_name_plural = "Elektrode Paren"
 
 
 class MeasurementConfiguration(models.Model):
@@ -333,7 +333,7 @@ class MeasurementConfiguration(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."measurement_configuration'
-        verbose_name_plural = "Measurement Configuration"
+        verbose_name_plural = "Meetconfiguraties"
 
 
 class ElectromagneticSeries(models.Model):
@@ -347,7 +347,7 @@ class ElectromagneticSeries(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."electromagnetic_series'
-        verbose_name_plural = "Electromagnetic Series"
+        verbose_name_plural = "Electromagnetische Series"
 
 
 class GeoOhmMeasurementValue(models.Model):
@@ -363,7 +363,7 @@ class GeoOhmMeasurementValue(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."geo_ohm_measurement_value'
-        verbose_name_plural = "Geo Ohm Measurement Value"
+        verbose_name_plural = "Geo Ohm Meetwaardes"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -409,7 +409,7 @@ class ElectromagneticRecord(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."electromagnetic_record'
-        verbose_name_plural = "Electromagnetic Records"
+        verbose_name_plural = "Electromagnetisch Waarden"
 
 
 class CalculatedFormationresistanceMethod(models.Model):
@@ -434,7 +434,7 @@ class CalculatedFormationresistanceMethod(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."calculated_formationresistance_method'
-        verbose_name_plural = "Calculated Formationresistance Method"
+        verbose_name_plural = "Berekende Formatieweerstand Methode"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -458,7 +458,7 @@ class FormationresistanceSeries(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."formationresistance_series'
-        verbose_name_plural = "Formationresistance Series"
+        verbose_name_plural = "Formatieweerstand Series"
 
 
 class FormationresistanceRecord(models.Model):
@@ -485,7 +485,7 @@ class FormationresistanceRecord(models.Model):
     class Meta:
         managed = True
         db_table = 'frd"."formationresistance_record'
-        verbose_name_plural = "Formationresistance Records"
+        verbose_name_plural = "Formatieweerstand Waarden"
 
 
 class FrdSyncLog(models.Model):
