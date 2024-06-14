@@ -509,6 +509,12 @@ class gmw_registration_log(models.Model):
         max_length=254, null=True, blank=True
     )
 
+    @property
+    def event_type(self):
+        if self.event_id is not None:
+            return Event.objects.get(id=self.event_id).event_name
+        return "-"
+
     def __str__(self):
         if self.bro_id is None:
             return f"{self.id}-{self.delivery_type}_log ({self.date_modified})"
