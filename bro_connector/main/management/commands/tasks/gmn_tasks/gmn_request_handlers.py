@@ -294,7 +294,7 @@ class StartRegistrationGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -309,10 +309,10 @@ class StartRegistrationGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Succesfully delivered startregistration sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -332,7 +332,7 @@ class StartRegistrationGMN:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of startregistration sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -364,7 +364,7 @@ class StartRegistrationGMN:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -436,7 +436,7 @@ class StartRegistrationGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -727,7 +727,7 @@ class MeasuringPointAddition:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -744,10 +744,10 @@ class MeasuringPointAddition:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": f"Succesfully delivered addition of {self.measuringpoint} to {self.monitoring_network} sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -767,7 +767,7 @@ class MeasuringPointAddition:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of addition sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -800,7 +800,7 @@ class MeasuringPointAddition:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -849,7 +849,7 @@ class MeasuringPointAddition:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -1140,7 +1140,7 @@ class MeasuringPointRemoval:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -1157,10 +1157,10 @@ class MeasuringPointRemoval:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": f"Succesfully delivered removal of {self.measuringpoint} from {self.monitoring_network} sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -1180,7 +1180,7 @@ class MeasuringPointRemoval:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of removal sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -1212,7 +1212,7 @@ class MeasuringPointRemoval:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -1259,7 +1259,7 @@ class MeasuringPointRemoval:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -1535,7 +1535,7 @@ class ClosureGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -1550,10 +1550,10 @@ class ClosureGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Succesfully delivered closure sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -1573,7 +1573,7 @@ class ClosureGMN:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of closure sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -1605,7 +1605,7 @@ class ClosureGMN:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -1652,7 +1652,7 @@ class ClosureGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
