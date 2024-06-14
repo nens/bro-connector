@@ -71,7 +71,7 @@ class StartRegistrationGMN:
             ) or (
                 self.gmn_bro_register_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_register_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_register_log_obj.delivery_status in ["1", "2"]
             ):
                 print(f"De registratie van {self.monitoring_network} word aangeleverd.")
                 self.deliver_registration()
@@ -80,7 +80,7 @@ class StartRegistrationGMN:
             if (
                 self.gmn_bro_register_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_register_log_obj.levering_status == "3"
+                and self.gmn_bro_register_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De registratie van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -93,8 +93,8 @@ class StartRegistrationGMN:
         if (
             self.gmn_bro_register_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_register_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_register_log_obj.levering_id is not None
+            and self.gmn_bro_register_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_register_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de levering van {self.monitoring_network} wordt gecontroleerd."
@@ -266,7 +266,7 @@ class StartRegistrationGMN:
         """
         Function to actually deliver the registration.
         """
-        current_delivery_status = int(self.gmn_bro_register_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_register_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -343,7 +343,7 @@ class StartRegistrationGMN:
         """
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_register_log_obj.levering_id,
+                self.gmn_bro_register_log_obj.delivery_id,
                 self.acces_token_bro_portal["token"],
                 demo=self.demo,
             )
@@ -522,7 +522,7 @@ class MeasuringPointAddition:
             ) or (
                 self.gmn_bro_addition_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_addition_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_addition_log_obj.delivery_status in ["1", "2"]
             ):
                 print(
                     f"De registratie van de addition aan {self.monitoring_network} word aangeleverd."
@@ -533,7 +533,7 @@ class MeasuringPointAddition:
             if (
                 self.gmn_bro_addition_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_addition_log_obj.levering_status == "3"
+                and self.gmn_bro_addition_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De registratie van de addition aan  {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -546,8 +546,8 @@ class MeasuringPointAddition:
         if (
             self.gmn_bro_addition_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_addition_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_addition_log_obj.levering_id is not None
+            and self.gmn_bro_addition_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_addition_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de addition van {self.measuringpoint} aan {self.monitoring_network} wordt gecontroleerd."
@@ -699,7 +699,7 @@ class MeasuringPointAddition:
         """
         Function to actually deliver the addition.
         """
-        current_delivery_status = int(self.gmn_bro_addition_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_addition_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -779,7 +779,7 @@ class MeasuringPointAddition:
         print(323)
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_addition_log_obj.levering_id,
+                self.gmn_bro_addition_log_obj.delivery_id,
                 self.acces_token_bro_portal,
                 demo=self.demo,
             )
@@ -943,7 +943,7 @@ class MeasuringPointRemoval:
             ) or (
                 self.gmn_bro_removal_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_removal_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_removal_log_obj.delivery_status in ["1", "2"]
             ):
                 print(
                     f"De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} word aangeleverd."
@@ -954,7 +954,7 @@ class MeasuringPointRemoval:
             if (
                 self.gmn_bro_removal_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_removal_log_obj.levering_status == "3"
+                and self.gmn_bro_removal_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -967,8 +967,8 @@ class MeasuringPointRemoval:
         if (
             self.gmn_bro_removal_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_removal_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_removal_log_obj.levering_id is not None
+            and self.gmn_bro_removal_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_removal_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de removal van {self.measuringpoint} uit het {self.monitoring_network} wordt gecontroleerd."
@@ -1112,7 +1112,7 @@ class MeasuringPointRemoval:
         """
         Function to actually deliver the removal.
         """
-        current_delivery_status = int(self.gmn_bro_removal_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_removal_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -1191,7 +1191,7 @@ class MeasuringPointRemoval:
         """
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_removal_log_obj.levering_id,
+                self.gmn_bro_removal_log_obj.delivery_id,
                 self.acces_token_bro_portal,
                 demo=self.demo,
             )
@@ -1343,7 +1343,7 @@ class ClosureGMN:
             ) or (
                 self.gmn_bro_closure_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_closure_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_closure_log_obj.delivery_status in ["1", "2"]
             ):
                 print(f"De closure van {self.monitoring_network} word aangeleverd.")
                 self.deliver_closure()
@@ -1352,7 +1352,7 @@ class ClosureGMN:
             if (
                 self.gmn_bro_closure_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_closure_log_obj.levering_status == "3"
+                and self.gmn_bro_closure_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De closure van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -1365,8 +1365,8 @@ class ClosureGMN:
         if (
             self.gmn_bro_closure_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_closure_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_closure_log_obj.levering_id is not None
+            and self.gmn_bro_closure_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_closure_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de closure van {self.monitoring_network} wordt gecontroleerd."
@@ -1507,7 +1507,7 @@ class ClosureGMN:
         """
         Function to actually deliver the closure.
         """
-        current_delivery_status = int(self.gmn_bro_closure_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_closure_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -1584,7 +1584,7 @@ class ClosureGMN:
         """
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_closure_log_obj.levering_id,
+                self.gmn_bro_closure_log_obj.delivery_id,
                 self.acces_token_bro_portal,
                 demo=self.demo,
             )
