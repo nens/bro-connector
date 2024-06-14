@@ -1,9 +1,5 @@
 from django.db.models.signals import (
-    m2m_changed,
-    post_delete,
     post_save,
-    pre_delete,
-    pre_save,
 )
 from django.dispatch import receiver
 from .models import gmw_registration_log, Event
@@ -11,7 +7,7 @@ import reversion
 
 @receiver(post_save, sender=gmw_registration_log)
 def on_save_gmw_synchronisatie_log(sender, instance: gmw_registration_log, created, **kwargs):
-    if instance.levering_type != "Construction":
+    if instance.delivery_type != "Construction":
         return
     
     if instance.bro_id is not None:
