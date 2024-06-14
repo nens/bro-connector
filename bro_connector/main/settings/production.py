@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from main.settings.base import *
 from main.localsecret import p_user, p_password, p_host, p_port
 
-DEBUG = True
+DEBUG = False
 ROOT_URLCONF = "main.urls"
 SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
 
@@ -21,7 +21,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://bro-prod.zeeland.nl/",
     "https://bro-prod.zeeland.nl/admin",
 ]
-
 
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
@@ -38,4 +37,14 @@ DATABASES = {
         "PORT": p_port,
         "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
     }
+}
+
+LIZARD_SETTINGS = {
+    "headers": {
+        "username": "{}".format("__key__"),
+        "password": f"{validation_key}",
+        "Content-Type": "application/json",
+    },
+    "organisation_uuid": "e7d66583-43b2-4c90-b118-f2093798885a",
+    "site_url": "https://nens.lizard.net",
 }

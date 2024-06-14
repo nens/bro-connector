@@ -21,6 +21,9 @@ from main.localsecret import *
 
 ENVIRONMENT = "staging"
 
+# Application definition
+MODULES = ["gmw", "frd", "gld", "gmn"]
+
 BBOX_SETTINGS = {
     "use_bbox": True,
     "xmin": 10000,
@@ -29,23 +32,16 @@ BBOX_SETTINGS = {
     "ymax": 420000,
 }
 
+
+##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-1b2-79o0!+@%9d6gt@7k5-8=8(r@&x-(15!o7+zo-zgwg4)gbv"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = ["*"]
-
-# Application definition
-MODULES = ["gmw", "frd", "gld", "gmn"]
 
 INSTALLED_APPS = [
     "jazzmin",
@@ -120,20 +116,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "main.wsgi.application"
 
-
-# Database
+# Dummy Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-# DATABASE_ROUTERS = ['database_routers.zeeland_gld.PostgresRouter']
 
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "grondwatermeetnet",
-        "USER": s_user,
-        "PASSWORD": s_password,
-        "HOST": s_host,
-        "PORT": s_port,
+        "NAME": "",
+        "USER": "",
+        "PASSWORD": "",
+        "HOST": "",
+        "PORT": "",
         "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
     }
 }
@@ -184,7 +177,6 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 
 ADMIN_REORDER = (
     {
@@ -279,93 +271,21 @@ else:
 
 # # BROCONVERTER SETTINGS
 gld_SETTINGS = {
-    "bro_info_demo": {
-        "projectnummer": 3012,
-        "token": {
-            "user": bro_acceptatie_user_v2,
-            "pass": bro_acceptatie_password_v2,
-        },
-    },
-    "bro_info_bro_connector": {
-        "projectnummer": 3864,
-        "token": {
-            "user": bro_production_user,
-            "pass": bro_production_password,
-        },
-    },
-    "monitoringnetworks": None,
-    "demo": demo,
     "additions_dir": os.path.join(BASE_DIR, "gld\\additions"),
-    "startregistrations_dir": os.path.join(BASE_DIR, "gld/startregistrations"),
-    "api_version": "v2",
+    "startregistrations_dir": os.path.join(BASE_DIR, "gld\\startregistrations"),
 }
 
 gmw_SETTINGS = {
-    "bro_info_demo": {
-        "projectnummer": 3012,
-        "token": {
-            "user": bro_acceptatie_user_v2,
-            "pass": bro_acceptatie_password_v2,
-        },
-        "kvk_nummer": 20168636,
-    },
-    "bro_info_bro_connector": {
-        "projectnummer": 3864,
-        "token": {
-            "user": bro_production_user,
-            "pass": bro_production_password,
-        },
-        "kvk_nummer": 20168636,
-    },
-    "demo": demo,
     "registrations_dir": os.path.join(BASE_DIR, "gmw\\registrations"),
-    "api_version": "v2",
 }
 
 gmn_SETTINGS = {
-    "acces_token_bro_portal_demo": {
-        "token": {
-            "user": bro_acceptatie_user_v2,
-            "pass": bro_acceptatie_password_v2,
-        },
-        "projectnummer": 3012,
-    },
-    "acces_token_bro_portal_bro_connector": {
-        "token": {
-            "user": bro_production_user,
-            "pass": bro_production_password,
-        },
-        "projectnummer": 3864,
-    },
     "monitoringnetworks": None,
-    "demo": demo,
-    "additions_dir": os.path.join(BASE_DIR, "gmn/additions"),
+    "additions_dir": os.path.join(BASE_DIR, "gmn\\additions"),
     "registrations_dir": os.path.join(BASE_DIR, "gmn\\registrations"),
-    "removals_dir": os.path.join(BASE_DIR, "gmn/removals"),
-    "closures_dir": os.path.join(BASE_DIR, "gmn/closures"),
+    "removals_dir": os.path.join(BASE_DIR, "gmn\\removals"),
+    "closures_dir": os.path.join(BASE_DIR, "gmn\\closures"),
 }
-
-frd_SETTINGS = {
-    "bro_info_demo": {
-        "projectnummer": 3012,
-        "token": {
-            "user": bro_acceptatie_user_v2,
-            "pass": bro_acceptatie_password_v2,
-        },
-        "kvk_nummer": 20168636,
-    },
-    "bro_info_bro_connector": {
-        "projectnummer": 3864,
-        "token": {
-            "user": bro_production_user,
-            "pass": bro_production_password,
-        },
-        "kvk_nummer": None,
-    },
-    "demo": demo,
-    "api_version": "v2",
-}
-
 
 # Quick Scan SETTINGS
 QUICK_SCAN_SETTINGS = {
@@ -470,9 +390,6 @@ JAZZMIN_SETTINGS = {
     },
     "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
 }
-
-BRO_API_VERSION = "v2"
-
 
 GRAPH_MODELS = {
     "all_applications": True,
