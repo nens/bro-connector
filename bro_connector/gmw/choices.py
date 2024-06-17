@@ -208,6 +208,12 @@ DELIVERY_TYPE_CHOICES = (
     ("delete", "delete"),
 )
 
+BOOLEAN_CHOICES = (
+    ("ja", "Ja"),
+    ("nee", "Nee"),
+    ("onbekend", "Onbekend"),
+)
+
 EVENTNAME = (
     ("constructie", "constructie"),
     ("beschermconstructieVeranderd", "beschermconstructieVeranderd"),
