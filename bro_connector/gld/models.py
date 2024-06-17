@@ -12,7 +12,10 @@ import datetime
 
 
 # %% GLD Models
-
+def s2d(string: str):
+    if len(string) > 9:
+        return f"{string[0:3]}...{string[-3:]}"
+    return string
 
 class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
@@ -22,11 +25,16 @@ class GroundwaterLevelDossier(models.Model):
         null=True,
         blank=False,
     )
-    gmw_bro_id = models.CharField(max_length=255, blank=True, null=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
     research_last_correction = models.DateTimeField(blank=True, null=True)
+
+    @property
+    def gmw_bro_id(self):
+        if not self.groundwater_monitoring_tube is None:
+            return self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id
+        return None
 
     @property
     def tube_number(self):
@@ -111,16 +119,32 @@ class Observation(models.Model):
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
 
     @property
+    def timestamp_last_measurement(self):
+        mtvp = MeasurementTvp.objects.filter(
+            observation = self
+        ).order_by("measurement_time").last()
+
+        if mtvp is not None:
+            return mtvp.measurement_time
+        return None
+
+    @property
     def measurement_type(self):
-        return self.observation_process.measurement_instrument_type
+        if self.observation_process:
+            return self.observation_process.measurement_instrument_type
+        return "-"
 
     @property
     def observation_type(self):
-        return self.observation_metadata.observation_type
+        if self.observation_metadata:
+            return self.observation_metadata.observation_type
+        return "-"
 
     @property
     def status(self):
-        return self.observation_metadata.status
+        if self.observation_metadata:
+            return self.observation_metadata.status
+        return "-"
 
     def __str__(self):
         try:
@@ -207,7 +231,7 @@ class ObservationProcess(models.Model):
         choices=PROCESSREFERENCE, max_length=200, blank=True, null=True
     )
     measurement_instrument_type = models.CharField(
-        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=True, null=True
+        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False
     )
     air_pressure_compensation_type = models.CharField(
         choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True
@@ -216,11 +240,17 @@ class ObservationProcess(models.Model):
         choices=PROCESSTYPE, max_length=200, blank=True, null=True
     )
     evaluation_procedure = models.CharField(
-        choices=EVALUATIONPROCEDURE, max_length=200, blank=True, null=True
+        choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False
     )
 
     def __str__(self):
-        return str(self.observation_process_id)
+        try:
+            if not self.air_pressure_compensation_type:
+                return f"{self.evaluation_procedure} {self.measurement_instrument_type}"
+            return f"{s2d(self.evaluation_procedure)} {s2d(self.measurement_instrument_type)} {s2d(self.process_reference)}"
+        except:
+            return str(self.observation_process_id)
+        
 
     class Meta:
         managed = True
@@ -239,7 +269,7 @@ class MeasurementTvp(models.Model):
     field_value = models.DecimalField(
         max_digits=25, decimal_places=3, blank=True, null=True
     )
-    field_value_unit = models.CharField(max_length=255, blank=True, null=True)
+    field_value_unit = models.CharField(choices=UNIT_CHOICES, max_length=255, blank=False, null=False, default="m")
     calculated_value = models.DecimalField(
         max_digits=25, decimal_places=5, blank=True, null=True
     )
@@ -311,13 +341,14 @@ class gld_registration_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     gwm_bro_id = models.CharField(max_length=254, null=True, blank=True)
     gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
-    filter_id = models.CharField(max_length=254, null=True, blank=True)
+    filter_number = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     delivery_id = models.CharField(max_length=254, null=True, blank=True)
     delivery_type = models.CharField(
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
+        default="register",
     )
     delivery_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)

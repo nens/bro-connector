@@ -123,6 +123,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
         super().save(*args, **kwargs)
 
         if self.well_code is None and self.nitg_code is not None:
+            print("Generate wellcode.")
             self.well_code = generate_put_code(self.nitg_code)
             super().save(update_fields=['well_code'])
 
@@ -148,7 +149,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         blank=True,
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
-    ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
+    ground_level_stable = models.CharField(choices=BOOLEAN_CHOICES, max_length=254, null=True, blank=True)
     well_stability = models.CharField(
         choices=WELLSTABILITY, max_length=200, blank=True, null=True
     )
@@ -239,8 +240,8 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     tube_type = models.CharField(
         choices=TUBETYPE, max_length=200, blank=True, null=True
     )
-    artesian_well_cap_present = models.CharField(max_length=200, blank=True, null=True)
-    sediment_sump_present = models.CharField(max_length=200, blank=True, null=True)
+    artesian_well_cap_present = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True)
+    sediment_sump_present = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True)
     tube_material = models.CharField(
         choices=TUBEMATERIAL, max_length=200, blank=True, null=True
     )
@@ -281,7 +282,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     tube_top_diameter = models.IntegerField(blank=True, null=True)
-    variable_diameter = models.CharField(max_length=200, blank=True, null=True)
+    variable_diameter = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True)
     tube_status = models.CharField(
         choices=TUBESTATUS, max_length=200, blank=True, null=True
     )
@@ -332,17 +333,25 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
 
     @property
     def screen_top_position(self):
-        return self.tube_top_position - self.plain_tube_part_length
+        if self.tube_top_position is not None and self.plain_tube_part_length is not None:
+            return self.tube_top_position - self.plain_tube_part_length
+        return None
 
     @property
     def screen_bottom_position(self):
-        return self.screen_top_position - self.groundwater_monitoring_tube_static.screen_length
-    
+        if self.screen_top_position is not None and self.groundwater_monitoring_tube_static.screen_length is not None:
+            return self.screen_top_position - self.groundwater_monitoring_tube_static.screen_length
+        return None
+
     @property
     def tube_bottom_position(self):
-        if self.groundwater_monitoring_tube_static.sediment_sump_present:
-            return self.screen_bottom_position 
-        return self.screen_bottom_position - self.groundwater_monitoring_tube_static.sediment_sump_length
+        if self.screen_bottom_position is not None:
+            if self.groundwater_monitoring_tube_static.sediment_sump_present:
+                return self.screen_bottom_position 
+            elif self.groundwater_monitoring_tube_static.sediment_sump_length is not None:
+                return self.screen_bottom_position - self.groundwater_monitoring_tube_static.sediment_sump_length
+        return None
+
 
     def __str__(self):
         if self.date_till:
@@ -507,6 +516,7 @@ class gmw_registration_log(models.Model):
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
+        default="register",
     )
     delivery_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
@@ -524,7 +534,7 @@ class gmw_registration_log(models.Model):
     @property
     def event_type(self):
         if self.event_id is not None:
-            return Event.objects.get(id=self.event_id).event_name
+            return Event.objects.get(change_id=self.event_id).event_name
         return "-"
 
     def __str__(self):

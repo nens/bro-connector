@@ -38,7 +38,7 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     actions = ["deliver_to_bro", "check_status"]
 
-    readonly_fields = ["first_measurement", "most_recent_measurement", "closure_date"]
+    readonly_fields = ["frd_bro_id", "first_measurement", "most_recent_measurement", "closure_date"]
 
     @admin.action(description="Deliver FRD to BRO")
     def deliver_to_bro(self, request, queryset):
@@ -134,7 +134,6 @@ class ElectrodePairAdmin(admin.ModelAdmin):
 class MeasurementConfigurationAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "bro_id",
         "configuration_name",
         "measurement_pair",
         "flowcurrent_pair",
@@ -192,6 +191,23 @@ class FrdSyncLogAdmin(admin.ModelAdmin):
         "event_type",
         "synced",
         "process_status",
+    )
+
+    readonly_fields = (
+        "synced",
+        "date_modified",
+        "bro_id",
+        "event_type",
+        "frd",
+        "geo_ohm_measuring_method",
+        "electomagnetic_method",
+        "process_status",
+        "comment",
+        "xml_filepath",
+        "delivery_status",
+        "delivery_status_info",
+        "delivery_id",
+        "delivery_type"
     )
 
 

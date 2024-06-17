@@ -202,7 +202,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellDynamicForm
     search_fields = (
-        "groundwater_monitoring_well_dynamic_id", "groundwater_monitoring_well_static__bro_id", 
+        "groundwater_monitoring_well_dynamic_id", "groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+        "groundwater_monitoring_well_static__bro_id", 
         "date_from", "groundwater_monitoring_well_static__well_code"
     )
 
@@ -245,7 +246,8 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeStaticForm
 
     search_fields = (
-        "groundwater_monitoring_tube_static_id", "groundwater_monitoring_well_static__bro_id", 
+        "groundwater_monitoring_tube_static_id", "groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+        "groundwater_monitoring_well_static__bro_id", 
         "tube_number", "groundwater_monitoring_well_static__well_code"
     )
 
@@ -262,15 +264,15 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
         "sediment_sump_present",
         "sediment_sump_length",
         "deliver_gld_to_bro",
-        "in_use",
+        "in_monitoring_net",
     )
     list_filter = ("groundwater_monitoring_well_static", "deliver_gld_to_bro")
 
-    readonly_fields = ["number_of_geo_ohm_cables", "in_use"]
+    readonly_fields = ["number_of_geo_ohm_cables", "in_monitoring_net"]
 
     actions = ["deliver_gld_to_true"]
 
-    def in_use(self, obj):
+    def in_monitoring_net(self, obj):
         return len(MeasuringPoint.objects.filter(
             groundwater_monitoring_tube = obj
         )) > 0
@@ -290,7 +292,8 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
 class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeDynamicForm
     search_fields = (
-        "groundwater_monitoring_tube_dynamic_id", "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id",
+        "groundwater_monitoring_tube_dynamic_id", "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+        "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id",
         "groundwater_monitoring_tube_static__tube_number", "date_from",
         "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code"
     )
@@ -364,7 +367,8 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
 class ElectrodeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.ElectrodeDynamicForm
     search_fields = (
-        "electrode_dynamic_id", "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id", 
+        "electrode_dynamic_id", "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+        "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id", 
         "date_from", "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code"
     )
 
@@ -455,6 +459,23 @@ class GmwSyncLogAdmin(admin.ModelAdmin):
         "comments",
     )
     list_filter = ("bro_id",)
+
+    readonly_fields = (
+        "date_modified",
+        "bro_id",
+        "event_id",
+        "validation_status",
+        "delivery_id",
+        "delivery_type",
+        "delivery_status",
+        "comments",
+        "last_changed",
+        "corrections_applied",
+        "quality_regime",
+        "file",
+        "process_status",
+        "object_id_accountable_party"
+    )
 
 
 _register(

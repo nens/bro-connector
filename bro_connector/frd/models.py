@@ -14,13 +14,8 @@ logger = logging.getLogger(__name__)
 
 # Create your models here.
 class FormationResistanceDossier(models.Model):
-    object_id_accountable_party = models.CharField(
-        max_length=200,
-        null=True,
-        blank=False,
-    )
     frd_bro_id = models.CharField(
-        max_length=200, null=True, blank=True, editable=True, verbose_name="Bro-ID FRD"
+        max_length=200, null=True, blank=True, editable=False, verbose_name="Bro-ID FRD"
     )
     delivery_accountable_party = models.ForeignKey(
         Organisation,
@@ -124,9 +119,7 @@ class FormationResistanceDossier(models.Model):
 
     @property
     def name(self):
-        if self.frd_bro_id:
-            return f"{self.frd_bro_id}"
-        return f"FRD_{self.object_id_accountable_party}"
+        return f"FRD_{self.groundwater_monitoring_tube.__str__()}"
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -149,10 +142,9 @@ class ElectromagneticMeasurementMethod(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
-    bro_id = models.CharField(max_length=254, null=True, blank=True)
     measurement_date = models.DateField(null=False, blank=True)
-    measuring_responsible_party = models.TextField(
-        max_length=200, null=False, blank=True
+    measuring_responsible_party = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, null=False, blank=True
     )
     measuring_procedure = models.CharField(
         blank=False, max_length=235, choices=MEASURING_PROCEDURE
@@ -174,7 +166,6 @@ class InstrumentConfiguration(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
-    bro_id = models.CharField(max_length=254, null=True, blank=True)
     configuration_name = models.CharField(max_length=40, null=False, blank=False)
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod,
@@ -227,11 +218,9 @@ class GeoOhmMeasurementMethod(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False
     )
-    bro_id = models.CharField(max_length=254, null=True, blank=True)
     measurement_date = models.DateField(null=False, blank=True)
-    measuring_responsible_party = models.CharField(
-        blank=False,
-        max_length=235,
+    measuring_responsible_party = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, null=False, blank=True
     )
     measuring_procedure = models.CharField(
         blank=False, max_length=235, choices=MEASURING_PROCEDURE
@@ -310,7 +299,6 @@ class MeasurementConfiguration(models.Model):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
-    bro_id = models.CharField(max_length=254, null=True, blank=True)
     configuration_name = models.CharField(
         max_length=40, null=False, blank=False, unique=True
     )
@@ -494,7 +482,7 @@ class FormationresistanceRecord(models.Model):
 
 
 class FrdSyncLog(models.Model):
-    synced = models.BooleanField(default=False)
+    synced = models.BooleanField(default=False, editable=False)
     date_modified = models.DateTimeField(auto_now=True)
     bro_id = models.CharField(max_length=254, null=True, blank=True)
     event_type = models.CharField(
@@ -531,6 +519,7 @@ class FrdSyncLog(models.Model):
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
+        default="register",
     )
 
     def __str__(self):

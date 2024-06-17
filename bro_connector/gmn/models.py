@@ -241,6 +241,7 @@ class gmn_bro_sync_log(models.Model):
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
+        default="register",
     )
     delivery_status = models.CharField(
         choices=LEVERINGSTATUS_CHOICES, max_length=10, null=True, blank=True, default=0
