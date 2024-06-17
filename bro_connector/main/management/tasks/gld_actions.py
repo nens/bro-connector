@@ -1,23 +1,21 @@
 from gld.models import GroundwaterLevelDossier, gld_registration_log, gld_addition_log, Observation
+from gmw.models import GroundwaterMonitoringWellStatic
 import os
 import logging
 
 from main.management.commands import gld_sync_to_bro
 
 
-from main.settings.base import gld_SETTINGS
+from main.settings.base import ENVIRONMENT
 
 logger = logging.getLogger(__name__)
 
-demo = gld_SETTINGS["demo"]
-if demo:
-    bro_info = gld_SETTINGS["bro_info_demo"]
-else:
-    bro_info = gld_SETTINGS["bro_info_bro_connector"]
-
 folders = ["./additions/", "./startregistrations/"]
-monitoringnetworks = gld_SETTINGS["monitoringnetworks"]
 
+def is_demo():
+    if ENVIRONMENT == "production":
+        return False
+    return True
 
 def create_registrations_folder():
     for folder in folders:
@@ -32,7 +30,6 @@ def create_registrations_folder():
         else:
             print(f"Folder '{folder}' already exists.")
 
-
 def handle_start_registrations(
     dossier: GroundwaterLevelDossier,
     deliver: bool,
@@ -42,11 +39,11 @@ def handle_start_registrations(
     # Handle start registrations
     tube_number = dossier.groundwater_monitoring_tube.tube_number
 
-    gld = gld_sync_to_bro.GldSyncHandler(gld_SETTINGS)
+    gld = gld_sync_to_bro.GldSyncHandler()
 
     gld_registration_logs = gld_registration_log.objects.filter(
         gwm_bro_id=well.bro_id,
-        filter_id=tube_number,
+        filter_number=tube_number,
         quality_regime=well.quality_regime,
     )
 
@@ -57,15 +54,16 @@ def handle_start_registrations(
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
         if deliver:
+            gld._set_bro_info(well)
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
             gld.create_start_registration_sourcedocs(
                 well,
                 tube_number,
-                monitoringnetworks,
             )
 
-    gld.check_existing_startregistrations(gld_registration_logs)
+    for log in gld_registration_logs:
+        gld.check_existing_startregistrations(log)
 
 def handle_additions(
         dossier: GroundwaterLevelDossier, 
@@ -74,16 +72,19 @@ def handle_additions(
     # Get observations
     observations = Observation.objects.filter(
         groundwater_level_dossier = dossier,
-        observation_endtime__isnull = False
+        observation_endtime__isnull = False,
     )
 
-    gld = gld_sync_to_bro.GldSyncHandler(gld_SETTINGS)
+    gld = gld_sync_to_bro.GldSyncHandler()
 
     for observation in observations:
         print(f"Observation: {observation}; End_date: {observation.observation_endtime}")
         addition_log = gld_addition_log.objects.filter(
             observation_id = observation.observation_id,
         ).first()
+
+        well = GroundwaterMonitoringWellStatic.objects.get(bro_id=observation.groundwater_level_dossier.gmw_bro_id)
+        gld._set_bro_info(well)
 
         if deliver:
             if not addition_log:
@@ -101,7 +102,7 @@ def handle_additions(
             ):
                 #(addition_log) = gld.create_replace_sourcedocuments(observation)
                 pass
-
+            
             gld.gld_validate_and_deliver(addition_log)
 
         if not addition_log:
@@ -113,9 +114,6 @@ def handle_additions(
             continue
         
         status = gld.check_status_gld_addition(addition_log)
-            
-
-        
     
     return
 

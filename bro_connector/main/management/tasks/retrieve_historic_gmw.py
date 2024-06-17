@@ -4,6 +4,7 @@ from ..tasks.progressor import Progress
 from ..tasks import events_handler
 import reversion
 import datetime
+from django.conf import settings
 
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
@@ -13,23 +14,17 @@ from gmw.models import (
     GeoOhmCable,
     ElectrodeDynamic,
     ElectrodeStatic,
-    Instantie,
 )
-
-# BBOX VALUES ZEELAND
-XMIN = 10000
-XMAX = 80000
-YMIN = 355000
-YMAX = 420000
+from bro.models import Organisation
 
 
 def within_bbox(coordinates) -> bool:
     print(f"x: {coordinates.x}, y: {coordinates.y}")
     if (
-        coordinates.x > XMIN
-        and coordinates.x < XMAX
-        and coordinates.y > YMIN
-        and coordinates.y < YMAX
+        coordinates.x > settings.BBOX_SETTINGS["xmin"]
+        and coordinates.x < settings.BBOX_SETTINGS["xmax"]
+        and coordinates.y > settings.BBOX_SETTINGS["ymin"]
+        and coordinates.y < settings.BBOX_SETTINGS["ymax"]
     ):
         return True
     return False
@@ -46,6 +41,10 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
 
+    if gmw_ids_ini_count == 0:
+        print(f"No IDs found for kvk: {kvk_number}.")
+        return {"ids_found": gmw_ids_ini_count, "imported": gmw_ids_ini_count}
+    
     print(f"{gmw_ids_ini_count} bro ids found for organisation.")
 
     gmw_ids_count = len(gmw_ids)
@@ -66,13 +65,14 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
         ini.well_static()
         gmws = ini.gmws
 
-        if not within_bbox(gmws.coordinates):
-            gmws.delete()
-            gmw.reset_values()
-            ini.reset_tube_number()
-            progressor.next()
-            progressor.progress()
-            continue
+        if settings.BBOX_SETTINGS["use_bbox"]:
+            if not within_bbox(gmws.coordinates):
+                gmws.delete()
+                gmw.reset_values()
+                ini.reset_tube_number()
+                progressor.next()
+                progressor.progress()
+                continue
 
         ini.well_dynamic()
 
@@ -110,9 +110,9 @@ def get_or_create_instantie(instantie: str):
     if instantie is None:
         return (None, False)
     if instantie.isdigit():
-        return Instantie.objects.get_or_create(company_number=instantie)
+        return Organisation.objects.get_or_create(company_number=instantie)
     else:
-        return Instantie.objects.get_or_create(name=instantie)
+        return Organisation.objects.get_or_create(name=instantie)
 
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime:

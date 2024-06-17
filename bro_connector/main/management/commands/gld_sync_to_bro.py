@@ -5,9 +5,11 @@ import datetime
 import bisect
 import reversion
 from copy import deepcopy
-from main.settings.base import gld_SETTINGS
+from main.settings.base import ENVIRONMENT
+from django.apps import apps
 from gld import models
-from gmw import models as gmw_models
+from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
+from bro.models import Organisation
 
 import logging
 
@@ -115,33 +117,15 @@ def get_observation_procedure_data(observation_process_id, quality_regime):
     This is unique for each observation
     """
 
-    observation_process_data = models.ObservationProcess.objects.get(
+    observation_process = models.ObservationProcess.objects.get(
         observation_process_id=observation_process_id
     )
 
-    parameter_air_pressure_compensation_type_id = (
-        observation_process_data.parameter_air_pressure_compensation_type_id
-    )
-    air_pressure_compensation_data = models.TypeAirPressureCompensation.objects.get(
-        id=parameter_air_pressure_compensation_type_id
-    )
-    air_pressure_compensation_type = air_pressure_compensation_data.value
+    air_pressure_compensation_type = observation_process.air_pressure_compensation_type
 
-    parameter_measurement_instrument_type_id = (
-        observation_process_data.parameter_measurement_instrument_type_id
-    )
-    measurement_instrument_type_data = models.TypeMeasurementInstrumentType.objects.get(
-        id=parameter_measurement_instrument_type_id
-    )
-    measurement_instrument_type = measurement_instrument_type_data.value
+    measurement_instrument_type = observation_process.measurement_instrument_type
 
-    parameter_evaluation_procedure_id = (
-        observation_process_data.parameter_evaluation_procedure_id
-    )
-    evaluation_procedure_data = models.TypeEvaluationProcedure.objects.get(
-        id=parameter_evaluation_procedure_id
-    )
-    evaluation_procedure = evaluation_procedure_data.value
+    evaluation_procedure = observation_process.evaluation_procedure
 
     if quality_regime == "IMBRO":
         if (
@@ -176,7 +160,7 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     gmw_bro_id = gld.gmw_bro_id
 
     # Get the quality regime for the well
-    gmw_well = gmw_models.GroundwaterMonitoringWellStatic.objects.get(bro_id=gmw_bro_id)
+    gmw_well = GroundwaterMonitoringWellStatic.objects.get(bro_id=gmw_bro_id)
     quality_regime = gmw_well.quality_regime
 
     # Get the GLD registration id for this measurement timeseries
@@ -196,7 +180,11 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     )
 
     # Result time is the observation endtime
-    observation_result_time = observation.result_time.isoformat()
+    observation_result_time = observation.result_time.astimezone().strftime("%Y-%m-%dT%H:%M:%S+%z")
+    print(observation_result_time)
+    splited_time = observation_result_time.split("+")
+    timezone = splited_time[-1]
+    observation_result_time = f"{splited_time[0]}+{timezone[0:2]}:{timezone[2:4]}"
 
     # dateStamp becomes the date of the last observation in a chunk
     # Generate the addition type for the logging
@@ -244,7 +232,7 @@ def get_gld_registration_data_for_observation(observation: models.Observation):
 
     # Get the quality regime for the well
     # TODO quality regime changes, new well in database?
-    gmw_well = gmw_models.GroundwaterMonitoringWellStatic.objects.get(bro_id=gmw_bro_id)
+    gmw_well = GroundwaterMonitoringWellStatic.objects.get(bro_id=gmw_bro_id)
     quality_regime = gmw_well.quality_regime
 
     return gld_bro_id, quality_regime
@@ -297,23 +285,55 @@ def create_new_observations():
             )
             new_observation.save()
 
+def _get_token(owner: Organisation):
+    return {
+        "user": owner.bro_user,
+        "pass": owner.bro_token,
+    }
+
+def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
+    return {
+        "token": _get_token(well.delivery_accountable_party),
+        "projectnummer": well.project_number,
+    }
+
+def set_delivery_accountable_party(
+    well: GroundwaterMonitoringWellStatic, demo: bool
+) -> int:
+    if demo == True:
+        delivery_accountable_party = 27376655
+    else:
+        delivery_accountable_party = well.delivery_accountable_party.company_number
+
+    return delivery_accountable_party
 
 class GldSyncHandler:
-    def __init__(self, gld_settings):
-        self.registrations_dir = gld_settings["startregistrations_dir"]
-        self.demo = gld_settings["demo"]
-        
-        if self.demo:
-            self.access_info = gld_settings["bro_info_demo"]
-        else:
-            self.access_info = gld_settings["bro_info_bro_connector"]
-        
-        self.additions_dir = gld_settings["additions_dir"]
-        self.monitoringnetworks = gld_settings["monitoringnetworks"]
+    def __init__(self):
+        self.demo = self._is_demo()
+
+        # Currently not yet dynamically implemented
+        self.monitoringnetworks = None
+        self.demo = self._is_demo()
+        self._set_folder_dir('gld')
+
+    def _is_demo(self):
+        if ENVIRONMENT == "production":
+            return False
+        return True
+
+    def _set_folder_dir(self, app: str) -> None:
+        app_config = apps.get_app_config(app)
+        self.base_dir = app_config.path
+        self.registrations_dir = f"{self.base_dir}\\startregistrations"
+        self.additions_dir = f"{self.base_dir}\\additions"
+
+    
+    def _set_bro_info(self, well: GroundwaterMonitoringWellStatic) -> None:
+        self.bro_info = form_bro_info(well)
 
     def create_start_registration_sourcedocs(
         self,
-        well: gmw_models.GroundwaterMonitoringWellStatic,
+        well: GroundwaterMonitoringWellStatic,
         filtrnr,
     ):
         """
@@ -323,8 +343,8 @@ class GldSyncHandler:
         bro_id_gmw = well.bro_id
         location_code = well.nitg_code
         quality_regime = well.quality_regime
-        delivery_accountable_party = well.delivery_accountable_party
-
+        delivery_accountable_party = set_delivery_accountable_party(well, self._is_demo())
+        print(delivery_accountable_party)
         try:
             monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filtrnr}]
 
@@ -346,7 +366,7 @@ class GldSyncHandler:
             gld_startregistration_request = brx.gld_registration_request(
                 srcdoc="GLD_StartRegistration",
                 requestReference=request_reference,
-                deliveryAccountableParty=delivery_accountable_party,
+                deliveryAccountableParty=str(delivery_accountable_party),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -360,7 +380,7 @@ class GldSyncHandler:
             process_status = "succesfully_generated_startregistration_request"
             record, created = models.gld_registration_log.objects.update_or_create(
                 gwm_bro_id=bro_id_gmw,
-                filter_id=filtrnr,
+                filter_number=filtrnr,
                 quality_regime=quality_regime,
                 defaults=dict(
                     comments="Succesfully generated startregistration request",
@@ -375,7 +395,7 @@ class GldSyncHandler:
             process_status = "failed_to_generate_source_documents"
             record, created = models.gld_registration_log.objects.update_or_create(
                 gwm_bro_id=bro_id_gmw,
-                filter_id=filtrnr,
+                filter_number=filtrnr,
                 quality_regime=quality_regime,
                 defaults=dict(
                     comments="Failed to create startregistration source document: {}".format(
@@ -391,66 +411,45 @@ class GldSyncHandler:
         Validate generated startregistration sourcedocuments
         """
 
+        gld_registration = models.gld_registration_log.objects.get(
+            id=start_registration_id
+        )
+        file = gld_registration.file
+        source_doc_file = os.path.join(self.registrations_dir, file)
+        payload = open(source_doc_file)
+        
         try:
-            gld_registration = models.gld_registration_log.objects.get(
-                id=start_registration_id
+            validation_info = brx.validate_sourcedoc(
+                payload, bro_info=self.bro_info, demo=self.demo, api="v2"
             )
-            file = gld_registration.file
-            source_doc_file = os.path.join(self.registrations_dir, file)
-            payload = open(source_doc_file)
-
-            if gld_SETTINGS["api_version"] == "v2":
-                validation_info = brx.validate_sourcedoc(
-                    payload, bro_info=self.access_info, demo=self.demo, api="v2"
-                )
-
-            else:
-                validation_info = brx.validate_sourcedoc(
-                    payload, bro_info=self.access_info, demo=self.demo
-                )
-
-            validation_status = validation_info["status"]
-
-            if "errors" in validation_info:
-                validation_errors = validation_info["errors"]
-                comments = (
-                    "Validated startregistration document, found errors: {}".format(
-                        validation_errors
-                    )
-                )
-
-                record, created = models.gld_registration_log.objects.update_or_create(
-                    id=start_registration_id,
-                    defaults=dict(
-                        comments="Startregistration document is invalid, {}".format(
-                            validation_errors
-                        ),
-                        validation_status=validation_status,
-                        process_status="source_document_validation_succesful",
-                    ),
-                )
-
-            else:
-                comments = "Succesfully validated sourcedocument, no errors"
-                record, created = models.gld_registration_log.objects.update_or_create(
-                    id=start_registration_id,
-                    defaults=dict(
-                        # date_modified = datetime.datetime.now(),
-                        comments=comments,
-                        validation_status=validation_status,
-                        process_status="source_document_validation_succesful",
-                    ),
-                )
-
         except Exception as e:
+            validation_status = validation_info["status"]
             process_status = "failed_to_validate_sourcedocument"
             comments = (
                 "Exception occured during validation of sourcedocuments: {}".format(e)
             )
-            record, created = models.gld_registration_log.objects.update_or_create(
-                id=start_registration_id,
-                defaults=dict(comments=comments, process_status=process_status),
-            )
+        
+        comments = "Succesfully validated sourcedocument, no errors"
+        process_status = "source_document_validation_succesful"
+
+        if "errors" in validation_info:
+            if len(validation_info["errors"]) > 0 :
+                validation_status = validation_info["status"]
+                comments = (
+                    f"Validated startregistration document, found errors: {validation_info['errors']}"
+                )
+            else:
+                validation_status = validation_info["status"]
+                comments = "Succesfully validated sourcedocument, no errors"
+
+        record, created = models.gld_registration_log.objects.update_or_create(
+            id=start_registration_id,
+            defaults=dict(
+                comments=comments, 
+                process_status=process_status,
+                validation_status=validation_status
+            ),
+        )
 
     def deliver_startregistration_sourcedocuments(self, start_registration_id):
         """
@@ -463,7 +462,7 @@ class GldSyncHandler:
         )
 
         # If the delivery fails, use the this to indicate how many attempts were made
-        delivery_status = gld_registration.levering_status
+        delivery_status = gld_registration.delivery_status
         if delivery_status is None:
             delivery_status_update = "failed_once"
         else:
@@ -476,18 +475,13 @@ class GldSyncHandler:
             payload = open(source_doc_file)
             request = {file: payload}
 
-            if gld_SETTINGS["api_version"] == "v2":
-                upload_info = brx.upload_sourcedocs_from_dict(
-                    request,
-                    self.access_info,
-                    api="v2",
-                    project_id=self.access_info["projectnummer"],
-                    demo=self.demo,
-                )
-            else:
-                upload_info = brx.upload_sourcedocs_from_dict(
-                    request, self.access_info, demo=self.demo
-                )
+            upload_info = brx.upload_sourcedocs_from_dict(
+                request,
+                token=self.bro_info["token"],
+                api="v2",
+                project_id=self.bro_info["projectnummer"],
+                demo=self.demo,
+            )
 
             if upload_info == "Error":
                 comments = "Error occured during delivery of sourcedocument"
@@ -496,12 +490,12 @@ class GldSyncHandler:
                     defaults={
                         "date_modified": datetime.datetime.now(),
                         "comments": comments,
-                        "levering_status": delivery_status_update,
+                        "delivery_status": delivery_status_update,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
             else:
-                levering_id = upload_info.json()["identifier"]
+                delivery_id = upload_info.json()["identifier"]
                 delivery_status = upload_info.json()["status"]
                 lastchanged = upload_info.json()["lastChanged"]
                 comments = "Succesfully delivered startregistration sourcedocument"
@@ -511,9 +505,9 @@ class GldSyncHandler:
                     defaults={
                         "date_modified": datetime.datetime.now(),
                         "comments": comments,
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "lastchanged": lastchanged,
-                        "levering_id": levering_id,
+                        "delivery_id": delivery_id,
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -527,7 +521,7 @@ class GldSyncHandler:
                 defaults={
                     "date_modified": datetime.datetime.now(),
                     "comments": comments,
-                    "levering_status": delivery_status_update,
+                    "delivery_status": delivery_status_update,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -551,51 +545,38 @@ class GldSyncHandler:
         """
 
         registration = models.gld_registration_log.objects.get(id=registration_id)
-        levering_id = registration.levering_id
+        delivery_id = registration.delivery_id
 
         try:
-            if gld_SETTINGS["api_version"] == "v2":
-                upload_info = brx.check_delivery_status(
-                    levering_id,
-                    self.access_info,
-                    api="v2",
-                    project_id=self.access_info["projectnummer"],
-                    demo=self.demo,
-                )
-            else:
-                upload_info = brx.check_delivery_status(
-                    levering_id, self.access_info, demo=self.demo
-                )
+            upload_info = brx.check_delivery_status(
+                delivery_id,
+                token=self.bro_info["token"],
+                api="v2",
+                project_id=self.bro_info["projectnummer"],
+                demo=self.demo,
+            )
 
             if (
                 upload_info.json()["status"] == "DOORGELEVERD"
                 and upload_info.json()["brondocuments"][0]["status"]
                 == "OPGENOMEN_LVBRO"
             ):
-                record, created = models.gld_registration_log.objects.update_or_create(
-                    id=registration_id,
-                    defaults=dict(
-                        gld_bro_id=upload_info.json()["brondocuments"][0]["broId"],
-                        levering_status=upload_info.json()["brondocuments"][0][
-                            "status"
-                        ],
-                        last_changed=upload_info.json()["lastChanged"],
-                        comments="Startregistration request approved",
-                        process_status="delivery_approved",
-                    ),
-                )
+                registration.gld_bro_id=upload_info.json()["brondocuments"][0]["broId"]
+                registration.delivery_status=upload_info.json()["brondocuments"][0][
+                    "status"
+                ]
+                registration.last_changed=upload_info.json()["lastChanged"]
+                registration.comments="Startregistration request approved"
+                registration.process_status="delivery_approved"
+                registration.save()
 
-                # Create new GroundWaterLevelDossier
-                start_date_research = datetime.datetime.now().date().isoformat()
-                (
-                    record,
-                    created,
-                ) = models.GroundwaterLevelDossier.objects.update_or_create(
-                    groundwater_monitoring_tube_id=registration.filter_id,
-                    gmw_bro_id=registration.gwm_bro_id,
-                    research_start_date=start_date_research,
-                    gld_bro_id=upload_info.json()["brondocuments"][0]["broId"],
+                tube = models.GroundwaterMonitoringTubeStatic.objects.get(
+                    groundwater_monitoring_well_static__bro_id=registration.gwm_bro_id, 
+                    tube_number=registration.filter_number
                 )
+                gld = models.GroundwaterLevelDossier.objects.get(groundwater_monitoring_tube=tube)
+                gld.gld_bro_id=upload_info.json()["brondocuments"][0]["broId"]
+                gld.save()
 
                 # Remove the sourcedocument file if delivery is approved
                 file = registration.file
@@ -603,24 +584,20 @@ class GldSyncHandler:
                 os.remove(source_doc_file)
 
             else:
-                record, created = models.gld_registration_log.objects.update_or_create(
-                    id=registration_id,
-                    defaults=dict(
-                        levering_status=upload_info.json()["status"],
-                        last_changed=upload_info.json()["lastChanged"],
-                        comments="Startregistration request not yet approved",
-                    ),
-                )
+                registration.delivery_status=upload_info.json()["status"]
+                registration.last_changed=upload_info.json()["lastChanged"]
+                registration.comments="Startregistration request not yet approved"
+                registration.save()
+                
 
         except Exception as e:
-            record, created = models.gld_registration_log.objects.update_or_create(
-                id=registration_id,
-                defaults=dict(
-                    comments="Error occured during status check of delivery: {}".format(
-                        e
-                    )
-                ),
+            comments="Error occured during status check of delivery: {}".format(
+                e
             )
+            registration.comments
+            registration.save()
+
+            
 
     def create_sourcedocs_start_registrations(self):
         """
@@ -629,7 +606,7 @@ class GldSyncHandler:
         This will not interfere with additions, as a check will be done on registration availibility
         """
 
-        gwm_wells = gmw_models.GroundwaterMonitoringWellStatic.objects.all()
+        gwm_wells = GroundwaterMonitoringWellStatic.objects.all()
         # Loop over all GMW objects in the database
         for well in gwm_wells:
             # Ignore wells that are not (yet) delivered to BRO
@@ -644,7 +621,7 @@ class GldSyncHandler:
             quality_regime = "IMBRO"
 
             # Get all filters that are installed in this well
-            tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
+            tubes = GroundwaterMonitoringTubeStatic.objects.filter(
                 groundwater_monitoring_well_id=well.groundwater_monitoring_well_static_id
             )
 
@@ -659,7 +636,7 @@ class GldSyncHandler:
                 # Check if there is already a registration for this tube
                 if not models.gld_registration_log.objects.filter(
                     gwm_bro_id=well.bro_id,
-                    filter_id=tube_id,
+                    filter_number=tube_id,
                     quality_regime=quality_regime,
                 ).exists():
                     # There is not a GLD registration object with this configuration
@@ -696,11 +673,14 @@ class GldSyncHandler:
         # We check the status of the registration and either validate/deliver/check status/do nothing
         registration_id = registration_log.id
 
+        well = GroundwaterMonitoringWellStatic.objects.get(bro_id=registration_log.gwm_bro_id)
+        self._set_bro_info(well)
+
         if (
-            get_registration_process_status(registration_id)
+            registration_log.process_status
             == "succesfully_delivered_sourcedocuments"
-            and registration_log.levering_status != "OPGENOMEN_LVBRO"
-            and registration_log.levering_id is not None
+            and registration_log.delivery_status != "OPGENOMEN_LVBRO"
+            and registration_log.delivery_id is not None
         ):
             # The registration has been delivered, but not yet approved
             self.check_delivery_status_levering(registration_id)
@@ -709,7 +689,7 @@ class GldSyncHandler:
             # Succesfully generated a startregistration sourcedoc in the previous step
             # Validate the created sourcedocument
             if (
-                get_registration_process_status(registration_id)
+                registration_log.process_status
                 == "succesfully_generated_startregistration_request"
             ):
                 self.validate_gld_startregistration_request(registration_id)
@@ -719,7 +699,7 @@ class GldSyncHandler:
             # It means something went wrong during validation (e.g BRO server error)
             # Even if a document is invalid, the validation process has succeeded and won't be reattempted
             if (
-                get_registration_process_status(registration_id)
+                registration_log.process_status
                 == "failed_to_validate_sourcedocument"
             ):
                 # If we failed to validate the sourcedocument, try again
@@ -728,29 +708,31 @@ class GldSyncHandler:
 
             # If validation is succesful and the document is valid, try a delivery
             if (
-                get_registration_process_status(registration_id)
+                registration_log.process_status
                 == "source_document_validation_succesful"
-                and get_registration_validation_status(registration_id) == "VALIDE"
             ):
-                self.deliver_startregistration_sourcedocuments(registration_id)
+                if get_registration_validation_status(registration_id) == "VALIDE":
+                    self.deliver_startregistration_sourcedocuments(registration_id)
+                else:
+                    registration_log.delete()
 
             # If delivery is succesful, check the status of the delivery
             if (
-                get_registration_process_status(registration_id)
+                registration_log.process_status
                 == "succesfully_delivered_sourcedocuments"
-                and registration_log.levering_status != "OPGENOMEN_LVBRO"
-                and registration_log.levering_id is not None
+                and registration_log.delivery_status != "OPGENOMEN_LVBRO"
+                and registration_log.delivery_id is not None
             ):
                 # The registration has been delivered, but not yet approved
                 self.check_delivery_status_levering(registration_id)
 
             # If the delivery failed previously, we can retry
             if (
-                get_registration_process_status(registration_id)
+                registration_log.process_status
                 == "failed_to_deliver_sourcedocuments"
             ):
                 # This will not be the case on the first try
-                if registration_log.levering_status == "failed_thrice":
+                if registration_log.delivery_status == "failed_thrice":
                     # TODO report with mail?
                     return
                 else:
@@ -793,7 +775,7 @@ class GldSyncHandler:
             gld_addition_sourcedocument["result"] = list(measurement_timeseries_tvp)
 
             # filename should be unique
-            filename = "GLD_Addition_Observation_{}_GLD_{}.xml".format(
+            filename = "GLD_Addition_Observation_{}_{}.xml".format(
                 observation.observation_id, gld_bro_id
             )
 
@@ -888,12 +870,11 @@ class GldSyncHandler:
         """
         source_doc_file = os.path.join(self.additions_dir, filename)
         payload = open(source_doc_file)
-
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, self.access_info, demo=self.demo
+                payload, self.bro_info, demo=self.demo, api="v2"
             )
-            
+            print(validation_info)
             validation_status = validation_info["status"]
 
             if "errors" in validation_info:
@@ -909,12 +890,14 @@ class GldSyncHandler:
             addition.validation_status =  validation_status
             addition.process_status = "source_document_validation_succeeded"
 
+
         except Exception as e:
             addition.date_modified = datetime.datetime.now()
             addition.comments = f"Failed to validate source document: {e}"
             addition.process_status = "source_document_validation_failed"
 
         addition.save()
+        print(addition.comments)
 
         return validation_status
 
@@ -927,12 +910,12 @@ class GldSyncHandler:
         """
         Deliver GLD addition sourcedocument to the BRO
         """
-        source_doc_file = os.path.join(gld_SETTINGS["additions_dir"], filename)
+        source_doc_file = os.path.join(self.additions_dir, filename)
         payload = open(source_doc_file)
         request = {filename: payload}
 
         # If the delivery fails, use the this to indicate how many attempts were made
-        delivery_status = gld_addition.levering_status
+        delivery_status = gld_addition.delivery_status
         if delivery_status is None:
             delivery_status_update = "failed_once"
         else:
@@ -941,7 +924,7 @@ class GldSyncHandler:
 
         try:
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, self.access_info, demo=self.demo
+                request, token=self.bro_info["token"], demo=self.demo, api="v2", project_id=self.bro_info["projectnummer"]
             )
 
             if upload_info == "Error":
@@ -949,14 +932,14 @@ class GldSyncHandler:
 
                 gld_addition.date_modified = datetime.datetime.now()
                 gld_addition.comments = comments
-                gld_addition.levering_status = delivery_status_update
+                gld_addition.delivery_status = delivery_status_update
 
             else:
                 gld_addition.date_modified = datetime.datetime.now()
                 gld_addition.comments = "Succesfully delivered sourcedocument"
-                gld_addition.levering_status = upload_info.json()["status"]
+                gld_addition.delivery_status = upload_info.json()["status"]
                 gld_addition.last_changed = upload_info.json()["lastChanged"]
-                gld_addition.levering_id = upload_info.json()["identifier"]
+                gld_addition.delivery_id = upload_info.json()["identifier"]
                 gld_addition.process_status = "source_document_delivered"
 
         except Exception as e:
@@ -964,7 +947,7 @@ class GldSyncHandler:
 
             gld_addition.date_modified = datetime.datetime.now()
             gld_addition.comments = comments
-            gld_addition.levering_status = delivery_status_update
+            gld_addition.delivery_status = delivery_status_update
         
         gld_addition.save()
 
@@ -980,7 +963,7 @@ class GldSyncHandler:
         """
         try:
             upload_info = brx.check_delivery_status(
-                gld_addition.levering_id, self.access_info, demo=self.demo
+                gld_addition.delivery_id, token = self.bro_info["token"], demo=self.demo, api="v2", project_id=self.bro_info["projectnummer"]
             )
             delivery_status = upload_info.json()["status"]
         except Exception as e:
@@ -993,7 +976,7 @@ class GldSyncHandler:
             comments = "GLD addition is approved"
             gld_addition.date_modified = datetime.datetime.now()
             gld_addition.comments = comments
-            gld_addition.levering_status = delivery_status
+            gld_addition.delivery_status = delivery_status
             gld_addition.process_status = "delivery_approved"
             gld_addition.last_changed=upload_info.json()["lastChanged"]
 
@@ -1001,8 +984,9 @@ class GldSyncHandler:
             comments = "Status check succesful, not yet approved"
             gld_addition.date_modified = datetime.datetime.now()
             gld_addition.comments = comments
-            gld_addition.levering_status = delivery_status
+            gld_addition.delivery_status = delivery_status
 
+        print(upload_info.json())
         gld_addition.save()
 
         return delivery_status
@@ -1037,7 +1021,7 @@ class GldSyncHandler:
         validation_status = gld_addition.validation_status
         filename = gld_addition.file
 
-        if validation_status == "VALIDE" and gld_addition.levering_id is None:
+        if validation_status == "VALIDE" and gld_addition.delivery_id is None:
             delivery_status = self.deliver_gld_addition_source_document(
                 gld_addition, filename
             )
@@ -1057,17 +1041,22 @@ class GldSyncHandler:
         If the delivery has been approved, remove the source document
         """
         file_name = gld_addition.file
-
+        if gld_addition.delivery_id is None:
+            gld_addition.comments = "Could not check delivery, as there is no delivery id."
+            gld_addition.process_status = "source_document_validation_failed"
+            gld_addition.save()
+            return "404"
+        
         new_delivery_status = self.check_status_gld_addition(
             gld_addition
         )
 
         try:
             if new_delivery_status == "DOORGELEVERD":  # "OPGENOMEN_LVBRO":
-                sourcedoc_filepath = os.path.join(gld_SETTINGS["additions_dir"], file_name)
+                sourcedoc_filepath = os.path.join(self.additions_dir, file_name)
                 os.remove(sourcedoc_filepath)
         except:
-            logger.info(f"File {file_name} could not be removed from {gld_SETTINGS['additions_dir']}. Likely manually removed or renamed.")
+            logger.info(f"File {file_name} could not be removed from {self.additions_dir}. Likely manually removed or renamed.")
             pass  # no file to remove
 
         return new_delivery_status
@@ -1087,7 +1076,6 @@ class GldSyncHandler:
             validation_status = self.validate_addition(
                 gld_addition
             )
-
             validated = True
 
         elif (
@@ -1132,7 +1120,7 @@ class GldSyncHandler:
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        gld = GldSyncHandler(gld_SETTINGS)
+        gld = GldSyncHandler()
 
         # Check the database for new wells/tubes and start a GLD registration for these objects if its it needed
         gld.create_sourcedocs_start_registrations()
@@ -1152,4 +1140,6 @@ class Command(BaseCommand):
             if not addition_log:
                 (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
 
+            well = GroundwaterMonitoringWellStatic.objects.get(bro_id=observation.groundwater_level_dossier.gwm_bro_id)
+            gld._set_bro_info(well)
             gld.gld_validate_and_deliver(addition_log)

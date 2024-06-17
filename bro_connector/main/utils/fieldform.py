@@ -1,6 +1,10 @@
 from typing import List, Optional
 import json
+import pysftp
+import datetime
+import os
 
+from main import localsecret as ls
 from gmw import models as gmw_models
 from frd import models as frd_models
 from gmn import models as gmn_models
@@ -19,7 +23,7 @@ input_field_options = {
 }
 
 # From the FieldForm Github
-def write_location_file(data, fname):
+def write_location_file(data, filename):
     """
     Write a FieldForm location file (.json)
 
@@ -36,8 +40,13 @@ def write_location_file(data, fname):
     None.
 
     """
-    with open(fname, "w") as outfile:
+    with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
+
+def write_file_to_ftp(file: str, remote_filename: str):
+    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password) as sftp:
+        with sftp.cd(ls.ftp_path):
+            sftp.put(localpath=file, remotepath=remote_filename)
 
 
 def generate_sublocation_fields(tube) -> List[str]:
@@ -190,6 +199,20 @@ class FieldFormGenerator:
         for measuringpoint in measuringpoints:
             self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
 
+    def _write_data(self, data: dict):
+        cur_date = datetime.datetime.now().date()
+        date_string = cur_date.strftime("%Y%m%d")
+
+        # Check if fieldforms folder exists
+        if not os.path.exists("../fieldforms"):
+            os.mkdir("../fieldforms")
+
+        # Store the file locally
+        write_location_file(data=data, filename=f"../fieldforms/locations_{date_string}.json")
+
+        # Write local file to FTP
+        write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
+
     def generate(self):
         data = {}
         configs = frd_models.MeasurementConfiguration.objects.all().distinct("configuration_name")
@@ -207,22 +230,25 @@ class FieldFormGenerator:
 
         if hasattr(self, "monitoringnetworks"):
             data["groups"] = self.write_monitoringnetworks_to_dict()
+            locations = {}
             for monitoringnetwork in self.monitoringnetworks:
                 self._flush_wells()
                 self._set_current_group(str(monitoringnetwork.name))
                 self.write_measuringpoints_to_wells(monitoringnetwork)
-                data["locations"] = self.create_location_dict()
-                print(data)
+                locations.update(self.create_location_dict())
+            
+            data["locations"] = locations
+            self._write_data(data)
 
         elif hasattr(self, "wells"):
             data["locations"] = self.create_location_dict()
-            print(data)
+            self._write_data(data)
 
         else:
             # If nothing has been deliverd, create for all wells without a grouping.
             self.wells = gmw_models.GroundwaterMonitoringWellStatic.objects.all()
             data["locations"] = self.create_location_dict()
-            print(data)
+            self._write_data(data)
 
             
                         

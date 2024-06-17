@@ -1,6 +1,7 @@
 from .bro_handlers import GMWHandler
 from .progressor import Progress
-import gmw.models as bro
+import gmw.models as gmw_models
+import bro.models as bro_models
 import datetime
 from string import punctuation, whitespace
 from django.contrib.gis.geos import Point
@@ -20,7 +21,7 @@ def import_xml(file: str, path: str) -> tuple:
         return (completed, message)
 
     try:
-        bro.GroundwaterMonitoringWellStatic.objects.get(
+        gmw_models.GroundwaterMonitoringWellStatic.objects.get(
             request_reference=gmw_dict.get("requestReference", None),
         )
         message = f"request_reference: {gmw_dict.get('requestReference', None)} is already in database."
@@ -28,7 +29,7 @@ def import_xml(file: str, path: str) -> tuple:
         print(message)
         return (completed, message)
 
-    except bro.GroundwaterMonitoringWellStatic.DoesNotExist:
+    except gmw_models.GroundwaterMonitoringWellStatic.DoesNotExist:
         pass
 
     # Invullen initiële waarden.
@@ -166,12 +167,12 @@ class InitializeData:
         self.electrode_number = self.electrode_number + 1
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
-    def get_accountable_party(self) -> bro.Instantie:
+    def get_accountable_party(self) -> bro_models.Organisation:
         kvk_nummer = self.gmw_dict.get(
             "deliveryAccountableParty", None
         )
         if kvk_nummer is not None:
-            party, created = bro.Instantie.objects.get_or_create(
+            party, created = bro_models.Organisation.objects.get_or_create(
                 company_number = kvk_nummer,
             )
         else:
@@ -199,7 +200,7 @@ class InitializeData:
                 construction_date, "%Y-%m-%d"
             )
         
-        self.meetpunt_instance = bro.GroundwaterMonitoringWellStatic.objects.create(
+        self.meetpunt_instance = gmw_models.GroundwaterMonitoringWellStatic.objects.create(
             bro_id=self.gmw_dict.get("broId", None),
             request_reference=self.gmw_dict.get("requestReference", None),
             delivery_accountable_party=self.get_accountable_party(),
@@ -227,7 +228,7 @@ class InitializeData:
         self.meetpunt_instance.save()
 
     def event(self):
-        self.onderhoudsmoment_instance = bro.Event.objects.create(
+        self.onderhoudsmoment_instance = gmw_models.Event.objects.create(
             event_name="constructie",
             groundwater_monitoring_well_static=self.meetpunt_instance,
             groundwater_monitoring_well_dynamic=self.meetpuntgeschiedenis_instance,
@@ -238,7 +239,7 @@ class InitializeData:
 
     def well_dynamic(self):
         self.meetpuntgeschiedenis_instance = (
-            bro.GroundwaterMonitoringWellDynamic.objects.create(
+            gmw_models.GroundwaterMonitoringWellDynamic.objects.create(
                 groundwater_monitoring_well_static=self.meetpunt_instance,
                 date_from=self.meetpunt_instance.last_horizontal_positioning_date,
                 owner=self.gmw_dict.get("owner", None),
@@ -261,7 +262,7 @@ class InitializeData:
             self.gmw_dict, self.prefix
         )
 
-        self.filter_instance = bro.GroundwaterMonitoringTubeStatic.objects.create(
+        self.filter_instance = gmw_models.GroundwaterMonitoringTubeStatic.objects.create(
             groundwater_monitoring_well_static=self.meetpunt_instance,
             artesian_well_cap_present=arthesisch_water_aanwezig,
             screen_length=float(self.gmw_dict.get(self.prefix + "screenLength", None)),
@@ -278,7 +279,7 @@ class InitializeData:
 
     def filter_dynamic(self):
         self.filtergeschiedenis_instance = (
-            bro.GroundwaterMonitoringTubeDynamic.objects.create(
+            gmw_models.GroundwaterMonitoringTubeDynamic.objects.create(
                 groundwater_monitoring_tube_static=self.filter_instance,
                 date_from=self.meetpunt_instance.last_horizontal_positioning_date,
                 tube_packing_material=self.gmw_dict.get(
@@ -318,7 +319,7 @@ class InitializeData:
         """
         Maak een geo ohm kabel vanuit de xml waardes.
         """
-        self.geoc = bro.GeoOhmCable.objects.create(
+        self.geoc = gmw_models.GeoOhmCable.objects.create(
             groundwater_monitoring_tube_static=self.filter_instance,
             cable_number=(self.gmw_dict.get(self.prefix + "cableNumber", None)),
         )
@@ -328,7 +329,7 @@ class InitializeData:
         """
         Maak een elektrode gebaseerd op de waardes uit de xml.
         """
-        self.eles = bro.ElectrodeStatic.objects.create(
+        self.eles = gmw_models.ElectrodeStatic.objects.create(
             geo_ohmkabel=self.geoc,
             electrode_packing_material=self.gmw_dict.get(
                 self.prefix + "electrodePackingMaterial", None
@@ -341,7 +342,7 @@ class InitializeData:
         """
         Maak een elektrode gebaseerd op de waardes uit de xml.
         """
-        self.eled = bro.ElectrodeDynamic.objects.create(
+        self.eled = gmw_models.ElectrodeDynamic.objects.create(
             electrode_static=self.eles,
             electrode_number=self.gmw_dict.get(self.prefix + "electrodeNumber", None),
             electrode_status=self.gmw_dict.get(self.prefix + "electrodeStatus", None),

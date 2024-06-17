@@ -9,6 +9,12 @@ REGISTRATIONSTATUS = (
     ("voltooid", "voltooid"),
 )
 
+UNIT_CHOICES = (
+    ("m", "m"),
+    ("cm", "cm"),
+    ("mm", "mm"),
+)
+
 PROCESSREFERENCE = (
     ("NEN5120v1991", "NEN5120v1991"),
     ("NEN_EN_ISO22475v2006_C11v2010", "NEN_EN_ISO22475v2006_C11v2010"),
@@ -44,6 +50,14 @@ AIRPRESSURECOMPENSATIONTYPE = (
 )
 
 PROCESSTYPE = (("algoritme", "algoritme"),)
+
+DELIVERY_TYPE_CHOICES = (
+    ("register", "register"),
+    ("replace", "replace"),
+    ("insert", "insert"),
+    ("move", "move"),
+    ("delete", "delete"),
+)
 
 EVALUATIONPROCEDURE = (
     ("brabantWater2013", "brabantWater2013"),

@@ -5,10 +5,10 @@ from gld.models import (
 )
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
-    Instantie,
 )
-from main import localsecret as ls
+from bro.models import Organisation
 from . import serializers
+import bro.serializers as bro_serializers
 
 
 
@@ -19,8 +19,10 @@ def gmw_map_context(request):
 
     print(wells[0])
 
-    instantie_qs = Instantie.objects.all()
-    instantie_serializer = serializers.InstantieSerializer(instantie_qs, many=True)
+    party_ids = GroundwaterMonitoringWellStatic.objects.values_list('delivery_accountable_party', flat=True).distinct()
+
+    instantie_qs = Organisation.objects.filter(id__in=party_ids)
+    instantie_serializer = bro_serializers.OrganisationSerializer(instantie_qs, many=True)
     instanties = instantie_serializer.data
 
     gld_qs = GroundwaterLevelDossier.objects.all()
@@ -41,6 +43,5 @@ def gmw_map_context(request):
         "gmns": gmns,
         "organisations": instanties,
         "groundwater_level_dossiers": glds,
-        "maptiler_key": ls.maptiler_key,
     }
     return render(request, "map.html", context)

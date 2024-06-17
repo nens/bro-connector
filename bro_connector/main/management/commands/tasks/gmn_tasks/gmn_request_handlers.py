@@ -4,6 +4,7 @@ from gmn.models import (
     MeasuringPoint,
     GroundwaterMonitoringNet,
 )
+from django.apps import apps
 from datetime import datetime
 from main.settings.base import gmn_SETTINGS
 
@@ -23,6 +24,25 @@ class StartRegistrationGMN:
         self.acces_token_bro_portal = acces_token_bro_portal
         self.monitoring_network = event.gmn
         self.gmn_bro_register_log_obj = None
+
+        self._create_dirs()
+
+    def _create_dirs(self):
+        app_config = apps.get_app_config("gmn")
+        base_dir = app_config.path
+        folder_names = ["registrations", "additions", "closures", "removals"]
+        for folder in folder_names:
+            folder_dir = f"{base_dir}\\{folder}"
+            # Check if the folder already exists
+            if not os.path.exists(folder_dir):
+                try:
+                    # Create the folder if it doesn't exist
+                    os.mkdir(folder_dir)
+                    print(f"Folder '{folder}' created successfully.")
+                except OSError:
+                    print(f"Creation of the folder '{folder}' failed.")
+            else:
+                print(f"Folder '{folder_dir}' already exists.")
 
     def handle(self, check_only):
         """
@@ -45,7 +65,7 @@ class StartRegistrationGMN:
             if (
                 not gmn_bro_sync_log_qs.exists()
                 or gmn_bro_sync_log_qs.first().process_status
-                == "failed_to_generate_source_documents"
+                in ["failed_to_generate_source_documents", "failed_to_validate_sourcedocument"]
             ):
                 print(
                     f"Geen succesvolle registratie gevonden voor {self.monitoring_network}. Er wordt nu een registratie bestand aangemaakt."
@@ -71,7 +91,7 @@ class StartRegistrationGMN:
             ) or (
                 self.gmn_bro_register_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_register_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_register_log_obj.delivery_status in ["1", "2"]
             ):
                 print(f"De registratie van {self.monitoring_network} word aangeleverd.")
                 self.deliver_registration()
@@ -80,7 +100,7 @@ class StartRegistrationGMN:
             if (
                 self.gmn_bro_register_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_register_log_obj.levering_status == "3"
+                and self.gmn_bro_register_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De registratie van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -93,8 +113,8 @@ class StartRegistrationGMN:
         if (
             self.gmn_bro_register_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_register_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_register_log_obj.levering_id is not None
+            and self.gmn_bro_register_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_register_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de levering van {self.monitoring_network} wordt gecontroleerd."
@@ -156,13 +176,14 @@ class StartRegistrationGMN:
             gmn_startregistration_request = brx.gmn_registration_request(
                 srcdoc="GMN_StartRegistration",
                 requestReference=f"register {self.monitoring_network.name}",
-                deliveryAccountableParty=self.monitoring_network.delivery_accountable_party,
+                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
 
             # Generate the startregistration request
             gmn_startregistration_request.generate()
+            print(gmn_startregistration_request.request)
 
             # Write the request
             xml_filename = f"register {self.monitoring_network.name}.xml"
@@ -213,9 +234,12 @@ class StartRegistrationGMN:
             filename = self.gmn_bro_register_log_obj.file
             filepath = os.path.join(gmn_SETTINGS["registrations_dir"], filename)
             payload = open(filepath)
+            
+            print(payload)
+            print(self.acces_token_bro_portal)
 
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=self.acces_token_bro_portal, demo=self.demo
+                payload, bro_info=self.acces_token_bro_portal, demo=self.demo, api="v2"
             )
 
             errors_count = len(validation_info["errors"])
@@ -266,7 +290,7 @@ class StartRegistrationGMN:
         """
         Function to actually deliver the registration.
         """
-        current_delivery_status = int(self.gmn_bro_register_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_register_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -276,7 +300,7 @@ class StartRegistrationGMN:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo, project_id=self.acces_token_bro_portal["projectnummer"], api="v2"
             )
 
             # Log the result
@@ -294,7 +318,7 @@ class StartRegistrationGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -309,10 +333,10 @@ class StartRegistrationGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Succesfully delivered startregistration sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -332,7 +356,7 @@ class StartRegistrationGMN:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of startregistration sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -343,9 +367,11 @@ class StartRegistrationGMN:
         """
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_register_log_obj.levering_id,
-                self.acces_token_bro_portal["token"],
+                self.gmn_bro_register_log_obj.delivery_id,
+                token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
+                api="v2",
+                project_id=self.acces_token_bro_portal["projectnummer"]
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
@@ -364,7 +390,7 @@ class StartRegistrationGMN:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -436,7 +462,7 @@ class StartRegistrationGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -522,7 +548,7 @@ class MeasuringPointAddition:
             ) or (
                 self.gmn_bro_addition_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_addition_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_addition_log_obj.delivery_status in ["1", "2"]
             ):
                 print(
                     f"De registratie van de addition aan {self.monitoring_network} word aangeleverd."
@@ -533,7 +559,7 @@ class MeasuringPointAddition:
             if (
                 self.gmn_bro_addition_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_addition_log_obj.levering_status == "3"
+                and self.gmn_bro_addition_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De registratie van de addition aan  {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -546,8 +572,8 @@ class MeasuringPointAddition:
         if (
             self.gmn_bro_addition_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_addition_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_addition_log_obj.levering_id is not None
+            and self.gmn_bro_addition_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_addition_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de addition van {self.measuringpoint} aan {self.monitoring_network} wordt gecontroleerd."
@@ -568,7 +594,7 @@ class MeasuringPointAddition:
             measuringpoint = {
                 "measuringPointCode": self.measuringpoint.code,
                 "monitoringTube": {
-                    "broId": self.measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well.bro_id,
+                    "broId": self.measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id,
                     "tubeNumber": self.measuringpoint.groundwater_monitoring_tube.tube_number,
                 },
             }
@@ -587,7 +613,7 @@ class MeasuringPointAddition:
                 srcdoc="GMN_MeasuringPoint",
                 broId=self.monitoring_network.gmn_bro_id,
                 requestReference=f"add {self.measuringpoint} to {self.monitoring_network.name}",
-                deliveryAccountableParty=self.monitoring_network.delivery_accountable_party,
+                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -648,7 +674,7 @@ class MeasuringPointAddition:
             payload = open(filepath)
 
             validation_info = brx.validate_sourcedoc(
-                payload, self.acces_token_bro_portal, self.demo
+                payload, self.acces_token_bro_portal, self.demo, api="v2"
             )
 
             errors_count = len(validation_info["errors"])
@@ -699,7 +725,7 @@ class MeasuringPointAddition:
         """
         Function to actually deliver the addition.
         """
-        current_delivery_status = int(self.gmn_bro_addition_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_addition_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -709,7 +735,7 @@ class MeasuringPointAddition:
             request = {filename: payload}
             print(self.acces_token_bro_portal["token"])
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo, api="v2", project_id=self.acces_token_bro_portal["projectnummer"]
             )
 
             # Log the result
@@ -727,7 +753,7 @@ class MeasuringPointAddition:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -744,10 +770,10 @@ class MeasuringPointAddition:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": f"Succesfully delivered addition of {self.measuringpoint} to {self.monitoring_network} sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -767,7 +793,7 @@ class MeasuringPointAddition:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of addition sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -779,9 +805,11 @@ class MeasuringPointAddition:
         print(323)
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_addition_log_obj.levering_id,
-                self.acces_token_bro_portal,
+                self.gmn_bro_addition_log_obj.delivery_id,
+                token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
+                api="v2",
+                project_id=self.acces_token_bro_portal["projectnummer"]
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
@@ -800,7 +828,7 @@ class MeasuringPointAddition:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -849,7 +877,7 @@ class MeasuringPointAddition:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -943,7 +971,7 @@ class MeasuringPointRemoval:
             ) or (
                 self.gmn_bro_removal_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_removal_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_removal_log_obj.delivery_status in ["1", "2"]
             ):
                 print(
                     f"De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} word aangeleverd."
@@ -954,7 +982,7 @@ class MeasuringPointRemoval:
             if (
                 self.gmn_bro_removal_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_removal_log_obj.levering_status == "3"
+                and self.gmn_bro_removal_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De registratie van de removal van {self.measuringpoint} uit {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -967,8 +995,8 @@ class MeasuringPointRemoval:
         if (
             self.gmn_bro_removal_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_removal_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_removal_log_obj.levering_id is not None
+            and self.gmn_bro_removal_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_removal_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de removal van {self.measuringpoint} uit het {self.monitoring_network} wordt gecontroleerd."
@@ -1000,7 +1028,7 @@ class MeasuringPointRemoval:
                 srcdoc="GMN_MeasuringPointEndDate",
                 broId=self.monitoring_network.gmn_bro_id,
                 requestReference=f"remove {self.measuringpoint} from {self.monitoring_network.name}",
-                deliveryAccountableParty=self.monitoring_network.delivery_accountable_party,
+                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -1061,7 +1089,7 @@ class MeasuringPointRemoval:
             payload = open(filepath)
 
             validation_info = brx.validate_sourcedoc(
-                payload, self.acces_token_bro_portal, self.demo
+                payload, self.acces_token_bro_portal, self.demo, api="v2"
             )
 
             errors_count = len(validation_info["errors"])
@@ -1112,7 +1140,7 @@ class MeasuringPointRemoval:
         """
         Function to actually deliver the removal.
         """
-        current_delivery_status = int(self.gmn_bro_removal_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_removal_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -1122,7 +1150,7 @@ class MeasuringPointRemoval:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo, api="v2", project_id=self.acces_token_bro_portal["projectnummer"]
             )
 
             # Log the result
@@ -1140,7 +1168,7 @@ class MeasuringPointRemoval:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -1157,10 +1185,10 @@ class MeasuringPointRemoval:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": f"Succesfully delivered removal of {self.measuringpoint} from {self.monitoring_network} sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -1180,7 +1208,7 @@ class MeasuringPointRemoval:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of removal sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -1191,9 +1219,11 @@ class MeasuringPointRemoval:
         """
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_removal_log_obj.levering_id,
-                self.acces_token_bro_portal,
+                self.gmn_bro_removal_log_obj.delivery_id,
+                token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
+                api="v2",
+                project_id=self.acces_token_bro_portal["projectnummer"]
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
@@ -1212,7 +1242,7 @@ class MeasuringPointRemoval:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -1259,7 +1289,7 @@ class MeasuringPointRemoval:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -1343,7 +1373,7 @@ class ClosureGMN:
             ) or (
                 self.gmn_bro_closure_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_closure_log_obj.levering_status in ["1", "2"]
+                and self.gmn_bro_closure_log_obj.delivery_status in ["1", "2"]
             ):
                 print(f"De closure van {self.monitoring_network} word aangeleverd.")
                 self.deliver_closure()
@@ -1352,7 +1382,7 @@ class ClosureGMN:
             if (
                 self.gmn_bro_closure_log_obj.process_status
                 == "failed_to_deliver_sourcedocuments"
-                and self.gmn_bro_closure_log_obj.levering_status == "3"
+                and self.gmn_bro_closure_log_obj.delivery_status == "3"
             ):
                 print(
                     f'De closure van {self.monitoring_network} is al 3 keer gefaald. Controleer handmatig wat er fout gaat en reset de leveringstatus handmatig naar "nog niet aangeleverd" om het opnieuw te proberen.'
@@ -1365,8 +1395,8 @@ class ClosureGMN:
         if (
             self.gmn_bro_closure_log_obj.process_status
             == "succesfully_delivered_sourcedocuments"
-            and self.gmn_bro_closure_log_obj.levering_status_info != "OPGENOMEN_LVBRO"
-            and self.gmn_bro_closure_log_obj.levering_id is not None
+            and self.gmn_bro_closure_log_obj.delivery_status_info != "OPGENOMEN_LVBRO"
+            and self.gmn_bro_closure_log_obj.delivery_id is not None
         ):
             print(
                 f"De status van de closure van {self.monitoring_network} wordt gecontroleerd."
@@ -1397,7 +1427,7 @@ class ClosureGMN:
                 srcdoc="GMN_Closure",
                 broId=self.monitoring_network.gmn_bro_id,
                 requestReference=f"close {self.monitoring_network.name}",
-                deliveryAccountableParty=self.monitoring_network.delivery_accountable_party,
+                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -1456,7 +1486,7 @@ class ClosureGMN:
             payload = open(filepath)
 
             validation_info = brx.validate_sourcedoc(
-                payload, self.acces_token_bro_portal, self.demo
+                payload, self.acces_token_bro_portal, self.demo, api="v2"
             )
 
             errors_count = len(validation_info["errors"])
@@ -1507,7 +1537,7 @@ class ClosureGMN:
         """
         Function to actually deliver the closure.
         """
-        current_delivery_status = int(self.gmn_bro_closure_log_obj.levering_status)
+        current_delivery_status = int(self.gmn_bro_closure_log_obj.delivery_status)
 
         try:
             # Prepare and deliver registration
@@ -1517,7 +1547,7 @@ class ClosureGMN:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo
+                request, token=self.acces_token_bro_portal["token"], demo=self.demo, api="v2", project_id=self.acces_token_bro_portal["projectnummer"]
             )
 
             # Log the result
@@ -1535,7 +1565,7 @@ class ClosureGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Error occured during delivery of sourcedocument",
-                        "levering_status": delivery_status,
+                        "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
                     },
                 )
@@ -1550,10 +1580,10 @@ class ClosureGMN:
                     defaults={
                         "date_modified": datetime.now(),
                         "comments": "Succesfully delivered closure sourcedocument",
-                        "levering_status": "4",
-                        "levering_status_info": upload_info.json()["status"],
+                        "delivery_status": "4",
+                        "delivery_status_info": upload_info.json()["status"],
                         "lastchanged": upload_info.json()["lastChanged"],
-                        "levering_id": upload_info.json()["identifier"],
+                        "delivery_id": upload_info.json()["identifier"],
                         "process_status": "succesfully_delivered_sourcedocuments",
                     },
                 )
@@ -1573,7 +1603,7 @@ class ClosureGMN:
                 defaults={
                     "date_modified": datetime.now(),
                     "comments": f"Exception occured during delivery of closure sourcedocument: {e}",
-                    "levering_status": delivery_status,
+                    "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
             )
@@ -1584,9 +1614,11 @@ class ClosureGMN:
         """
         try:
             delivery_status_info = brx.check_delivery_status(
-                self.gmn_bro_closure_log_obj.levering_id,
-                self.acces_token_bro_portal,
+                self.gmn_bro_closure_log_obj.delivery_id,
+                token=self.acces_token_bro_portal,
                 demo=self.demo,
+                api="v2",
+                project_id=self.acces_token_bro_portal["projectnummer"]
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
@@ -1605,7 +1637,7 @@ class ClosureGMN:
                         gmn_bro_id=delivery_status_info.json()["brondocuments"][0][
                             "broId"
                         ],
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],
@@ -1652,7 +1684,7 @@ class ClosureGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults=dict(
-                        levering_status_info=delivery_status_info.json()[
+                        delivery_status_info=delivery_status_info.json()[
                             "brondocuments"
                         ][0]["status"],
                         last_changed=delivery_status_info.json()["lastChanged"],

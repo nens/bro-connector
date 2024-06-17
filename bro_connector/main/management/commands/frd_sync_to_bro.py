@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from django.core.management.base import BaseCommand
 import bro_exchange as brx
-
+from django.apps import apps
 from frd.models import (
     FormationResistanceDossier,
     FrdSyncLog,
@@ -24,9 +24,23 @@ from frd.models import (
     ElectromagneticSeries,
     InstrumentConfiguration,
 )
+from bro.models import Organisation
+from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 from datetime import datetime, date
-from main.settings.base import FRD_SETTINGS
+from main.settings.base import ENVIRONMENT
 
+
+def _get_token(owner: Organisation):
+    return {
+        "user": owner.bro_user,
+        "pass": owner.bro_token,
+    }
+
+def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
+    return {
+        "token": _get_token(well.delivery_accountable_party),
+        "projectnummer": well.project_number,
+    }
 
 def get_xml_payload(xml_filepath):
     """
@@ -181,15 +195,17 @@ class Registration(ABC):
     log = FrdSyncLog
 
     def __init__(self):
-        self.output_dir = "frd/xml_files/"
+        self.demo = self._is_demo()
         self.xml_file = None
-        self.api_version = FRD_SETTINGS["api_version"]
-        self.demo = FRD_SETTINGS["demo"]
 
-        if self.demo:
-            self.bro_info = FRD_SETTINGS["bro_info_demo"]
-        else:
-            self.bro_info = FRD_SETTINGS["bro_info_bro_connector"]
+    def _is_demo(self):
+        if ENVIRONMENT == "production":
+            return False
+        return True
+
+    def _set_folder_dir(self, app: str):
+        app_config = apps.get_app_config(app)
+        self.base_dir = app_config.path
 
     def check_status(self):
         print(self.log)
@@ -202,9 +218,11 @@ class Registration(ABC):
         If not, creates one and handles the complete startregistrations.
         If so, checks the status, and picks up the startregistration process where it was left.
         """
+        
+        self._set_bro_info(self.log.frd)
+
         if check_only:
             self.check_status()
-
         else:
             status_function_mapping = {
                 None: self.generate_xml_file,
@@ -256,8 +274,24 @@ class Registration(ABC):
         """
         Saves the xmltree as xml file in the filepath as defined in self.
         """
-        self.filepath = os.path.join(self.output_dir, self.filename)
+        self.filepath = os.path.join(self.base_dir, self.filename)
         self.xml_file.write(self.filepath, pretty_print=True)
+
+    def _set_bro_info(self, obj):
+        if type(obj) == FormationResistanceDossier:
+            self.bro_info = form_bro_info(obj.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+        elif type(obj) == GroundwaterMonitoringWellStatic:
+            self.bro_info = form_bro_info(obj)
+        elif type(obj) == GroundwaterMonitoringTubeStatic:
+            self.bro_info = form_bro_info(obj.groundwater_monitoring_well_static)
+        else:
+            self.bro_info = {
+                "token": {
+                    "user": None,
+                    "pass": None,
+                },
+                "projectnummer": None,
+            }
 
     def validate_xml_file(self):
         """
@@ -270,13 +304,12 @@ class Registration(ABC):
             self.generate_xml_file()
 
         xml_payload = get_xml_payload(self.log.xml_filepath)
-
         try:
             validation_info = brx.validate_sourcedoc(
                 payload=xml_payload,
                 bro_info=self.bro_info,
                 demo=self.demo,
-                api=self.api_version,
+                api="v2",
             )
 
         except Exception as e:
@@ -326,7 +359,7 @@ class Registration(ABC):
                 token=self.bro_info["token"],
                 demo=self.demo,
                 project_id=self.bro_info["projectnummer"],
-                api=self.api_version,
+                api="v2",
             )
 
         except Exception as e:
@@ -369,7 +402,7 @@ class Registration(ABC):
                 identifier=self.log.delivery_id,
                 token=self.bro_info["token"],
                 demo=self.demo,
-                api=self.api_version,
+                api="v2",
                 project_id=self.bro_info["projectnummer"],
             )
         except Exception as e:
@@ -443,13 +476,17 @@ class FrdStartRegistration(Registration):
             frd=self.frd_obj,
             delivery_type="register",
         )[0]
-        self.filename = f"frd_startregistration_{self.frd_obj.object_id_accountable_party}_{date.today()}.xml"
+        self.filename = f"frd_startregistration_{frd_obj.name}_{date.today()}.xml"
+        self._set_folder_dir("frd")
 
     def construct_xml_tree(self):
         quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
         gmn_bro_id = getattr(
             self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None
         )
+        if gmn_bro_id is not None:
+            gmn_bro_id = [gmn_bro_id]
+
         gmw_bro_id = getattr(
             getattr(
                 self.frd_obj.groundwater_monitoring_tube,
@@ -465,15 +502,16 @@ class FrdStartRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "quality_regime": quality_regime,
         }
         srcdocdata = {
-            "object_id_accountable_party": self.frd_obj.object_id_accountable_party,
-            "gmn_bro_id": [gmn_bro_id],
+            "object_id_accountable_party": self.frd_obj.name,
             "gmw_bro_id": gmw_bro_id,
+            "gmn_bro_id": gmn_bro_id,
             "gmw_tube_number": gmw_tube_number,
         }
+
         startregistration_tool = brx.FRDStartRegistrationTool(
             metadata, srcdocdata, "registration"
         )
@@ -544,13 +582,13 @@ class GEMConfigurationRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
+            "delivery_accountable_party": str(self.formation_resistance_dossier.delivery_accountable_party.company_number),
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
         }
 
         srcdocdata = {
-            "object_id_accountable_party": self.formation_resistance_dossier.object_id_accountable_party,
+            "object_id_accountable_party": self.formation_resistance_dossier.name,
             "request_reference": self.format_request_reference(),
             "measurement_configurations": self.configuration_to_list_of_dict(),
         }
@@ -586,7 +624,7 @@ class ClosureRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -623,7 +661,7 @@ class GEMMeasurementRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -736,7 +774,7 @@ class EMMConfigurationRegistration(Registration):
 
         metadata = {
             "request_reference": self.instrument_configuration.configuration_name,
-            "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
+            "delivery_accountable_party": str(self.formation_resistance_dossier.delivery_accountable_party.company_number),
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -792,7 +830,7 @@ class EMMMeasurementRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }

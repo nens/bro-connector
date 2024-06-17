@@ -2,62 +2,30 @@ from django.db import models
 import django.contrib.gis.db.models as geo_models
 from .choices import *
 import main.utils.validators_models as validators_models
-
-import random
-
-
-def get_color_value():
-    # Generate random values for red, green, and blue components
-    red = random.randint(0, 255)
-    green = random.randint(0, 255)
-    blue = random.randint(0, 255)
-
-    # Convert decimal values to hexadecimal and format them
-    color_code = "#{:02x}{:02x}{:02x}".format(red, green, blue)
-
-    return color_code
-
-
-class Instantie(models.Model):
-    name = models.CharField(max_length=50, null=True, blank=True)
-    company_number = models.IntegerField(blank=True)
-    color = models.CharField(max_length=50, null=True, blank=True)
-
-    class Meta:
-        managed = True
-        db_table = 'gmw"."instantie'
-        verbose_name = "Instantie"
-        verbose_name_plural = "Instanties"
-
-    def __str__(self):
-        if self.name:
-            return self.name
-        elif self.company_number:
-            return str(self.company_number)
-        else:
-            return str(self.id)
-
-    def save(self, *args, **kwargs):
-        # Set a default color only if it's not already set
-        if not self.color:
-            self.color = get_color_value()
-        super().save(*args, **kwargs)
-
+from bro.models import Organisation, BROProject, SecureCharField
+import datetime
+from .utils import generate_put_code
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
     registration_object_type = models.CharField(max_length=256, blank=True, null=True)
     bro_id = models.CharField(max_length=15, blank=True, null=True)
+    project = models.ForeignKey(
+        BROProject,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     request_reference = models.CharField(max_length=255, blank=True, null=True)
     delivery_accountable_party = models.ForeignKey(
-        Instantie,
+        Organisation,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="delivery_accountable_party",
     )
     delivery_responsible_party = models.ForeignKey(
-        Instantie,
+        Organisation,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -129,6 +97,13 @@ class GroundwaterMonitoringWellStatic(models.Model):
     def lon(self):
         return self.coordinates_4236.x
 
+    @property
+    def project_number(self):
+        if self.project:
+            return self.project.project_number
+        else:
+            None
+
     def cx(self):
         return self.construction_coordinates.x
 
@@ -136,7 +111,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
         return self.construction_coordinates.y
 
     def __str__(self):
-        if self.bro_id:
+        if self.well_code:
+            return str(self.well_code)
+        elif self.bro_id:
             return str(self.bro_id)
         else:
             return str(self.groundwater_monitoring_well_static_id)
@@ -144,6 +121,11 @@ class GroundwaterMonitoringWellStatic(models.Model):
     def save(self, *args, **kwargs):
         # Call the parent class's save method
         super().save(*args, **kwargs)
+
+        if self.well_code is None and self.nitg_code is not None:
+            print("Generate wellcode.")
+            self.well_code = generate_put_code(self.nitg_code)
+            super().save(update_fields=['well_code'])
 
         # If coordinates are available, convert and save them to coordinates_4236
         if self.coordinates:
@@ -167,7 +149,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         blank=True,
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
-    ground_level_stable = models.CharField(max_length=254, null=True, blank=True)
+    ground_level_stable = models.CharField(choices=BOOLEAN_CHOICES, max_length=254, null=True, blank=True)
     well_stability = models.CharField(
         choices=WELLSTABILITY, max_length=200, blank=True, null=True
     )
@@ -258,8 +240,8 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     tube_type = models.CharField(
         choices=TUBETYPE, max_length=200, blank=True, null=True
     )
-    artesian_well_cap_present = models.CharField(max_length=200, blank=True, null=True)
-    sediment_sump_present = models.CharField(max_length=200, blank=True, null=True)
+    artesian_well_cap_present = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True)
+    sediment_sump_present = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True)
     tube_material = models.CharField(
         choices=TUBEMATERIAL, max_length=200, blank=True, null=True
     )
@@ -281,7 +263,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
 
     def __str__(self):
         well = f"{self.groundwater_monitoring_well_static.__str__()}"
-        return f"{well}-{format_integer(self.tube_number)}"
+        return f"{well}-{format_integer(int(self.tube_number))}"
 
     class Meta:
         managed = True
@@ -300,7 +282,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     tube_top_diameter = models.IntegerField(blank=True, null=True)
-    variable_diameter = models.CharField(max_length=200, blank=True, null=True)
+    variable_diameter = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True)
     tube_status = models.CharField(
         choices=TUBESTATUS, max_length=200, blank=True, null=True
     )
@@ -351,17 +333,25 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
 
     @property
     def screen_top_position(self):
-        return self.tube_top_position - self.plain_tube_part_length
+        if self.tube_top_position is not None and self.plain_tube_part_length is not None:
+            return self.tube_top_position - self.plain_tube_part_length
+        return None
 
     @property
     def screen_bottom_position(self):
-        return self.screen_top_position - self.groundwater_monitoring_tube_static.screen_length
-    
+        if self.screen_top_position is not None and self.groundwater_monitoring_tube_static.screen_length is not None:
+            return self.screen_top_position - self.groundwater_monitoring_tube_static.screen_length
+        return None
+
     @property
     def tube_bottom_position(self):
-        if self.groundwater_monitoring_tube_static.sediment_sump_present:
-            return self.screen_bottom_position 
-        return self.screen_bottom_position - self.groundwater_monitoring_tube_static.sediment_sump_length
+        if self.screen_bottom_position is not None:
+            if self.groundwater_monitoring_tube_static.sediment_sump_present:
+                return self.screen_bottom_position 
+            elif self.groundwater_monitoring_tube_static.sediment_sump_length is not None:
+                return self.screen_bottom_position - self.groundwater_monitoring_tube_static.sediment_sump_length
+        return None
+
 
     def __str__(self):
         if self.date_till:
@@ -446,7 +436,10 @@ class ElectrodeDynamic(models.Model):
     )
 
     def __str__(self):
-        return str(self.electrode_static.electrode_static_id)
+        if self.date_till:
+            till = self.date_till.date()
+            return str(f"{self.electrode_static.__str__()} ({self.date_from} - {till})")
+        return str(f"{self.electrode_static.__str__()} ({self.date_from} - Present)")
 
     @property
     def date_till(self):
@@ -509,15 +502,23 @@ class Event(models.Model):
         verbose_name = "Tussentijdse Gebeurtenis"
         verbose_name_plural = "Tussentijdse Gebeurtenissen"
 
+def get_current_values(instance):
+    """Get a dictionary of the current field values."""
+    return {field.name: getattr(instance, field.name) for field in instance._meta.fields}
 
 class gmw_registration_log(models.Model):
     date_modified = models.CharField(max_length=254, null=True, blank=True)
     bro_id = models.CharField(max_length=254, null=True, blank=True)
     event_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
-    levering_id = models.CharField(max_length=254, null=True, blank=True)
-    levering_type = models.CharField(max_length=254, null=True, blank=True)
-    levering_status = models.CharField(max_length=254, null=True, blank=True)
+    delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    delivery_type = models.CharField(
+        choices=DELIVERY_TYPE_CHOICES,
+        blank=False,
+        max_length=40,
+        default="register",
+    )
+    delivery_status = models.CharField(max_length=254, null=True, blank=True)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
@@ -530,8 +531,36 @@ class gmw_registration_log(models.Model):
         max_length=254, null=True, blank=True
     )
 
+    @property
+    def event_type(self):
+        if self.event_id is not None:
+            return Event.objects.get(change_id=self.event_id).event_name
+        return "-"
+
     def __str__(self):
-        return f"{self.bro_id}-{self.levering_type}_log ({self.date_modified})"
+        if self.bro_id is None:
+            return f"{self.id}-{self.delivery_type}_log ({self.date_modified})"
+        return f"{self.bro_id}-{self.delivery_type}_log ({self.date_modified})"
+
+    def _set_original_values(self, instance):
+        self._original_values = get_current_values(instance)
+
+    def has_changed(self):
+        """Check if any field has changed."""
+        current_values = get_current_values(self)
+        return any(current_values[field] != self._original_values[field] for field in current_values)
+
+    def save(self, *args, **kwargs):
+        if self.id is not None:
+            db_instance = gmw_registration_log.objects.get(id=self.id)
+            self._set_original_values(db_instance)
+
+            if self.has_changed():
+                # If there is any change
+                self.last_changed = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        super().save(*args, **kwargs)
+
 
     class Meta:
         managed = True

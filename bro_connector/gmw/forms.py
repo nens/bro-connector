@@ -25,7 +25,6 @@ class BinaryFileInput(forms.ClearableFileInput):
         if upload:
             return upload.read()
 
-
 class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
     
     x = forms.CharField(required=True)

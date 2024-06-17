@@ -45,3 +45,26 @@ MONITORINGDOEL = (
     ("natuurbescherming", "natuurbescherming"),
     ("natuurbeheer", "natuurbeheer"),
 )
+
+DELIVERY_TYPE_CHOICES = (
+    ("register", "register"),
+    ("replace", "replace"),
+    ("insert", "insert"),
+    ("move", "move"),
+    ("delete", "delete"),
+)
+
+LEVERINGSTATUS_CHOICES = [
+    ("0", "Nog niet aangeleverd"),
+    ("1", "1 keer gefaald"),
+    ("2", "2 keer gefaald"),
+    ("3", "3 keer gefaald"),
+    ("4", "Succesvol aangeleverd"),
+]
+
+EVENT_TYPE_CHOICES = [
+    ("GMN_StartRegistration", "Start Registration"),
+    ("GMN_MeasuringPoint", "Add MeasuringPoint"),
+    ("GMN_MeasuringPointEndDate", "Remove MeasuringPoint"),
+    ("GMN_Closure", "GMN Closure"),
+]

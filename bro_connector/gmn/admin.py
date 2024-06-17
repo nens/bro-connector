@@ -95,6 +95,26 @@ class gmn_bro_sync_logAdmin(admin.ModelAdmin):
         "gmn_bro_id",
     )
 
+    readonly_fields = (
+        "date_modified",
+        "event_type",
+        "gmn_bro_id",
+        "object_id_accountable_party",
+        "validation_status",
+        "delivery_id",
+        "delivery_type",
+        "delivery_status",
+        "delivery_status_info",
+        "comments",
+        "last_changed",
+        "corrections_applied",
+        "timestamp_end_registration",
+        "quality_regime",
+        "file",
+        "process_status",
+        "measuringpoint"
+    )
+
 
 _register(GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
 _register(MeasuringPoint, MeasuringPointAdmin)
