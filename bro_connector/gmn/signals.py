@@ -12,5 +12,5 @@ def save_measuring_points(sender, instance: GroundwaterMonitoringNet, **kwargs):
     measuring_points = instance.measuring_points.all()
     for point in measuring_points:
         gmw = point.groundwater_monitoring_tube.groundwater_monitoring_well_static
-        gmw.project_number = instance.project_number
-        gmw.save(update_fields=["project_number"])
+        gmw.project = instance.project
+        gmw.save(update_fields=["project"])
