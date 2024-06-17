@@ -1,4 +1,5 @@
 from gld.models import GroundwaterLevelDossier, gld_registration_log, gld_addition_log, Observation
+from gmw.models import GroundwaterMonitoringWellStatic
 import os
 import logging
 
@@ -42,7 +43,7 @@ def handle_start_registrations(
 
     gld_registration_logs = gld_registration_log.objects.filter(
         gwm_bro_id=well.bro_id,
-        filter_id=tube_number,
+        filter_number=tube_number,
         quality_regime=well.quality_regime,
     )
 
@@ -53,6 +54,7 @@ def handle_start_registrations(
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
         if deliver:
+            gld._set_bro_info(well)
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
             gld.create_start_registration_sourcedocs(
@@ -81,6 +83,9 @@ def handle_additions(
             observation_id = observation.observation_id,
         ).first()
 
+        well = GroundwaterMonitoringWellStatic.objects.get(bro_id=observation.groundwater_level_dossier.gmw_bro_id)
+        gld._set_bro_info(well)
+
         if deliver:
             if not addition_log:
                 (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
@@ -97,7 +102,7 @@ def handle_additions(
             ):
                 #(addition_log) = gld.create_replace_sourcedocuments(observation)
                 pass
-
+            
             gld.gld_validate_and_deliver(addition_log)
 
         if not addition_log:

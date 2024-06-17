@@ -6,14 +6,9 @@ from gmw.models import (
 )
 import os
 import reversion
+from main.management.commands.gmw_sync_to_bro import _get_registrations_dir
 
 from bro.models import Organisation
-from main.settings.base import ENVIRONMENT
-
-def is_demo():
-    if ENVIRONMENT == "production":
-        return False
-    return True
 
 def _get_token(owner: Organisation):
     return {
@@ -23,13 +18,11 @@ def _get_token(owner: Organisation):
 
 def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
     return {
-        "bro_info": {
-            "token": _get_token(well.delivery_accountable_party),
-            "projectnummer": well.project_number,
-        }
+        "token": _get_token(well.delivery_accountable_party),
+        "projectnummer": well.project_number,
     }
 
-folder_name = "./registrations/"
+folder_name = _get_registrations_dir("gmw")
 
 
 def create_registrations_folder():
@@ -269,7 +262,7 @@ def check_status(well: GroundwaterMonitoringWellStatic) -> None:
         gmw_check_registrations(registration)
 
 def get_well_from_event_id(event_id: int):
-    event = Event.objects.get(id=event_id)
+    event = Event.objects.get(change_id=event_id)
     return event.groundwater_monitoring_well_static
 
 def gmw_check_registrations(registration: gmw_registration_log):
@@ -291,7 +284,6 @@ def gmw_check_registrations(registration: gmw_registration_log):
     None.
 
     """
-    demo = is_demo()
     well = get_well_from_event_id(registration.event_id)
     bro_info = form_bro_info(well)
 
@@ -302,7 +294,7 @@ def gmw_check_registrations(registration: gmw_registration_log):
     if gmw_sync.delivered_but_not_approved(registration):
         # The registration has been delivered, but not yet approved
         status = gmw_sync.check_delivery_status_levering(
-            registration_id, folder_name, bro_info, demo
+            registration_id, folder_name, bro_info
         )
 
     if (
@@ -356,7 +348,6 @@ def gmw_check_registrations(registration: gmw_registration_log):
             registration_id,
             folder_name,
             bro_info,
-            demo,
         )
 
     # If the delivery failed previously, we can retry

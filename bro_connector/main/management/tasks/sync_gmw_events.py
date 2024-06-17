@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
-def _is_demo(self):
+def _is_demo():
     if ENVIRONMENT == "production":
         return False
     return True
@@ -29,10 +29,8 @@ def _get_token(owner: Organisation):
 
 def form_bro_info(well: models.GroundwaterMonitoringWellStatic) -> dict:
     return {
-        "bro_info": {
-            "token": _get_token(well.delivery_accountable_party),
-            "projectnummer": well.project_number,
-        }
+        "token": _get_token(well.delivery_accountable_party),
+        "projectnummer": well.project_number,
     }
 
 def bro_info_missing(bro_info: dict, gmn_name: str) -> bool:
@@ -684,20 +682,6 @@ def set_delivery_accountable_party(
 
     return delivery_accountable_party
 
-def _get_token(owner: Organisation):
-    return {
-        "user": owner.bro_user,
-        "pass": owner.bro_token,
-    }
-
-def form_bro_info(well: models.GroundwaterMonitoringWellStatic) -> dict:
-    return {
-        "bro_info": {
-            "token": _get_token(well.delivery_accountable_party),
-            "projectnummer": well.project_number,
-        }
-    }
-
 def create_sourcedocs(
     event: models.Event,
     registrations_dir,
@@ -911,7 +895,7 @@ def validate_gmw_registration_request(
     file = gmw_registration.file
     source_doc_file = os.path.join(registrations_dir, file)
     payload = open(source_doc_file)
-
+    print(bro_info)
     validation_info = brx.validate_sourcedoc(payload, bro_info, demo=demo, api="v2")
     validation_status = validation_info["status"]
 
@@ -1296,6 +1280,7 @@ def gmw_check_existing_registrations(registrations_dir):
         source_doc_type = registration.event_type
 
         bro_info = form_bro_info(event.groundwater_monitoring_well_static)
+        print(bro_info)
         if bro_info_missing(bro_info, event.groundwater_monitoring_well_static.__str__()):
             continue
 

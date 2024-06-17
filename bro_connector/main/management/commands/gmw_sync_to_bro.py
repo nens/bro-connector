@@ -22,6 +22,7 @@ class Command(BaseCommand):
         # Initialize settings
         demo = _is_demo()
         registrations_dir = _get_registrations_dir('gmw')
+        print(registrations_dir)
 
         # Check the database for new wells/tubes and start a gmw registration for these objects if its it needed
         sync_gmw_events.gmw_create_sourcedocs_wells(

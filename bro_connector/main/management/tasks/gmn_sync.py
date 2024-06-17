@@ -24,12 +24,15 @@ def _get_token(owner: Organisation):
     }
 
 def form_bro_info(gmn: GroundwaterMonitoringNet) -> dict:
-    return {
-        "bro_info": {
-            "token": _get_token(gmn.delivery_accountable_party),
-            "projectnummer": gmn.project_number,
+    if gmn.delivery_accountable_party.bro_token is None or gmn.delivery_accountable_party.bro_user is None:
+        return {
+            "token": _get_token(gmn.delivery_responsible_party),
+            "projectnummer": gmn.project.project_number,
         }
-    }
+    return {
+            "token": _get_token(gmn.delivery_accountable_party),
+            "projectnummer": gmn.project.project_number,
+        }
 
 def bro_info_missing(bro_info: dict, gmn_name: str) -> bool:
     skip=False
@@ -56,7 +59,9 @@ def sync_gmn(selected_gmn_qs=None, check_only=False):
                 )
     
     for event in events:
+        print(event)
         bro_info = form_bro_info(event.gmn)
+        print(bro_info)
         if bro_info_missing(bro_info, event.gmn.id):
             continue
 
@@ -64,7 +69,8 @@ def sync_gmn(selected_gmn_qs=None, check_only=False):
         # Synced_to_bro might be updated during the handling of another event.
         if event.synced_to_bro == True:
             continue
-
+        
+        print(event.event_type)
         if event.event_type == "GMN_StartRegistration":
             print(
                 f"De startregistratie van {event.gmn} wordt geinitialiseerd of opgepakt"

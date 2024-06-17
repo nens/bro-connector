@@ -38,10 +38,8 @@ def _get_token(owner: Organisation):
 
 def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
     return {
-        "bro_info": {
-            "token": _get_token(well.delivery_accountable_party),
-            "projectnummer": well.project_number,
-        }
+        "token": _get_token(well.delivery_accountable_party),
+        "projectnummer": well.project_number,
     }
 
 def get_xml_payload(xml_filepath):
@@ -478,7 +476,8 @@ class FrdStartRegistration(Registration):
             frd=self.frd_obj,
             delivery_type="register",
         )[0]
-        self.filename = f"frd_startregistration_{self.frd_obj.object_id_accountable_party}_{date.today()}.xml"
+        self.filename = f"frd_startregistration_{frd_obj.name}_{date.today()}.xml"
+        self._set_folder_dir("frd")
 
     def construct_xml_tree(self):
         quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
@@ -503,11 +502,11 @@ class FrdStartRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "quality_regime": quality_regime,
         }
         srcdocdata = {
-            "object_id_accountable_party": self.frd_obj.object_id_accountable_party,
+            "object_id_accountable_party": self.frd_obj.name,
             "gmw_bro_id": gmw_bro_id,
             "gmn_bro_id": gmn_bro_id,
             "gmw_tube_number": gmw_tube_number,
@@ -583,13 +582,13 @@ class GEMConfigurationRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
+            "delivery_accountable_party": str(self.formation_resistance_dossier.delivery_accountable_party.company_number),
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
         }
 
         srcdocdata = {
-            "object_id_accountable_party": self.formation_resistance_dossier.object_id_accountable_party,
+            "object_id_accountable_party": self.formation_resistance_dossier.name,
             "request_reference": self.format_request_reference(),
             "measurement_configurations": self.configuration_to_list_of_dict(),
         }
@@ -625,7 +624,7 @@ class ClosureRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -662,7 +661,7 @@ class GEMMeasurementRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -775,7 +774,7 @@ class EMMConfigurationRegistration(Registration):
 
         metadata = {
             "request_reference": self.instrument_configuration.configuration_name,
-            "delivery_accountable_party": self.formation_resistance_dossier.delivery_accountable_party,
+            "delivery_accountable_party": str(self.formation_resistance_dossier.delivery_accountable_party.company_number),
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -831,7 +830,7 @@ class EMMMeasurementRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": self.frd_obj.delivery_accountable_party,
+            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
