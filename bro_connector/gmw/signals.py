@@ -7,7 +7,7 @@ import reversion
 
 @receiver(post_save, sender=gmw_registration_log)
 def on_save_gmw_synchronisatie_log(sender, instance: gmw_registration_log, created, **kwargs):
-    if instance.delivery_type != "Construction":
+    if instance.event_type != "constructie":
         return
     
     if instance.bro_id is not None:
