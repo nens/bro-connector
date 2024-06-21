@@ -64,7 +64,7 @@ def order_measurements_list(measurement_list: list):
 def get_measurement_point_metadata_for_measurement(measurement_point_metadata: models.MeasurementPointMetadata):
     metadata = {
         "StatusQualityControl": measurement_point_metadata.status_quality_control,
-        "interpolationType": measurement_point_metadata.interpolation_code,
+        "interpolationType": "Discontinuous",
     }
     if measurement_point_metadata.censor_reason:
         metadata["censoredReason"] = measurement_point_metadata.censor_reason
