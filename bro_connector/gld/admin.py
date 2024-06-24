@@ -182,19 +182,6 @@ class ObservationProcessAdmin(admin.ModelAdmin):
     )
 
 
-class ResponsiblePartyAdmin(admin.ModelAdmin):
-    list_display = (
-        "responsible_party_id",
-        "identification",
-        "organisation_name",
-    )
-    list_filter = (
-        "responsible_party_id",
-        "identification",
-        "organisation_name",
-    )
-
-
 class gld_registration_logAdmin(admin.ModelAdmin):
     # Retry generate startregistration
     actions = [
@@ -569,7 +556,6 @@ _register(models.MeasurementPointMetadata, MeasurementPointMetadataAdmin)
 _register(models.MeasurementTvp, MeasurementTvpAdmin)
 _register(models.ObservationMetadata, ObservationMetadataAdmin)
 _register(models.ObservationProcess, ObservationProcessAdmin)
-_register(models.ResponsibleParty, ResponsiblePartyAdmin)
 _register(models.Observation, ObservationAdmin)
 _register(models.gld_registration_log, gld_registration_logAdmin)
 _register(models.gld_addition_log, gld_addition_log_Admin)
@@ -579,7 +565,6 @@ patch_admin(models.MeasurementPointMetadata)
 patch_admin(models.MeasurementTvp)
 patch_admin(models.ObservationMetadata)
 patch_admin(models.ObservationProcess)
-patch_admin(models.ResponsibleParty)
 patch_admin(models.Observation)
 patch_admin(models.gld_registration_log)
 patch_admin(models.gld_addition_log)
