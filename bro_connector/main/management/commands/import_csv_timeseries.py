@@ -9,35 +9,48 @@ from gld import models as gld_models
 logger = logging.getLogger(__name__)
 
 def convert_value_to_float(val: str) -> Union[float, None]:
+    if val == "dry":
+        return None
     try:
         return float(str(val).replace(",", "."))
     except ValueError:
         return None
 
-def create_measurement(observation: gld_models.Observation, data: dict, datum: datetime.datetime):
+def create_measurement(
+        observation: gld_models.Observation,
+        tube_height: float, 
+        data: dict, 
+        datum: datetime.datetime
+    ) -> None:
     meta = gld_models.MeasurementPointMetadata.objects.create(
         status_quality_control = "onbekend",
         interpolation_code = "discontinu",
     )
 
     measurement_value = convert_value_to_float(data["value"])
+    if measurement_value is not None:
+        value_mNAP = tube_height - measurement_value
+    else:
+        value_mNAP = None
 
-    tvp = gld_models.MeasurementTvp.objects.create(
+    gld_models.MeasurementTvp.objects.create(
         observation = observation,
         measurement_time = datum,
-        field_value = measurement_value,
+        field_value = value_mNAP,
         measurement_point_metadata = meta,
     )
 
-def create_new_observation(data: dict, tube: gmw_models.GroundwaterMonitoringTubeStatic, datum: datetime.datetime):
-    print(tube)
+def create_new_observation( 
+        tube: gmw_models.GroundwaterMonitoringTubeStatic, 
+        datum: datetime.datetime
+    ):
     # Find GLD
     gld = gld_models.GroundwaterLevelDossier.objects.get(
         groundwater_monitoring_tube = tube
     )
 
     # Create Observatie process
-    obs_process, created = gld_models.ObservationProcess.objects.update_or_create(
+    obs_process = gld_models.ObservationProcess.objects.create(
         process_reference = "onbekend",
         measurement_instrument_type = "onbekend",
         air_pressure_compensation_type = "onbekend",
@@ -46,11 +59,11 @@ def create_new_observation(data: dict, tube: gmw_models.GroundwaterMonitoringTub
     )
 
     # Create Observatie metadata
-    obs_metadata, created = gld_models.ObservationMetadata.objects.get_or_create(
+    obs_metadata = gld_models.ObservationMetadata.objects.create(
         status = "voorlopig",
         observation_type = "controlemeting",
         date_stamp = datum.date(),
-        responsible_party_id = 26,
+        responsible_party_id = 1,
     )
 
     print(obs_metadata, obs_process, gld)
@@ -75,6 +88,7 @@ class Command(BaseCommand):
         # First it should accept a csv file
         file_path = kwargs.get("file")
         nitg_oud = "None"
+        filter_oud = "None"
         new = False
 
         if not file_path:
@@ -97,7 +111,7 @@ class Command(BaseCommand):
 
                 data = dict(zip(header, row))
                 
-                if data["NITG"] != nitg_oud:
+                if data["NITG"] != nitg_oud or data["filter"] != filter_oud:
                     new = True
 
                 datum = datetime.datetime.strptime(data["date"], "%d/%m/%Y %H:%M")
@@ -115,16 +129,16 @@ class Command(BaseCommand):
                     tube_number = data["filter"],
                 ).first()
 
+                tube_history = gmw_models.GroundwaterMonitoringTubeDynamic.objects.filter(
+                    groundwater_monitoring_tube_static = tube,
+                ).order_by("date_from").last()
+
                 if new is True:
                     nitg_oud = data["NITG"]
-                    observatie = create_new_observation(data, tube, datum)
-
-                    create_measurement(observatie, data, datum)
-                    
+                    filter_oud = data["filter"]
+                    observatie = create_new_observation(tube, datum)
                     new = False
 
-                else:
-                    # Create metadata and measurement
-                    create_measurement(observatie, data, datum)
+                create_measurement(observatie, tube_history.tube_top_position, data, datum)
 
 
