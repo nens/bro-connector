@@ -6,7 +6,7 @@ from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWel
 import logging
 from django.conf import settings
 
-
+from bro.models import Organisation
 from gld.models import (
     GroundwaterLevelDossier,
     Observation,
@@ -14,7 +14,6 @@ from gld.models import (
     ObservationMetadata,
     MeasurementTvp,
     MeasurementPointMetadata,
-    ResponsibleParty,
 )
 
 logger = logging.getLogger(__name__)
@@ -195,21 +194,21 @@ class InitializeData:
         # If it is already in the database
         if (
             len(
-                ResponsibleParty.objects.filter(
-                    identification=kvk,
+                Organisation.objects.filter(
+                    company_number=kvk,
                 )
             )
             != 0
         ):
-            self.responsible_party_instance = ResponsibleParty.objects.filter(
-                identification=kvk,
+            self.responsible_party_instance = Organisation.objects.filter(
+                company_number=kvk,
             ).first()
             # Return without creating a new instance. Assign the found instance
             return
 
         # If None is found, get_or_create a new instance.
-        self.responsible_party_instance = ResponsibleParty.objects.create(
-            identification=kvk,
+        self.responsible_party_instance = Organisation.objects.create(
+            company_number=kvk,
             organisation_name=None,  # Naam staat niet in XML, achteraf zelf veranderen
         )
 
