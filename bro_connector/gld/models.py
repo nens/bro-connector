@@ -120,6 +120,16 @@ class Observation(models.Model):
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
 
     @property
+    def timestamp_first_measurement(self):
+        mtvp = MeasurementTvp.objects.filter(
+            observation = self
+        ).order_by("measurement_time").first()
+
+        if mtvp is not None:
+            return mtvp.measurement_time
+        return None
+
+    @property
     def timestamp_last_measurement(self):
         mtvp = MeasurementTvp.objects.filter(
             observation = self
@@ -148,22 +158,10 @@ class Observation(models.Model):
         return "-"
 
     def __str__(self):
-        try:
-            starttime = str(self.observation_starttime.date())
-        except:
-            starttime = "?"
-
-        try:
-            endtime = str(self.observation_endtime.date())
-        except:
-            endtime = "?"
-
-        try:
-            dossier = str(self.groundwater_level_dossier.gld_bro_id)
-        except:
-            dossier = "Registratie onbekend"
-
-        return "{} ({} - {})".format(dossier, starttime, endtime)
+        end = "present"
+        if self.observation_endtime:
+            end = self.observation_endtime.date()
+        return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
 
     def save(self, *args, **kwargs):
         if self.pk == None:
@@ -213,11 +211,7 @@ class ObservationMetadata(models.Model):
     )
 
     def __str__(self):
-        return "{}, {}, {}".format(
-            str(self.date_stamp),
-            str(self.status),
-            self.responsible_party.name,
-        )
+        return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
 
     class Meta:
         managed = True
@@ -288,6 +282,11 @@ class MeasurementTvp(models.Model):
         db_table = 'gld"."measurement_tvp'
         verbose_name = "Metingen Tijd-Waarde paren"
         verbose_name_plural = "Metingen Tijd-Waarde paren"
+        indexes = [
+            models.Index(fields=['observation']),
+            models.Index(fields=['measurement_time']),
+        ]
+
 
 
 class MeasurementPointMetadata(models.Model):
@@ -314,6 +313,10 @@ class MeasurementPointMetadata(models.Model):
         db_table = 'gld"."measurement_point_metadata'
         verbose_name = "Meetpunt Metadata"
         verbose_name_plural = "Meetpunt Metadata"
+        indexes = [
+            models.Index(fields=['status_quality_control']),
+            models.Index(fields=['censor_reason']),
+        ]
 
     def __str__(self):
         return str(self.measurement_point_metadata_id)
