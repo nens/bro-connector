@@ -109,13 +109,14 @@ class ObservationAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "observation_id",
+        "groundwater_level_dossier",
         "observation_starttime",
         "observation_endtime",
-        "groundwater_level_dossier",
         "result_time",
+        "up_to_date_in_bro",
     )
 
-    readonly_fields = ["status"]
+    readonly_fields = ["status", "timestamp_first_measurement", "timestamp_last_measurement"]
 
     actions = ["close_observation", "change_up_to_date_status"]
 
