@@ -265,7 +265,7 @@ class InitializeData:
         )
         self.metadata_measurement_tvp_instance = MeasurementPointMetadata.objects.create(
             status_quality_control=self.gmw_dict.get(
-                f"{self.observation_number}_point_qualifier_value", [None]
+                f"{self.observation_number}_point_qualifier_value", "onbekend"
             )[measurement_number],
             interpolation_code="discontinu",  # Standard, only option
             censor_reason=censor_reason,
