@@ -630,10 +630,10 @@ class Maintenance(models.Model):
         blank=True,
     )
     notification_date = models.DateField(blank=True, null=True)
-    kind_of_maintenance = models.CharField(max_length=254, choices="")
+    kind_of_maintenance = models.CharField(max_length=254)
     description = models.CharField(max_length=254, null=True, blank=True)
     picture = models.ForeignKey(
-        Picture, on_delete=models.CASCADE, null=True, blank=True
+        Picture, on_delete=models.SET_NULL, null=True, blank=True
     )
     reporter = models.ForeignKey(
         MaintenanceParty,
