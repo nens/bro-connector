@@ -12,7 +12,7 @@ class DataRetrieverKVK:
         if type.lower() not in options:
             raise Exception(f"Unknown type: {type}. Use a correct option: {options}.")
 
-        basis_url = "https://int-publiek.broservices.nl"
+        basis_url = "https://publiek.broservices.nl/"
         kvk_verzoek = requests.get(
             f"{basis_url}/gm/{type}/v1/bro-ids?bronhouder={str(self.kvk_nummer)}"
         )
@@ -27,6 +27,7 @@ class DataRetrieverKVK:
         self.other_ids = []
 
         for id in self.bro_ids:
+            print(id)
             if id.startswith("GMW"):
                 self.gmw_ids.append(id)
 
