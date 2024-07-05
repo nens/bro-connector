@@ -168,7 +168,7 @@ def get_observation_gld_source_document_data(observation: models.Observation):
 
     # Get the observation metadata and procedure data
     observation_metadata_instance = observation.observation_metadata
-    observation_status = observation_metadata_instance.status
+    observation_status = observation_metadata_instance.validation_status
 
     observation_metadata = {
         "observationType": observation_metadata_instance.observation_type,
@@ -189,31 +189,20 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     # dateStamp becomes the date of the last observation in a chunk
     # Generate the addition type for the logging
     # Can be either 'controlemeting, 'regulier_voorlopig_beoordeeld' or 'regulier_volledig_beoordeeld'
-
+    source_document_data = {
+        "metadata": {
+            "parameters": observation_metadata, 
+            "dateStamp": None
+        },
+        "procedure": {"parameters": observation_procedure},
+        "resultTime": observation_result_time,
+        "result": None,
+    }
     if observation_metadata["observationType"] == "controlemeting":
         addition_type = "controlemeting"
-
-        # Create the sourcedocs for the addition, results will later be added in chunks
-        source_document_data = {
-            "metadata": {"parameters": observation_metadata, "dateStamp": None},
-            "procedure": {"parameters": observation_procedure},
-            "resultTime": observation_result_time,
-            "result": None,
-        }
-
     else:
         # Create the sourcedocs for the addition, results will later be added in chunks
-        source_document_data = {
-            "metadata": {
-                "status": observation_status,
-                "parameters": observation_metadata,
-                "dateStamp": None,
-            },
-            "resultTime": observation_result_time,
-            "procedure": {"parameters": observation_procedure},
-            "result": None,
-        }
-
+        source_document_data["metadata"]["status"] =  observation_status
         addition_type = "regulier_" + observation_status
     return source_document_data, addition_type
 
