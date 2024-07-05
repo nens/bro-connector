@@ -49,7 +49,7 @@ class GMWHandler(BROHandler):
             self.root = ET.fromstring(gmw_verzoek.content)
         except Exception as e:
             self.root = None
-            logger.error(f"{e}")
+            print(f"{e}")
 
     def root_data_to_dictionary(self):
         tags = []
