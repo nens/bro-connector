@@ -297,6 +297,9 @@ def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
         "projectnummer": well.project_number,
     }
 
+def retrieve_responsible_kvk_from_observation(observation: models.Observation):
+    return observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party.company_number
+
 def set_delivery_accountable_party(
     well: GroundwaterMonitoringWellStatic, demo: bool
 ) -> int:
@@ -610,10 +613,10 @@ class GldSyncHandler:
         # Loop over all GMW objects in the database
         for well in gwm_wells:
             # Ignore wells that are not (yet) delivered to BRO
-            if well.deliver_gmw_to_bro == False:
+            if well.deliver_gmw_to_bro is False:
                 continue
 
-            if self.demo == True:
+            if self.demo:
                 if well.bro_id != "GMW000000042583":
                     continue
 
@@ -630,7 +633,7 @@ class GldSyncHandler:
                 tube_id = tube.tube_number
 
                 # Ignore filters that should not be delivered to BRO
-                if tube.deliver_gld_to_bro == False:
+                if tube.deliver_gld_to_bro is False:
                     continue
 
                 # Check if there is already a registration for this tube
@@ -643,6 +646,25 @@ class GldSyncHandler:
                     # Create a new configuration by creating startregistration sourcedocs
                     # By creating the sourcedocs (or failng to do so), a registration is made in the database
                     # This registration is used to track the progress of the delivery in further steps
+                    # Check if a GLD already has a start registration
+                    gld = models.GroundwaterLevelDossier.objects.get(
+                        groundwater_monitoring_tube = tube
+                    )
+
+                    if gld.gld_bro_id:
+                        models.gld_registration_log.objects.update_or_create(
+                            gwm_bro_id = gld.gmw_bro_id,
+                            gld_bro_id = gld.gld_bro_id,
+                            filter_number = gld.tube_number,
+                            validation_status = "VALID",
+                            delivery_id = None,
+                            delivery_type = "register",
+                            delivery_status = "OPGENOMEN_LVBRO",
+                            comments = "Imported into BRO-Connector.",
+                            quality_regime = gld.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+                        )
+                        continue
+
 
                     self.create_start_registration_sourcedocs(
                         well,
@@ -741,7 +763,7 @@ class GldSyncHandler:
 ### ADDITIONS ###
     def generate_gld_addition_sourcedoc_data(
             self,
-            observation,
+            observation: models.Observation,
             observation_source_document_data,
             addition_type,
         ):
@@ -783,7 +805,7 @@ class GldSyncHandler:
             gld_addition_registration_request = brx.gld_registration_request(
                 srcdoc="GLD_Addition",
                 requestReference=filename,
-                deliveryAccountableParty="27376655",  # investigator_identification (NENS voor TEST)
+                deliveryAccountableParty=retrieve_responsible_kvk_from_observation(observation),  # investigator_identification (NENS voor TEST)
                 qualityRegime=quality_regime,
                 broId=gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,

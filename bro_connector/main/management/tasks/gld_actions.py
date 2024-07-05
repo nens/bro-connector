@@ -53,13 +53,25 @@ def handle_start_registrations(
         # Create a new configuration by creating startregistration sourcedocs
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
-        if deliver:
+        if deliver and dossier.gld_bro_id is None:
             gld._set_bro_info(well)
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
             gld.create_start_registration_sourcedocs(
                 well,
                 tube_number,
+            )
+        elif dossier.gld_bro_id:
+            gld_registration_log.objects.update_or_create(
+                gwm_bro_id = dossier.gmw_bro_id,
+                gld_bro_id = dossier.gld_bro_id,
+                filter_number = dossier.tube_number,
+                validation_status = "VALID",
+                delivery_id = None,
+                delivery_type = "register",
+                delivery_status = "OPGENOMEN_LVBRO",
+                comments = "Imported into BRO-Connector.",
+                quality_regime = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
             )
 
     for log in gld_registration_logs:
@@ -124,7 +136,7 @@ def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
 
     tube = dossier.groundwater_monitoring_tube
     # Ignore filters that should not be delivered to BRO
-    if tube.deliver_gld_to_bro == False:
+    if tube.deliver_gld_to_bro is False:
         print(tube.deliver_gld_to_bro)
         return
     
