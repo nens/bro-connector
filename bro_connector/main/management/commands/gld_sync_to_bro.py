@@ -172,7 +172,7 @@ def get_observation_gld_source_document_data(observation: models.Observation):
 
     observation_metadata = {
         "observationType": observation_metadata_instance.observation_type,
-        "principalInvestigator": observation_metadata_instance.responsible_party.identification,
+        "principalInvestigator": observation_metadata_instance.responsible_party.company_number,
     }   
     
     observation_procedure = get_observation_procedure_data(
@@ -291,11 +291,11 @@ def retrieve_responsible_kvk_from_observation(observation: models.Observation):
 
 def set_delivery_accountable_party(
     well: GroundwaterMonitoringWellStatic, demo: bool
-) -> int:
+) -> str:
     if demo == True:
-        delivery_accountable_party = 27376655
+        delivery_accountable_party = str(27376655)
     else:
-        delivery_accountable_party = well.delivery_accountable_party.company_number
+        delivery_accountable_party = str(well.delivery_accountable_party.company_number)
 
     return delivery_accountable_party
 
@@ -358,7 +358,7 @@ class GldSyncHandler:
             gld_startregistration_request = brx.gld_registration_request(
                 srcdoc="GLD_StartRegistration",
                 requestReference=request_reference,
-                deliveryAccountableParty=str(delivery_accountable_party),
+                deliveryAccountableParty=delivery_accountable_party,
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -797,7 +797,7 @@ class GldSyncHandler:
             gld_addition_registration_request = brx.gld_registration_request(
                 srcdoc="GLD_Addition",
                 requestReference=filename,
-                deliveryAccountableParty=retrieve_responsible_kvk_from_observation(observation),  # investigator_identification (NENS voor TEST)
+                deliveryAccountableParty=str(retrieve_responsible_kvk_from_observation(observation)),  # investigator_identification (NENS voor TEST)
                 qualityRegime=quality_regime,
                 broId=gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,
