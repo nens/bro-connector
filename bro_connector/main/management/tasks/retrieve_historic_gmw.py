@@ -17,6 +17,9 @@ from gmw.models import (
 )
 from bro.models import Organisation
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def within_bbox(coordinates) -> bool:
     print(f"x: {coordinates.x}, y: {coordinates.y}")
@@ -46,13 +49,15 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
         return {"ids_found": gmw_ids_ini_count, "imported": gmw_ids_ini_count}
     
     print(f"{gmw_ids_ini_count} bro ids found for organisation.")
-
+    imported = 0
     gmw_ids_count = len(gmw_ids)
     progressor.calibrate(gmw_ids, 25)
 
     # Import the well data
     for id in range(gmw_ids_count):
         gmw.get_data(gmw_ids[id], True)
+        if gmw.root is None:
+            continue
         gmw.root_data_to_dictionary()
         gmw_dict = gmw.dict
 
@@ -73,7 +78,8 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
                 progressor.next()
                 progressor.progress()
                 continue
-
+        
+        print(f"In bbox for {gmws}")
         ini.well_dynamic()
 
         for tube_number in range(gmw.number_of_tubes):
@@ -93,17 +99,26 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
                 ini.reset_electrode_number()
             ini.reset_geo_ohm_number()
 
+        print("CREATE CONSTRUCTION")
         construction_event = events_handler.create_construction_event(gmw_dict, gmws)
-
+        imported += 1
         # Update based on the events
         updater = events_handler.Updater(gmw.dict, gmws)
         for nr in range(int(gmw.number_of_events)):
+            print(f"CREATE EVENT {nr}")
             updater.intermediate_events()
 
         gmw.reset_values()
         ini.reset_tube_number()
         progressor.next()
         progressor.progress()
+
+
+    info = {
+        "ids_found": gmw_ids_count,
+        "imported": imported,
+    }
+    return info
 
 
 def get_or_create_instantie(instantie: str):

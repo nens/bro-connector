@@ -64,6 +64,7 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
 
     print(f"{ids_ini_count} bro ids found for organisation.")
 
+    imported = 0 
     ids_count = len(ids)
     progressor.calibrate(ids, 25)
 
@@ -116,11 +117,18 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
                 ini.measurement_tvp(measurement_number)
                 count += 1
 
+        imported += 1
         gld.reset_values()
         ini.reset_values()
         progressor.next()
         progressor.progress()
 
+    info = {
+        "ids_found": ids_ini_count,
+        "imported": imported,
+    }
+
+    return info
 
 def get_censor_reason(
     dict: dict, observation_number: int, measurement_number: int
