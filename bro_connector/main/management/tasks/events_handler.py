@@ -9,8 +9,12 @@ from gmw.models import (
     ElectrodeDynamic,
     ElectrodeStatic,
     Event,
+    gmw_registration_log,
 )
 
+import logging 
+
+logger = logging.getLogger(__name__)
 
 # FORMULAS USED IN HISTORIE_OPHALEN COMMAND DJANGO ZEELAND
 def slice(sourcedict, string):
@@ -109,9 +113,11 @@ def get_mytimezone_date(original_datetime):
 def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> Event:
     if "construction_date" in gmw_dict:
         date = gmw_dict["construction_date"]
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
 
     elif "construction_year" in gmw_dict:
         date = gmw_dict["construction_year"]
+        date = datetime.datetime.strptime(date, "%Y")
 
     else:
         date = None
@@ -126,7 +132,22 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
             ).first(),
             "delivered_to_bro": True,
         },
+    )[0]
+
+    log = gmw_registration_log.objects.update_or_create(
+        delivery_type = "register",
+        event_id = event.change_id,
+        bro_id = event.groundwater_monitoring_well_static.bro_id,
+        defaults=dict(
+            date_modified = datetime.datetime.now(),
+            validation_status = "VALIDE",
+            delivery_status = "OPGENOMEN_LVBRO",
+            comments = "Imported with the BRO-Import functionality.",
+            quality_regime = event.groundwater_monitoring_well_static.quality_regime,
+            process_status = "delivery_approved", 
+        )
     )
+
     return event
 
 
@@ -152,11 +173,11 @@ def get_tube_static(groundwater_monitoring_well, tube_number):
     )
     return gmts_id
 
-def convert_event_date_str_to_datetime(event: Event) -> datetime:
+def convert_event_date_str_to_datetime(event_date: str) -> datetime.datetime:
     try:
-        date = datetime.datetime.strptime(event.event_date,'%Y-%m-%d')
+        date = datetime.datetime.strptime(event_date,'%Y-%m-%d')
     except ValueError:
-        date = datetime.datetime.strptime(event.event_date,'%Y')
+        date = datetime.datetime.strptime(event_date,'%Y')
     except TypeError:
         date = datetime.datetime.strptime("1900-01-01",'%Y-%m-%d')
 
@@ -191,12 +212,15 @@ class Updater:
         else:
             raise Exception(f"date/year not found in dict: {self.event_updates}")
 
+        date = convert_event_date_str_to_datetime(date)
+
         event = Event.objects.filter(
             event_name=self.event_updates["eventName"],
             event_date=date,
             groundwater_monitoring_well_static=self.groundwater_monitoring_well_static,
             delivered_to_bro=True,
         ).first()
+
         if event:
             self.event = event
         else:
@@ -205,6 +229,18 @@ class Updater:
                 event_date=date,
                 groundwater_monitoring_well_static=self.groundwater_monitoring_well_static,
                 delivered_to_bro=True,
+            )
+
+            gmw_registration_log.objects.update_or_create(
+                delivery_type = "register",
+                event_id = self.event.change_id,
+                bro_id = self.event.groundwater_monitoring_well_static.bro_id,
+                defaults=dict(
+                    validation_status = "VALIDE",
+                    delivery_status = "OPGENOMEN_LVBRO",
+                    comments = "Imported with the BRO-Import functionality.",
+                    quality_regime = self.event.groundwater_monitoring_well_static.quality_regime,
+                )
             )
 
     def intermediate_events(self):
@@ -242,7 +278,7 @@ class TableUpdater(Updater):
                 tube_number=updates[f"{prefix}tubeNumber"],
                 groundwater_monitoring_well_static=well_static,
             )
-            date = convert_event_date_str_to_datetime(event)
+            date = convert_event_date_str_to_datetime(event.event_date)
             
             try:
                 # Clone row and make new primary key with save
@@ -278,7 +314,7 @@ class TableUpdater(Updater):
             data_num += 1
 
     def electrode_data(well_static: GroundwaterMonitoringWellStatic, event: Event, updates):
-        date =convert_event_date_str_to_datetime(event)
+        date =convert_event_date_str_to_datetime(event.event_date)
         print(updates)
         exit()
         try:
@@ -324,7 +360,7 @@ class TableUpdater(Updater):
 
     def well_data(well_static: GroundwaterMonitoringWellStatic, event: Event, updates):
         # Clone row and make new primary key with save
-        date =convert_event_date_str_to_datetime(event)
+        date =convert_event_date_str_to_datetime(event.event_date)
 
         try:
             new_gmwd = GroundwaterMonitoringWellDynamic.objects.get(
