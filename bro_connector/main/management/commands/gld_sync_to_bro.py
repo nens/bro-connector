@@ -652,16 +652,19 @@ class GldSyncHandler:
                     )
 
                     if gld.gld_bro_id:
-                        models.gld_registration_log.objects.update_or_create(
+                        models.gld_registration_log.objects.get_or_create(
                             gwm_bro_id = gld.gmw_bro_id,
                             gld_bro_id = gld.gld_bro_id,
                             filter_number = gld.tube_number,
-                            validation_status = "VALID",
-                            delivery_id = None,
                             delivery_type = "register",
-                            delivery_status = "OPGENOMEN_LVBRO",
-                            comments = "Imported into BRO-Connector.",
-                            quality_regime = gld.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+                            defaults=dict(
+                                validation_status = "VALID",
+                                delivery_id = None,
+                                delivery_type = "register",
+                                delivery_status = "OPGENOMEN_LVBRO",
+                                comments = "Imported into BRO-Connector.",
+                                quality_regime = gld.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+                            )
                         )
                         continue
 
