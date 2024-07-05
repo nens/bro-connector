@@ -77,6 +77,14 @@ def handle_start_registrations(
     for log in gld_registration_logs:
         gld.check_existing_startregistrations(log)
 
+def form_addition_type(observation: Observation) -> str:
+    if observation.observation_type == "controlemeting":
+        return "controlemeting"
+    
+    if observation.observation_metadata.validation_status == "voorlopig":
+        return f"regulier_{observation.observation_metadata.validation_status}"
+    return f"regulier_{observation.observation_metadata.validation_status}"
+
 def handle_additions(
         dossier: GroundwaterLevelDossier, 
         deliver: bool
@@ -93,6 +101,7 @@ def handle_additions(
         print(f"Observation: {observation}; End_date: {observation.observation_endtime}")
         addition_log = gld_addition_log.objects.filter(
             observation_id = observation.observation_id,
+            addition_type =  form_addition_type(observation)
         ).first()
 
         well = GroundwaterMonitoringWellStatic.objects.get(bro_id=observation.groundwater_level_dossier.gmw_bro_id)
