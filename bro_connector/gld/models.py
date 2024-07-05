@@ -217,7 +217,11 @@ class ObservationMetadata(models.Model):
     def validation_status(self):
         if self.observation_type == "controlemeting":
             return None
-        observation = Observation.objects.get(observation_metadata = self)
+        try:
+            observation = Observation.objects.get(observation_metadata = self)
+        except Exception as e:
+            return f"{e}"
+        
         nr_of_unvalidated = len(MeasurementTvp.objects.filter(
             observation = observation,
             measurement_point_metadata__status_quality_control__in = ["nogNietBeoordeeld", "onbekend"]
