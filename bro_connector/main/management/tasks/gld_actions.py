@@ -104,6 +104,9 @@ def handle_additions(
             addition_type =  form_addition_type(observation)
         ).first()
 
+        print(observation)
+        print(addition_log)
+
         well = GroundwaterMonitoringWellStatic.objects.get(bro_id=observation.groundwater_level_dossier.gmw_bro_id)
         gld._set_bro_info(well)
 

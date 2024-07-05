@@ -227,6 +227,14 @@ def get_gld_registration_data_for_observation(observation: models.Observation):
     return gld_bro_id, quality_regime
 
 
+def form_addition_type(observation: models.Observation) -> str:
+    if observation.observation_type == "controlemeting":
+        return "controlemeting"
+    
+    if observation.observation_metadata.validation_status == "voorlopig":
+        return f"regulier_{observation.observation_metadata.validation_status}"
+    return f"regulier_{observation.observation_metadata.validation_status}"
+
 def create_new_observations():
     """
     Add a new observation for every GLD that has no open observation
@@ -811,6 +819,7 @@ class GldSyncHandler:
 
             record, created = models.gld_addition_log.objects.update_or_create(
                 observation_id=observation.observation_id,
+                addition_type = form_addition_type(observation),
                 defaults=dict(
                     date_modified=datetime.datetime.now(),
                     start_date = first_timestamp_datetime,
