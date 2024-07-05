@@ -213,6 +213,22 @@ class ObservationMetadata(models.Model):
     def __str__(self):
         return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
 
+    @property
+    def validation_status(self):
+        if self.observation_type == "controlemeting":
+            return None
+        observation = Observation.objects.get(observation_metadata = self)
+        nr_of_unvalidated = len(MeasurementTvp.objects.filter(
+            observation = observation,
+            measurement_point_metadata__status_quality_control__in = ["nogNietBeoordeeld", "onbekend"]
+        ))
+        if nr_of_unvalidated > 0:
+            return "voorlopig"
+        elif nr_of_unvalidated == 0:
+            return "volledigBeoordeeld"
+        else:
+            return "onbekend"
+
     class Meta:
         managed = True
         db_table = 'gld"."observation_metadata'
@@ -292,7 +308,7 @@ class MeasurementTvp(models.Model):
 class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
     status_quality_control = models.CharField(
-        choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True
+        choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True, default = "nogNietBeoordeeld"
     )
     censor_reason = models.CharField(
         choices=CENSORREASON, max_length=200, blank=True, null=True
@@ -304,7 +320,7 @@ class MeasurementPointMetadata(models.Model):
         max_digits=100, decimal_places=10, blank=True, null=True
     )
     interpolation_code = models.CharField(
-        choices=INTERPOLATIONTYPE, max_length=200, blank=True, null=True
+        choices=INTERPOLATIONTYPE, max_length=200, blank=True, null=True, default = "discontinu"
     )
 
     class Meta:

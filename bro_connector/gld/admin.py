@@ -33,13 +33,19 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "has_open_observation",
     )
     list_filter = (
-        "gld_bro_id",
-        "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
         HasOpenObservationFilter,
         CompletelyDeliveredFilter,
     )
+
+    search_fields = [
+        "groundwater_level_dossier_id",
+        "gld_bro_id",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+    ]
 
     readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number"]
 
@@ -153,6 +159,7 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "date_stamp",
         "observation_type",
         "status",
+        "validation_status",
         "responsible_party_id",
     )
     list_filter = (
@@ -162,6 +169,8 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "status",
         "responsible_party_id",
     )
+
+    readonly_fields = ["validation_status"]
 
 
 class ObservationProcessAdmin(admin.ModelAdmin):
