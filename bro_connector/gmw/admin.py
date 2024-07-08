@@ -455,6 +455,7 @@ class GmwSyncLogAdmin(admin.ModelAdmin):
         "date_modified",
         "last_changed",
         "bro_id",
+        "event_type",
         "process_status",
         "comments",
     )

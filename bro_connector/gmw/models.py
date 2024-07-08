@@ -262,8 +262,10 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         ).count()
 
     def __str__(self):
-        well = f"{self.groundwater_monitoring_well_static.__str__()}"
-        return f"{well}-{format_integer(int(self.tube_number))}"
+        if self.groundwater_monitoring_well_static:
+            well = f"{self.groundwater_monitoring_well_static.__str__()}"
+            return f"{well}-{format_integer(int(self.tube_number))}"
+        return self.groundwater_monitoring_tube_static_id
 
     class Meta:
         managed = True
@@ -354,11 +356,14 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
 
 
     def __str__(self):
-        if self.date_till:
-            till = self.date_till.date()
-            return f"{self.groundwater_monitoring_tube_static.__str__()} ({self.date_from.date()} - {till})"
+        if self.groundwater_monitoring_tube_static:
+            if self.date_till:
+                till = self.date_till.date()
+                return f"{self.groundwater_monitoring_tube_static.__str__()} ({self.date_from.date()} - {till})"
 
-        return f"{self.groundwater_monitoring_tube_static.__str__()} ({self.date_from.date()} - Present)"
+            return f"{self.groundwater_monitoring_tube_static.__str__()} ({self.date_from.date()} - Present)"
+        else:
+            return self.groundwater_monitoring_tube_dynamic_id
 
     class Meta:
         managed = True
@@ -625,10 +630,10 @@ class Maintenance(models.Model):
         blank=True,
     )
     notification_date = models.DateField(blank=True, null=True)
-    kind_of_maintenance = models.CharField(max_length=254, choices="")
+    kind_of_maintenance = models.CharField(max_length=254)
     description = models.CharField(max_length=254, null=True, blank=True)
     picture = models.ForeignKey(
-        Picture, on_delete=models.CASCADE, null=True, blank=True
+        Picture, on_delete=models.SET_NULL, null=True, blank=True
     )
     reporter = models.ForeignKey(
         MaintenanceParty,

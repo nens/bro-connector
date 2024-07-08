@@ -6,7 +6,7 @@ from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWel
 import logging
 from django.conf import settings
 
-
+from bro.models import Organisation
 from gld.models import (
     GroundwaterLevelDossier,
     Observation,
@@ -14,7 +14,6 @@ from gld.models import (
     ObservationMetadata,
     MeasurementTvp,
     MeasurementPointMetadata,
-    ResponsibleParty,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,6 +64,7 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
 
     print(f"{ids_ini_count} bro ids found for organisation.")
 
+    imported = 0 
     ids_count = len(ids)
     progressor.calibrate(ids, 25)
 
@@ -117,11 +117,18 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
                 ini.measurement_tvp(measurement_number)
                 count += 1
 
+        imported += 1
         gld.reset_values()
         ini.reset_values()
         progressor.next()
         progressor.progress()
 
+    info = {
+        "ids_found": ids_ini_count,
+        "imported": imported,
+    }
+
+    return info
 
 def get_censor_reason(
     dict: dict, observation_number: int, measurement_number: int
@@ -195,21 +202,21 @@ class InitializeData:
         # If it is already in the database
         if (
             len(
-                ResponsibleParty.objects.filter(
-                    identification=kvk,
+                Organisation.objects.filter(
+                    company_number=kvk,
                 )
             )
             != 0
         ):
-            self.responsible_party_instance = ResponsibleParty.objects.filter(
-                identification=kvk,
+            self.responsible_party_instance = Organisation.objects.filter(
+                company_number=kvk,
             ).first()
             # Return without creating a new instance. Assign the found instance
             return
 
         # If None is found, get_or_create a new instance.
-        self.responsible_party_instance = ResponsibleParty.objects.create(
-            identification=kvk,
+        self.responsible_party_instance = Organisation.objects.create(
+            company_number=kvk,
             organisation_name=None,  # Naam staat niet in XML, achteraf zelf veranderen
         )
 
@@ -266,7 +273,7 @@ class InitializeData:
         )
         self.metadata_measurement_tvp_instance = MeasurementPointMetadata.objects.create(
             status_quality_control=self.gmw_dict.get(
-                f"{self.observation_number}_point_qualifier_value", [None]
+                f"{self.observation_number}_point_qualifier_value", "onbekend"
             )[measurement_number],
             interpolation_code="discontinu",  # Standard, only option
             censor_reason=censor_reason,

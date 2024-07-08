@@ -53,7 +53,7 @@ def handle_start_registrations(
         # Create a new configuration by creating startregistration sourcedocs
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
-        if deliver:
+        if deliver and dossier.gld_bro_id is None:
             gld._set_bro_info(well)
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
@@ -61,9 +61,29 @@ def handle_start_registrations(
                 well,
                 tube_number,
             )
+        elif dossier.gld_bro_id:
+            gld_registration_log.objects.update_or_create(
+                gwm_bro_id = dossier.gmw_bro_id,
+                gld_bro_id = dossier.gld_bro_id,
+                filter_number = dossier.tube_number,
+                validation_status = "VALID",
+                delivery_id = None,
+                delivery_type = "register",
+                delivery_status = "OPGENOMEN_LVBRO",
+                comments = "Imported into BRO-Connector.",
+                quality_regime = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+            )
 
     for log in gld_registration_logs:
         gld.check_existing_startregistrations(log)
+
+def form_addition_type(observation: Observation) -> str:
+    if observation.observation_type == "controlemeting":
+        return "controlemeting"
+    
+    if observation.observation_metadata.validation_status == "voorlopig":
+        return f"regulier_{observation.observation_metadata.validation_status}"
+    return f"regulier_{observation.observation_metadata.validation_status}"
 
 def handle_additions(
         dossier: GroundwaterLevelDossier, 
@@ -81,7 +101,11 @@ def handle_additions(
         print(f"Observation: {observation}; End_date: {observation.observation_endtime}")
         addition_log = gld_addition_log.objects.filter(
             observation_id = observation.observation_id,
+            addition_type =  form_addition_type(observation)
         ).first()
+
+        print(observation)
+        print(addition_log)
 
         well = GroundwaterMonitoringWellStatic.objects.get(bro_id=observation.groundwater_level_dossier.gmw_bro_id)
         gld._set_bro_info(well)
@@ -124,7 +148,7 @@ def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
 
     tube = dossier.groundwater_monitoring_tube
     # Ignore filters that should not be delivered to BRO
-    if tube.deliver_gld_to_bro == False:
+    if tube.deliver_gld_to_bro is False:
         print(tube.deliver_gld_to_bro)
         return
     

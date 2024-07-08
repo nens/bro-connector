@@ -33,13 +33,19 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "has_open_observation",
     )
     list_filter = (
-        "gld_bro_id",
-        "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
         HasOpenObservationFilter,
         CompletelyDeliveredFilter,
     )
+
+    search_fields = [
+        "groundwater_level_dossier_id",
+        "gld_bro_id",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+    ]
 
     readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number"]
 
@@ -109,13 +115,14 @@ class ObservationAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "observation_id",
+        "groundwater_level_dossier",
         "observation_starttime",
         "observation_endtime",
-        "groundwater_level_dossier",
         "result_time",
+        "up_to_date_in_bro",
     )
 
-    readonly_fields = ["status"]
+    readonly_fields = ["status", "timestamp_first_measurement", "timestamp_last_measurement"]
 
     actions = ["close_observation", "change_up_to_date_status"]
 
@@ -152,6 +159,7 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "date_stamp",
         "observation_type",
         "status",
+        "validation_status",
         "responsible_party_id",
     )
     list_filter = (
@@ -161,6 +169,8 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "status",
         "responsible_party_id",
     )
+
+    readonly_fields = ["validation_status"]
 
 
 class ObservationProcessAdmin(admin.ModelAdmin):
@@ -179,19 +189,6 @@ class ObservationProcessAdmin(admin.ModelAdmin):
         "air_pressure_compensation_type",
         "process_type",
         "evaluation_procedure",
-    )
-
-
-class ResponsiblePartyAdmin(admin.ModelAdmin):
-    list_display = (
-        "responsible_party_id",
-        "identification",
-        "organisation_name",
-    )
-    list_filter = (
-        "responsible_party_id",
-        "identification",
-        "organisation_name",
     )
 
 
@@ -569,7 +566,6 @@ _register(models.MeasurementPointMetadata, MeasurementPointMetadataAdmin)
 _register(models.MeasurementTvp, MeasurementTvpAdmin)
 _register(models.ObservationMetadata, ObservationMetadataAdmin)
 _register(models.ObservationProcess, ObservationProcessAdmin)
-_register(models.ResponsibleParty, ResponsiblePartyAdmin)
 _register(models.Observation, ObservationAdmin)
 _register(models.gld_registration_log, gld_registration_logAdmin)
 _register(models.gld_addition_log, gld_addition_log_Admin)
@@ -579,7 +575,6 @@ patch_admin(models.MeasurementPointMetadata)
 patch_admin(models.MeasurementTvp)
 patch_admin(models.ObservationMetadata)
 patch_admin(models.ObservationProcess)
-patch_admin(models.ResponsibleParty)
 patch_admin(models.Observation)
 patch_admin(models.gld_registration_log)
 patch_admin(models.gld_addition_log)

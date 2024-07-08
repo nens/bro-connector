@@ -64,7 +64,7 @@ def order_measurements_list(measurement_list: list):
 def get_measurement_point_metadata_for_measurement(measurement_point_metadata: models.MeasurementPointMetadata):
     metadata = {
         "StatusQualityControl": measurement_point_metadata.status_quality_control,
-        "interpolationType": measurement_point_metadata.interpolation_code,
+        "interpolationType": "Discontinuous",
     }
     if measurement_point_metadata.censor_reason:
         metadata["censoredReason"] = measurement_point_metadata.censor_reason
@@ -168,11 +168,11 @@ def get_observation_gld_source_document_data(observation: models.Observation):
 
     # Get the observation metadata and procedure data
     observation_metadata_instance = observation.observation_metadata
-    observation_status = observation_metadata_instance.status
+    observation_status = observation_metadata_instance.validation_status
 
     observation_metadata = {
         "observationType": observation_metadata_instance.observation_type,
-        "principalInvestigator": observation_metadata_instance.responsible_party.identification,
+        "principalInvestigator": observation_metadata_instance.responsible_party.company_number,
     }   
     
     observation_procedure = get_observation_procedure_data(
@@ -189,31 +189,20 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     # dateStamp becomes the date of the last observation in a chunk
     # Generate the addition type for the logging
     # Can be either 'controlemeting, 'regulier_voorlopig_beoordeeld' or 'regulier_volledig_beoordeeld'
-
+    source_document_data = {
+        "metadata": {
+            "parameters": observation_metadata, 
+            "dateStamp": None
+        },
+        "procedure": {"parameters": observation_procedure},
+        "resultTime": observation_result_time,
+        "result": None,
+    }
     if observation_metadata["observationType"] == "controlemeting":
         addition_type = "controlemeting"
-
-        # Create the sourcedocs for the addition, results will later be added in chunks
-        source_document_data = {
-            "metadata": {"parameters": observation_metadata, "dateStamp": None},
-            "procedure": {"parameters": observation_procedure},
-            "resultTime": observation_result_time,
-            "result": None,
-        }
-
     else:
         # Create the sourcedocs for the addition, results will later be added in chunks
-        source_document_data = {
-            "metadata": {
-                "status": observation_status,
-                "parameters": observation_metadata,
-                "dateStamp": None,
-            },
-            "resultTime": observation_result_time,
-            "procedure": {"parameters": observation_procedure},
-            "result": None,
-        }
-
+        source_document_data["metadata"]["status"] =  observation_status
         addition_type = "regulier_" + observation_status
     return source_document_data, addition_type
 
@@ -237,6 +226,14 @@ def get_gld_registration_data_for_observation(observation: models.Observation):
 
     return gld_bro_id, quality_regime
 
+
+def form_addition_type(observation: models.Observation) -> str:
+    if observation.observation_type == "controlemeting":
+        return "controlemeting"
+    
+    if observation.observation_metadata.validation_status == "voorlopig":
+        return f"regulier_{observation.observation_metadata.validation_status}"
+    return f"regulier_{observation.observation_metadata.validation_status}"
 
 def create_new_observations():
     """
@@ -297,13 +294,16 @@ def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
         "projectnummer": well.project_number,
     }
 
+def retrieve_responsible_kvk_from_observation(observation: models.Observation):
+    return observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party.company_number
+
 def set_delivery_accountable_party(
     well: GroundwaterMonitoringWellStatic, demo: bool
-) -> int:
+) -> str:
     if demo == True:
-        delivery_accountable_party = 27376655
+        delivery_accountable_party = str(27376655)
     else:
-        delivery_accountable_party = well.delivery_accountable_party.company_number
+        delivery_accountable_party = str(well.delivery_accountable_party.company_number)
 
     return delivery_accountable_party
 
@@ -366,7 +366,7 @@ class GldSyncHandler:
             gld_startregistration_request = brx.gld_registration_request(
                 srcdoc="GLD_StartRegistration",
                 requestReference=request_reference,
-                deliveryAccountableParty=str(delivery_accountable_party),
+                deliveryAccountableParty=delivery_accountable_party,
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -610,10 +610,10 @@ class GldSyncHandler:
         # Loop over all GMW objects in the database
         for well in gwm_wells:
             # Ignore wells that are not (yet) delivered to BRO
-            if well.deliver_gmw_to_bro == False:
+            if well.deliver_gmw_to_bro is False:
                 continue
 
-            if self.demo == True:
+            if self.demo:
                 if well.bro_id != "GMW000000042583":
                     continue
 
@@ -630,7 +630,7 @@ class GldSyncHandler:
                 tube_id = tube.tube_number
 
                 # Ignore filters that should not be delivered to BRO
-                if tube.deliver_gld_to_bro == False:
+                if tube.deliver_gld_to_bro is False:
                     continue
 
                 # Check if there is already a registration for this tube
@@ -643,6 +643,28 @@ class GldSyncHandler:
                     # Create a new configuration by creating startregistration sourcedocs
                     # By creating the sourcedocs (or failng to do so), a registration is made in the database
                     # This registration is used to track the progress of the delivery in further steps
+                    # Check if a GLD already has a start registration
+                    gld = models.GroundwaterLevelDossier.objects.get(
+                        groundwater_monitoring_tube = tube
+                    )
+
+                    if gld.gld_bro_id:
+                        models.gld_registration_log.objects.get_or_create(
+                            gwm_bro_id = gld.gmw_bro_id,
+                            gld_bro_id = gld.gld_bro_id,
+                            filter_number = gld.tube_number,
+                            delivery_type = "register",
+                            defaults=dict(
+                                validation_status = "VALID",
+                                delivery_id = None,
+                                delivery_type = "register",
+                                delivery_status = "OPGENOMEN_LVBRO",
+                                comments = "Imported into BRO-Connector.",
+                                quality_regime = gld.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+                            )
+                        )
+                        continue
+
 
                     self.create_start_registration_sourcedocs(
                         well,
@@ -741,7 +763,7 @@ class GldSyncHandler:
 ### ADDITIONS ###
     def generate_gld_addition_sourcedoc_data(
             self,
-            observation,
+            observation: models.Observation,
             observation_source_document_data,
             addition_type,
         ):
@@ -783,7 +805,7 @@ class GldSyncHandler:
             gld_addition_registration_request = brx.gld_registration_request(
                 srcdoc="GLD_Addition",
                 requestReference=filename,
-                deliveryAccountableParty="27376655",  # investigator_identification (NENS voor TEST)
+                deliveryAccountableParty=str(retrieve_responsible_kvk_from_observation(observation)),  # investigator_identification (NENS voor TEST)
                 qualityRegime=quality_regime,
                 broId=gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,
@@ -797,6 +819,7 @@ class GldSyncHandler:
 
             record, created = models.gld_addition_log.objects.update_or_create(
                 observation_id=observation.observation_id,
+                addition_type = form_addition_type(observation),
                 defaults=dict(
                     date_modified=datetime.datetime.now(),
                     start_date = first_timestamp_datetime,

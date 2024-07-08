@@ -7,6 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from .choices import *
+from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringTubeStatic
 import datetime
 
@@ -119,6 +120,16 @@ class Observation(models.Model):
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
 
     @property
+    def timestamp_first_measurement(self):
+        mtvp = MeasurementTvp.objects.filter(
+            observation = self
+        ).order_by("measurement_time").first()
+
+        if mtvp is not None:
+            return mtvp.measurement_time
+        return None
+
+    @property
     def timestamp_last_measurement(self):
         mtvp = MeasurementTvp.objects.filter(
             observation = self
@@ -147,22 +158,10 @@ class Observation(models.Model):
         return "-"
 
     def __str__(self):
-        try:
-            starttime = str(self.observation_starttime.date())
-        except:
-            starttime = "?"
-
-        try:
-            endtime = str(self.observation_endtime.date())
-        except:
-            endtime = "?"
-
-        try:
-            dossier = str(self.groundwater_level_dossier.gld_bro_id)
-        except:
-            dossier = "Registratie onbekend"
-
-        return "{} ({} - {})".format(dossier, starttime, endtime)
+        end = "present"
+        if self.observation_endtime:
+            end = self.observation_endtime.date()
+        return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
 
     def save(self, *args, **kwargs):
         if self.pk == None:
@@ -208,15 +207,31 @@ class ObservationMetadata(models.Model):
     )
     status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True)
     responsible_party = models.ForeignKey(
-        "ResponsibleParty", on_delete=models.CASCADE, null=True, blank=True
+        Organisation, on_delete=models.SET_NULL, null=True, blank=True
     )
 
     def __str__(self):
-        return "{}, {}, {}".format(
-            str(self.date_stamp),
-            str(self.status),
-            self.responsible_party.organisation_name,
-        )
+        return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+
+    @property
+    def validation_status(self):
+        if self.observation_type == "controlemeting":
+            return None
+        try:
+            observation = Observation.objects.get(observation_metadata = self)
+        except Exception as e:
+            return f"{e}"
+        
+        nr_of_unvalidated = len(MeasurementTvp.objects.filter(
+            observation = observation,
+            measurement_point_metadata__status_quality_control__in = ["nogNietBeoordeeld", "onbekend"]
+        ))
+        if nr_of_unvalidated > 0:
+            return "voorlopig"
+        elif nr_of_unvalidated == 0:
+            return "volledigBeoordeeld"
+        else:
+            return "onbekend"
 
     class Meta:
         managed = True
@@ -287,12 +302,17 @@ class MeasurementTvp(models.Model):
         db_table = 'gld"."measurement_tvp'
         verbose_name = "Metingen Tijd-Waarde paren"
         verbose_name_plural = "Metingen Tijd-Waarde paren"
+        indexes = [
+            models.Index(fields=['observation']),
+            models.Index(fields=['measurement_time']),
+        ]
+
 
 
 class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
     status_quality_control = models.CharField(
-        choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True
+        choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True, default = "nogNietBeoordeeld"
     )
     censor_reason = models.CharField(
         choices=CENSORREASON, max_length=200, blank=True, null=True
@@ -304,7 +324,7 @@ class MeasurementPointMetadata(models.Model):
         max_digits=100, decimal_places=10, blank=True, null=True
     )
     interpolation_code = models.CharField(
-        choices=INTERPOLATIONTYPE, max_length=200, blank=True, null=True
+        choices=INTERPOLATIONTYPE, max_length=200, blank=True, null=True, default = "discontinu"
     )
 
     class Meta:
@@ -313,24 +333,13 @@ class MeasurementPointMetadata(models.Model):
         db_table = 'gld"."measurement_point_metadata'
         verbose_name = "Meetpunt Metadata"
         verbose_name_plural = "Meetpunt Metadata"
+        indexes = [
+            models.Index(fields=['status_quality_control']),
+            models.Index(fields=['censor_reason']),
+        ]
 
     def __str__(self):
         return str(self.measurement_point_metadata_id)
-
-
-class ResponsibleParty(models.Model):
-    responsible_party_id = models.AutoField(primary_key=True)
-    identification = models.IntegerField(blank=True, null=True)
-    organisation_name = models.CharField(max_length=200, blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'gld"."responsible_party'
-        verbose_name = "Verantwoordelijke Partij"
-        verbose_name_plural = "Verantwoordelijke Partij"
-
-    def __str__(self):
-        return "{}".format(self.organisation_name)
 
 
 # %% Aanlevering models
