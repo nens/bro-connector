@@ -1,5 +1,21 @@
+from admin_auto_filters.filters import AutocompleteFilter
 from django.contrib import admin
-from .models import GroundwaterLevelDossier
+
+
+class GLDFilter(AutocompleteFilter):
+    title = "groundwater level dossier"
+    field_name = "groundwater_level_dossier"
+    is_placeholder_title = True
+
+class ObservationFilter(AutocompleteFilter):
+    title = "observation"
+    field_name = "observation"
+    is_placeholder_title = True
+
+class TubeFilter(AutocompleteFilter):
+    title = "groundwater monitoring tube"
+    field_name = "groundwater_monitoring_tube"
+    is_placeholder_title = True
 
 class PropertyFilterMixin:
     def _evaluate_property(self, queryset, property_name, value):

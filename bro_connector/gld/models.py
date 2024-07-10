@@ -33,7 +33,7 @@ class GroundwaterLevelDossier(models.Model):
 
     @property
     def gmw_bro_id(self):
-        if not self.groundwater_monitoring_tube is None:
+        if self.groundwater_monitoring_tube is not None:
             return self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id
         return None
 
@@ -52,13 +52,10 @@ class GroundwaterLevelDossier(models.Model):
     
     @property
     def most_recent_measurement(self):
-
         observations_groundwaterleveldossier = Observation.objects.filter(
             groundwater_level_dossier = self
         ).order_by("-observation_starttime")
-
         for observation_groundwaterleveldossier in observations_groundwaterleveldossier:
-            
             # last_measurementTVP
             most_recent_measurement = MeasurementTvp.objects.filter(
             observation_id = observation_groundwaterleveldossier.observation_id
@@ -302,11 +299,6 @@ class MeasurementTvp(models.Model):
         db_table = 'gld"."measurement_tvp'
         verbose_name = "Metingen Tijd-Waarde paren"
         verbose_name_plural = "Metingen Tijd-Waarde paren"
-        indexes = [
-            models.Index(fields=['observation']),
-            models.Index(fields=['measurement_time']),
-        ]
-
 
 
 class MeasurementPointMetadata(models.Model):
