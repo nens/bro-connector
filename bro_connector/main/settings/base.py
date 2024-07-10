@@ -67,7 +67,9 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "django_static_jquery",
+    "admin_auto_filters",
 ]
+
 
 MAP_WIDGETS = {
     "GooglePointFieldWidget": (
