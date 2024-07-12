@@ -299,6 +299,7 @@ class FieldFormGenerator:
 
         data["inputfield_groups"] = inputfield_groups
         data["inputfields"] = inputfields
+        data["groups"] = []
 
         if hasattr(self, "optimal"):
             if self.optimal:
