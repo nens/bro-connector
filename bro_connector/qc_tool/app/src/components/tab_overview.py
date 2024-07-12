@@ -2,7 +2,7 @@ import dash_bootstrap_components as dbc
 import i18n
 from dash import dcc, html
 
-# from ..cache import TIMEOUT, cache
+from ..cache import TIMEOUT, cache
 from ..data.source import DataInterface
 from . import ids, overview_chart, overview_map, overview_table
 

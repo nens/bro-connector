@@ -18,7 +18,7 @@ def get_model_sim_pi(ml, raw, ci=0.99, tmin=None, tmax=None, smoothfreq=None):
         alpha = 1 - float(ci)
 
         # get prediction interval
-        df_pi = ml.fit.prediction_interval(alpha=alpha)
+        df_pi = ml.solver.prediction_interval(alpha=alpha)
 
         if not df_pi.empty:
             if smoothfreq is not None:

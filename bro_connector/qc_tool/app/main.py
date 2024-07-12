@@ -2,10 +2,10 @@ from app import app
 from icecream import ic
 from waitress import serve
 
-# try:
-    # from .src.cache import cache
-# except ImportError:  # if running app.py directly
-    # from src.cache import cache
+try:
+    from .src.cache import cache
+except ImportError:  # if running app.py directly
+    from src.cache import cache
 
 ic.configureOutput(includeContext=True)
 
@@ -19,7 +19,7 @@ def run(app, debug=False, port=8050):
             "\nPress Ctrl+C to quit."
         )
         serve(app.server, host="127.0.0.1", port=port)
-    # cache.clear()
+    cache.clear()
 
 
 # define alias

@@ -3,12 +3,12 @@ import numpy as np
 import plotly.graph_objs as go
 from dash import dcc
 
-# from ..cache import cache, TIMEOUT
+from ..cache import cache, TIMEOUT
 from ..data.source import DataInterface
 from . import ids
 
 try:
-    mapbox_access_token = open("/static/assets/dash/.mapbox_access_token", "r").read()
+    mapbox_access_token = open("./assets/.mapbox_access_token", "r").read()
 except FileNotFoundError:
     mapbox_access_token = None
 

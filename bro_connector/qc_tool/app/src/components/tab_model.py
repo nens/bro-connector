@@ -20,9 +20,13 @@ def render():
 def render_datepicker_tmin(data, selected_data):
     if selected_data is not None and len(selected_data) == 1:
         name = selected_data[0]
-        tmintmax = data.pstore.get_tmin_tmax("oseries", name)
-        start_date = tmintmax.loc[name, "tmin"].to_pydatetime()
-        disabled = False
+        try:
+            tmintmax = data.pstore.get_tmin_tmax("oseries", name)
+            start_date = tmintmax.loc[name, "tmin"].to_pydatetime()
+            disabled = False
+        except Exception:
+            start_date = None
+            disabled = True
     else:
         start_date = None
         disabled = True
@@ -43,9 +47,13 @@ def render_datepicker_tmin(data, selected_data):
 def render_datepicker_tmax(data, selected_data):
     if selected_data is not None and len(selected_data) == 1:
         name = selected_data[0]
-        tmintmax = data.pstore.get_tmin_tmax("oseries", name)
-        end_date = tmintmax.loc[name, "tmax"].to_pydatetime()
-        disabled = False
+        try:
+            tmintmax = data.pstore.get_tmin_tmax("oseries", name)
+            end_date = tmintmax.loc[name, "tmax"].to_pydatetime()
+            disabled = False
+        except Exception:
+            end_date = None
+            disabled = True
     else:
         end_date = None
         disabled = True

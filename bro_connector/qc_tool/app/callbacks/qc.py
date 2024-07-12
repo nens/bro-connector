@@ -2,14 +2,15 @@ import base64
 import io
 import pickle
 from copy import deepcopy
+from icecream import ic
 
 import i18n
 import pandas as pd
 import traval
-from dash import ALL, Input, Output, Patch, State, ctx, dcc, html, no_update, MATCH
+from dash import ALL, Input, Output, Patch, State, dcc, html, no_update, MATCH
 from dash.exceptions import PreventUpdate
+
 from traval import rulelib
-from icecream import ic
 
 try:
     from ..src.components import ids
@@ -19,7 +20,6 @@ try:
         generate_kwargs_from_func,
         generate_traval_rule_components,
     )
-
 except ImportError:
     from src.components import ids
     from src.components.overview_chart import plot_obs
@@ -43,9 +43,11 @@ def register_qc_callbacks(app, data):
         prevent_initial_call=True,
     )
     def update_ruleset_values(val, disabled, **kwargs):
+        ctx = kwargs["callback_context"]
         if not disabled:
-            ctx = kwargs["callback_context"]
-            (idx, rule, param) = ctx.inputs_list[0]["id"]["index"].split("-")
+            ic(ctx.triggered)
+            triggered_id = eval(ctx.triggered[0]["prop_id"].split(".")[0])
+            (idx, rule, param) = triggered_id["index"].split("-")
             ruledict = data.traval._ruleset.get_rule(stepname=rule)
             ruledict["kwargs"][param] = val
             data.traval._ruleset.update_rule(**ruledict)
@@ -53,21 +55,14 @@ def register_qc_callbacks(app, data):
         else:
             return no_update
 
-    # @app.callback(
-    #     Output(ids.TRAVAL_OUTPUT, "children", allow_duplicate=True),
-    #     Input(ids.TRAVAL_RULES_FORM, "children"),
-    #     prevent_initial_call=True,
-    # )
-    # def update_ruleset(rules):
-    #     return data.traval._ruleset.to_json()
-
     @app.callback(
-        Output(ids.QC_CHART, "figure"),
+        Output(ids.QC_CHART_STORE_1, "data"),
         Input(ids.QC_DROPDOWN_SELECTION, "value"),
         Input(ids.QC_DROPDOWN_ADDITIONAL, "value"),
         State(ids.QC_DROPDOWN_ADDITIONAL, "disabled"),
+        State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
     )
-    def plot_qc_time_series(value, additional_values, disabled):
+    def plot_qc_time_series(value, additional_values, disabled, traval_figure):
         if value is None:
             return {"layout": {"title": "No series selected."}}
         elif disabled:
@@ -81,10 +76,16 @@ def register_qc_callbacks(app, data):
                 additional = additional_values
             else:
                 additional = []
+
+            if traval_figure is not None:
+                stored_name, figure = traval_figure
+                if stored_name == name:
+                    return figure
+
             return plot_obs([name] + additional, data)
 
     @app.callback(
-        Output(ids.QC_DROPDOWN_ADDITIONAL, "disabled", allow_duplicate=True),
+        Output(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_1, "data"),
         Output(ids.QC_DROPDOWN_ADDITIONAL, "options"),
         Input(ids.QC_DROPDOWN_SELECTION, "value"),
         prevent_initial_call=True,
@@ -102,71 +103,77 @@ def register_qc_callbacks(app, data):
         else:
             return True, no_update
 
-    @app.callback(
-        Output(ids.TRAVAL_RULES_FORM, "children", allow_duplicate=True),
-        Output(ids.TRAVAL_RESET_RULESET_BUTTON, "disabled", allow_duplicate=True),
-        Input({"type": "clear-button", "index": ALL}, "n_clicks"),
-        State({"type": "clear-button", "index": ALL}, "n_clicks"),
-        State(ids.TRAVAL_RULES_FORM, "children"),
-        prevent_initial_call=True,
-    )
-    def delete_rule(n_clicks, clickstate, rules, **kwargs):
-        if all(v is None for v in n_clicks):
-            raise PreventUpdate
-        keep = []
-        for rule in rules:
-            ctx = kwargs["callback_context"]
-            # if rule["props"]["id"]["index"] != ctx.triggered_id["index"]:
-            if rule["props"]["id"]["index"] not in ctx.triggered[0]["prop_id"]:
-                keep.append(rule)
-            else:
-                ic(ctx)
-                data.traval._ruleset.del_rule(ctx.triggered_id["index"].split("-")[0])
-                # data.traval._ruleset.del_rule(ctx.triggered_id["index"].split("-")[0])
+    # @app.callback(
+    #     Output(ids.TRAVAL_RULES_FORM_STORE_1, "data"),
+    #     Output(ids.TRAVAL_RESET_RULESET_BUTTON_STORE_1, "data"),
+    #     Input({"type": "clear-button", "index": ALL}, "n_clicks"),
+    #     State({"type": "clear-button", "index": ALL}, "n_clicks"),
+    #     State(ids.TRAVAL_RULES_FORM, "children"),
+    #     prevent_initial_call=True,
+    # )
+    # def delete_rule(n_clicks, clickstate, rules):
+    #     ic(n_clicks)
+    #     if all(v is None for v in n_clicks):
+    #         raise PreventUpdate
 
-            data.traval._ruleset.del_rule("combine_results")
-            data.traval._ruleset.add_rule(
-                "combine_results",
-                rulelib.rule_combine_nan_or,
-                apply_to=tuple(range(1, len(keep) + 1)),
-            )
-        return keep, False
+    #     keep = []
+    #     for rule in rules:
+    #         ic(rule["props"]["id"]["index"])
+    #         ic(ctx.triggered_id["index"])
+    #         if rule["props"]["id"]["index"] != ctx.triggered_id["index"]:
+    #             keep.append(rule)
+    #         else:
+    #             data.traval._ruleset.del_rule(ctx.triggered_id["index"].split("-")[0])
+
+    #         data.traval._ruleset.del_rule("combine_results")
+    #         data.traval._ruleset.add_rule(
+    #             "combine_results",
+    #             rulelib.rule_combine_nan_or,
+    #             apply_to=tuple(range(1, len(keep) + 1)),
+    #         )
+    #     ic([rule["props"]["id"]["index"] for rule in keep])
+    #     return keep, False
 
     @app.callback(
-        Output(ids.TRAVAL_RULES_FORM, "children", allow_duplicate=True),
-        Output(ids.TRAVAL_RESET_RULESET_BUTTON, "disabled", allow_duplicate=True),
+        Output(ids.TRAVAL_RULES_FORM_STORE_2, "data"),
+        Output(ids.TRAVAL_RESET_RULESET_BUTTON_STORE_2, "data"),
         Input(ids.TRAVAL_ADD_RULE_BUTTON, "n_clicks"),
         State(ids.TRAVAL_ADD_RULE_DROPDOWN, "value"),
         State(ids.TRAVAL_RULES_FORM, "children"),
         prevent_initial_call=True,
     )
     def add_rule(n_clicks, rule_to_add, current_rules):
-        try:
-            rule_number = (
-                int(current_rules[-1]["props"]["id"]["index"].split("-")[-1]) + 1
+        ic(n_clicks)
+        if n_clicks:
+            try:
+                rule_number = (
+                    int(current_rules[-1]["props"]["id"]["index"].split("-")[-1]) + 1
+                )
+            except IndexError:
+                rule_number = 0
+            ic(rulelib)
+            ic(rule_to_add)
+            func = getattr(rulelib, rule_to_add)
+            rule = {"name": rule_to_add, "kwargs": generate_kwargs_from_func(func)}
+            rule["func"] = func
+            irow = generate_traval_rule_components(rule, rule_number)
+
+            # add to ruleset
+            data.traval._ruleset.del_rule("combine_results")
+            data.traval._ruleset.add_rule(
+                rule["name"], func, apply_to=0, kwargs=rule["kwargs"]
             )
-        except IndexError:
-            rule_number = 0
+            data.traval._ruleset.add_rule(
+                "combine_results",
+                rulelib.rule_combine_nan_or,
+                apply_to=tuple(range(1, len(current_rules) + 1)),
+            )
 
-        func = getattr(rulelib, rule_to_add)
-        rule = {"name": rule_to_add, "kwargs": generate_kwargs_from_func(func)}
-        rule["func"] = func
-        irow = generate_traval_rule_components(rule, rule_number)
-
-        # add to ruleset
-        data.traval._ruleset.del_rule("combine_results")
-        data.traval._ruleset.add_rule(
-            rule["name"], func, apply_to=0, kwargs=rule["kwargs"]
-        )
-        data.traval._ruleset.add_rule(
-            "combine_results",
-            rulelib.rule_combine_nan_or,
-            apply_to=tuple(range(1, len(current_rules) + 1)),
-        )
-
-        patched_children = Patch()
-        patched_children.append(irow)
-        return patched_children, False
+            patched_children = Patch()
+            patched_children.append(irow)
+            return patched_children, False
+        else:
+            raise PreventUpdate
 
     @app.callback(
         Output({"type": "rule_input", "index": ALL}, "value"),
@@ -178,10 +185,8 @@ def register_qc_callbacks(app, data):
             "children",
             allow_duplicate=True,
         ),
-        Output(ids.TRAVAL_RESET_RULESET_BUTTON, "disabled", allow_duplicate=True),
-        Output(ids.ALERT, "is_open", allow_duplicate=True),
-        Output(ids.ALERT, "color", allow_duplicate=True),
-        Output(ids.ALERT_BODY, "children", allow_duplicate=True),
+        Output(ids.TRAVAL_RESET_RULESET_BUTTON_STORE_3, "data"),
+        Output(ids.ALERT_DISPLAY_RULES_FOR_SERIES, "data"),
         Input(ids.QC_DROPDOWN_SELECTION, "value"),
         prevent_initial_call=True,
     )
@@ -221,9 +226,11 @@ def register_qc_callbacks(app, data):
                 steps,
                 tooltips,
                 False,
-                True,
-                "danger",
-                f"Error! Could not load parameter(s) for: {[e[0] for e in errors]}",
+                (
+                    True,
+                    "danger",
+                    f"Error! Could not load parameter(s) for: {[e[0] for e in errors]}",
+                ),
             )
         else:
             return (
@@ -233,13 +240,11 @@ def register_qc_callbacks(app, data):
                 steps,
                 tooltips,
                 False,
-                False,
-                None,
-                None,
+                (False, None, None),
             )
 
     @app.callback(
-        Output(ids.TRAVAL_RULES_FORM, "children", allow_duplicate=True),
+        Output(ids.TRAVAL_RULES_FORM_STORE_3, "data"),
         Input(ids.TRAVAL_RESET_RULESET_BUTTON, "n_clicks"),
         State(ids.QC_DROPDOWN_SELECTION, "value"),
         prevent_initial_call=True,
@@ -270,10 +275,8 @@ def register_qc_callbacks(app, data):
         return True
 
     @app.callback(
-        Output(ids.TRAVAL_RULES_FORM, "children", allow_duplicate=True),
-        Output(ids.ALERT, "is_open", allow_duplicate=True),
-        Output(ids.ALERT, "color", allow_duplicate=True),
-        Output(ids.ALERT_BODY, "children", allow_duplicate=True),
+        Output(ids.TRAVAL_RULES_FORM_STORE_4, "data"),
+        Output(ids.ALERT_LOAD_RULESET, "data"),
         Input(ids.TRAVAL_LOAD_RULESET_BUTTON, "contents"),
         prevent_initial_call=True,
     )
@@ -311,9 +314,9 @@ def register_qc_callbacks(app, data):
                     form_components.append(irow)
                     idx += 1
 
-                return form_components, True, "success", "Loaded ruleset"
+                return form_components, (True, "success", "Loaded ruleset")
             except Exception as e:
-                return no_update, True, "warning", f"Could not load ruleset: {e}"
+                return no_update, (True, "warning", f"Could not load ruleset: {e}")
         elif contents is None:
             raise PreventUpdate
 
@@ -377,13 +380,25 @@ def register_qc_callbacks(app, data):
         # ]
         return is_open, no_update
 
+    # @app.callback(
+    #     Output(ids.LOADING_QC_CHART_STORE_1, "data"),
+    #     Output(ids.RUN_TRAVAL_STORE, "data"),
+    #     Input(ids.QC_RUN_TRAVAL_BUTTON, "n_clicks"),
+    # )
+    # def trigger_traval_run_and_loading_state(n_clicks):
+    #     if n_clicks:
+    #         return "show", n_clicks
+    #     else:
+    #         raise PreventUpdate
+
     @app.callback(
         # Output(ids.QC_RESULT_TABLE, "data"),
-        Output(ids.QC_CHART, "figure", allow_duplicate=True),
+        # Output(ids.QC_CHART, "figure", allow_duplicate=True),
+        # Output(ids.LOADING_QC_CHART_STORE_1, "data"),
         Output(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
         Output(ids.TRAVAL_RESULT_TABLE_STORE, "data"),
         Output(ids.QC_DROPDOWN_ADDITIONAL, "value"),
-        Output(ids.QC_DROPDOWN_ADDITIONAL, "disabled", allow_duplicate=True),
+        Output(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_2, "data"),
         Input(ids.QC_RUN_TRAVAL_BUTTON, "n_clicks"),
         State(ids.QC_DROPDOWN_SELECTION, "value"),
         State(ids.QC_DATEPICKER_TMIN, "date"),
@@ -391,11 +406,11 @@ def register_qc_callbacks(app, data):
         State(ids.QC_RUN_ONLY_UNVALIDATED_CHECKBOX, "value"),
         background=False,
         # NOTE: only used if background is True
-        running=[
-            (Output(ids.QC_RUN_TRAVAL_BUTTON, "disabled"), True, False),
-            (Output(ids.QC_CANCEL_BUTTON, "disabled"), False, True),
-        ],
-        cancel=[Input(ids.QC_CANCEL_BUTTON, "n_clicks")],
+        # running=[
+        #     (Output(ids.QC_RUN_TRAVAL_BUTTON, "disabled"), True, False),
+        #     (Output(ids.QC_CANCEL_BUTTON, "disabled"), False, True),
+        # ],
+        # cancel=[Input(ids.QC_CANCEL_BUTTON, "n_clicks")],
         prevent_initial_call=True,
     )
     def run_traval(n_clicks, name, tmin, tmax, only_unvalidated):
@@ -404,11 +419,10 @@ def register_qc_callbacks(app, data):
             result, figure = data.traval.run_traval(
                 gmw_id, tube_id, tmin=tmin, tmax=tmax, only_unvalidated=only_unvalidated
             )
-            # NOTE: it would be prettier to return the figure once, and somehow trigger
-            # the loading state of the figure
+            # NOTE: somehow trigger the loading state of the figure while traval runs
             return (
-                figure,
-                figure,
+                # "show",
+                (name, figure),
                 result.reset_index().to_dict("records"),
                 None,
                 True,
@@ -417,7 +431,8 @@ def register_qc_callbacks(app, data):
             raise PreventUpdate
 
     @app.callback(
-        Output(ids.QC_CHART, "figure", allow_duplicate=True),
+        Output(ids.QC_CHART_STORE_2, "data"),
+        # Output(ids.LOADING_QC_CHART_STORE_2, "data"),
         Input(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
         Input(ids.TRAVAL_RESULT_TABLE_STORE, "data"),
         prevent_initial_call=True,
@@ -428,7 +443,92 @@ def register_qc_callbacks(app, data):
             df = pd.DataFrame(table).set_index("datetime")
             df.index = pd.to_datetime(df.index)
             data.traval.traval_result = df
-            return figure
+            return (
+                figure[1],
+                # "auto",
+            )
         else:
             # data.traval.traval_result = None
-            return no_update
+            return (
+                no_update,
+                # "auto",
+            )
+
+    @app.callback(
+        Output(ids.QC_DROPDOWN_ADDITIONAL, "disabled"),
+        Input(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_1, "data"),
+        Input(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_2, "data"),
+    )
+    def toggle_qc_dropdown_additional(*disabled, **kwargs):
+        ctx = kwargs["callback_context"]
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if any(disabled):
+            for i in range(len(ctx.inputs_list)):
+                if ctx.inputs_list[i]["id"] == triggered_id:
+                    break
+            return disabled[i]
+        else:
+            raise PreventUpdate
+
+    # @app.callback(
+    #     Output(ids.TRAVAL_RULES_FORM, "children"),
+    #     # Input(ids.TRAVAL_RULES_FORM_STORE_1, "data"),
+    #     Input(ids.TRAVAL_RULES_FORM_STORE_2, "data"),
+    #     Input(ids.TRAVAL_RULES_FORM_STORE_3, "data"),
+    #     Input(ids.TRAVAL_RULES_FORM_STORE_4, "data"),
+    # )
+    # def update_traval_rules_form(*forms):
+    #     for i in range(len(ctx.inputs_list)):
+    #         if ctx.inputs_list[i]["id"] == ctx.triggered_id:
+    #             break
+    #     # ic([rule["props"]["id"]["index"] for rule in forms[i]])
+    #     ic(ctx.triggered_id)
+    #     return forms[i] if forms[i] is not None else []
+
+    @app.callback(
+        Output(ids.TRAVAL_RESET_RULESET_BUTTON, "disabled"),
+        Input(ids.TRAVAL_RESET_RULESET_BUTTON_STORE_1, "data"),
+        Input(ids.TRAVAL_RESET_RULESET_BUTTON_STORE_2, "data"),
+        Input(ids.TRAVAL_RESET_RULESET_BUTTON_STORE_3, "data"),
+    )
+    def toggle_reset_ruleset_button(*bools, **kwargs):
+        ctx = kwargs["callback_context"]
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if any([boolean is not None for boolean in bools]):
+            for i in range(len(ctx.inputs_list)):
+                if ctx.inputs_list[i]["id"] == triggered_id:
+                    break
+            return bools[i]
+        else:
+            raise PreventUpdate
+
+    # @app.callback(
+    #     Output(ids.LOADING_QC_CHART, "display"),
+    #     Input(ids.LOADING_QC_CHART_STORE_1, "data"),
+    #     Input(ids.LOADING_QC_CHART_STORE_2, "data"),
+    # )
+    # def toggle_chart_loading_state(*states):
+    #     ic(states)
+    #     if any(states):
+    #         for i in range(len(ctx.inputs_list)):
+    #             if ctx.inputs_list[i]["id"] == ctx.triggered_id:
+    #                 break
+    #         return states[i]
+    #     else:
+    #         raise PreventUpdate
+
+    @app.callback(
+        Output(ids.QC_CHART, "figure"),
+        Input(ids.QC_CHART_STORE_1, "data"),
+        Input(ids.QC_CHART_STORE_2, "data"),
+    )
+    def display_qc_chart(*figures, **kwargs):
+        ctx = kwargs["callback_context"]
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if any(figures):
+            for i in range(len(ctx.inputs_list)):
+                if ctx.inputs_list[i]["id"] == triggered_id:
+                    break
+            return figures[i]
+        else:
+            raise PreventUpdate

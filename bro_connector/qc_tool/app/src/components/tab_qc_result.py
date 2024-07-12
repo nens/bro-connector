@@ -15,7 +15,7 @@ def render():
     )
 
 
-def render_export_to_csv_button():
+def render_export_to_csv_button(disabled=True):
     return html.Div(
         [
             dbc.Button(
@@ -31,7 +31,7 @@ def render_export_to_csv_button():
                     "margin-top": 10,
                     "margin-bottom": 10,
                 },
-                disabled=True,
+                disabled=disabled,
                 id=ids.QC_RESULT_EXPORT_CSV,
             ),
             dcc.Download(id=ids.DOWNLOAD_EXPORT_CSV),
@@ -39,7 +39,7 @@ def render_export_to_csv_button():
     )
 
 
-def render_export_to_database_button():
+def render_export_to_database_button(disabled=True):
     return html.Div(
         dbc.Button(
             html.Span(
@@ -54,7 +54,7 @@ def render_export_to_database_button():
                 "margin-top": 10,
                 "margin-bottom": 10,
             },
-            disabled=True,
+            disabled=disabled,
             id=ids.QC_RESULT_EXPORT_DB,
         ),
     )
@@ -144,17 +144,20 @@ def render_clear_table_selection_button():
     )
 
 
-def render_qc_chart():
+def render_qc_chart(figure: dict):
+    if figure is None:
+        figure = {"layout": {"title": "No traval result."}}
+    else:
+        figure["layout"]["dragmode"] = "select"
     return html.Div(
         id="series-chart-div",
         children=[
             dcc.Loading(
-                # TODO: on new release dash, use delay_show option to hide loading
-                # on short updates. See https://github.com/plotly/dash/pull/2760
                 id=ids.LOADING_QC_CHART,
                 type="dot",
                 style={"position": "absolute", "align-self": "center"},
                 parent_className="loading-wrapper-qc-result",
+                # delay_show=500,
                 children=[
                     dcc.Graph(
                         id=ids.QC_RESULT_CHART,
@@ -162,6 +165,7 @@ def render_qc_chart():
                             "displayModeBar": True,
                             "scrollZoom": True,
                         },
+                        figure=figure,
                         style={
                             "height": "40vh",
                             # "margin-bottom": "10px",
@@ -179,10 +183,11 @@ def render_qc_chart():
     )
 
 
-def render_content(data: DataInterface):
+def render_content(data: DataInterface, figure: dict):
+    disabled = figure is None
     return dbc.Container(
         [
-            dbc.Row([render_qc_chart()]),
+            dbc.Row([render_qc_chart(figure)]),
             dbc.Row(
                 [
                     dbc.Col(
@@ -214,8 +219,8 @@ def render_content(data: DataInterface):
             dbc.Row([qc_results_table.render(data)]),
             dbc.Row(
                 [
-                    dbc.Col([render_export_to_csv_button()], width="auto"),
-                    dbc.Col([render_export_to_database_button()], width="auto"),
+                    dbc.Col([render_export_to_csv_button(disabled)], width="auto"),
+                    dbc.Col([render_export_to_database_button(disabled)], width="auto"),
                 ]
             ),
         ],

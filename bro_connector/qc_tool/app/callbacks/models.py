@@ -6,6 +6,7 @@ import pandas as pd
 import pastas as ps
 from dash import Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
+from icecream import ic
 from pastas.extensions import register_plotly
 from pastas.io.pas import PastasEncoder
 
@@ -22,13 +23,11 @@ register_plotly()
 
 def register_model_callbacks(app, data):
     @app.callback(
-        Output(ids.MODEL_RESULTS_CHART, "figure", allow_duplicate=True),
-        Output(ids.MODEL_DIAGNOSTICS_CHART, "figure", allow_duplicate=True),
+        Output(ids.MODEL_RESULTS_CHART_1, "data"),
+        Output(ids.MODEL_DIAGNOSTICS_CHART_1, "data"),
         Output(ids.PASTAS_MODEL_STORE, "data"),
-        Output(ids.MODEL_SAVE_BUTTON, "disabled", allow_duplicate=True),
-        Output(ids.ALERT, "is_open", allow_duplicate=True),
-        Output(ids.ALERT, "color", allow_duplicate=True),
-        Output(ids.ALERT_BODY, "children", allow_duplicate=True),
+        Output(ids.MODEL_SAVE_BUTTON_1, "data"),
+        Output(ids.ALERT_GENERATE_MODEL, "data"),
         Input(ids.MODEL_GENERATE_BUTTON, "n_clicks"),
         State(ids.MODEL_DROPDOWN_SELECTION, "value"),
         State(ids.MODEL_DATEPICKER_TMIN, "date"),
@@ -55,12 +54,12 @@ def register_model_callbacks(app, data):
                     # create model
                     ml = ps.Model(ts)
                     data.pstore.add_recharge(ml)
-                    ml.solve(freq="D", tmin=tmin, tmax=tmax, report=False, noise=False)
+                    ml.solve(freq="D", tmin=tmin, tmax=tmax, report=False)
+                    ml.add_noisemodel(ps.ArNoiseModel())
                     ml.solve(
                         freq="D",
                         tmin=tmin,
                         tmax=tmax,
-                        noise=True,
                         report=False,
                         initial=False,
                     )
@@ -72,9 +71,11 @@ def register_model_callbacks(app, data):
                         ml.plotly.diagnostics(),
                         mljson,
                         False,  # enable save button
-                        True,  # show alert
-                        "success",  # alert color
-                        f"Created time series model for {value}.",  # empty alert message
+                        (
+                            True,  # show alert
+                            "success",  # alert color
+                            f"Created time series model for {value}.",
+                        ),  # empty alert message
                     )
                 except Exception as e:
                     return (
@@ -82,9 +83,11 @@ def register_model_callbacks(app, data):
                         no_update,
                         None,
                         True,  # disable save button
-                        True,  # show alert
-                        "danger",  # alert color
-                        f"Error {e}",  # alert message
+                        (
+                            True,  # show alert
+                            "danger",  # alert color
+                            f"Error {e}",  # alert message
+                        ),
                     )
             else:
                 raise PreventUpdate
@@ -92,9 +95,7 @@ def register_model_callbacks(app, data):
             raise PreventUpdate
 
     @app.callback(
-        Output(ids.ALERT, "is_open", allow_duplicate=True),
-        Output(ids.ALERT, "color", allow_duplicate=True),
-        Output(ids.ALERT_BODY, "children", allow_duplicate=True),
+        Output(ids.ALERT_SAVE_MODEL, "data"),
         Input(ids.MODEL_SAVE_BUTTON, "n_clicks"),
         State(ids.PASTAS_MODEL_STORE, "data"),
         prevent_initial_call=True,
@@ -124,12 +125,10 @@ def register_model_callbacks(app, data):
             raise PreventUpdate
 
     @app.callback(
-        Output(ids.MODEL_RESULTS_CHART, "figure", allow_duplicate=True),
-        Output(ids.MODEL_DIAGNOSTICS_CHART, "figure", allow_duplicate=True),
-        Output(ids.MODEL_SAVE_BUTTON, "disabled", allow_duplicate=True),
-        Output(ids.ALERT, "is_open", allow_duplicate=True),
-        Output(ids.ALERT, "color", allow_duplicate=True),
-        Output(ids.ALERT_BODY, "children", allow_duplicate=True),
+        Output(ids.MODEL_RESULTS_CHART_2, "data"),
+        Output(ids.MODEL_DIAGNOSTICS_CHART_2, "data"),
+        Output(ids.MODEL_SAVE_BUTTON_2, "data"),
+        Output(ids.ALERT_PLOT_MODEL_RESULTS, "data"),
         Output(ids.MODEL_DATEPICKER_TMIN, "date"),
         Output(ids.MODEL_DATEPICKER_TMAX, "date"),
         Input(ids.MODEL_DROPDOWN_SELECTION, "value"),
@@ -143,9 +142,11 @@ def register_model_callbacks(app, data):
                     ml.plotly.results(),
                     ml.plotly.diagnostics(),
                     True,
-                    True,  # show alert
-                    "success",  # alert color
-                    f"Loaded time series model '{value}' from PastaStore.",  # empty alert message
+                    (
+                        True,  # show alert
+                        "success",  # alert color
+                        f"Loaded time series model '{value}' from PastaStore.",
+                    ),
                     ml.settings["tmin"].to_pydatetime(),
                     ml.settings["tmax"].to_pydatetime(),
                 )
@@ -154,9 +155,11 @@ def register_model_callbacks(app, data):
                     {"layout": {"title": i18n.t("general.no_model")}},
                     {"layout": {"title": i18n.t("general.no_model")}},
                     True,
-                    True,  # show alert
-                    "warning",  # alert color
-                    f"No model available for {value}. Click 'Generate Model' to create one.",
+                    (
+                        True,  # show alert
+                        "warning",  # alert color
+                        f"No model available for {value}. Click 'Generate Model' to create one.",
+                    ),
                     None,
                     None,
                 )
@@ -165,9 +168,61 @@ def register_model_callbacks(app, data):
                 {"layout": {"title": i18n.t("general.no_model")}},
                 {"layout": {"title": i18n.t("general.no_model")}},
                 True,
-                False,  # show alert
-                "success",  # alert color
-                "",  # empty message
+                (
+                    False,  # show alert
+                    "success",  # alert color
+                    "",  # empty message
+                ),
                 None,
                 None,
             )
+
+    @app.callback(
+        Output(ids.MODEL_RESULTS_CHART, "figure"),
+        Input(ids.MODEL_RESULTS_CHART_1, "data"),
+        Input(ids.MODEL_RESULTS_CHART_2, "data"),
+    )
+    def update_model_results_chart(*figs, **kwargs):
+        ctx = kwargs["callback_context"]
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if any(figs):
+            for i in range(len(ctx.inputs_list)):
+                if ctx.inputs_list[i]["id"] == triggered_id:
+                    break
+            figure = figs[i]
+            return figure
+        else:
+            raise PreventUpdate
+
+    @app.callback(
+        Output(ids.MODEL_DIAGNOSTICS_CHART, "figure"),
+        Input(ids.MODEL_DIAGNOSTICS_CHART_1, "data"),
+        Input(ids.MODEL_DIAGNOSTICS_CHART_2, "data"),
+    )
+    def update_model_diagnostics_chart(*figs, **kwargs):
+        ctx = kwargs["callback_context"]
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if any(figs):
+            for i in range(len(ctx.inputs_list)):
+                if ctx.inputs_list[i]["id"] == triggered_id:
+                    break
+            figure = figs[i]
+            return figure
+        else:
+            raise PreventUpdate
+
+    @app.callback(
+        Output(ids.MODEL_SAVE_BUTTON, "disabled"),
+        Input(ids.MODEL_SAVE_BUTTON_1, "data"),
+        Input(ids.MODEL_SAVE_BUTTON_2, "data"),
+    )
+    def toggle_model_save_button(*b, **kwargs):
+        ctx = kwargs["callback_context"]
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if any([boolean is not None for boolean in b]):
+            for i in range(len(ctx.inputs_list)):
+                if ctx.inputs_list[i]["id"] == triggered_id:
+                    break
+            return b[i]
+        else:
+            raise PreventUpdate

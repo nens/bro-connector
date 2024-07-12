@@ -119,9 +119,9 @@ def render(data):
                         # "use_with": "both",
                         "type": "markdown",
                         "value": (
-                            f"1 = {i18n.t('general.reliable')}\n"
-                            f"0 = {i18n.t('general.unreliable')}"
-                            f"-1 = {i18n.t('general.unknown')}"
+                            f"{i18n.t('general.reliable')} = 1 \n"
+                            f"{i18n.t('general.unreliable')} = 0 \n"
+                            f"{i18n.t('general.unknown')} = -1"
                         ),
                     },
                     "category": {

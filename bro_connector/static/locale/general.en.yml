@@ -1,11 +1,11 @@
 ---
 en:
   cancel: "Cancel"
-  app_title: QC Head Observations
+  app_title: GW DataLens
   tab_overview: Overview
   tab_model: Time Series Model
-  tab_qc: QC
-  tab_qc_result: QC Result
+  tab_qc: Error Detection
+  tab_qc_result: Manual Review
   no_data: No data
   no_data_selection: No data in selected time series.
   no_selection: No series selected.
@@ -47,8 +47,11 @@ en:
   mark_unreliable: "Mark unreliable"
   mark_reliable: "Mark reliable"
   clear_selection: "Deselect all in table"
-  alert_failed_labeling: Cannot update labels for observations not visisble in table. Toggle 'Show all measurements.
+  alert_failed_labeling: Cannot update labels for observations not visisble in table. Toggle 'Show all measurements'.
   run_only_on_unvalidated: Run only for unvalidated observations
   reset_status: Mark unknown
-  max_selection_warning: "Too many selected points! Maximum no. of selected points is 10!"
+  max_selection_warning: "Too many selected points! Maximum no. of selected points is %s!"
   model_use_only_validated: "Use only validated observations"
+  select_qc_label: Apply QC label
+  clear_qc_label: Clear QC label
+  select_all: Select all in table

@@ -1,7 +1,7 @@
 ---
 nl:
   cancel: "Annuleren"
-  app_title: QC Grondwaterstanden
+  app_title: GW DataLens
   tab_overview: Overzicht
   tab_model: Tijdreeksmodel
   tab_qc: QC

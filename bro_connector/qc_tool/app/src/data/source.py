@@ -74,7 +74,6 @@ class TravalInterface:
             apply_to=0,
             kwargs={
                 "threshold": get_tube_top_level,
-                "offset": 0.0,
             },
         )
         ruleset.add_rule(
@@ -370,7 +369,7 @@ class DataSource:
         gdf["screen_bot"] = gdf["screen_top"] - gdf["screen_length"]
 
         gdf["name"] = gdf.loc[:, ["bro_id", "tube_number"]].apply(
-            lambda p: f"{p.iloc[0]}-{p.iloc[1]:03g}", axis=1
+            lambda p: f"{p[0]}-{p[1]:03g}", axis=1
         )
 
         # set bro_id and tube_number as index

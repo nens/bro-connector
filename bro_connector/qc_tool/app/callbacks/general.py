@@ -1,10 +1,12 @@
-from dash import Input, Output, State
+import dash_bootstrap_components as dbc
+from dash import Input, Output, State, html
 from dash.exceptions import PreventUpdate
+from icecream import ic
 
-try:
-    from ..src.components import ids, tab_model, tab_overview, tab_qc, tab_qc_result
-except ImportError:
-    from src.components import ids, tab_model, tab_overview, tab_qc, tab_qc_result
+# try:
+from ..src.components import ids, tab_model, tab_overview, tab_qc, tab_qc_result
+# except ImportError:
+#     from src.components import ids, tab_model, tab_overview, tab_qc, tab_qc_result
 
 
 def register_general_callbacks(app, data):
@@ -39,8 +41,9 @@ def register_general_callbacks(app, data):
         Output(ids.TAB_CONTENT, "children"),
         Input(ids.TAB_CONTAINER, "value"),
         State(ids.SELECTED_OSERIES_STORE, "data"),
+        State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
     )
-    def render_tab_content(tab, selected_data):
+    def render_tab_content(tab, selected_data, figure):
         if tab == ids.TAB_OVERVIEW:
             return tab_overview.render_content(data, selected_data)
         elif tab == ids.TAB_QC:
@@ -48,6 +51,47 @@ def register_general_callbacks(app, data):
         elif tab == ids.TAB_MODEL:
             return tab_model.render_content(data, selected_data)
         elif tab == ids.TAB_QC_RESULT:
-            return tab_qc_result.render_content(data)
+            return tab_qc_result.render_content(data, figure[1])
         else:
             raise PreventUpdate
+
+    @app.callback(
+        Output(ids.ALERT_DIV, "children"),
+        Input(ids.ALERT_TIME_SERIES_CHART, "data"),
+        Input(ids.ALERT_DISPLAY_RULES_FOR_SERIES, "data"),
+        Input(ids.ALERT_GENERATE_MODEL, "data"),
+        Input(ids.ALERT_SAVE_MODEL, "data"),
+        Input(ids.ALERT_PLOT_MODEL_RESULTS, "data"),
+        Input(ids.ALERT_LOAD_RULESET, "data"),
+        Input(ids.ALERT_EXPORT_TO_DB, "data"),
+    )
+    def show_alert(*alerts, **kwargs):
+        ctx = kwargs["callback_context"]
+        if len(ctx.triggered) != 0:
+            triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        else:
+            raise PreventUpdate
+        if any(alerts):
+            for i in range(len(ctx.inputs_list)):
+                if ctx.inputs_list[i]["id"] == triggered_id:
+                    break
+            if alerts[i] is not None:
+                alert_data = alerts[i]
+                is_open, color, message = alert_data
+            else:
+                raise PreventUpdate
+        else:
+            raise PreventUpdate
+        return [
+            dbc.Alert(
+                children=[
+                    html.P(message, id=ids.ALERT_BODY),
+                ],
+                id=ids.ALERT,
+                color=color,
+                dismissable=True,
+                duration=4000,
+                fade=True,
+                is_open=is_open,
+            ),
+        ]
