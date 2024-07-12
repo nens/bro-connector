@@ -140,10 +140,15 @@ def generate_sublocation_fields(tube) -> List[str]:
 def calculate_minimum_resistance(formationresistance):
     return round(formationresistance * (1-maximum_difference_ratio), 2)
 
-def generate_min_values(tube) -> List[dict]:
-    frd = frd_models.FormationResistanceDossier.objects.get(
-        groundwater_monitoring_tube = tube
-    )
+def generate_min_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
+    frd = frd_models.FormationResistanceDossier.objects.get_or_create(
+        groundwater_monitoring_tube = tube,
+        assessment_type = "geoohmkabelBepaling",
+        defaults=dict(
+            delivery_accountable_party = tube.groundwater_monitoring_well_static.delivery_accountable_party,
+            quality_regime = tube.groundwater_monitoring_well_static.quality_regime,
+        )
+    )[0]
     min_values = {}
     for config in frd_models.MeasurementConfiguration.objects.filter(
         formation_resistance_dossier = frd
@@ -165,10 +170,15 @@ def generate_min_values(tube) -> List[dict]:
 def calculate_maximum_resistance(formationresistance):
     return round(formationresistance * (1+maximum_difference_ratio), 2)
 
-def generate_max_values(tube) -> List[dict]:
-    frd = frd_models.FormationResistanceDossier.objects.get(
-        groundwater_monitoring_tube = tube
-    )
+def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
+    frd = frd_models.FormationResistanceDossier.objects.get_or_create(
+        groundwater_monitoring_tube = tube,
+        assessment_type = "geoohmkabelBepaling",
+        defaults=dict(
+            delivery_accountable_party = tube.groundwater_monitoring_well_static.delivery_accountable_party,
+            quality_regime = tube.groundwater_monitoring_well_static.quality_regime,
+        )
+    )[0]
     max_values = {}
     for config in frd_models.MeasurementConfiguration.objects.filter(
         formation_resistance_dossier = frd
