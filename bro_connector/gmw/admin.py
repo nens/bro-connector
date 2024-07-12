@@ -11,7 +11,12 @@ from . import models as gmw_models
 import main.management.tasks.gmw_actions as gmw_actions
 from . import forms as gmw_forms
 from gmn.models import MeasuringPoint
-
+from gmw.custom_filters import (
+    WellFilter,
+    WellDynamicFilter,
+    TubeFilter,
+    TubeDynamicFilter,
+)
 import main.utils.validators_admin as validators_admin
 from main.utils.fieldform import FieldFormGenerator
 
@@ -56,7 +61,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
     change_form_template = "admin\change_form_well.html"
 
-    search_fields = ("groundwater_monitoring_well_static_id",)
+    search_fields = ("groundwater_monitoring_well_static_id", "well_code", "bro_id")
 
     list_display = (
         "groundwater_monitoring_well_static_id",
@@ -219,7 +224,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "deliver_gld_to_bro",
     )
 
-    list_filter = ("groundwater_monitoring_well_static", "owner")
+    list_filter = (WellFilter, "owner")
 
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
 
@@ -266,7 +271,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
         "deliver_gld_to_bro",
         "in_monitoring_net",
     )
-    list_filter = ("groundwater_monitoring_well_static", "deliver_gld_to_bro")
+    list_filter = (WellFilter, "deliver_gld_to_bro")
 
     readonly_fields = ["number_of_geo_ohm_cables", "in_monitoring_net"]
 
@@ -308,7 +313,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
         "tube_top_position",
         "plain_tube_part_length",
     )
-    list_filter = ("groundwater_monitoring_tube_static",)
+    list_filter = (TubeFilter,)
 
     readonly_fields =["screen_top_position", "screen_bottom_position"]
 
@@ -348,7 +353,7 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
 
     readonly_fields =["electrode_count"]
 
-    list_filter = ("groundwater_monitoring_tube_static_id",)
+    list_filter = (WellFilter,)
 
 
 class ElectrodeStaticAdmin(admin.ModelAdmin):
@@ -395,7 +400,7 @@ class EventAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "change_id",
-        "groundwater_monitoring_well_static",
+        WellFilter,
         "event_name",
     )
     ordering = ['-change_id'] 
@@ -417,7 +422,7 @@ class PictureAdmin(admin.ModelAdmin):
         "recording_date",
     )
     list_filter = (
-        "groundwater_monitoring_well_static",
+        WellFilter,
         "recording_date",
     )
 
@@ -443,7 +448,7 @@ class MaintenanceAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "kind_of_maintenance",
-        "groundwater_monitoring_well_static",
+        WellFilter,
         "execution_date",
         "reporter",
         "execution_by",

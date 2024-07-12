@@ -7,7 +7,13 @@ from main.management.tasks import gld_actions
 from reversion_compare.helpers import patch_admin
 import reversion
 from main.management.commands.gld_sync_to_bro import GldSyncHandler, get_observation_gld_source_document_data
-from .custom_filters import HasOpenObservationFilter, CompletelyDeliveredFilter
+from .custom_filters import (
+    HasOpenObservationFilter, 
+    CompletelyDeliveredFilter,
+    TubeFilter,
+    GLDFilter,
+    ObservationFilter,
+)
 import datetime
 from gmw.models import GroundwaterMonitoringWellStatic
 from gld.models import GroundwaterLevelDossier
@@ -22,17 +28,16 @@ gld = GldSyncHandler()
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
-        "groundwater_level_dossier_id",
         "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
         "gld_bro_id",
         "first_measurement",
-        "most_recent_measurement",
         "completely_delivered",
         "has_open_observation",
     )
     list_filter = (
+        TubeFilter,
         "research_start_date",
         "research_last_date",
         HasOpenObservationFilter,
@@ -47,7 +52,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
     ]
 
-    readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number"]
+    readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number", "most_recent_measurement"]
 
     actions = ["deliver_to_bro", "check_status"]
 
@@ -92,18 +97,16 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
 
 class MeasurementTvpAdmin(admin.ModelAdmin):
     list_display = (
-        "measurement_tvp_id",
         "observation",
         "measurement_time",
         "field_value",
     )
     autocomplete_fields = ("measurement_point_metadata",)
-    list_filter = ("observation",)
+    list_filter = (ObservationFilter,)
 
 
 class ObservationAdmin(admin.ModelAdmin):
     list_display = (
-        "observation_id",
         "groundwater_level_dossier",
         "observation_starttime",
         "observation_endtime",
@@ -114,13 +117,15 @@ class ObservationAdmin(admin.ModelAdmin):
         "up_to_date_in_bro",
     )
     list_filter = (
-        "observation_id",
-        "groundwater_level_dossier",
+        GLDFilter,
         "observation_starttime",
         "observation_endtime",
         "result_time",
         "up_to_date_in_bro",
     )
+
+    search_fields = ["groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
+                     "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id"]
 
     readonly_fields = ["status", "timestamp_first_measurement", "timestamp_last_measurement"]
 
