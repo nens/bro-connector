@@ -1,6 +1,8 @@
 from typing import List, Optional
 import json
-import pysftp
+import ftplib
+import time
+import ssl
 import datetime
 import os
 
@@ -21,6 +23,48 @@ input_field_options = {
         "name": "Opmerking"
     }
 }
+
+ftplib._SSLSocket = None
+
+class ImplicitFTP_TLS(ftplib.FTP_TLS):
+    """FTP_TLS subclass that automatically wraps sockets in SSL to support implicit FTPS."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._sock = None
+ 
+    @property
+    def sock(self):
+        """Return the socket."""
+        return self._sock
+ 
+    @sock.setter
+    def sock(self, value):
+        """When modifying the socket, ensure that it is ssl wrapped."""
+        if value is not None and not isinstance(value, ssl.SSLSocket):
+            value = self.context.wrap_socket(value)
+        self._sock = value
+
+def connect_to_ftps():
+    ftps = ImplicitFTP_TLS()
+    ftps.connect(host=ls.ftp_ip, port=990, timeout=300, source_address=None)
+    ftps.login(user=ls.ftp_username, passwd=ls.ftp_password)
+    ftps.set_pasv(True)
+    ftps.prot_p()
+    ftps.cwd(ls.ftp_path)
+    return ftps
+
+def upload_file_with_retry(ftp, file_path, remote_path, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            with open(file_path, 'rb') as file:
+                ftp.storbinary(f'STOR {remote_path}', file)
+            print("Upload successful")
+            return
+        except ftplib.all_errors as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            time.sleep(delay)
+    raise Exception("Failed to upload file after several attempts")
+
 
 # From the FieldForm Github
 def write_location_file(data, filename):
@@ -43,11 +87,39 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
-def write_file_to_ftp(file: str, remote_filename: str):
-    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password) as sftp:
-        with sftp.cd(ls.ftp_path):
-            sftp.put(localpath=file, remotepath=remote_filename)
+def write_file_to_ftp(file, remote_filename: str):
+    ftps = connect_to_ftps()
+    # Upload the file
+    upload_file_with_retry(ftps, file, remote_filename)
 
+    ftps.quit()
+
+def delete_old_files_from_ftp():
+    ftps = connect_to_ftps()
+
+    # Get current date and time
+    now = datetime.datetime.now()
+    
+    # list files in the current directory
+    files = ftps.nlst()
+    wd = ftps.pwd()
+    for file in files:
+        if not str(file).startswith('locations'):
+            continue
+
+        file_date = str(file).split('_')[1][0:8]
+        file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
+        
+        # Calculate the age of the file
+        file_age = now - file_time
+        
+        # Check if the file is older than a month
+        if file_age > datetime.timedelta(days=30):
+            # Delete the file
+            ftps.delete(file)
+            print(f"Deleted {file} (age: {file_age.days} days)")
+
+    ftps.quit()
 
 def generate_sublocation_fields(tube) -> List[str]:
     try:
@@ -68,10 +140,15 @@ def generate_sublocation_fields(tube) -> List[str]:
 def calculate_minimum_resistance(formationresistance):
     return round(formationresistance * (1-maximum_difference_ratio), 2)
 
-def generate_min_values(tube) -> List[dict]:
-    frd = frd_models.FormationResistanceDossier.objects.get(
-        groundwater_monitoring_tube = tube
-    )
+def generate_min_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
+    frd = frd_models.FormationResistanceDossier.objects.get_or_create(
+        groundwater_monitoring_tube = tube,
+        assessment_type = "geoohmkabelBepaling",
+        defaults=dict(
+            delivery_accountable_party = tube.groundwater_monitoring_well_static.delivery_accountable_party,
+            quality_regime = tube.groundwater_monitoring_well_static.quality_regime,
+        )
+    )[0]
     min_values = {}
     for config in frd_models.MeasurementConfiguration.objects.filter(
         formation_resistance_dossier = frd
@@ -93,10 +170,15 @@ def generate_min_values(tube) -> List[dict]:
 def calculate_maximum_resistance(formationresistance):
     return round(formationresistance * (1+maximum_difference_ratio), 2)
 
-def generate_max_values(tube) -> List[dict]:
-    frd = frd_models.FormationResistanceDossier.objects.get(
-        groundwater_monitoring_tube = tube
-    )
+def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
+    frd = frd_models.FormationResistanceDossier.objects.get_or_create(
+        groundwater_monitoring_tube = tube,
+        assessment_type = "geoohmkabelBepaling",
+        defaults=dict(
+            delivery_accountable_party = tube.groundwater_monitoring_well_static.delivery_accountable_party,
+            quality_regime = tube.groundwater_monitoring_well_static.quality_regime,
+        )
+    )[0]
     max_values = {}
     for config in frd_models.MeasurementConfiguration.objects.filter(
         formation_resistance_dossier = frd
@@ -134,6 +216,7 @@ class FieldFormGenerator:
     # QuerySets
     monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
     wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
+    optimal: Optional[bool]
 
 
     def update_postfix(self, config: frd_models.MeasurementConfiguration) -> None:
@@ -185,7 +268,7 @@ class FieldFormGenerator:
     def _flush_wells(self):
         self.wells = []
 
-    def write_monitoringnetworks_to_dict(self) -> List[str]:
+    def write_monitoringnetworks_to_list(self) -> List[str]:
         groups = []
         for monitoring_network in gmn_models.GroundwaterMonitoringNet.objects.all():
             groups.append(str(monitoring_network.name))
@@ -226,10 +309,42 @@ class FieldFormGenerator:
 
         data["inputfield_groups"] = inputfield_groups
         data["inputfields"] = inputfields
+        data["groups"] = []
+
+        if hasattr(self, "optimal"):
+            if self.optimal:
+                data["groups"].append(self.write_monitoringnetworks_to_list())
+
+                locations = {}
+                # Use of meetroutes first
+                wells_in_file = []
+                # Any that are not in a meetroute should be grouped by meetnets
+                for monitoringnetwork in gmn_models.GroundwaterMonitoringNet.objects.all():
+                    self._flush_wells()
+                    self._set_current_group(str(monitoringnetwork.name))
+                    self.write_measuringpoints_to_wells(monitoringnetwork)
+                    locations.update(self.create_location_dict())
+                    wells_pk_list = [obj.pk for obj in self.wells]
+                    wells_in_file += wells_pk_list
+
+
+                self._flush_wells()
+                self._set_current_group(None)
+
+                mps = gmw_models.GroundwaterMonitoringWellStatic.objects.all().exclude(pk__in=wells_in_file)
+                for mp in mps:
+                    self.wells.append(mp)
+
+                locations.update(self.create_location_dict())
+
+                # All others should be included without grouping
+                data["locations"] = locations
+                self._write_data(data)
+                return
 
 
         if hasattr(self, "monitoringnetworks"):
-            data["groups"] = self.write_monitoringnetworks_to_dict()
+            data["groups"] = self.write_monitoringnetworks_to_list()
             locations = {}
             for monitoringnetwork in self.monitoringnetworks:
                 self._flush_wells()
@@ -249,8 +364,3 @@ class FieldFormGenerator:
             self.wells = gmw_models.GroundwaterMonitoringWellStatic.objects.all()
             data["locations"] = self.create_location_dict()
             self._write_data(data)
-
-            
-                        
-
-
