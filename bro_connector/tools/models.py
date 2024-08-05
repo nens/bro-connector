@@ -50,5 +50,5 @@ class XMLImport(models.Model):
     )
 
     class Meta:
-        verbose_name = "XML import"
-        verbose_name_plural = "XML imports"
+        verbose_name = "XML Import"
+        verbose_name_plural = "XML Imports"
