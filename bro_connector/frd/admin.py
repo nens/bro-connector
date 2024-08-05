@@ -1,11 +1,27 @@
 from django.contrib import admin
 from django.db.models import fields
-from .models import *
+from django.db.models import Model
+from .models import (
+    FormationResistanceDossier,
+    FormationresistanceRecord,
+    FormationresistanceSeries,
+    GeoOhmMeasurementMethod,
+    GeoOhmMeasurementValue,
+    FrdSyncLog,
+    ElectrodePair,
+    ElectromagneticMeasurementMethod,
+    ElectromagneticRecord,
+    ElectromagneticSeries,
+    MeasurementConfiguration,
+    InstrumentConfiguration,
+    GMWElectrodeReference,
+    CalculatedFormationresistanceMethod,
+)
 from reversion_compare.helpers import patch_admin
 from main.management.commands.frd_sync_to_bro import FRDSync
 
 
-def _register(model: models.Model, admin_class: admin.ModelAdmin):
+def _register(model: Model, admin_class: admin.ModelAdmin):
     admin.site.register(model, admin_class)
 
 

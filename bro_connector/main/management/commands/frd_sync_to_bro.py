@@ -22,7 +22,6 @@ from frd.models import (
     ElectromagneticMeasurementMethod,
     ElectromagneticRecord,
     ElectromagneticSeries,
-    InstrumentConfiguration,
 )
 from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
@@ -64,11 +63,8 @@ def get_unsynced_dossiers(frd_queryset):
         )
 
 
-def get_unsynced_configurations(frd_queryset):
-    if frd_queryset:
-        return MeasurementConfiguration.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
-    else:
-        return MeasurementConfiguration.objects.filter(bro_id=None)
+def get_relevant_configurations(frd_queryset):
+    return MeasurementConfiguration.objects.filter(formation_resistance_dossier__in=frd_queryset)
 
 
 def get_closed_dossiers(frd_queryset):
@@ -82,25 +78,16 @@ def get_closed_dossiers(frd_queryset):
     )
 
 
-def get_unsynced_gem_measurement_methods(frd_queryset):
-    if frd_queryset:
-        return GeoOhmMeasurementMethod.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
-    else:
-        return GeoOhmMeasurementMethod.objects.filter(bro_id=None)
+def get_relevant_gem_measurement_methods(frd_queryset):
+    return GeoOhmMeasurementMethod.objects.filter(formation_resistance_dossier__in=frd_queryset)
 
 
-def get_unsynced_emm_methods(frd_queryset):
-    if frd_queryset:
-        return ElectromagneticMeasurementMethod.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
-    else:
-        return ElectromagneticMeasurementMethod.objects.filter(bro_id=None)
+def get_relevant_emm_methods(frd_queryset):
+    return ElectromagneticMeasurementMethod.objects.filter(formation_resistance_dossier__in=frd_queryset)
 
 
-def get_unsynced_emm_configurations(frd_queryset):
-    if frd_queryset:
-        return InstrumentConfiguration.objects.filter(bro_id=None, formation_resistance_dossier__in=frd_queryset)
-    else:
-        return InstrumentConfiguration.objects.filter(bro_id=None)
+def get_relevant_emm_configurations(frd_queryset):
+    return InstrumentConfiguration.objects.filter(formation_resistance_dossier__in=frd_queryset)
 
 
 class Command(BaseCommand):
@@ -139,9 +126,9 @@ class FRDSync:
         """
         Handles the measurement configurations for all configurations without bro_id.
         """
-        unsynced_configurations = get_unsynced_configurations(frd_queryset)
+        relevant_configurations = get_relevant_configurations(frd_queryset)
         per_dossier = defaultdict(list[dict])
-        for measurement_configuration in unsynced_configurations:
+        for measurement_configuration in relevant_configurations:
             per_dossier[
                 str(measurement_configuration.formation_resistance_dossier_id)
             ].append(measurement_configuration)
@@ -154,9 +141,9 @@ class FRDSync:
         """
         Handles the emm instrument configurations
         """
-        unsynced_configurations = get_unsynced_emm_configurations(frd_queryset)
+        relevant_configurations = get_relevant_emm_configurations(frd_queryset)
 
-        for configuration in unsynced_configurations:
+        for configuration in relevant_configurations:
             emm_configuration_registration = EMMConfigurationRegistration(configuration)
             emm_configuration_registration.sync(check_only)
 
@@ -175,9 +162,9 @@ class FRDSync:
         """
         Handles measurements, this is based on the measurement method, without a bro_id.
         """
-        unsynced_measurements_methods = get_unsynced_gem_measurement_methods(frd_queryset)
+        relevant_measurements_methods = get_relevant_gem_measurement_methods(frd_queryset)
 
-        for method in unsynced_measurements_methods:
+        for method in relevant_measurements_methods:
             measurement_registration = GEMMeasurementRegistration(method)
             measurement_registration.sync(check_only)
 
@@ -185,9 +172,9 @@ class FRDSync:
         """
         Handles measurements, this is based on the measurement method, without a bro_id.
         """
-        unsynced_emm_methods = get_unsynced_emm_methods(frd_queryset)
+        relevant_emm_methods = get_relevant_emm_methods(frd_queryset)
 
-        for method in unsynced_emm_methods:
+        for method in relevant_emm_methods:
             emm_measurement_registration = EMMMeasurementRegistration(method)
             emm_measurement_registration.sync(check_only)
 
@@ -278,11 +265,11 @@ class Registration(ABC):
         self.xml_file.write(self.filepath, pretty_print=True)
 
     def _set_bro_info(self, obj):
-        if type(obj) == FormationResistanceDossier:
+        if isinstance(obj, FormationResistanceDossier):
             self.bro_info = form_bro_info(obj.groundwater_monitoring_tube.groundwater_monitoring_well_static)
-        elif type(obj) == GroundwaterMonitoringWellStatic:
+        elif isinstance(obj, GroundwaterMonitoringWellStatic):
             self.bro_info = form_bro_info(obj)
-        elif type(obj) == GroundwaterMonitoringTubeStatic:
+        elif isinstance(obj, GroundwaterMonitoringTubeStatic):
             self.bro_info = form_bro_info(obj.groundwater_monitoring_well_static)
         else:
             self.bro_info = {
@@ -480,7 +467,10 @@ class FrdStartRegistration(Registration):
         self._set_folder_dir("frd")
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
+        quality_regime = self.frd_obj.quality_regime 
+        if not quality_regime:
+            quality_regime = "IMBRO/A"
+
         gmn_bro_id = getattr(
             self.frd_obj.groundwater_monitoring_net, "gmn_bro_id", None
         )
@@ -578,7 +568,9 @@ class GEMConfigurationRegistration(Registration):
         return configurations_list
 
     def construct_xml_tree(self):
-        quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO/A"
+        quality_regime = self.frd_obj.quality_regime 
+        if not quality_regime:
+            quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
@@ -598,13 +590,6 @@ class GEMConfigurationRegistration(Registration):
         )
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
-    def save_bro_id(self, delivery_status_info):
-        for configuration in self.measurement_configurations:
-            configuration.bro_id = delivery_status_info.json()["brondocuments"][0][
-                "broId"
-            ]
-            configuration.save()
-
 
 class ClosureRegistration(Registration):
     """Creates and delivers 15_FRD_Closure.xml files."""
@@ -620,7 +605,9 @@ class ClosureRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
+        quality_regime = self.frd_obj.quality_regime 
+        if not quality_regime:
+            quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
@@ -657,7 +644,9 @@ class GEMMeasurementRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
+        quality_regime = self.frd_obj.quality_regime 
+        if not quality_regime:
+            quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
@@ -735,13 +724,6 @@ class GEMMeasurementRegistration(Registration):
         """Looks up the  calculated formation resistance values, based on a series"""
         return FormationresistanceRecord.objects.filter(series=series)
 
-    def save_bro_id(self, delivery_status_info):
-        pass
-        self.method_obj.bro_id = delivery_status_info.json()[
-            "brondocuments"
-        ][0]["broId"]
-        self.method_obj.save()
-
 
 
 class EMMConfigurationRegistration(Registration):
@@ -770,7 +752,9 @@ class EMMConfigurationRegistration(Registration):
         self.filename = f"configuration_registration_{naming}_{date.today()}.xml"
 
     def construct_xml_tree(self):
-        quality_regime = self.formation_resistance_dossier.quality_regime or "IMBRO/A"
+        quality_regime = self.frd_obj.quality_regime 
+        if not quality_regime:
+            quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.instrument_configuration.configuration_name,
@@ -801,11 +785,6 @@ class EMMConfigurationRegistration(Registration):
         )
         self.xml_file = configuration_registration_tool.generate_xml_file()
 
-    def save_bro_id(self, delivery_status_info):
-        self.instrument_configuration.bro_id = delivery_status_info.json()[
-            "brondocuments"
-        ][0]["broId"]
-        self.instrument_configuration.save()
 
 
 class EMMMeasurementRegistration(Registration):
@@ -826,7 +805,9 @@ class EMMMeasurementRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime or "IMBRO/A"
+        quality_regime = self.frd_obj.quality_regime 
+        if not quality_regime:
+            quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
@@ -911,9 +892,3 @@ class EMMMeasurementRegistration(Registration):
     
     def _get_formation_records(self,series):
         return FormationresistanceRecord.objects.filter(series=series)
-
-    def save_bro_id(self, delivery_status_info):
-        self.method_obj.bro_id = delivery_status_info.json()[
-            "brondocuments"
-        ][0]["broId"]
-        self.method_obj.save()
