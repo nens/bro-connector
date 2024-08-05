@@ -88,3 +88,15 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
    e.g. `runserver_plus hosting.example.url:8000 --cert-file file.pem --key-file file.key`
 
    In dit voorbeeld draait de server op port 8000.
+
+## Standaard opzet van een domein-app (GMW, GLD, GMN, FRD)
+
+Binnen de BRO-Connector worden momenteel 4, van de 5, categorieën ondersteund: GMW, GLD, GMN en FRD.
+Voor ieder van deze groepen is een aparte Django sub-app ingericht, te vinden in de gelijknamig mapjes.
+Tijdens de ontwikkeling van de applicatie is een poging gedaan om de sub-apps op eenzelfde wijze in te richten, om zo het gebruiksgemak te verhogen.
+
+De meeste acties zullen plaats vinden onder het object wat aan de basis ligt van de andere objecten.
+Dit is als volgt, [app, object]: GMW, Grondwatermonitoring Put - Statisch; GLD, Grondwaterstand Dossier; GMN, Grondwatermeetnet; FRD, Formatieweerstand Dossier.
+
+Vanuit deze objecten kunnen berichten naar de BRO worden opgestuurd, door middel van acties.
+Zodra de actie is uitgevoerd, is de voortgang van het versturen van berichten tevinden onder de relevante (synchronisatie) "logs".
