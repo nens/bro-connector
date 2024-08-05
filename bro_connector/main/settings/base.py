@@ -210,6 +210,7 @@ ADMIN_REORDER = (
             "gmw.Picture",
             "gmw.MaintenanceParty",
             "gmw.Maintenance",
+            "gmw.gmw_registration_log",
         ),
     },
     {
