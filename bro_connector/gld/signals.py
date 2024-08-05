@@ -24,4 +24,5 @@ def on_save_gld_synchronisatie_log(sender, instance: gld_registration_log, creat
 @receiver(post_delete, sender=MeasurementTvp)
 def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     metadata = instance.measurement_point_metadata
-    metadata.delete()
+    if metadata:
+        metadata.delete()
