@@ -1,8 +1,6 @@
 from typing import List, Optional
 import json
-import ftplib
-import time
-import ssl
+import pysftp
 import datetime
 import os
 
@@ -23,47 +21,6 @@ input_field_options = {
         "name": "Opmerking"
     }
 }
-
-ftplib._SSLSocket = None
-
-class ImplicitFTP_TLS(ftplib.FTP_TLS):
-    """FTP_TLS subclass that automatically wraps sockets in SSL to support implicit FTPS."""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._sock = None
- 
-    @property
-    def sock(self):
-        """Return the socket."""
-        return self._sock
- 
-    @sock.setter
-    def sock(self, value):
-        """When modifying the socket, ensure that it is ssl wrapped."""
-        if value is not None and not isinstance(value, ssl.SSLSocket):
-            value = self.context.wrap_socket(value)
-        self._sock = value
-
-def connect_to_ftps():
-    ftps = ImplicitFTP_TLS()
-    ftps.connect(host=ls.ftp_ip, port=990, timeout=300, source_address=None)
-    ftps.login(user=ls.ftp_username, passwd=ls.ftp_password)
-    ftps.set_pasv(True)
-    ftps.prot_p()
-    ftps.cwd(ls.ftp_path)
-    return ftps
-
-def upload_file_with_retry(ftp, file_path, remote_path, retries=3, delay=5):
-    for attempt in range(retries):
-        try:
-            with open(file_path, 'rb') as file:
-                ftp.storbinary(f'STOR {remote_path}', file)
-            print("Upload successful")
-            return
-        except ftplib.all_errors as e:
-            print(f"Attempt {attempt + 1} failed: {e}")
-            time.sleep(delay)
-    raise Exception("Failed to upload file after several attempts")
 
 
 # From the FieldForm Github
@@ -87,39 +44,38 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
-def write_file_to_ftp(file, remote_filename: str):
-    ftps = connect_to_ftps()
-    # Upload the file
-    upload_file_with_retry(ftps, file, remote_filename)
-
-    ftps.quit()
+def write_file_to_ftp(file: str, remote_filename: str):
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
+    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+        with sftp.cd(ls.ftp_path):
+            sftp.put(localpath=file, remotepath=remote_filename)
 
 def delete_old_files_from_ftp():
-    ftps = connect_to_ftps()
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
+    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+        with sftp.cd(ls.ftp_path):
+            # Get current date and time
+            now = datetime.datetime.now()
+            
+            # list files in the current directory
+            files = sftp.listdir()
+            for file in files:
+                if not str(file).startswith('locations'):
+                    continue
 
-    # Get current date and time
-    now = datetime.datetime.now()
-    
-    # list files in the current directory
-    files = ftps.nlst()
-    wd = ftps.pwd()
-    for file in files:
-        if not str(file).startswith('locations'):
-            continue
-
-        file_date = str(file).split('_')[1][0:8]
-        file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
-        
-        # Calculate the age of the file
-        file_age = now - file_time
-        
-        # Check if the file is older than a month
-        if file_age > datetime.timedelta(days=30):
-            # Delete the file
-            ftps.delete(file)
-            print(f"Deleted {file} (age: {file_age.days} days)")
-
-    ftps.quit()
+                file_date = str(file).split('_')[1][0:8]
+                file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
+                
+                # Calculate the age of the file
+                file_age = now - file_time
+                
+                # Check if the file is older than a month
+                if file_age > datetime.timedelta(days=30):
+                    # Delete the file
+                    sftp.remove(file)
+                    print(f"Deleted {file} (age: {file_age.days} days)")
 
 def generate_sublocation_fields(tube) -> List[str]:
     try:
