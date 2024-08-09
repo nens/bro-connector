@@ -100,3 +100,12 @@ Dit is als volgt, [app, object]: GMW, Grondwatermonitoring Put - Statisch; GLD, 
 
 Vanuit deze objecten kunnen berichten naar de BRO worden opgestuurd, door middel van acties.
 Zodra de actie is uitgevoerd, is de voortgang van het versturen van berichten tevinden onder de relevante (synchronisatie) "logs".
+
+## Omgaan met BRO Tokens
+
+Het is noodzakelijk om gebruik te maken van de BRO authenticatie tokens wanneer er gegevens opgestuurd moeten worden naar de BRO.
+De BRO-Connector bied de mogelijkheid om BRO tokens op te slaan onder de relevante partij.
+De tokens worden versleuteld opgeslagen in de database en na de eerste invoer verborgen. 
+Op deze manier kan niemand met toegang tot de app of database eenvoudig jouw tokens inzien, terwijl de app wel blijft functioneren.
+
+Om dit te bereiken maakt de BRO-Connector gebruik van salting en Fernet-encryptie. Daarom moeten tijdens de installatie twee omgevingsvariabelen worden aangemaakt: FERNET_ENCRYPTION_KEY en SECURE_STRING_SALT. De waarden van deze variabelen kun je zelf genereren, maar ze worden ook automatisch gegenereerd door de Python-scripts die worden uitgevoerd tijdens install.cmd.
