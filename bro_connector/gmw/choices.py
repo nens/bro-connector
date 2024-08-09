@@ -259,7 +259,16 @@ VERTICALDATUM = (("NAP", "NAP"),)
 WELLHEADPROTECTOR_SUBTYPES = (
     ("DNS", "DNS"),
     ("model X", "model X"),
+    ("DN200", "DN200"),
+    ("DN350", "DN350"),
+    ("DN500", "DN500"),
+    ("DN600", "DN600"),
+    ("DNUnk", "DNUnk"),
+    ("VRMBlWh160", "VRMBlWh160"),
+    ("VRMBlWhDiv", "VRMBlWhDiv"),
+    ("VRMBlWhUnk", "VRMBlWhUnk"),
     ("onbekend", "onbekend"),
+
 )
 
 LOCKS = (
