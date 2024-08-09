@@ -16,9 +16,5 @@
 # s_host =
 # s_port =
 
-# # BRO tokens
-# bro_demo_user=
-# bro_demo_password=
-
-# bro_production_user=
-# bro_production_password=
+# Lizard keys
+# validation_key = 
