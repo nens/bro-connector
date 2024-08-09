@@ -6,6 +6,7 @@ channels==4.0.0
 charset-normalizer
 click==8.1.7
 colorama==0.4.6
+cryptography
 dash==2.9.3
 dash-bootstrap-components==1.6.0
 dash-core-components==2.0.0
