@@ -3,9 +3,7 @@
 **/*.zip
 **/localsecret.py
 *.docx
-*.sql
 **/*.dot
-**/*.cmd
 bro_connector/gld_aanlevering/migrations
 bro_connector/bro_connector_gld/migrations
 bro_connector/bro_connector/migrations
