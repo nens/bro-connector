@@ -1,0 +1,71 @@
+---
+nl:
+  cancel: "Annuleren"
+  app_title: GW DataLens
+  tab_overview: Overzicht
+  tab_model: Tijdreeksmodel
+  tab_qc: Foutdetectie
+  tab_qc_result: Handmatige Beoordeling
+  no_data: Geen data
+  no_data_selection: Geen data in geselecteerde tijdreeks.
+  no_selection: Geen tijdreeks geselecteerd.
+  no_plot: Geen tijdreeks om weer te geven
+  no_model: Geen model
+  no_traval: Geen QC resultaat
+  # tab-model
+  select_location: Selecteer een locatie
+  generate: Maak model
+  save: Opslaan model
+  powered_by: Berekend met
+  # tab-qc
+  show_parameters: Toon parameters
+  hide_parameters: Verberg parameters
+  run_traval: Run TRAVAL
+  select_series: Selecteer een tijdreeks ...
+  select_series2: Selecteer extra tijdreeksen ... 
+  select_rule: Selecteer een regel om toe te voegen
+  add_rule_button: Toevoegen regel
+  load: Open
+  export: Exporteer
+  export_params: Exporteer Parameters
+  # tab-result
+  datetime: Datum
+  observations: Meting
+  comment: Opmerking
+  reliable: Meting betrouwbaar
+  qc_label: QC label
+  show_all: Toon alle metingen
+  show_all_tooltip: "Klik hier om alle OF alleen verdachte metingen weer te geven."
+  export_csv: Exporteer CSV
+  export_db: Exporteer naar DB
+  accept: Accepteer suggestie
+  reject: Afwijzen suggestie
+  category: "Selecteer een passende code volgens het QC Protocol."
+  tmin: Startdatum
+  tmax: Einddatum
+  mark_reliable: "Meting(en) goedgekeurd"
+  mark_unreliable: "Meting(en) afgekeurd"
+  mark_undecided: "Meting(en) onbeslist"
+  mark_unknown: "Meting(en) onbekend"
+  clear_selection: "Deselecteer alles in tabel"
+  alert_failed_labeling: Kan labels niet updaten voor niet-zichtbare metingen in tabel. Gebruik 'Toon alle metingen' om alle metingen weer te geven.
+  run_only_on_unvalidated: Alleen niet beoordeelde metingen
+  reset_status: "Meting(en) onbekend"
+  max_selection_warning: "Teveel meetpunten geselecteerd! Maximale aantal is 10!"
+  model_use_only_validated: "Gebruik alleen gevalideerde metingen"
+  select_qc_label: QC label toepassen
+  clear_qc_label: Wis QC label
+  select_all: Selecteer alles in tabel
+  unknown: onbekend
+  undecided: onbeslist
+  unreliable: afgekeurd
+  reliable: goedgekeurd
+  qc_status: "Update status kwaliteitscontrole meting: ['onbekend', 'onbeslist', 'afgekeurd', 'goedgekeurd', '']. Als leeg, behoudt dan huidige/inkomende waarde."
+  incoming_qc_status: "Huidige status kwaliteitscontrole meting in database: ['onbekend', 'onbeslist', 'afgekeurd', 'goedgekeurd']."
+  manual_observations: "controle metingen"
+  qc_export_status_flag_tooltip: "Kies of de beoordeling van alle metingen wordt geëxporteerd of alleen de beoordeling van de verdachte metingen."
+  qc_export_status_flag_all: "Exporteer alle beoordelingen"
+  qc_export_status_flag_all_not_suspect: "Exporteer alle beoordelingen, maar niet al verdachte metingen"
+  qc_export_status_flag_suspect: "Exporteer alleen verdachte beoordelingen"
+  qc_export_status_flag_placeholder: "Selecteer export optie..."
+  alert_all_observations_checked: "Alle metingen zijn al beoordeeld!"
