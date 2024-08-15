@@ -14,12 +14,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, reverse_lazy, include
+from django.urls import include, path, reverse_lazy
 from django.views.generic.base import RedirectView
+from gwdatalens.app import app as gwdatalens_app
+from gwdatalens.views import render_gwdatalens_tool
+
+admin.autodiscover()
+gwdatalens_app  # noqa
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", RedirectView.as_view(url=reverse_lazy("admin:index"))),
-    path("", include(("gmw.urls", "gmw"), namespace='gmw')),
-    path('django_plotly_dash/', include('django_plotly_dash.urls')),
+    path("", include(("gmw.urls", "gmw"), namespace="gmw")),
+    path("django_plotly_dash/", include("django_plotly_dash.urls")),
+    path("gwdatalens/", render_gwdatalens_tool, name="gwdatalens"),
 ]
