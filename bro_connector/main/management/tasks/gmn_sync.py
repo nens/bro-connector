@@ -6,7 +6,6 @@ from main.management.commands.tasks.gmn_tasks.gmn_request_handlers import (
     ClosureGMN,
 )
 from bro.models import Organisation
-from typing import Union
 from main.settings.base import ENVIRONMENT
 import logging
 
