@@ -18,8 +18,6 @@ import django.db.models.options as options
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
-from main.localsecret import *
-
 ENVIRONMENT = "staging"
 
 # Application definition

@@ -51,7 +51,7 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
     progressor = Progress()
     gld = GLDHandler()
 
-    if kvk_number != None:
+    if kvk_number:
         DR = DataRetrieverKVK(kvk_number)
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
@@ -165,6 +165,24 @@ def get_tube(bro_id: str, tube_number: int) -> str:
         return None
 
 
+def str_to_date(string: str | None) -> datetime.date | None:
+    """
+    From string [2024-05-03] to datetime conversion.
+    """
+    if string:
+        return datetime.datetime.strptime(string, "%Y-%m-%d").date()
+    
+def str_to_datetime(string: str | None) -> datetime.datetime | None:
+    """
+    From string [2024-05-03T11:51:01+02:00] to datetime conversion.
+    """
+    if string:
+        if len(string) == len("2024-05-03T11:51:01+02:00"):
+            return datetime.datetime.strptime(string, "%Y-%m-%dT%H:%M:%S%z")
+        elif len(string) == len("2024-05-03"):
+            return datetime.datetime.strptime(string, "%Y-%m-%d")
+
+
 class InitializeData:
     """
     Function that allow you to create initial data when reading data from the BRO.
@@ -184,13 +202,12 @@ class InitializeData:
         self.groundwater_level_dossier_instance = (
             GroundwaterLevelDossier.objects.create(
                 gld_bro_id=self.gmw_dict["0_broId"][0],
-                gmw_bro_id=self.gmw_dict["0_broId"][1],
                 groundwater_monitoring_tube=tube,
-                research_start_date=self.gmw_dict.get("0_researchFirstDate", None),
-                research_last_date=self.gmw_dict.get("0_researchLastDate", None),
-                research_last_correction=self.gmw_dict.get(
+                research_start_date=str_to_date(self.gmw_dict.get("0_researchFirstDate", None)),
+                research_last_date=str_to_date(self.gmw_dict.get("0_researchLastDate", None)),
+                research_last_correction=str_to_datetime(self.gmw_dict.get(
                     "0_latestCorrectionTime", None
-                ),
+                )),
             )
         )
         print(self.groundwater_level_dossier_instance, self.groundwater_level_dossier_instance.groundwater_monitoring_tube)
@@ -222,7 +239,7 @@ class InitializeData:
 
     def metadata_observation(self) -> None:
         self.observation_metadate_instance = ObservationMetadata.objects.create(
-            date_stamp=self.gmw_dict.get(f"{self.observation_number}_Date", None),
+            date_stamp=str_to_date(self.gmw_dict.get(f"{self.observation_number}_Date", None)),
             observation_type=self.gmw_dict.get(
                 f"{self.observation_number}_ObservationType", None
             ),
@@ -249,17 +266,20 @@ class InitializeData:
         start = self.gmw_dict.get(f"{self.observation_number}_beginPosition", None)
         end = self.gmw_dict.get(f"{self.observation_number}_endPosition", None)
         interval = None
-        if start != None and end != None:
+        if start and end:
             interval = datetime.datetime.strptime(
                 end, "%Y-%m-%d"
             ) - datetime.datetime.strptime(start, "%Y-%m-%d")
 
+        end = str_to_datetime(end)
+        start = str_to_datetime(start)
+        result_time = str_to_datetime(self.gmw_dict.get(
+            f"{self.observation_number}_timePosition", None
+        ))
         self.observation_instance = Observation.objects.create(
             observationperiod=interval,
             observation_starttime=start,
-            result_time=self.gmw_dict.get(
-                f"{self.observation_number}_timePosition", None
-            ),
+            result_time=result_time,
             observation_endtime=end,
             observation_metadata=self.observation_metadate_instance,
             observation_process=self.observation_process_instance,
@@ -282,9 +302,9 @@ class InitializeData:
     def measurement_tvp(self, measurement_number: int) -> None:
         self.measurement_tvp_instance = MeasurementTvp.objects.create(
             observation=self.observation_instance,
-            measurement_time=self.gmw_dict.get(
+            measurement_time=str_to_datetime(self.gmw_dict.get(
                 f"{self.observation_number}_point_time", [None]
-            )[measurement_number],
+            )[measurement_number]),
             field_value=self.gmw_dict.get(
                 f"{self.observation_number}_point_value", None
             )[measurement_number],

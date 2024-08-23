@@ -10,8 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from main.settings.base import *
-from main.localsecret import p_user, p_password, p_host, p_port
+from main.localsecret import database, p_user, p_password, p_host, p_port, validation_key
 
 DEBUG = False
 ROOT_URLCONF = "main.urls"
@@ -30,7 +29,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "grondwatermeetnet",
+        "NAME": database,
         "USER": p_user,
         "PASSWORD": p_password,
         "HOST": p_host,
@@ -41,7 +40,7 @@ DATABASES = {
 
 LIZARD_SETTINGS = {
     "headers": {
-        "username": "{}".format("__key__"),
+        "username": "__key__",
         "password": f"{validation_key}",
         "Content-Type": "application/json",
     },

@@ -13,9 +13,7 @@ from . import forms as gmw_forms
 from gmn.models import MeasuringPoint
 from gmw.custom_filters import (
     WellFilter,
-    WellDynamicFilter,
     TubeFilter,
-    TubeDynamicFilter,
 )
 import main.utils.validators_admin as validators_admin
 from main.utils.fieldform import FieldFormGenerator

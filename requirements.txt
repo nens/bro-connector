@@ -18,6 +18,7 @@ diff-match-patch==20230430
 Django==4.0.3
 django-admin-autocomplete-filter==0.7.1
 django-admin-generator==2.2.1
+django-bootstrap4
 django-extensions==3.2.3
 django-jazzmin==2.6.0
 django-modeladmin-reorder==0.3.1
@@ -28,8 +29,14 @@ django-static-jquery==2.1.4
 django-utils2==2.12.1
 djangorestframework==3.15.1
 dpd-components==0.1.0
+dpd-static-support
 Flask==3.0.3
+flask-caching
+geopandas
+hydropandas
+i18nice[YAML]
 idna==3.7
+icecream
 itsdangerous==2.1.2
 Jinja2==3.1.3
 lxml==5.2.2
@@ -40,6 +47,8 @@ numpy==2.0.1
 packaging==24.0
 pandas==2.2.2
 paramiko==3.4.0
+pastas
+pastastore
 plotly==5.20.0
 psycopg2==2.9.9
 pycparser==2.22
@@ -55,8 +64,11 @@ reversion==0.2
 rich==13.7.1
 six==1.16.0
 sqlparse==0.5.1
+sqlalchemy
 tenacity==8.2.3
 toml==0.10.2
+tomli
+traval
 typing_extensions==4.11.0
 tzdata==2024.1
 urllib3==2.2.2

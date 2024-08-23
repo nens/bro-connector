@@ -221,7 +221,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                startregistration = gld.create_start_registration_sourcedocs(
+                gld.create_start_registration_sourcedocs(
                     well,
                     registration_log.filter_number
                 )
@@ -262,7 +262,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                validation_status = gld.validate_gld_startregistration_request(
+                gld.validate_gld_startregistration_request(
                     registration_log.id,
                 )
                 self.message_user(
@@ -296,7 +296,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                delivery_status = gld.deliver_startregistration_sourcedocuments(
+                gld.deliver_startregistration_sourcedocuments(
                     registration_log.id
                 )
 
@@ -322,7 +322,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                status = gld.check_delivery_status_levering(registration_log.id)
+                gld.check_delivery_status_levering(registration_log.id)
                 self.message_user(
                     request, "Attempted registration status check", messages.INFO
                 )
@@ -481,7 +481,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 )
                 # Validate the sourcedocument for this observation
             else:
-                validation_status = gld.validate_gld_addition_source_document(
+                gld.validate_gld_addition_source_document(
                     addition_log, filename
                 )
                 self.message_user(
@@ -497,7 +497,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
 
-            observation_id = addition_log.observation_id
             filename = addition_log.file
 
             if (
@@ -515,7 +514,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                delivery_status = gld.deliver_gld_addition_source_document(
+                gld.deliver_gld_addition_source_document(
                     addition_log, filename
                 )
                 self.message_user(

@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from main.settings.base import *
+from main.localsecret import s_host, s_password, s_port, s_user, validation_key, database
 
 DEBUG = True
 ROOT_URLCONF = "main.urls"
@@ -30,7 +30,7 @@ DATABASES = {
 
 LIZARD_SETTINGS = {
     "headers": {
-        "username": "{}".format("__key__"),
+        "username": "__key__",
         "password": f"{validation_key}",
         "Content-Type": "application/json",
     },
