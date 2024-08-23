@@ -14,7 +14,7 @@ class DataRetrieverKVK:
 
         basis_url = "https://publiek.broservices.nl/"
         kvk_verzoek = requests.get(
-            f"{basis_url}/gm/{type}/v1/bro-ids?bronhouder={str(self.kvk_nummer)}"
+            f"{basis_url}/gm/{type}/v1/bro-ids?bronhouder={str(self.kvk_nummer)}&registered=ja"
         )
         self.bro_ids = json.loads(kvk_verzoek.text)["broIds"]
 
