@@ -12,3 +12,5 @@ venv
 **/migrations/**
 bro_connector/qc_tool/app/assets/.mapbox_access_token
 bro_connector/static/dash/.mapbox_access_token
+**/.venv
+bro_connector/.pi_cache/
