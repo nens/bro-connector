@@ -37,7 +37,7 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
     progressor = Progress()
     gmw = GMWHandler()
 
-    if kvk_number != None:
+    if kvk_number:
         DR = DataRetrieverKVK(kvk_number)
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
@@ -100,7 +100,7 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
             ini.reset_geo_ohm_number()
 
         print("CREATE CONSTRUCTION")
-        construction_event = events_handler.create_construction_event(gmw_dict, gmws)
+        events_handler.create_construction_event(gmw_dict, gmws)
         imported += 1
         # Update based on the events
         updater = events_handler.Updater(gmw.dict, gmws)
