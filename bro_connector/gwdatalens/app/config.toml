@@ -1,0 +1,13 @@
+[settings]
+DEBUG = true
+LOCALE = "nl"
+DJANGO_APP = true           # set to True to run under Django application
+CACHING = false              # set to True to enable caching, does not work when DJANGO_APP is true
+SERIES_LOAD_LIMIT = 10       # number of observations to load and plot simultaneously
+PORT = 8050                  # default port for the Dash app
+BACKGROUND_CALLBACKS = false # false is recommended at this moment
+
+[pastastore]
+name = "pastastore_zeeland_bro.zip"
+path = ".." # path to pastas model database
+update_knmi = false           # update knmi data in pastas database on startup
