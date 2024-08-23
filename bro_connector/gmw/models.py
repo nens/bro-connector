@@ -2,7 +2,7 @@ from django.db import models
 import django.contrib.gis.db.models as geo_models
 from .choices import *  # noqa: F403
 import main.utils.validators_models as validators_models
-from bro.models import Organisation, BROProject
+from bro.models import Organisation, BROProject, SecureCharField
 import datetime
 from .utils import generate_put_code
 
