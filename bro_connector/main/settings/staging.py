@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from main.localsecret import s_host, s_password, s_port, s_user, validation_key, database
+from bro_connector.main.settings.base import *  # noqa: F403
+
 
 DEBUG = True
 ROOT_URLCONF = "main.urls"
