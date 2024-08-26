@@ -122,17 +122,27 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
     else:
         date = None
 
-    event = Event.objects.update_or_create(
-        event_name="constructie",
-        groundwater_monitoring_well_static=groundwater_monitoring_well_static,
-        defaults={
-            "event_date": date,
-            "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
-                groundwater_monitoring_well_static=groundwater_monitoring_well_static
-            ).first(),
-            "delivered_to_bro": True,
-        },
-    )[0]
+    try:
+        event = Event.objects.update_or_create(
+            event_name="constructie",
+            groundwater_monitoring_well_static=groundwater_monitoring_well_static,
+            defaults={
+                "event_date": date,
+                "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
+                    groundwater_monitoring_well_static=groundwater_monitoring_well_static
+                ).first(),
+                "delivered_to_bro": True,
+            },
+        )[0]
+    except:
+        events = Event.objects.filter(
+            event_name="constructie",
+            groundwater_monitoring_well_static=groundwater_monitoring_well_static,
+        )
+        event = events.first()
+        if event:
+            # Delete all events except the one with the primary key of the first event
+            events.exclude(pk=event.pk).delete()
 
     log = gmw_registration_log.objects.update_or_create(
         delivery_type = "register",
