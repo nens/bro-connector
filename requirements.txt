@@ -15,7 +15,7 @@ dash-core-components==2.0.0
 dash-html-components==2.0.0
 dash-table==5.0.0
 diff-match-patch==20230430
-Django==4.0.3
+Django==4.2
 django-admin-autocomplete-filter==0.7.1
 django-admin-generator==2.2.1
 django-bootstrap4
