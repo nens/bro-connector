@@ -122,17 +122,27 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
     else:
         date = None
 
-    event = Event.objects.update_or_create(
-        event_name="constructie",
-        groundwater_monitoring_well_static=groundwater_monitoring_well_static,
-        defaults={
-            "event_date": date,
-            "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
-                groundwater_monitoring_well_static=groundwater_monitoring_well_static
-            ).first(),
-            "delivered_to_bro": True,
-        },
-    )[0]
+    try:
+        event = Event.objects.update_or_create(
+            event_name="constructie",
+            groundwater_monitoring_well_static=groundwater_monitoring_well_static,
+            defaults={
+                "event_date": date,
+                "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
+                    groundwater_monitoring_well_static=groundwater_monitoring_well_static
+                ).first(),
+                "delivered_to_bro": True,
+            },
+        )[0]
+    except:
+        events = Event.objects.filter(
+            event_name="constructie",
+            groundwater_monitoring_well_static=groundwater_monitoring_well_static,
+        )
+        event = events.first()
+        if event:
+            # Delete all events except the one with the primary key of the first event
+            events.exclude(pk=event.pk).delete()
 
     log = gmw_registration_log.objects.update_or_create(
         delivery_type = "register",
@@ -174,12 +184,11 @@ def get_tube_static(groundwater_monitoring_well, tube_number):
     return gmts_id
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime.datetime:
+    print(event_date)
     try:
-        date = datetime.datetime.strptime(event_date,'%Y-%m-%d')
+        date = datetime.datetime.strptime(event_date, "%Y-%m-%d")
     except ValueError:
-        date = datetime.datetime.strptime(event_date,'%Y')
-    except TypeError:
-        date = datetime.datetime.strptime("1900-01-01",'%Y-%m-%d')
+        date = datetime.datetime.strptime(event_date, "%Y")
 
     return date
 
@@ -212,6 +221,7 @@ class Updater:
         else:
             raise Exception(f"date/year not found in dict: {self.event_updates}")
 
+        print(date)
         date = convert_event_date_str_to_datetime(date)
 
         event = Event.objects.filter(
@@ -242,12 +252,14 @@ class Updater:
                     quality_regime = self.event.groundwater_monitoring_well_static.quality_regime,
                 )
             )
+        print(event, event.event_date)
+
 
     def intermediate_events(self):
         # Create a base event
         self.read_updates()
         self.create_base()
-
+        print(self.event, self.event.event_date)
         # Update tables accordingly
         TableUpdater.fill(
             self.groundwater_monitoring_well_static, self.event, self.event_updates
@@ -257,6 +269,7 @@ class Updater:
 
 class TableUpdater(Updater):
     def fill(well_static, event, updates):
+        print(event, event.event_date)
         if "wellData" in updates:
             TableUpdater.well_data(well_static, event, updates)
 
@@ -278,15 +291,11 @@ class TableUpdater(Updater):
                 tube_number=updates[f"{prefix}tubeNumber"],
                 groundwater_monitoring_well_static=well_static,
             )
-            date = convert_event_date_str_to_datetime(event.event_date)
             
-            try:
+            if event.groundwater_monitoring_tube_dynamic:
                 # Clone row and make new primary key with save
-                new_gmtd = GroundwaterMonitoringTubeDynamic.objects.get(
-                    groundwater_monitoring_tube_static=new_gmts,
-                    date_from = date,
-                )
-            except GroundwaterMonitoringTubeDynamic.DoesNotExist:
+                new_gmtd = event.groundwater_monitoring_tube_dynamic
+            else:
                 # Clone row and make new primary key with save
                 new_gmtds = GroundwaterMonitoringTubeDynamic.objects.filter(
                     groundwater_monitoring_tube_static=new_gmts
@@ -303,7 +312,7 @@ class TableUpdater(Updater):
             # Check what has to be changed
             updates = remove_prefix_from_keys(updates, prefix)
             new_gmtd = tube_dynamic(new_gmtd, updates)
-            new_gmtd.date_from = date
+            new_gmtd.date_from = datetime.datetime.combine(event.event_date, datetime.time())
             # Save and add new key to event
             new_gmtd.save()
 
@@ -314,18 +323,9 @@ class TableUpdater(Updater):
             data_num += 1
 
     def electrode_data(well_static: GroundwaterMonitoringWellStatic, event: Event, updates):
-        date =convert_event_date_str_to_datetime(event.event_date)
-        print(updates)
-        exit()
-        try:
-            # Clone row and make new primary key with save
-            new_eled = ElectrodeDynamic.objects.get(
-                electrode_static=get_electrode_static(
-                    well_static, updates["tubeNumber"]
-                ),
-                date_from = date,
-            )
-        except ElectrodeDynamic.DoesNotExist:
+        if event.electrode_dynamic:
+            new_eleds = event.electrode_dynamic
+        else:
             # Clone row and make new primary key with save
             new_eleds = ElectrodeDynamic.objects.filter(
                 electrode_static=get_electrode_static(
@@ -350,7 +350,7 @@ class TableUpdater(Updater):
 
         # Check what has to be changed
         new_eled = electrode_dynamic(new_eled, updates)
-        new_eled.date_from = date
+        new_eled.date_from = datetime.datetime.combine(event.event_date, datetime.time())
         # Save and add new key to event
         new_eled.save()
 
@@ -360,14 +360,9 @@ class TableUpdater(Updater):
 
     def well_data(well_static: GroundwaterMonitoringWellStatic, event: Event, updates):
         # Clone row and make new primary key with save
-        date =convert_event_date_str_to_datetime(event.event_date)
-
-        try:
-            new_gmwd = GroundwaterMonitoringWellDynamic.objects.get(
-                groundwater_monitoring_well_static=well_static,
-                date_from = date,
-            )
-        except GroundwaterMonitoringWellDynamic.DoesNotExist:
+        if event.groundwater_monitoring_well_dynamic:
+            new_gmwd = event.groundwater_monitoring_well_dynamic
+        else:
             new_gmwds = GroundwaterMonitoringWellDynamic.objects.filter(
                 groundwater_monitoring_well_static=well_static
             )
@@ -387,7 +382,8 @@ class TableUpdater(Updater):
 
         # Check what has to be changed
         new_gmwd = well_dynamic(new_gmwd, updates)
-        new_gmwd.date_from = date
+        
+        new_gmwd.date_from = datetime.datetime.combine(event.event_date, datetime.time())
         # Save and add new key to event
         new_gmwd.save()
 

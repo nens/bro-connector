@@ -153,7 +153,7 @@ echo You are all set. All that is left is:
 
 echo (1) Adjust the database to fit the current state of the app. Run the following code in a terminal:
 
-echo python manage.py makemigrations bro tools gmw gld gmn folder
+echo python manage.py makemigrations bro tools gmw gld gmn frd
 
 echo python manage.py migrate
 

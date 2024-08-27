@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from main.localsecret import t_host, t_password, t_port, t_user, validation_key, database
 from bro_connector.main.settings.base import *  # noqa: F403
 
-
 DEBUG = True
 ROOT_URLCONF = "main.urls"
 SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"

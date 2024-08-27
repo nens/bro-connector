@@ -3,6 +3,7 @@ import json
 import pysftp
 import datetime
 import os
+import random
 
 from main import localsecret as ls
 from gmw import models as gmw_models
@@ -22,6 +23,8 @@ input_field_options = {
     }
 }
 
+def generate_random_color():
+    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
 
 # From the FieldForm Github
 def write_location_file(data, filename):
@@ -224,10 +227,13 @@ class FieldFormGenerator:
     def _flush_wells(self):
         self.wells = []
 
-    def write_monitoringnetworks_to_list(self) -> List[str]:
-        groups = []
+    def write_monitoringnetworks_to_dict(self) -> dict:
+        groups = {}
         for monitoring_network in gmn_models.GroundwaterMonitoringNet.objects.all():
-            groups.append(str(monitoring_network.name))
+            groups[monitoring_network.name] = {
+                "name": monitoring_network.name,
+                "color": generate_random_color()
+            }
         
         return groups
 
@@ -265,14 +271,13 @@ class FieldFormGenerator:
 
         data["inputfield_groups"] = inputfield_groups
         data["inputfields"] = inputfields
-        data["groups"] = []
+        data["groups"] = {}
 
         if hasattr(self, "optimal"):
             if self.optimal:
-                data["groups"].append(self.write_monitoringnetworks_to_list())
+                data["groups"].update(self.write_monitoringnetworks_to_dict())
 
                 locations = {}
-                # Use of meetroutes first
                 wells_in_file = []
                 # Any that are not in a meetroute should be grouped by meetnets
                 for monitoringnetwork in gmn_models.GroundwaterMonitoringNet.objects.all():
