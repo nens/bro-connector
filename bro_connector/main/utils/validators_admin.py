@@ -228,11 +228,11 @@ def x_within_netherlands(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tup
 
 def y_within_netherlands(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tuple:
     valid = True
-    min_x = 150000
-    max_x = 620000
+    min_y = 150000
+    max_y = 620000
     message = "y-coordinaat ligt niet binnen de grenzen van Nederland voor EPSG:28892"
-    
-    if obj.coordinates[0]< min_x or obj.coordinates[0] > max_x:
+
+    if obj.coordinates[1]< min_y or obj.coordinates[1] > max_y:
         valid = False
 
     return (valid, message)
