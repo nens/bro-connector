@@ -124,7 +124,6 @@ class GroundwaterMonitoringNet(models.Model):
         db_table = 'gmn"."groundwater_monitoring_net'
         verbose_name = "Groundwatermonitoring Meetnet"
         verbose_name_plural = "Groundwatermonitoring Meetnetten"
-        _admin_name = "Groundwatermonitoring Meetnet"
         ordering = ("name",)
 
 
@@ -195,7 +194,6 @@ class MeasuringPoint(models.Model):
         db_table = 'gmn"."measuring_point'
         verbose_name = "Meetpunt"
         verbose_name_plural = "Meetpunten"
-        _admin_name = "Meetpunt"
         ordering = ("code",)
 
 class IntermediateEvent(models.Model):
@@ -220,7 +218,7 @@ class IntermediateEvent(models.Model):
         managed = True
         db_table = 'gmn"."intermediate_event'
         verbose_name = "Tussentijdse Gebeurtenis"
-        _admin_name = "Tussentijdse Gebeurtenissen"
+        verbose_name_plural = "Tussentijdse Gebeurtenissen"
         ordering = ("event_date",)
 
 class gmn_bro_sync_log(models.Model):

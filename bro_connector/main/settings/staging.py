@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from main.settings.base import *
+from main.localsecret import s_host, s_password, s_port, s_user, validation_key, database
+from bro_connector.main.settings.base import *  # noqa: F403
+
 
 DEBUG = True
 ROOT_URLCONF = "main.urls"
@@ -18,7 +20,7 @@ SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!
 
 DATABASES = {
     "default": {
-        "NAME": "grondwatermeetnet",
+        "NAME": database,
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "USER": s_user,
         "PASSWORD": s_password,
@@ -30,7 +32,7 @@ DATABASES = {
 
 LIZARD_SETTINGS = {
     "headers": {
-        "username": "{}".format("__key__"),
+        "username": "__key__",
         "password": f"{validation_key}",
         "Content-Type": "application/json",
     },

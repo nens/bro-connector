@@ -95,8 +95,8 @@ class GroundwaterLevelDossier(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."groundwater_level_dossier'
-        verbose_name = "Grondwaterstand dossier"
-        verbose_name_plural = "Grondwaterstand dossiers"
+        verbose_name = "Grondwaterstand Dossier"
+        verbose_name_plural = "Grondwaterstand Dossiers"
 
 
 class Observation(models.Model):
@@ -267,8 +267,8 @@ class ObservationProcess(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."observation_process'
-        verbose_name = "Observatie Process"
-        verbose_name_plural = "Observatie Process"
+        verbose_name = "Observatie Proces"
+        verbose_name_plural = "Observatie Proces"
 
 
 # MEASUREMENT TIME VALUE PAIR
@@ -297,8 +297,8 @@ class MeasurementTvp(models.Model):
     class Meta:
         managed = True
         db_table = 'gld"."measurement_tvp'
-        verbose_name = "Metingen Tijd-Waarde paren"
-        verbose_name_plural = "Metingen Tijd-Waarde paren"
+        verbose_name = "Metingen Tijd-Waarde Paren"
+        verbose_name_plural = "Metingen Tijd-Waarde Paren"
 
 
 class MeasurementPointMetadata(models.Model):
@@ -365,7 +365,7 @@ class gld_registration_log(models.Model):
     class Meta:
         db_table = 'aanlevering"."gld_registration_log'
         verbose_name = "GLD Registratie Log"
-        verbose_name_plural = "GLD Registratie logs"
+        verbose_name_plural = "GLD Registratie Logs"
 
 
 class gld_addition_log(models.Model):

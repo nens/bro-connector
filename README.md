@@ -10,6 +10,10 @@
 
 ## Installeren van Django applicatie op server
 
+ARCHITECTUUR-DATA plaatje
+
+## Installeren van Django applicatie op server
+
 1. Clone 'bro-connector' naar de server
 
 2. Installeer een python virtual environment op de server vanuit 'requirements.py' met python versie 3.8
@@ -22,7 +26,7 @@
     - Zorg dat de nieuwe schema's ook de juiste rechten hebben voor de user bro, anders kan de django applicatie niet bij de data
     - (mocht het nodig zijn, maak een nieuwe backup: 'pg_dump -p [port] -h localhost -U postgres --no-owner --clean [your_db] > test_database_backup.sql')
 
-4. Initialiseer de django applicatie
+4. Configureer de django applicatie
     - Specifieke instellingen staand in de settings (bro_connector_gld/settings). Daarin staan settings voor een productieomgeving, testomgeving en stagingomgeving
     - Inloggegevens worden opgegeven in localsecret.py. Hiervoor is een template toegevoegd (bro_connector_gld/localsecret_template.py). Note: ga altijd zorgvuldig met inloggegevens om.
     - Geef de juiste databasegegevens op in de settings
@@ -40,9 +44,18 @@
 
 <img src=bro_connector/static/img/bro_connector_gld_log.PNG>
 
-## Data Importeren vanuit de BRO uitgifte service
+## Initialisatie voor jouw organisatie
 
-Het is mogelijk om data uit de BRO te importeren naar je lokale database. <br>
+ - Instellen bounding box voor je organisatie (optioneel)
+ - Importeer data via Tools --> BRO Importer vanuit de uitgifte service voor een BRO-registratieobject
+ -     gmw, frd, gld, gmn
+ - organisatie instellen
+ - accounts instellen voor gebruikers
+ - project aanmaken voor aanlevering
+
+## Automatisch importeren vanuit de BRO uitgifte service
+
+Het is mogelijk om data automatisch uit de BRO te importeren naar je lokale database. <br>
 Hiervoor is een script ontwikkeld wat aangestuurd kan worden met het .bat bestandje 'bro_gegevens_ophalen.bat'. <br>
 Het script kan als volgt gebruikt worden: bro_gegevens_ophalen.bat [kvk_nummer] [type_bericht]
 
@@ -88,3 +101,24 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
    e.g. `runserver_plus hosting.example.url:8000 --cert-file file.pem --key-file file.key`
 
    In dit voorbeeld draait de server op port 8000.
+
+## Standaard opzet van een domein-app (GMW, GLD, GMN, FRD)
+
+Binnen de BRO-Connector worden momenteel 4, van de 5, categorieën ondersteund: GMW, GLD, GMN en FRD.
+Voor ieder van deze groepen is een aparte Django sub-app ingericht, te vinden in de gelijknamig mapjes.
+Tijdens de ontwikkeling van de applicatie is een poging gedaan om de sub-apps op eenzelfde wijze in te richten, om zo het gebruiksgemak te verhogen.
+
+De meeste acties zullen plaats vinden onder het object wat aan de basis ligt van de andere objecten.
+Dit is als volgt, [app, object]: GMW, Grondwatermonitoring Put - Statisch; GLD, Grondwaterstand Dossier; GMN, Grondwatermeetnet; FRD, Formatieweerstand Dossier.
+
+Vanuit deze objecten kunnen berichten naar de BRO worden opgestuurd, door middel van acties.
+Zodra de actie is uitgevoerd, is de voortgang van het versturen van berichten tevinden onder de relevante (synchronisatie) "logs".
+
+## Omgaan met BRO Tokens
+
+Het is noodzakelijk om gebruik te maken van de BRO authenticatie tokens wanneer er gegevens opgestuurd moeten worden naar de BRO.
+De BRO-Connector bied de mogelijkheid om BRO tokens op te slaan onder de relevante partij.
+De tokens worden versleuteld opgeslagen in de database en na de eerste invoer verborgen. 
+Op deze manier kan niemand met toegang tot de app of database eenvoudig jouw tokens inzien, terwijl de app wel blijft functioneren.
+
+Om dit te bereiken maakt de BRO-Connector gebruik van salting en Fernet-encryptie. Daarom moeten tijdens de installatie twee omgevingsvariabelen worden aangemaakt: FERNET_ENCRYPTION_KEY en SECURE_STRING_SALT. De waarden van deze variabelen kun je zelf genereren, maar ze worden ook automatisch gegenereerd door de Python-scripts die worden uitgevoerd tijdens install.cmd.

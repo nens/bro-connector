@@ -10,14 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+import platform
+from pathlib import Path
 
 import django.db.models.options as options
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
-
-from main.localsecret import *
 
 ENVIRONMENT = "staging"
 
@@ -68,6 +67,8 @@ INSTALLED_APPS = [
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "django_static_jquery",
     "admin_auto_filters",
+    "dpd_static_support",
+    "bootstrap4",
 ]
 
 
@@ -167,13 +168,40 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
+
 STATIC_FILES_LOCATION = "static"
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
+
 X_FRAME_OPTIONS = "SAMEORIGIN"
+
+PLOTLY_COMPONENTS = [
+    "dpd_static_support",
+    "dpd_components",
+    "dash_bootstrap_components",
+]
+
+PLOTLY_DASH = {
+    "ws_route": "dpd/ws/channel",
+    "http_route": "dpd/views",
+    "http_poke_enabled": True,
+    "insert_demo_migrations": False,
+    "cache_timeout_initial_arguments": 60,
+    "view_decorator": None,
+    "cache_arguments": False,
+    "serve_locally": False,
+}
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "django_plotly_dash.finders.DashAssetFinder",
+    "django_plotly_dash.finders.DashComponentFinder",
+    "django_plotly_dash.finders.DashAppDirectoryFinder",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -193,7 +221,7 @@ ADMIN_REORDER = (
     },
     {
         "app": "bro",
-        "label": "BRO", 
+        "label": "BRO",
     },
     {
         "app": "gmw",
@@ -210,6 +238,7 @@ ADMIN_REORDER = (
             "gmw.Picture",
             "gmw.MaintenanceParty",
             "gmw.Maintenance",
+            "gmw.gmw_registration_log",
         ),
     },
     {
@@ -302,6 +331,8 @@ JAZZMIN_SETTINGS = {
         {"app": "gld"},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "frd"},
+        # gwdatalens app
+        {"name": "GWDataLens", "url": "/gwdatalens", "permissions": ["auth.view_user"]},
     ],
     "usermenu_links": [
         {
@@ -423,5 +454,8 @@ GRAPH_MODELS = {
     "group_models": True,
 }
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
-GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # needed for DASH APP
+
+if platform.system() == "Windows":
+    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
+    GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
