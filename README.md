@@ -24,24 +24,20 @@ Deze ReadMe bevat de volgende beschrijvingen:
 TODO: toevoegen architectuurplaat incl. datastromen
 
 ## Installeren van Django applicatie
-Voor de installatie van de BRO-connector dien je een viertal stappen te doorlopen.
+Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard installatie is deze uit te voeren via het script in de folder bro_connector\installation_help\install.cmd. Daarnaast kun je ook handmatige de installatie via een drietal stappen doorlopen waardoor je als gebruiker meer controle hebt over de procedure.
 1. Clone 'bro-connector' naar een computer of (virtuele) server
-2. Installeer een python virtual environment vanuit 'requirements.py' met Python versie 3.8
+2. Installeer een python virtual environment vanuit 'requirements.py' met Python versie 3.11
     - Voor het aanmaken en leveren van requests wordt het softwarepakket 'bro-exchange' gebruikt, voor meer informatie zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
-3. Optioneel: restore een backup van de database op de server
-    - Backup bestand heet 'test_database_backup.sql', deze bevat gld, gmw en aanlevering schema's + tabellen + test data
-    - Zorg dat de user bro de juiste rechten heeft om schema's/tabellen te kunnen verwijderen en opnieuw aan te maken!
-    - Draai de command 'psql -p [port] -h localhost -U postgres [your_db] < test_database_backup.sql' met de juiste database en port als 'your_db' en 'port'
-    - Zorg dat de nieuwe schema's ook de juiste rechten hebben voor de user bro, anders kan de django applicatie niet bij de data
-    - (mocht het nodig zijn, maak een nieuwe backup: 'pg_dump -p [port] -h localhost -U postgres --no-owner --clean [your_db] > test_database_backup.sql')
-4. Configureer de applicatie
-    - Specifieke instellingen staand in de settings (bro_connector_gld/settings). Daarin staan de settings gedefiniëerd voor een productieomgeving, testomgeving en stagingomgeving
-    - Inloggegevens worden opgegeven in localsecret.py. Hiervoor is een template toegevoegd (bro_connector_gld/localsecret_template.py). Note: Ga altijd zorgvuldig met inloggegevens om.
-    - Geef de juiste databasegegevens op in de settings.
-    - Stel in de base settings (bro_connector_gld/settings/base.py) de omgeving in onder 'ENVIRONMENT' (production/test/staging). NOTE: wanneer de production environment wordt gekozen, is de applicatie aangesloten op de productieomgeving van de bronhouderportaal. Bij selectie van test / staging is de applicatie aangesloten op de demo-omgeving van de bronhouderportaal.
+    ```pip install -r requirements.txt```
+3. Configureer de applicatie
+    - Maak een database aan met postgis extensie (minimaal PostGIS 3.4)
     - Zorg dat er een schema 'django_admin' in de postgres database staat, hierin komen de admin tabellen (deze zitten niet in de database backup).
-    - Zorg dat het default search path voor de database in 'base.py' op 'django_admin' staat (staat goed in de repo).
-    - Initialiseer de admin tabellen voor django door 'python manage.py migrate' te draaien.
+    - Specifieke instellingen staan in de main/localsecret.py. Hiervoor is een template toegevoegd (main/localsecret_template.py) Daarin staan de settings gedefiniëerd voor een productieomgeving, stagingomgeving of development omgeving en het type omgeving
+    - Initialiseer de admin tabellen voor django door vanuit de folder bro_connector met de volgende commando's te draaien: 
+    ```
+    python manage.py makemigrations bro tools gmw gld gmn frd
+    python manage.py migrate 
+    ```
     - De overige tabellen staan al in de database, maar moeten nog gesynchroniseerd worden met de django applicatie.
     - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate' (of python manage.py migrate --fake wanneer stap 3 is uitgevoerd).
     - Maak een superuser met 'python manage.py createsuperuser' .
@@ -124,6 +120,7 @@ Om dit te bereiken maakt de BRO-Connector gebruik van salting en Fernet-encrypti
 Hieronder staan enkele processtappen in detail toegelicht voor het registreren van putgegevens en metingen en het sychroniseren naar de BRO.
 
 ### Registreren van een put
+
 
 ### Synchronisatie van de put naar de BRO
 

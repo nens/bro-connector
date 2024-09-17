@@ -1,6 +1,5 @@
 **/__pycache__/
 **/*.xml
-**/*.zip
 **/localsecret.py
 *.docx
 **/*.dot
