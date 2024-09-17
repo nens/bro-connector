@@ -1,3 +1,6 @@
+# FERNET_ENCRYPTION_KEY = ""
+# SALT_STRING = ""
+
 # FTP server details
 # ftp_ip = 'ftp.example.com'
 # ftp_username = 'your_username'

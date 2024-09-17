@@ -18,7 +18,7 @@ import django.db.models.options as options
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
-ENVIRONMENT = "staging"
+ENVIRONMENT = "development"
 
 # Application definition
 MODULES = ["gmw", "frd", "gld", "gmn"]
