@@ -7,7 +7,7 @@ import bisect
 import reversion
 from bro.models import Organisation
 brx.gmw_replace_request
-from main.settings.base import ENVIRONMENT
+from main.settings.base import env
 from gmw import models
 from main.management.tasks.django_tools_bro import *
 import logging
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
 def _is_demo():
-    if ENVIRONMENT == "production":
+    if env == "production":
         return False
     return True
 

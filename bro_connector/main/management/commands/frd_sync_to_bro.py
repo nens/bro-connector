@@ -26,7 +26,7 @@ from frd.models import (
 from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 from datetime import datetime, date
-from main.settings.base import ENVIRONMENT
+from main.settings.base import env
 
 
 def _get_token(owner: Organisation):
@@ -186,7 +186,7 @@ class Registration(ABC):
         self.xml_file = None
 
     def _is_demo(self):
-        if ENVIRONMENT == "production":
+        if env == "production":
             return False
         return True
 
