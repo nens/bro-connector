@@ -30,9 +30,9 @@ Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard
     - Voor het aanmaken en leveren van requests wordt het softwarepakket 'bro-exchange' gebruikt, voor meer informatie zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
     ```pip install -r requirements.txt```
 3. Configureer de applicatie
-    - Maak een database aan met postgis extensie (minimaal PostGIS 3.4)
-    - Zorg dat er een schema 'django_admin' in de postgres database staat, hierin komen de admin tabellen (deze zitten niet in de database backup).
-    - Specifieke instellingen staan in de main/localsecret.py. Hiervoor is een template toegevoegd (main/localsecret_template.py) Daarin staan de settings gedefiniëerd voor een productieomgeving, stagingomgeving of development omgeving en het type omgeving
+    - Maak een database aan met postgis extensie (minimaal Postgresql 13 met PostGIS 3.4)
+    - Maak een schema 'django_admin' in de postgres database aan, hierin komen de admin-tabellen.
+    - Specifieke instellingen staan in de main/localsecret.py. Hiervoor is een template toegevoegd (main/localsecret_template.py) Daarin staat gedefiniëerd of het een productieomgeving, stagingomgeving of development omgeving betreft incl. settings en aanvullende keys. Voor het aanmaken van een Fernet en Salt key kunnen de scripts in bro_connector\installation_help\python_scripts uitgevoerd worden.
     - Initialiseer de admin tabellen voor django door vanuit de folder bro_connector met de volgende commando's te draaien: 
     ```
     python manage.py makemigrations bro tools gmw gld gmn frd
@@ -120,7 +120,11 @@ Om dit te bereiken maakt de BRO-Connector gebruik van salting en Fernet-encrypti
 Hieronder staan enkele processtappen in detail toegelicht voor het registreren van putgegevens en metingen en het sychroniseren naar de BRO.
 
 ### Registreren van een put
-
+Voor de registratie van een nieuwe put en synchronisatie naar de BRO verloopt het proces als volgt:
+1. Ga in de linkertab naar "GMW" en selecteer de tabel "Grondwatermonitoring Putten - Statisch". 
+2. Klik op "Add Grondwatermonitoring Put - Statisch" en vul de benodigde kenmerken in. Voor de aanlevering naar de BRO selecteer ook de optie "Deliver gmw to bro", anders is de put enkel beheerd binnen de lokale omgeving van de BRO-connector
+3. Vul eventueel ook dynamische informatie over de put in via de tabel "Grondwatermonitoring Putten - Dynamisch" en informatie over de filters op een identieke wijze in de overige tabellen van het "GMW" domein. Al deze tabellen zijn gerelateerd aan elkaar en de relatie met andere tabel (bijv. put) is zichtbaar in het bovenste veld van de tabellen.
+4. Voor synchronisatie naar de BRO ga naar "Grondwatermonitoring Putten - Statisch" en selecteer "Deliver GMW to bro" in de actiebalk in de menubalk.
 
 ### Synchronisatie van de put naar de BRO
 
