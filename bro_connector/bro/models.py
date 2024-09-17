@@ -1,5 +1,5 @@
 from django.db import models
-import os
+from main import localsecret as ls
 import base64
 from django.db.models import CharField
 from cryptography.fernet import Fernet
@@ -33,7 +33,7 @@ class SecureCharField(CharField):
         kwargs['blank'] = True
         super().__init__(*args, **kwargs)
 
-    salt = bytes(os.environ["SECURE_STRING_SALT"], 'utf-8')
+    salt = bytes(ls.SALT_STRING, 'utf-8')
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
@@ -44,7 +44,7 @@ class SecureCharField(CharField):
 
     # Encode the FERNET encryption key
     key = base64.urlsafe_b64encode(kdf.derive(
-        bytes(os.environ['FERNET_ENCRYPTION_KEY'], 'utf-8')
+        bytes(ls.FERNET_ENCRYPTION_KEY, 'utf-8')
     ))
 
     # Create a "fernet" object using the key stored in the .env file
