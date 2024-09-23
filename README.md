@@ -20,8 +20,8 @@ Deze ReadMe bevat de volgende beschrijvingen:
 - [Dataverwerking naar de BRO](https://github.com/nens/bro-connector/?tab=readme-ov-file#dataverwerking-naar-de-bro)
 
 ## Architectuur
-
-TODO: toevoegen architectuurplaat incl. datastromen
+Hieronder staat de globale architectuur van de BRO-connector weergegeven. De applicatie is zowel lokaal als op een server te installeren. Dit laatste is aan te raden voor een productieomgeving, waarbij de applicatie is ontwikkeld voor een Windows-omgeving als zal deze onder voorbehoud ook draaien op ene Linux server. De applicatie is ontwikkeld in Django, een webframework voor Python en maakt gebruikt van een PostgreSQL database voor de opslag. De webserver is via een https verbinding op te zetten zodat gebruikers vanaf hun computer de gegevens via een browser kunnen raadplegen. Daarnaast maakt de applicatie verbinding met het bronhouderportaal van de BRO voor het ophalen en toesturen van gegevens.
+<img src=bro_connector/static/img/architectuur.PNG width="720">
 
 ## Installeren van Django applicatie
 Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard installatie is deze uit te voeren via het script in de folder bro_connector\installation_help\install.cmd. Daarnaast kun je ook handmatige de installatie via een drietal stappen doorlopen waardoor je als gebruiker meer controle hebt over de procedure.
@@ -116,18 +116,29 @@ Op deze manier kan niemand met toegang tot de app of database eenvoudig de token
 Om dit te bereiken maakt de BRO-Connector gebruik van salting en Fernet-encryptie. Daarom moeten tijdens de installatie twee omgevingsvariabelen worden aangemaakt: FERNET_ENCRYPTION_KEY en SECURE_STRING_SALT. De waarden van deze variabelen kun je zelf genereren, maar ze worden ook automatisch gegenereerd door de Python-scripts die worden uitgevoerd tijdens install.cmd.
 
 ## Dataverwerking naar de BRO
-
 Hieronder staan enkele processtappen in detail toegelicht voor het registreren van putgegevens en metingen en het sychroniseren naar de BRO.
 
 ### Registreren van een put
-Voor de registratie van een nieuwe put en synchronisatie naar de BRO verloopt het proces als volgt:
+Voor de registratie van een nieuwe put en synchronisatie naar de BRO verloopt het proces via de volgende stappen:
 1. Ga in de linkertab naar "GMW" en selecteer de tabel "Grondwatermonitoring Putten - Statisch". 
 2. Klik op "Add Grondwatermonitoring Put - Statisch" en vul de benodigde kenmerken in. Voor de aanlevering naar de BRO selecteer ook de optie "Deliver gmw to bro", anders is de put enkel beheerd binnen de lokale omgeving van de BRO-connector
 3. Vul eventueel ook dynamische informatie over de put in via de tabel "Grondwatermonitoring Putten - Dynamisch" en informatie over de filters op een identieke wijze in de overige tabellen van het "GMW" domein. Al deze tabellen zijn gerelateerd aan elkaar en de relatie met andere tabel (bijv. put) is zichtbaar in het bovenste veld van de tabellen.
-4. Voor synchronisatie naar de BRO ga naar "Grondwatermonitoring Putten - Statisch" en selecteer "Deliver GMW to bro" in de actiebalk in de menubalk.
 
 ### Synchronisatie van de put naar de BRO
+Een geregistreerde put binnen de BRO-connector kan gesynchroniseerd worden naar de BRO door een taak uit te voeren. Daarvoor kan een gebruiker onderstaande taak starten:
+1. Voor synchronisatie naar de BRO ga naar "Grondwatermonitoring Putten - Statisch" en selecteer "Deliver GMW to bro" in de actiebalk in de menubalk.
 
 ### Vastleggen van logger en handmetingen
+De aanlevering van tijdseries van zowel logger als handmetingen verloopt via Observaties. Een Observatie is een set aan waarnemingen (in de BRO bekend als tijdmeetwaardereeks met tijdmeetwaardeparen). Om data op te slaan binnen het BRO model is het volgende nodig:
+1. Start een Grondwaterstand Dossier voor een nieuwe reeks.
+2. Voer in het Grondwaterstand Dossier menu de actie "Check GLD status from BRO" uit voor het ophalen van bestaande openstaande dossiers voor deze put en controleer status "Fully Delivered".
+3. Maak een nieuwe observatie in de tabel Observatie. Indien het observatieproces en observatiemetdata niet bestaan, zorg dat deze eerst aangemaakt worden en vul in bij het observatieproces.
+4. Voer waarnemingen in via "Metingen Tijd-Waarde Paren"
 
 ### Synchronisatie van de metingen naar de BRO
+Voor de aanlevering van een reeks aan waarnemingen aan de BRO dien je de volgende stappen uit te voeren.
+1. Sluit de Observatie behorend bij de reeks aan waarnemingen (tijdmeetwaardeparen) via de actie "Close Observation" door binnen de GLD in het menu "Observatie" de gewenste te selecteren en daarna de actie te starten. 
+2. Synchroniseer de data via "Grondwaterstand Dossier" door de betreffende GLD aan te klikken en de actie "Deliver GLD to BRO" uit te voeren.
+3. Voor het toevoegen van nieuwe waarnemingen kun je een nieuwe observatie aanmaken en daarvoor tijdmeetwaardeparen toevoegen. Deze actie wordt bij de provincie Zeeland automatisch uitgevoerd bij het sluiten van een Observatie zodat de dagelijkse leveringen van nieuwe waarnemingen automatisch op een nieuwe Observatie plaatsvindt.
+
+
