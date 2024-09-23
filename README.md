@@ -21,7 +21,7 @@ Deze ReadMe bevat de volgende beschrijvingen:
 
 ## Architectuur
 Hieronder staat de globale architectuur van de BRO-connector weergegeven. De applicatie is zowel lokaal als op een server te installeren. Dit laatste is aan te raden voor een productieomgeving, waarbij de applicatie is ontwikkeld voor een Windows-omgeving als zal deze onder voorbehoud ook draaien op ene Linux server. De applicatie is ontwikkeld in Django, een webframework voor Python en maakt gebruikt van een PostgreSQL database voor de opslag. De webserver is via een https verbinding op te zetten zodat gebruikers vanaf hun computer de gegevens via een browser kunnen raadplegen. Daarnaast maakt de applicatie verbinding met het bronhouderportaal van de BRO voor het ophalen en toesturen van gegevens.
-<img src=bro_connector/static/img/architectuur.PNG width="720">
+<img src=bro_connector/static/img/architectuur.png width="720">
 
 ## Installeren van Django applicatie
 Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard installatie is deze uit te voeren via het script in de folder bro_connector\installation_help\install.cmd. Daarnaast kun je ook handmatige de installatie via een drietal stappen doorlopen waardoor je als gebruiker meer controle hebt over de procedure.
