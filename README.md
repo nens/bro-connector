@@ -1,11 +1,7 @@
 <p align="center"><img src=bro_connector/static/img/broconnector.png width="320"></p>
 
 # BRO-connector
-- De BRO-connector is een maatwerk Django applicatie voor de aanlevering van grondwatergegevens naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland
-- Deze applicatie bevat ook een validatiemodule DataLens voor het beoordelen van de tijdreeksen volgens het QC Protocol.
-- De BRO-connector ondersteunt de geautomatiseerde periodieke datalevering van het registratieobject GLD (grondwaterstanden). Momenteel wordt gewerkt de uitbreiding met het berichtenverkeer voor GMW (meetput), GMN (meetnet) en FRD (formatieweerstandonderzoek). Deze komt na verwachting eind 2023 beschikbaar.
-- De BRO-connector is voor de Provincie Zeeland aangesloten op een Postgres database waarin het datamodel van de BRO is overgenomen. Bij de installatie wordt het datamodel automatisch gecreëerd. De BRO-connector is in principe ook toepasbaar op andere databases.
-- Gebruik requirements.txt om de virtual environment aan te maken waarbinnen de applicatie kan draaien
+De BRO-connector is een maatwerk Django applicatie voor de aanlevering van grondwatergegevens naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland. Daarbij bevat de applicatie ook een validatiemodule DataLens voor het beoordelen van de tijdreeksen volgens het QC Protocol. De BRO-connector ondersteunt de geautomatiseerde periodieke datalevering. Het berichtenverkeer is beschikbaar voor de BRO-registratieobjecten GMW (meetput), GMN (meetnet) en FRD (formatieweerstandonderzoek). De BRO-connector is voor de Provincie Zeeland aangesloten op een PostgreSQL database waarin het datamodel van de BRO op hoofdlijnen overgenomen is. De BRO-connector is in principe ook toepasbaar op andere databases. Deze beschrijving bevat informatie over de technische architectuur, de installatie en initialisatie van de applicatie binnen je eigen organisatie, en natuurlijk het gebruik van deze beheeromgeving voor je grondwatergegevens.
 
 ### Inhoudsopgave 
 Deze ReadMe bevat de volgende beschrijvingen:
