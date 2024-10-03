@@ -16,6 +16,19 @@ elif settings["LOCALE"] == "nl":
 
 
 def generate_kwargs_from_func(func):
+    """Generate a dictionary of keyword arguments and their default values for a func.
+
+    Parameters
+    ----------
+    func : function
+        The function from which to extract keyword arguments and their default values.
+
+    Returns
+    -------
+    dict
+        A dictionary where the keys are the names of the keyword arguments and the
+        values are their default values.
+    """
     sig = signature(func)
     kwargs = {}
     for k, v in sig.parameters.items():
@@ -25,6 +38,38 @@ def generate_kwargs_from_func(func):
 
 
 def derive_form_parameters(v):
+    """Derive form parameters based on the type and value of the input.
+
+    Parameters
+    ----------
+    v : any
+        The input value to derive form parameters from. It can be of any type including
+        tuple, callable, float, int, np.integer, str, or other types.
+
+    Returns
+    -------
+    v : str or int
+        The processed value, converted to a string if necessary.
+    input_type : str
+        The type of input, either "text" or "number".
+    disabled : bool
+        A flag indicating whether the input should be disabled.
+    step : float or int or str or None
+        The step value for numeric inputs, or "any" for text inputs, or None if
+        not applicable.
+
+    Notes
+    -----
+    - If `v` is a tuple and the first element is callable, the input is disabled
+      and converted to a string.
+    - If `v` is callable, the input is disabled and converted to a string.
+    - If `v` is a float, the input type is "number" and the step is calculated based
+      on the number of decimals.
+    - If `v` is an integer, the input type is "number" and the step is calculated based
+      on the magnitude of the value.
+    - If `v` is a string, the input type is "text" and the step is set to "any".
+    - For other types, the input is disabled and converted to a string.
+    """
     input_type = "text"
     disabled = False
     ndecimals = None
@@ -63,6 +108,26 @@ def derive_form_parameters(v):
 
 
 def generate_traval_rule_components(rule, rule_number, series_name=None):
+    """Generate components for a travel rule form.
+
+    Parameters
+    ----------
+    rule : dict
+        A dictionary containing rule details. Expected keys are:
+        - "name": str, the name of the rule.
+        - "func": callable, the function associated with the rule.
+        - "kwargs": dict, additional parameters for the rule.
+    rule_number : int
+        The number of the rule in the sequence.
+    series_name : str, optional
+        The name of the series, if applicable.
+
+    Returns
+    -------
+    dbc.Row
+        A Dash Bootstrap Component (dbc) Row containing the generated components for
+        the rule.
+    """
     name = rule["name"]
     ibtn = dbc.Button(
         html.Span(
@@ -169,6 +234,20 @@ def generate_traval_rule_components(rule, rule_number, series_name=None):
 
 
 def render_traval_form(data: DataInterface, series_name=None):
+    """Render a form for displaying and editing TRAVAL rules.
+
+    Parameters
+    ----------
+    data : DataInterface
+        An instance of DataInterface containing the TRAVAL ruleset.
+    series_name : str, optional
+        The name of the series to which the rules apply, by default None.
+
+    Returns
+    -------
+    dbc.Form
+        A Dash Bootstrap Component form populated with TRAVAL rule components.
+    """
     form_components = []
     nrules = len(data.traval._ruleset.rules) - 1
 

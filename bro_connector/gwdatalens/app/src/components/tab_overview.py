@@ -11,6 +11,13 @@ from . import ids, overview_chart, overview_map, overview_table
 
 
 def render():
+    """Renders a Dash Tab component for the overview tab.
+
+    Returns
+    -------
+    dcc.Tab
+        overview tab
+    """
     return dcc.Tab(
         label=i18n.t("general.tab_overview"),
         value=ids.TAB_OVERVIEW,
@@ -20,6 +27,15 @@ def render():
 
 
 def render_cancel_button():
+    """Renders a cancel button component.
+
+    Currently not in use.
+
+    Returns
+    -------
+    html.Div
+        A Div containing a disabled cancel button.
+    """
     return html.Div(
         children=[
             dbc.Button(
@@ -48,6 +64,21 @@ def render_cancel_button():
     timeout=TIMEOUT,
 )
 def render_content(data: DataInterface, selected_data: str):
+    """Renders the content for the overview tab.
+
+    Parameters
+    ----------
+    data : DataInterface
+        The data interface object containing the data to be rendered.
+    selected_data : str
+        The identifier for the selected data to be displayed.
+
+    Returns
+    -------
+    dbc.Container
+        A Dash Bootstrap Component container with the rendered content,
+        including a map, table, and chart.
+    """
     return dbc.Container(
         [
             dbc.Row(

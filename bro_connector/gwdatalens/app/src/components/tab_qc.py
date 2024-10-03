@@ -9,6 +9,13 @@ from . import ids, qc_chart, qc_dropdowns, qc_rules_form, qc_traval_buttons
 
 
 def render():
+    """Renders a Dash Tab component for the QC tab.
+
+    Returns
+    -------
+    dcc.Tab
+        Qc tab for running error detection on time series.
+    """
     return dcc.Tab(
         label=i18n.t("general.tab_qc"),
         value=ids.TAB_QC,
@@ -18,6 +25,22 @@ def render():
 
 
 def render_datepicker_tmin(data, selected_data):
+    """Renders a DatePickerSingle component for selecting the minimum date (tmin).
+
+    Parameters
+    ----------
+    data : object
+        The data object containing the database connection and methods.
+    selected_data : list or None
+        A list containing the selected data. Expected to contain a single string
+        in the format "gmw_id-tube_id". If None or the list length is not 1, the
+        date picker will be disabled.
+
+    Returns
+    -------
+    dcc.DatePickerSingle
+        A Dash DatePickerSingle with the start date.
+    """
     if selected_data is not None and len(selected_data) == 1:
         name = selected_data[0]
         gmw_id, tube_id = name.split("-")
@@ -43,10 +66,25 @@ def render_datepicker_tmin(data, selected_data):
 
 
 def render_datepicker_tmax(data, selected_data):
+    """Renders a DatePickerSingle component for selecting the maximum date (tmax).
+
+    Parameters
+    ----------
+    data : object
+        The data object containing the database connection and methods.
+    selected_data : list or None
+        A list containing the selected data. Expected to contain a single string
+        in the format "gmw_id-tube_id". If None or the list length is not 1, the
+        date picker will be disabled.
+
+    Returns
+    -------
+    dcc.DatePickerSingle
+        A Dash DatePickerSingle with the end date.
+    """
     if selected_data is not None and len(selected_data) == 1:
         name = selected_data[0]
         gmw_id, tube_id = name.split("-")
-        # TODO: replace with get_tmax() from database
         ts = data.db.get_timeseries(gmw_id, tube_id)
         end_date = ts.index[-1].to_pydatetime()
         disabled = False
@@ -68,6 +106,14 @@ def render_datepicker_tmax(data, selected_data):
 
 
 def render_checkbox():
+    """Renders a checkbox component for running error detection on a subset of obs.
+
+    Returns
+    -------
+    dbc.Checkbox
+        A Dash Bootstrap Component (dbc) Checkbox for running error detection
+        on all observations or only on unvalidated observations.
+    """
     return dbc.Checkbox(
         id=ids.QC_RUN_ONLY_UNVALIDATED_CHECKBOX,
         label=i18n.t("general.run_only_on_unvalidated"),
@@ -76,6 +122,20 @@ def render_checkbox():
 
 
 def render_content(data: DataInterface, selected_data: List):
+    """Renders the content for the QC tab.
+
+    Parameters
+    ----------
+    data : DataInterface
+        The data interface object.
+    selected_data : List
+        A list of selected data items.
+
+    Returns
+    -------
+    dbc.Container
+        A Dash Bootstrap Components container with the rendered content.
+    """
     return dbc.Container(
         [
             dbc.Row(

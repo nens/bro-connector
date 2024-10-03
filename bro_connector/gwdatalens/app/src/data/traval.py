@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objs as go
 import traval
 from icecream import ic
-from pandas import Timedelta
+from pandas import DataFrame, Series, Timedelta
 
 from gwdatalens.app.settings import settings
 
@@ -15,6 +15,42 @@ from .util import get_model_sim_pi
 
 
 class TravalInterface:
+    """Interface for running and visualizing traval error detection on time series data.
+
+    Parameters
+    ----------
+    db : object
+        Database object to interact with the data.
+    pstore : object, optional
+        pastastore for time series models, by default None.
+
+    Attributes
+    ----------
+    db : object
+        Database object to interact with the data.
+    pstore : object
+        Persistent storage object for models.
+    ruleset : traval.RuleSet
+        Default ruleset for traval quality control.
+    _ruleset : traval.RuleSet
+        Deep copy of the default ruleset.
+    traval_result : object
+        Result of the traval quality control.
+    traval_figure : object
+        Figure generated from the traval quality control results.
+    detector : traval.Detector
+        Detector object to inspect the result.
+
+    Methods
+    -------
+    get_default_ruleset
+        Initializes and returns the default ruleset for error detection.
+    run_traval
+        Runs traval error detection algorithm on the specified time series data.
+    plot_traval_result
+        Generates a plot of the traval error detection results.
+    """
+
     def __init__(self, db, pstore=None):
         self.db = db
         self.pstore = pstore
@@ -29,6 +65,31 @@ class TravalInterface:
         self._ruleset = deepcopy(self.ruleset)
 
     def get_default_ruleset(self):
+        """Generate the default ruleset for error detection.
+
+        This method initializes a `RuleSet` object with the name "default" and
+        adds several rules to it. The rules include spike detection, hard
+        maximum threshold, flat signal detection, a pastas model with a prediction
+        interval.
+
+        Returns
+        -------
+        RuleSet
+            An initialized `RuleSet` object with the default rules added.
+
+        Notes
+        -----
+        - The "spikes" rule detects spikes in the data based on a threshold, spike
+          tolerance, and maximum gap.
+        - The "hardmax" rule applies a hard maximum threshold using the tube top level
+          from the database.
+        - The "flat_signal" rule detects flat signals based on a window size, minimum
+          no. of observations, and standard deviation threshold.
+        - The "pastas" rule checks if the data is outside the prediction interval of a
+          pastas model, with a specified confidence interval.
+        - The "combine_results" rule combines the results of the previous rules using a
+          logical OR operation.
+        """
         # ruleset
         # initialize RuleSet object
         ruleset = traval.RuleSet(name="default")
@@ -99,6 +160,36 @@ class TravalInterface:
         tmax=None,
         only_unvalidated=False,
     ):
+        """Run the error detection algorithm on a specified time series.
+
+        Parameters
+        ----------
+        gmw_id : str
+            The ID of the groundwater monitoring well.
+        tube_id : int
+            The ID of the tube within the monitoring well.
+        ruleset : optional
+            The ruleset to apply for the traval process. If None, the default ruleset
+            is used.
+        tmin : optional
+            The minimum timestamp to filter the timeseries data.
+        tmax : optional
+            The maximum timestamp to filter the timeseries data.
+        only_unvalidated : bool, optional
+            If True, only unvalidated observations are processed. Default is False.
+
+        Returns
+        -------
+        df : pandas.DataFrame
+            The dataframe containing the traval results, including flags and comments.
+        figure : matplotlib.figure.Figure
+            The figure object representing the traval results.
+
+        Raises
+        ------
+        ValueError
+            If all observations have already been checked.
+        """
         name = f"{gmw_id}-{int(tube_id):03g}"
         ic(f"Running traval for {name}...")
         ts = self.db.get_timeseries(gmw_id, tube_id)
@@ -113,7 +204,7 @@ class TravalInterface:
         ruleset = self._ruleset
         detector.apply_ruleset(ruleset)
 
-        # NOTE: store detector for now to inspect result
+        # NOTE: store detector to inspect result
         # self.detector = detector
 
         comments = detector.get_comment_series()
@@ -190,9 +281,21 @@ class TravalInterface:
             ignore = None
 
         try:
-            ml = self.pstore.get_models(series.name)
+            ml = self.pstore.get_models(name)
         except Exception as _:
             ml = None
+
+        # little modification to add NITG code to figure
+        detector.series.name += f" ({self.db.gmw_gdf.at[name, 'nitg_code']})"
+
+        manual_obs = self.db.get_timeseries(
+            gmw_id, tube_id, observation_type="controlemeting"
+        )
+        if not manual_obs.empty:
+            additional_series = [manual_obs]
+        else:
+            additional_series = None
+
         figure = self.plot_traval_result(
             detector,
             ml,
@@ -200,13 +303,45 @@ class TravalInterface:
             tmax=tmax,
             ignore=ignore,
             qualifiers=ts[self.db.qualifier_column],
+            additional_series=additional_series,
         )
         return df, figure
 
     @staticmethod
     def plot_traval_result(
-        detector, model=None, tmin=None, tmax=None, ignore=None, qualifiers=None
+        detector,
+        model=None,
+        tmin=None,
+        tmax=None,
+        ignore=None,
+        qualifiers=None,
+        additional_series=None,
     ):
+        """Plots the error detection result using Plotly.
+
+        Parameters
+        ----------
+        detector : object
+            The detector object containing the series and error detection results.
+        model : object, optional
+            The time series model used to compute a simulation and prediction interval,
+            by default None.
+        tmin : datetime-like, optional
+            The start time for the plot, by default None.
+        tmax : datetime-like, optional
+            The end time for the plot, by default None.
+        ignore : list-like, optional
+            List of indices to ignore in the plot, by default None.
+        qualifiers : Series, optional
+            Series containing qualifiers to differentiate points, by default None.
+        additional_series : list of Series or DataFrame, optional
+            Additional series to plot, by default None.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the data and layout for the plot.
+        """
         traces = []
 
         ts0 = detector.series
@@ -258,6 +393,26 @@ class TravalInterface:
                     legendgroup=qualifier,
                     showlegend=True,
                     legendrank=legendrank,
+                )
+                traces.append(trace_i)
+
+        if additional_series is not None:
+            if isinstance(additional_series, (Series, DataFrame)):
+                additional_series = [additional_series]
+            elif not isinstance(additional_series, list):
+                raise ValueError(
+                    "additional_series should be a list of Series/DataFrames"
+                )
+            for add_series in additional_series:
+                trace_i = go.Scattergl(
+                    x=add_series.index,
+                    y=add_series,
+                    mode="markers",
+                    marker={"color": "red", "size": 6},
+                    name=add_series.name,
+                    legendgroup="manual obs",
+                    showlegend=True,
+                    legendrank=1001,
                 )
                 traces.append(trace_i)
 
@@ -366,7 +521,7 @@ class TravalInterface:
             },
             # "hovermode": "x",
             "dragmode": "pan",
-            "margin": dict(l=50, r=20),
+            "margin": {"l": 50, "r": 20},
         }
         # set axes limits
         if ignore is not None:
@@ -384,4 +539,4 @@ class TravalInterface:
             dy = 0.05 * (ymax - ymin)
             layout["yaxis"]["range"] = [ymin - dy, ymax + dy]
 
-        return dict(data=traces, layout=layout)
+        return {"data": traces, "layout": layout}

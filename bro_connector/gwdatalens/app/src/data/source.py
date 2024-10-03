@@ -3,8 +3,9 @@ import os
 import pickle
 from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
-from typing import List, Tuple
+from typing import List, Optional, Tuple, Union
 from urllib.parse import quote
+
 import geopandas as gpd
 import i18n
 import numpy as np
@@ -20,6 +21,26 @@ logger = logger = logging.getLogger(__name__)
 
 
 class DataSourceTemplate(ABC):
+    """Abstract base class for a data source class.
+
+    This class defines the interface for the data source class, which includes
+    methods for retrieving metadata, listing measurement locations, and
+    getting time series data from a data source (e.g. database).
+
+    Methods
+    -------
+    gmw_gdf : gpd.GeoDataFrame
+        Get head observations metadata as GeoDataFrame.
+    list_locations:  List[str]
+        List of measurement location names.
+    list_locations_sorted_by_distance : List[str]
+        List of measurement location names, sorted by distance.
+    get_timeseries : pd.DataFrame
+        Get time series.
+    save_qualifier :
+        Save error detection (traval) result in database.
+    """
+
     @property
     @abstractmethod
     def gmw_gdf(self) -> gpd.GeoDataFrame:
@@ -57,7 +78,7 @@ class DataSourceTemplate(ABC):
         """
 
     @abstractmethod
-    def get_timeseries(self, gmw_id: str, tube_id: int) -> pd.Series:
+    def get_timeseries(self, gmw_id: str, tube_id: int) -> pd.DataFrame:
         """Get time series.
 
         Parameters
@@ -69,7 +90,7 @@ class DataSourceTemplate(ABC):
 
         Returns
         -------
-        pd.Series
+        pd.DataFrame
             time series of head observations.
         """
 
@@ -85,6 +106,44 @@ class DataSourceTemplate(ABC):
 
 
 class DataSource(DataSourceTemplate):
+    """DataSource class connecting to Provincie Zeelands postgresql database.
+
+    Parameters
+    ----------
+    config : dict
+        Configuration dictionary containing database connection parameters.
+
+    Attributes
+    ----------
+    config : dict
+        Configuration dictionary containing database connection parameters.
+    engine : sqlalchemy.engine.Engine
+        SQLAlchemy engine for database connection.
+    value_column : str
+        Column name for the value field (containing the observations)
+    qualifier_column : str
+        Column name for the quality control status.
+    source : str
+        Source identifier, default is "zeeland".
+
+    Methods
+    -------
+    gmw_gdf
+        Returns all unique piezometers as a GeoDataFrame.
+    list_locations
+        Returns a list of locations that contain groundwater level dossiers.
+    list_locations_sorted_by_distance
+        Returns a list of locations sorted by distance from a given location.
+    get_timeseries
+        Returns a Pandas DataFrame for the measurements for a given location.
+    count_measurements_per_filter
+        Returns a count of measurements per filter.
+    save_qualifier
+        Saves the quality control information to the database.
+    set_qc_fields_for_database(
+        Sets the quality control fields.
+    """
+
     def __init__(self, config):
         # init connection to database OR just read in some data from somewhere
         # Connect to database using psycopg2
@@ -95,26 +154,27 @@ class DataSource(DataSourceTemplate):
             # NOTE: use for background callbacks
             # self.engine.dispose()
         except Exception as e:
-            print(e)
-            logger.error("Database not connected successfully")
+            logger.error(f"Database not connected successfully: {e}")
 
         self.value_column = "field_value"
         self.qualifier_column = "status_quality_control"
         self.source = "zeeland"
 
     def _engine(self):
+        # NOTE: could theoretically be used to return new engine for
+        # background callbacks (but this approach made app slower on Windows though)
         config = self.config
-        user = config.get('user')
-        password = config.get('password')
-        host = config.get('host')
-        port = config.get('port')
-        database = config.get('database')
+        user = config.get("user")
+        password = config.get("password")
+        host = config.get("host")
+        port = config.get("port")
+        database = config.get("database")
 
         if not all([user, password, host, port, database]):
             raise ValueError("Database configuration is incomplete")
 
         # URL-encode the password
-        encoded_password = quote(password, safe='')
+        encoded_password = quote(password, safe="")
 
         connection_string = (
             f"postgresql+psycopg2://{user}:{encoded_password}@{host}:{port}/{database}"
@@ -122,26 +182,27 @@ class DataSource(DataSourceTemplate):
 
         return create_engine(
             connection_string,
-            connect_args={"options": "-csearch_path=gmw,gld,public"},
+            connect_args={"options": "-csearch_path=gmw,gld,public,django_admin"},
         )
 
     @cached_property
     def gmw_gdf(self) -> gpd.GeoDataFrame:
-        return self._gmw_to_gdf()
-
-    def _gmw_to_gdf(self):
-        """
-        Return all unique piezometers as a (Geo)DataFrame.
+        """Get metadata as GeoDataFrame.
 
         Returns
         -------
-        gdf : a (Geo)Pandas(Geo)DataFrame
-            a (Geo)DataFrame with a unique index, describing the well-name and the tube-
-            number, and at least the following columns:
-                screen_top
-                screen_bot
-                lat
-                lon
+        gpd.GeoDataFrame
+            A GeoDataFrame containing the metadata of piezometers.
+        """
+        return self._gmw_to_gdf()
+
+    def _gmw_to_gdf(self):
+        """Return all piezometer metadata as a (Geo)DataFrame.
+
+        Returns
+        -------
+        gdf : a gpd.GeoDataFrame
+            a GeoDataFrame with the metadata.
         """
         stmt = (
             select(
@@ -195,16 +256,24 @@ class DataSource(DataSourceTemplate):
 
         # sort data:
         gdf.sort_values(
-            ["metingen", "nitg_code", "tube_number"], ascending=False, inplace=True
+            ["metingen", "nitg_code", "tube_number"],
+            ascending=[False, True, True],
+            inplace=True,
         )
         gdf["id"] = range(gdf.index.size)
 
         return gdf
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def list_locations(self) -> List[str]:
-        """Return a list of locations that contain groundwater level dossiers, where
-        each location is defines by a tuple of length 2: bro-id and tube_id
+        """Return a list of locations that contain groundwater level dossiers.
+
+        Each location is defines by a tuple of length 2: bro-id and tube_id.
+
+        Returns
+        -------
+        List[str]
+            List of measurement location names.
         """
         # get all grundwater level dossiers
         stmt = (
@@ -232,6 +301,18 @@ class DataSource(DataSourceTemplate):
         return locations
 
     def list_locations_sorted_by_distance(self, name) -> List[str]:
+        """List locations sorted by their distance from a given location.
+
+        Parameters
+        ----------
+        name : str
+            The name of the location from which distances are calculated.
+
+        Returns
+        -------
+        List[str]
+            A list of location names sorted by their distance from the given location.
+        """
         gdf = self.gmw_gdf.copy()
 
         p = gdf.loc[name, "coordinates"]
@@ -243,11 +324,37 @@ class DataSource(DataSourceTemplate):
         return distsorted
 
     def get_timeseries(
-        self, gmw_id: str, tube_id: int, observation_type="reguliereMeting"
+        self,
+        gmw_id: str,
+        tube_id: Optional[int] = None,
+        observation_type="reguliereMeting",
+        column: Optional[Union[List[str], str]] = None,
     ) -> pd.Series:
-        """Return a Pandas Series for the measurements at the requested bro-id and
-        tube-id, im m. Return None when there are no measurements.
+        """Return a Pandas Series for the measurements for given bro-id and tube-id.
+
+        Values returned im m. Return None when there are no measurements.
+
+        Parameters
+        ----------
+        gmw_id : str
+            id of the observation well
+        tube_id : int, optional
+            tube number of the observation well
+        observation_type : str, optional
+            type of observation, by default "reguliereMeting". Options are
+            "reguliereMeting", "controlemeting".
+        column : str, optional
+            column to return, by default None
+
+        Returns
+        -------
+        pd.Series
+            time series of head observations.
         """
+        # allow passing full ID to first argument to use this function in traval
+        # for getting manual observations using a single ID string.
+        if tube_id is None:
+            gmw_id, tube_id = gmw_id.split("-")
         stmt = (
             select(
                 datamodel.MeasurementTvp.measurement_time,
@@ -282,7 +389,7 @@ class DataSource(DataSourceTemplate):
             and observation_type != "controlemeting"
         ):
             logger.warning(
-                f"Timeseries {gmw_id}-{tube_id} has no data " f"in {self.value_column}!"
+                f"Timeseries {gmw_id}-{tube_id} has no data in {self.value_column}!"
             )
 
         if self.value_column == "field_value":
@@ -307,9 +414,19 @@ class DataSource(DataSourceTemplate):
         # drop dupes
         df = df.loc[~df.index.duplicated(keep="first")]
 
-        return df
+        if column is not None:
+            return df.loc[:, column]
+        else:
+            return df
 
     def count_measurements_per_filter(self) -> pd.Series:
+        """Count the number of measurements per filter.
+
+        Returns
+        -------
+        pd.Series
+            A pandas Series containing the count of measurements in each time series.
+        """
         stmt = (
             select(
                 datamodel.Well.bro_id,
@@ -335,6 +452,19 @@ class DataSource(DataSourceTemplate):
         return count
 
     def save_qualifier(self, df):
+        """Save qualifier information to the database.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            The DataFrame containing the qualifier data to be saved. It must include
+            the following columns:
+            - "measurement_point_metadata_id"
+            - The column specified by `self.qualifier_column`
+            - "censor_reason_artesia"
+            - "censor_reason"
+            - "value_limit"
+        """
         df = self.set_qc_fields_for_database(df)
 
         param_columns = [
@@ -413,7 +543,13 @@ class DataSourceHydropandas(DataSourceTemplate):
         return self._gmw_to_gdf()
 
     def _gmw_to_gdf(self):
-        """Return all groundwater monitoring wells (gmw) as a GeoDataFrame"""
+        """Return all groundwater monitoring wells (gmw) as a GeoDataFrame.
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            GeoDataFrame containing groundwater monitoring well locations and metadata
+        """
         oc = self.oc
         gdf = gpd.GeoDataFrame(oc, geometry=gpd.points_from_xy(oc.x, oc.y))
         columns = {
@@ -430,10 +566,16 @@ class DataSourceHydropandas(DataSourceTemplate):
 
         return gdf
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def list_locations(self) -> List[Tuple[str, int]]:
-        """Return a list of locations that contain groundwater level dossiers, where
-        each location is defines by a tuple of length 2: bro-id and tube_id
+        """Return a list of locations that contain groundwater level dossiers.
+
+        Each location is defines by a tuple of length 2: bro-id and tube_id.
+
+        Returns
+        -------
+        List[Tuple[str, int]]
+            List of measurement location names.
         """
         oc = self.oc
         locations = []
@@ -453,14 +595,27 @@ class DataSourceHydropandas(DataSourceTemplate):
         )
         return distsorted
 
-    def get_timeseries(self, gmw_id: str, tube_nr: int) -> pd.Series:
-        """Return a Pandas Series for the measurements at the requested gmw_id and
-        tube_id, im m. Return None when there are no measurements.
+    def get_timeseries(self, gmw_id: str, tube_id: int) -> pd.DataFrame:
+        """Return a Pandas Series for the measurements for gmw_id and tube_id.
+
+        Values returned in m. Return None when there are no measurements.
+
+        Parameters
+        ----------
+        gmw_id : str
+            id of the observation well
+        tube_id : int
+            tube number of the observation well
+
+        Returns
+        -------
+        pd.DataFrame
+            time series of head observations.
         """
         if self.source == "bro":
-            name = f"{gmw_id}_{tube_nr}"  # bro
+            name = f"{gmw_id}_{tube_id}"  # bro
         elif self.source == "dino":
-            name = f"{gmw_id}-{tube_nr}"  # dino
+            name = f"{gmw_id}-{tube_id}"  # dino
         else:
             raise ValueError
 
