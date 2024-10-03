@@ -145,11 +145,12 @@ def register_result_callbacks(app, data):
                         mask & mask_incoming_not_suspect, "status_quality_control"
                     ] = "goedgekeurd"
                     # set status for incoming suspects
-                    df.loc[
-                        ~mask_incoming_not_suspect, "status_quality_control"
-                    ] = df.loc[
-                        ~mask_incoming_not_suspect, "incoming_status_quality_control"
-                    ]
+                    df.loc[~mask_incoming_not_suspect, "status_quality_control"] = (
+                        df.loc[
+                            ~mask_incoming_not_suspect,
+                            "incoming_status_quality_control",
+                        ]
+                    )
                 elif non_flagged_reliable == "suspect":
                     # only overwrite status to suspect for erroneous obs
                     df.loc[mask, "status_quality_control"] = df.loc[

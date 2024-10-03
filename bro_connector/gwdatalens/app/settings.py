@@ -10,9 +10,11 @@ with open(DATALENS_APP_PATH / "config.toml", "rb") as f:
     config = tomli.load(f)
     settings = config["settings"]
 
+# %%
 if settings["DJANGO_APP"]:
-    from main import localsecret
+    from main import localsecret  # noqa
 
+    # NOTE: edit for other database configurations
     config["database"] = {
         "database": localsecret.database,
         "user": localsecret.user,
@@ -24,7 +26,6 @@ else:
     with open(DATALENS_APP_PATH / "database.toml", "rb") as f:
         dbase = tomli.load(f)
         config["database"] = dbase["database"]
-
 
 # %% set paths accordingly
 

@@ -13,6 +13,13 @@ from . import ids
     timeout=TIMEOUT,
 )
 def render():
+    """Render QC chart.
+
+    Returns
+    -------
+    dash_html_components.Div
+        A Div component containing the QC chart.
+    """
     return html.Div(
         id="series-chart-div",
         children=[

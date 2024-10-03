@@ -6,6 +6,13 @@ from . import ids
 
 
 def render_generate_button():
+    """Renders a button for generating time series models.
+
+    Returns
+    -------
+    html.Div
+        A Div containing the generate model button.
+    """
     return html.Div(
         Button(
             html.Span(
@@ -27,6 +34,13 @@ def render_generate_button():
 
 
 def render_save_button():
+    """Renders a save model button component.
+
+    Returns
+    -------
+    div
+        A Div containing the model save button.
+    """
     return html.Div(
         Button(
             html.Span(

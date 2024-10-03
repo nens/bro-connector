@@ -48,6 +48,29 @@ def render(data, selected_data):
 
 
 def plot_obs(names, data):
+    """Plots observation data for given monitoring wells and tube numbers.
+
+    Parameters
+    ----------
+    names : list of str
+        List of strings representing monitoring well and tube number in the format
+        "{gmw_id}-{tube_id}".
+    data : object
+        Data object containing database access and configuration.
+
+    Returns
+    -------
+    dict
+        A dictionary containing plot data and layout configuration for the observations.
+
+    Notes
+    -----
+    - If `names` is None, returns a layout with a title indicating no plot.
+    - If a name is not found in the database, it is skipped.
+    - For a single name, plots the timeseries data with different qualifiers and manual
+      observations.
+    - For multiple names, plots the timeseries data with markers and lines.
+    """
     if names is None:
         return {"layout": {"title": i18n.t("general.no_plot")}}
 
@@ -82,7 +105,7 @@ def plot_obs(names, data):
                 y=ts.values,
                 mode="lines",
                 line={"width": 1, "color": "gray"},
-                name=name,
+                name=name + f" ({data.db.gmw_gdf.at[name, 'nitg_code']})",
                 legendgroup=f"{name}-{tube_nr}",
                 showlegend=True,
             )
@@ -162,4 +185,4 @@ def plot_obs(names, data):
         "margin-top": 0,
     }
 
-    return dict(data=traces, layout=layout)
+    return {"data": traces, "layout": layout}

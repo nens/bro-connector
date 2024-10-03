@@ -12,9 +12,10 @@ from gmw.models import (
     gmw_registration_log,
 )
 
-import logging 
+import logging
 
 logger = logging.getLogger(__name__)
+
 
 # FORMULAS USED IN HISTORIE_OPHALEN COMMAND DJANGO ZEELAND
 def slice(sourcedict, string):
@@ -45,6 +46,7 @@ def well_dynamic(gmwd, updates_dict):
     )
     return gmwd
 
+
 def remove_prefix_from_keys(dictionary, prefix):
     """
     Remove a specified prefix from keys in a dictionary.
@@ -59,11 +61,12 @@ def remove_prefix_from_keys(dictionary, prefix):
     new_dict = {}
     for key, value in dictionary.items():
         if key.startswith(prefix):
-            new_key = key[len(prefix):]
+            new_key = key[len(prefix) :]
             new_dict[new_key] = value
         else:
             new_dict[key] = value
     return new_dict
+
 
 def tube_dynamic(gmtd, updates_dict):
     gmtd.tube_top_diameter = updates_dict.get("tubeTopDiameter", gmtd.tube_top_diameter)
@@ -145,17 +148,17 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
             events.exclude(pk=event.pk).delete()
 
     log = gmw_registration_log.objects.update_or_create(
-        delivery_type = "register",
-        event_id = event.change_id,
-        bro_id = event.groundwater_monitoring_well_static.bro_id,
+        delivery_type="register",
+        event_id=event.change_id,
+        bro_id=event.groundwater_monitoring_well_static.bro_id,
         defaults=dict(
-            date_modified = datetime.datetime.now(),
-            validation_status = "VALIDE",
-            delivery_status = "OPGENOMEN_LVBRO",
-            comments = "Imported with the BRO-Import functionality.",
-            quality_regime = event.groundwater_monitoring_well_static.quality_regime,
-            process_status = "delivery_approved", 
-        )
+            date_modified=datetime.datetime.now(),
+            validation_status="VALIDE",
+            delivery_status="OPGENOMEN_LVBRO",
+            comments="Imported with the BRO-Import functionality.",
+            quality_regime=event.groundwater_monitoring_well_static.quality_regime,
+            process_status="delivery_approved",
+        ),
     )
 
     return event
@@ -176,12 +179,14 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
 
     return eles_id
 
+
 def get_tube_static(groundwater_monitoring_well, tube_number):
     gmts_id = GroundwaterMonitoringTubeStatic.objects.get(
         groundwater_monitoring_well_static=groundwater_monitoring_well,
         tube_number=tube_number,
     )
     return gmts_id
+
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime.datetime:
     print(event_date)
@@ -191,6 +196,7 @@ def convert_event_date_str_to_datetime(event_date: str) -> datetime.datetime:
         date = datetime.datetime.strptime(event_date, "%Y")
 
     return date
+
 
 class Updater:
     def __init__(self, gmw_dict, groundwater_monitoring_well):
@@ -242,18 +248,17 @@ class Updater:
             )
 
             gmw_registration_log.objects.update_or_create(
-                delivery_type = "register",
-                event_id = self.event.change_id,
-                bro_id = self.event.groundwater_monitoring_well_static.bro_id,
+                delivery_type="register",
+                event_id=self.event.change_id,
+                bro_id=self.event.groundwater_monitoring_well_static.bro_id,
                 defaults=dict(
-                    validation_status = "VALIDE",
-                    delivery_status = "OPGENOMEN_LVBRO",
-                    comments = "Imported with the BRO-Import functionality.",
-                    quality_regime = self.event.groundwater_monitoring_well_static.quality_regime,
-                )
+                    validation_status="VALIDE",
+                    delivery_status="OPGENOMEN_LVBRO",
+                    comments="Imported with the BRO-Import functionality.",
+                    quality_regime=self.event.groundwater_monitoring_well_static.quality_regime,
+                ),
             )
-        print(event, event.event_date)
-
+        print(self.event, self.event.event_date)
 
     def intermediate_events(self):
         # Create a base event
@@ -291,7 +296,7 @@ class TableUpdater(Updater):
                 tube_number=updates[f"{prefix}tubeNumber"],
                 groundwater_monitoring_well_static=well_static,
             )
-            
+
             if event.groundwater_monitoring_tube_dynamic:
                 # Clone row and make new primary key with save
                 new_gmtd = event.groundwater_monitoring_tube_dynamic
@@ -300,7 +305,7 @@ class TableUpdater(Updater):
                 new_gmtds = GroundwaterMonitoringTubeDynamic.objects.filter(
                     groundwater_monitoring_tube_static=new_gmts
                 )
-                    # This assumes the gmwds are sorted based on creation date.
+                # This assumes the gmwds are sorted based on creation date.
                 if len(new_gmtds) == 1:
                     new_gmtd = new_gmtds.first()
                     new_gmtd.groundwater_monitoring_tube_dynamic_id = None
@@ -312,7 +317,9 @@ class TableUpdater(Updater):
             # Check what has to be changed
             updates = remove_prefix_from_keys(updates, prefix)
             new_gmtd = tube_dynamic(new_gmtd, updates)
-            new_gmtd.date_from = datetime.datetime.combine(event.event_date, datetime.time())
+            new_gmtd.date_from = datetime.datetime.combine(
+                event.event_date, datetime.time()
+            )
             # Save and add new key to event
             new_gmtd.save()
 
@@ -322,7 +329,9 @@ class TableUpdater(Updater):
 
             data_num += 1
 
-    def electrode_data(well_static: GroundwaterMonitoringWellStatic, event: Event, updates):
+    def electrode_data(
+        well_static: GroundwaterMonitoringWellStatic, event: Event, updates
+    ):
         if event.electrode_dynamic:
             new_eleds = event.electrode_dynamic
         else:
@@ -350,7 +359,9 @@ class TableUpdater(Updater):
 
         # Check what has to be changed
         new_eled = electrode_dynamic(new_eled, updates)
-        new_eled.date_from = datetime.datetime.combine(event.event_date, datetime.time())
+        new_eled.date_from = datetime.datetime.combine(
+            event.event_date, datetime.time()
+        )
         # Save and add new key to event
         new_eled.save()
 
@@ -382,8 +393,10 @@ class TableUpdater(Updater):
 
         # Check what has to be changed
         new_gmwd = well_dynamic(new_gmwd, updates)
-        
-        new_gmwd.date_from = datetime.datetime.combine(event.event_date, datetime.time())
+
+        new_gmwd.date_from = datetime.datetime.combine(
+            event.event_date, datetime.time()
+        )
         # Save and add new key to event
         new_gmwd.save()
 

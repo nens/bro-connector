@@ -21,6 +21,8 @@ def register_overview_callbacks(app, data):
         ----------
         selected_data : list of dict
             selected data points from map
+        current_value : str
+            current selected value
 
         Returns
         -------
@@ -58,6 +60,31 @@ def register_overview_callbacks(app, data):
     def plot_overview_time_series(
         selectedData, selected_oseries, table_selected_1, table_selected_2
     ):
+        """Plots an overview time series based on selected data.
+
+        Parameters
+        ----------
+        selectedData : dict
+            Dictionary containing data points selected by the user on the map.
+        selected_oseries : list
+            List of selected observation series from store.
+        table_selected_1 : tuple or None
+            Tuple containing the date and table data for the first table selection.
+        table_selected_2 : tuple or None
+            Tuple containing the date and table data for the second table selection.
+
+        Returns
+        -------
+        chart : dict
+            Dictionary representing the chart layout and data.
+        table : list
+            List of records representing the table data.
+        alert : tuple
+            Tuple containing a boolean indicating whether to show an alert, the alert
+            type, and the alert message.
+        timestamp : tuple
+            Tuple containing the current timestamp and a boolean indicating the status.
+        """
         usecols = [
             "id",
             "bro_id",
@@ -97,8 +124,9 @@ def register_overview_callbacks(app, data):
                     (
                         True,
                         "warning",
-                        i18n.t("general.max_selection_warning")
-                        % settings["SERIES_LOAD_LIMIT"],
+                        i18n.t("general.max_selection_warning").format(
+                            settings["SERIES_LOAD_LIMIT"]
+                        ),
                     ),
                     (pd.Timestamp.now().isoformat(), False),
                 )
@@ -165,6 +193,26 @@ def register_overview_callbacks(app, data):
         prevent_initial_call=True,
     )
     def highlight_point_on_map_from_table(selected_cells, table):
+        """Highlights points on a map based on selected cells from overview table.
+
+        Parameters
+        ----------
+        selected_cells : list of dict or None
+            List of dictionaries containing information about selected cells.
+            Each dictionary should have a "row" key. If None, the function returns
+            no updates.
+        table : dict
+            records representing the table data.
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - dict: A dictionary with information about the highlighted points.
+            - Patch: An object representing the updated map patch with selected points.
+            - tuple: A tuple containing the current timestamp and a boolean indicating
+              if the update was successful.
+        """
         if selected_cells is None:
             return no_update, no_update, (pd.Timestamp.now().isoformat(), False)
 

@@ -1,3 +1,5 @@
+"""File containing component IDs for the Dash app."""
+
 # HEADER
 HELP_BUTTON_OPEN = "help-button-open"
 HELP_BUTTON_CLOSE = "help-button-close"
@@ -20,6 +22,7 @@ ALERT_MARK_OBS = "alert-mark-obs"
 ALERT_LABEL_OBS = "alert-label-obs"
 ALERT_LOAD_RULESET = "alert-load-ruleset"
 ALERT_RUN_TRAVAL = "alert-run-traval"
+ALERT_TAB_RENDER = "alert-tab-render"
 
 # STORES
 SELECTED_OSERIES_STORE = "selected-oseries-store"

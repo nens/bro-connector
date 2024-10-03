@@ -24,8 +24,6 @@
 #help-button-close {
     background-color: #006f92;
     font-size: medium;
-
-    /* Push this element to the right */
 }
 
 #traval-load-ruleset-button {
@@ -34,6 +32,19 @@
     font-size: medium;
     display: inline-block;
     cursor: pointer;
+}
+
+button {
+    background-color: #006f92 !important;
+    font-size: medium;
+}
+
+button.btn-close {
+    background-color: #ffffff00 !important;
+}
+
+button[id*="clear-button"] {
+    background-color: darkred !important;
 }
 
 .loading-wrapper-qc-result>div {
