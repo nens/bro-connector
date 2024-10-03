@@ -13,12 +13,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 import platform
 from pathlib import Path
-
 import django.db.models.options as options
+from main.localsecret import env
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
-
-ENVIRONMENT = "staging"
 
 # Application definition
 MODULES = ["gmw", "frd", "gld", "gmn"]
@@ -281,7 +279,7 @@ ADMIN_REORDER = (
     },
 )
 
-if ENVIRONMENT == "production":
+if env == "production":
     demo = False
     welcome_sign = "Inloggen"
 else:

@@ -14,6 +14,7 @@ from gmn.models import MeasuringPoint
 from gmw.custom_filters import (
     WellFilter,
     TubeFilter,
+    EventTypeFilter,
 )
 import main.utils.validators_admin as validators_admin
 from main.utils.fieldform import FieldFormGenerator
@@ -474,7 +475,12 @@ class GmwSyncLogAdmin(admin.ModelAdmin):
         "process_status",
         "comments",
     )
-    list_filter = ("bro_id",)
+    list_filter = (
+        "bro_id",
+        EventTypeFilter,
+        "process_status", 
+        "comments",
+    )
 
     readonly_fields = (
         "date_modified",

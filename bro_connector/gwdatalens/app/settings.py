@@ -17,10 +17,10 @@ if settings["DJANGO_APP"]:
     # NOTE: edit for other database configurations
     config["database"] = {
         "database": localsecret.database,
-        "user": localsecret.s_user,
-        "password": localsecret.s_password,
-        "host": localsecret.s_host,
-        "port": localsecret.s_port,
+        "user": localsecret.user,
+        "password": localsecret.password,
+        "host": localsecret.host,
+        "port": localsecret.port,
     }
 else:
     with open(DATALENS_APP_PATH / "database.toml", "rb") as f:

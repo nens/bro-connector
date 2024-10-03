@@ -6,13 +6,13 @@ from main.management.commands.tasks.gmn_tasks.gmn_request_handlers import (
     ClosureGMN,
 )
 from bro.models import Organisation
-from main.settings.base import ENVIRONMENT
+from main.settings.base import env
 import logging
 
 logger = logging.getLogger(__name__)
 
 def is_demo():
-    if ENVIRONMENT == "production":
+    if env == "production":
         return False
     return True
 

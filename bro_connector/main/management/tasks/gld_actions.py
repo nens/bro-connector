@@ -5,15 +5,14 @@ import logging
 
 from main.management.commands import gld_sync_to_bro
 
-
-from main.settings.base import ENVIRONMENT
+from main.settings.base import env
 
 logger = logging.getLogger(__name__)
 
 folders = ["./additions/", "./startregistrations/"]
 
 def is_demo():
-    if ENVIRONMENT == "production":
+    if env == "production":
         return False
     return True
 

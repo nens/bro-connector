@@ -10,33 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from main.localsecret import t_host, t_password, t_port, t_user, validation_key, database
-from bro_connector.main.settings.base import *  # noqa: F403
+from main.localsecret import host, password, port, user, validation_key, database
+from main.settings.base import *  # noqa: F403
+
 
 DEBUG = True
 ROOT_URLCONF = "main.urls"
 SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://bro-prod.zeeland.nl/",
-    "https://bro-prod.zeeland.nl/admin",
-]
-
-
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
 DATABASES = {
     "default": {
         "NAME": database,
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "USER": t_user,
-        "PASSWORD": t_password,
-        "HOST": t_host,
-        "PORT": t_port,
-        "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
+        "USER": user,
+        "PASSWORD": password,
+        "HOST": host,
+        "PORT": port,
+        "OPTIONS": {"options": "-c search_path=django_admin,public"},
     },
 }
 
@@ -49,3 +39,4 @@ LIZARD_SETTINGS = {
     "organisation_uuid": "e7d66583-43b2-4c90-b118-f2093798885a",
     "site_url": "https://nens.lizard.net",
 }
+

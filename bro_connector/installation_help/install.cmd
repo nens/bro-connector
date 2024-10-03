@@ -69,6 +69,8 @@ REM Run the first Python script
 REM Run the second Python script
 %PYTHON_CMD% generate_salt_string.py
 
+echo The SALT_STRING and FERNET_ENCRYPTION_KEY have to be added to main/localsecret.py
+
 echo Let's create the database for the application.
 
 REM Prompt the user for the PostgreSQL username
@@ -107,7 +109,6 @@ if /I "%confirm%" EQU "yes" (
     echo Running the SQL file to create schemas...
     "%PGADMIN_PATH%\psql" -U %PGUSER% -h %PGHOST% -p %PGPORT% -d %PGDATABASE% -f %SQL_FILE_PATH%
 )
-
 
 
 copy %CUR_DIR%\..\main\localsecret_template.py %CUR_DIR%\..\main\localsecret.py

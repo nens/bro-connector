@@ -5,7 +5,7 @@ import datetime
 import bisect
 import reversion
 from copy import deepcopy
-from main.settings.base import ENVIRONMENT
+from main.settings.base import env
 from django.apps import apps
 from gld import models
 from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
@@ -317,7 +317,7 @@ class GldSyncHandler:
         self._set_folder_dir('gld')
 
     def _is_demo(self):
-        if ENVIRONMENT == "production":
+        if env == "production":
             return False
         return True
 

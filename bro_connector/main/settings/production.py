@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from main.localsecret import database, p_user, p_password, p_host, p_port, validation_key
-from bro_connector.main.settings.base import *  # noqa: F403
+from main.localsecret import database, user, password, host, port, validation_key
+from main.settings.base import *  # noqa: F403
 
 DEBUG = False
 ROOT_URLCONF = "main.urls"
@@ -31,10 +31,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": database,
-        "USER": p_user,
-        "PASSWORD": p_password,
-        "HOST": p_host,
-        "PORT": p_port,
+        "USER": user,
+        "PASSWORD": password,
+        "HOST": host,
+        "PORT": port,
         "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
     }
 }

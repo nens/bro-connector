@@ -23,21 +23,6 @@ from gmw.models import (
 
 logger = logging.getLogger(__name__)
 
-
-def convert_event_date_str_to_datetime(event_date: str) -> datetime.datetime:
-    try:
-        date = datetime.datetime.strptime(event_date,'%Y-%m-%d')
-    except ValueError:
-        date = datetime.datetime.strptime(event_date,'%Y')
-    except TypeError:
-        date = datetime.datetime.strptime("1900-01-01",'%Y-%m-%d')
-
-    return date
-
-def datetime_convert(gmt_datetime: str) -> datetime.date:
-    date = convert_event_date_str_to_datetime(gmt_datetime)
-    return date.astimezone().date()
-
 def gen_gebeurtenis(event):
     if event["constructie"]:
         return "Inrichting"
@@ -623,7 +608,7 @@ def get_dropdown_events(groundwater_monitoring_well_static_id):
     if str(groundwater_monitoring_well_static_id).isdigit():
         monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, groundwater_monitoring_well_static_id=groundwater_monitoring_well_static_id)
     else:
-        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, bro_id=groundwater_monitoring_well_static_id)
+        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, well_code=groundwater_monitoring_well_static_id)
 
     events = []
 
@@ -648,7 +633,6 @@ def get_dropdown_events(groundwater_monitoring_well_static_id):
 
     # Post-processing (removing duplicates and formatting)
     events = pd.DataFrame(events)
-
     events = events.sort_values(by=["strptime"])
     events = events.to_dict(orient="records")
     value = len(events) - 1
@@ -659,8 +643,7 @@ def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
     if event.groundwater_monitoring_well_dynamic:
         return event.groundwater_monitoring_well_dynamic
     
-    datetime_event = convert_event_date_str_to_datetime(event.event_date)
-
+    datetime_event = event.event_date
     return GroundwaterMonitoringWellDynamic.objects.filter(
         groundwater_monitoring_well_static = event.groundwater_monitoring_well_static,
         date_from__lte =  datetime_event,
@@ -677,10 +660,13 @@ def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
 def get_event(groundwater_monitoring_well_static_id, eventlist, event):
     eventframe = pd.DataFrame(eventlist)
     event_id = eventframe["event"][eventframe["value"] == event].values[0]["event_id"]
-    monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, bro_id=groundwater_monitoring_well_static_id)
+    if str(groundwater_monitoring_well_static_id).isdigit():
+        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, groundwater_monitoring_well_static_id=groundwater_monitoring_well_static_id)
+    else:
+        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, well_code=groundwater_monitoring_well_static_id)
     event = get_object_or_404(Event, change_id=event_id)
     well_dynamic = get_well_dynamic(event)
-    datetime_event = convert_event_date_str_to_datetime(event.event_date)
+    datetime_event = event.event_date
     well_head_protector = well_dynamic.well_head_protector
 
 
@@ -693,7 +679,6 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
         },
         "filters": [],
     }
-
     elektrode_data = []
 
     filters = GroundwaterMonitoringTubeStatic.objects.filter(groundwater_monitoring_well_static=monitoring_well)
@@ -761,6 +746,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
     selection = putdataframe[putdataframe["datum"] == event]
     selection["gmw"] = monitoring_well.__str__()
     selection["startpunten"] = putdataframe["onderkant buis"]
+    print(selection)
 
     for column in [
         "onderkant buis",
