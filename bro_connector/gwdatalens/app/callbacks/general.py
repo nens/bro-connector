@@ -1,7 +1,9 @@
 import dash_bootstrap_components as dbc
+import i18n
 from dash import Input, Output, State, ctx, html
 from dash.exceptions import PreventUpdate
 
+from gwdatalens.app.settings import settings
 from gwdatalens.app.src.components import (
     ids,
     tab_model,
@@ -41,20 +43,82 @@ def register_general_callbacks(app, data):
 
     @app.callback(
         Output(ids.TAB_CONTENT, "children"),
+        Output(ids.ALERT_TAB_RENDER, "data"),
         Input(ids.TAB_CONTAINER, "value"),
         State(ids.SELECTED_OSERIES_STORE, "data"),
         State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
     )
     def render_tab_content(tab, selected_data, figure):
+        """Render tab content.
+
+        Parameters
+        ----------
+        tab : str
+            selected tab
+        selected_data : str or list of str, or None
+            selected data points in overview tab
+        figure : tuple or None
+            tuple containing name and plotly figure dictionary
+
+        Returns
+        -------
+        tuple
+            tuple containing tab content and alert data
+        """
         if tab == ids.TAB_OVERVIEW:
-            return tab_overview.render_content(data, selected_data)
+            if (
+                selected_data is not None
+                and len(selected_data) > settings["SERIES_LOAD_LIMIT"]
+            ):
+                selected_data = None
+            return (
+                tab_overview.render_content(data, selected_data),
+                (
+                    False,  # show alert
+                    "success",  # alert color
+                    "",  # empty alert message
+                ),
+            )
         elif tab == ids.TAB_MODEL:
-            return tab_model.render_content(data, selected_data)
+            if (
+                selected_data is not None
+                and len(selected_data) > settings["SERIES_LOAD_LIMIT"]
+            ):
+                alert = (
+                    True,  # show alert
+                    "warning",  # alert color
+                    i18n.t("general.multiple_series_model_warning"),  # alert message
+                )
+            else:
+                alert = (
+                    False,  # show alert
+                    "success",  # alert color
+                    "",  # empty alert message
+                )
+
+            return (
+                tab_model.render_content(data, selected_data),
+                alert,
+            )
         elif tab == ids.TAB_QC:
-            return tab_qc.render_content(data, selected_data)
+            return (
+                tab_qc.render_content(data, selected_data),
+                (
+                    False,  # show alert
+                    "success",  # alert color
+                    "",  # empty alert message
+                ),
+            )
         elif tab == ids.TAB_QC_RESULT:
-            return tab_qc_result.render_content(
-                data, figure[1] if figure is not None else None
+            return (
+                tab_qc_result.render_content(
+                    data, figure[1] if figure is not None else None
+                ),
+                (
+                    False,  # show alert
+                    "success",  # alert color
+                    "",  # empty alert message
+                ),
             )
         else:
             raise PreventUpdate
@@ -71,9 +135,19 @@ def register_general_callbacks(app, data):
         Input(ids.ALERT_MARK_OBS, "data"),
         Input(ids.ALERT_LABEL_OBS, "data"),
         Input(ids.ALERT_RUN_TRAVAL, "data"),
+        Input(ids.ALERT_TAB_RENDER, "data"),
         prevent_initial_call=True,
     )
     def show_alert(*args, **kwargs):
+        """Show alert message.
+
+        Parameters
+        ----------
+        *args
+            alert data
+        **kwargs
+            callback context
+        """
         if len(kwargs) > 0:
             ctx_ = kwargs["callback_context"]
             triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]

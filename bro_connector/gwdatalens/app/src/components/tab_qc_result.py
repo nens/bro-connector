@@ -10,6 +10,13 @@ from . import ids, qc_results_table
 
 
 def render():
+    """Renders a Dash Tab component for QC results.
+
+    Returns
+    -------
+    dccc.Tab
+        QC results tab.
+    """
     return dcc.Tab(
         label=i18n.t("general.tab_qc_result"),
         value=ids.TAB_QC_RESULT,
@@ -19,6 +26,19 @@ def render():
 
 
 def render_export_to_csv_button(disabled=True):
+    """Renders a button for exporting QC results to CSV.
+
+    Parameters
+    ----------
+    disabled : bool, optional
+        A flag indicating whether the button should be disabled, by default True.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing the export to CSV button and a
+        download component.
+    """
     return html.Div(
         [
             dbc.Button(
@@ -43,6 +63,18 @@ def render_export_to_csv_button(disabled=True):
 
 
 def render_export_to_database_button(disabled=True):
+    """Renders a button for exporting data to the Zeeland postgresql database.
+
+    Parameters
+    ----------
+    disabled : bool, optional
+        If True, the button will be disabled. Default is True.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML component containing the export button.
+    """
     return html.Div(
         dbc.Button(
             html.Span(
@@ -64,6 +96,13 @@ def render_export_to_database_button(disabled=True):
 
 
 def render_mark_selection_reliable_button():
+    """Renders a button for marking table selections as reliable.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div containing the button.
+    """
     return html.Div(
         dbc.Button(
             html.Span(
@@ -85,6 +124,13 @@ def render_mark_selection_reliable_button():
 
 
 def render_mark_selection_unreliable_button():
+    """Renders a button for marking table selections as unreliable.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div containing the button.
+    """
     return html.Div(
         dbc.Button(
             html.Span(
@@ -106,6 +152,13 @@ def render_mark_selection_unreliable_button():
 
 
 def render_mark_selection_unknown_button():
+    """Renders a button for marking table selections as unknown (reset).
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div containing the button.
+    """
     return html.Div(
         dbc.Button(
             html.Span(
@@ -127,6 +180,13 @@ def render_mark_selection_unknown_button():
 
 
 def render_mark_selection_undecided_button():
+    """Renders a button for marking table selections as undecided.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div containing the button.
+    """
     return html.Div(
         dbc.Button(
             html.Span(
@@ -148,6 +208,13 @@ def render_mark_selection_undecided_button():
 
 
 def render_clear_table_selection_button():
+    """Renders a button for clearing table selection.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div containing the button.
+    """
     return html.Div(
         dbc.Button(
             html.Span(
@@ -169,6 +236,13 @@ def render_clear_table_selection_button():
 
 
 def render_select_all_in_table_button():
+    """Renders a button for selecting all rows in table.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div containing the button.
+    """
     return html.Div(
         dbc.Button(
             html.Span(
@@ -190,6 +264,19 @@ def render_select_all_in_table_button():
 
 
 def render_qc_chart(figure: dict):
+    """Render a QC chart.
+
+    Parameters
+    ----------
+    figure : dict
+        A dictionary containing the figure data and layout for the QC chart.
+        If None, a default layout with the title "No traval result." will be used.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing the QC result chart
+    """
     if figure is None:
         figure = {"layout": {"title": "No traval result."}}
     else:
@@ -236,6 +323,13 @@ def render_qc_chart(figure: dict):
 
 
 def render_qc_label_dropdown():
+    """Renders a dropdown component for selecting QC labels.
+
+    Returns
+    -------
+    dcc.Dropdown
+        A Dash `Dropdown` component with QC label options.
+    """
     options = [
         {"label": v + f" ({k})", "value": v + f"({k})"}
         for k, v in qc_categories.items()
@@ -254,6 +348,20 @@ def render_qc_label_dropdown():
 
 
 def render_export_dropdown_and_tooltip():
+    """Renders a dropdown component for exporting QC status flags.
+
+    Returns
+    -------
+    list
+        A list containing a Dash Dropdown and Tooltip components.
+
+    Dropdown Options
+    ----------------
+    - "suspect": Export QC status for suspect observations only.
+    - "all_not_suspect": Export QC status for all observations that were not already
+      marked as suspect.
+    - "all": Export all QC status flags (overwriting the current status)
+    """
     return [
         dcc.Dropdown(
             id=ids.QC_RESULT_EXPORT_QC_STATUS_FLAG,
@@ -286,6 +394,20 @@ def render_export_dropdown_and_tooltip():
 
 
 def render_content(data: DataInterface, figure: dict):
+    """Renders the content for the QC results tab.
+
+    Parameters
+    ----------
+    data : DataInterface
+        The data interface containing the necessary data for rendering.
+    figure : dict
+        The figure dictionary to be used for rendering the QC chart.
+
+    Returns
+    -------
+    dbc.Container
+        A Dash Bootstrap Container with the rendered content.
+    """
     disabled = figure is None
     return dbc.Container(
         [

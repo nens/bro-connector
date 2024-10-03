@@ -6,6 +6,13 @@ from . import ids
 
 
 def render_run_traval_button():
+    """Renders the "Run TRAVAL" button component.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML component containing the "Run TRAVAL" button.
+    """
     return html.Div(
         Button(
             html.Span(
@@ -27,6 +34,15 @@ def render_run_traval_button():
 
 
 def render_qc_cancel_button():
+    """Renders the QC cancel button component.
+
+    Currently not in use.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing a button with cancelling QC operations.
+    """
     return html.Div(
         children=[
             Button(
@@ -50,6 +66,14 @@ def render_qc_cancel_button():
 
 
 def render_add_rule_button():
+    """Renders a button for adding a new rule based on selected rule in dropdown.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing a button with an icon and text for
+        adding a new error detection rule selected in dropdown.
+    """
     return html.Div(
         Button(
             html.Span(
@@ -71,6 +95,13 @@ def render_add_rule_button():
 
 
 def render_reset_rules_button():
+    """Renders a reset rules button component.
+
+    Returns
+    -------
+    html.Div
+        A `Div` element containing the reset rules button.
+    """
     return html.Div(
         Button(
             html.Span(
@@ -92,6 +123,14 @@ def render_reset_rules_button():
 
 
 def render_export_ruleset_button():
+    """Renders the export ruleset button component.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing the export ruleset button and
+        download component.
+    """
     return html.Div(
         [
             Button(
@@ -116,6 +155,13 @@ def render_export_ruleset_button():
 
 
 def render_export_parameter_csv_button():
+    """Renders a button for exporting parameters to a CSV file.
+
+    Returns
+    -------
+    dash.html.Div
+        A Div component containing the export button and download component.
+    """
     return html.Div(
         [
             Button(
@@ -140,6 +186,16 @@ def render_export_parameter_csv_button():
 
 
 def render_load_ruleset_button():
+    """Renders a button for loading a RuleSet file.
+
+    This function creates a Dash HTML Div containing a Dash Core Components Upload
+    component. The Upload component allows users to upload a RuleSet file.
+
+    Returns
+    -------
+    html.Div
+        A Div containing the Upload component for loading a RuleSet file.
+    """
     return html.Div(
         children=[
             # NOTE: Upload component does not trigger callback if same file is selected.

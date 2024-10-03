@@ -11,7 +11,7 @@ en:
   no_selection: No series selected.
   no_plot: No series to plot.
   no_model: No model
-  no_model_alert: 
+  no_model_alert:
   no_traval: No QC result
   # tab-model
   select_location: Select a location
@@ -23,7 +23,7 @@ en:
   hide_parameters: Hide parameters
   run_traval: Run TRAVAL
   select_series: Select time series ...
-  select_series2: Select additional time series ... 
+  select_series2: Select additional time series ...
   select_rule: Select a rule to add
   add_rule_button: Add rule
   load: Load
@@ -38,7 +38,6 @@ en:
   show_all_tooltip: "Toggle to show all OR only suspect measurements."
   export_csv: Export CSV
   export_db: Export to DB
-  unknown: Unknown
   category: "Select an appropriate code/label according to QC Protocol."
   tmin: Start Date
   tmax: End Date
@@ -50,7 +49,7 @@ en:
   alert_failed_labeling: Cannot update labels for observations not visisble in table. Toggle 'Show all measurements'.
   run_only_on_unvalidated: Run only for unvalidated observations
   reset_status: Mark unknown
-  max_selection_warning: "Too many selected points! Maximum no. of selected points is %s!"
+  max_selection_warning: "Too many selected points! Maximum no. of selected points is {}!"
   model_use_only_validated: "Use only validated observations"
   select_qc_label: Apply QC label
   clear_qc_label: Clear QC label
@@ -64,7 +63,8 @@ en:
   manual_observations: "manual observations"
   qc_export_status_flag_tooltip: "Select whether all status flags should be exported or only those for suspect observations."
   qc_export_status_flag_all: "Export all status flags"
-  qc_export_status_flag_all_not_suspect: "Export all status flags, but not previously suspect observations"
+  qc_export_status_flag_all_not_suspect: "Export all status flags, but not previously identified suspect observations"
   qc_export_status_flag_suspect: "Export only suspect status flags"
   qc_export_status_flag_placeholder: "Select export option..."
   alert_all_observations_checked: "No unvalidated observations to check!"
+  multiple_series_model_warning: "Multiple time series selected in overview tab, use dropdown to select time series, or select a single time series in Overview tab."

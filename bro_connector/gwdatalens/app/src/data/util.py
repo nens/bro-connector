@@ -20,6 +20,37 @@ WGS84 = "proj=longlat datum=WGS84 no_defs ellps=WGS84 towgs84=0,0,0"
 def get_model_sim_pi(
     ml, raw, ci=0.99, tmin=None, tmax=None, smoothfreq=None, savedir=None
 ):
+    """Compute time series model simulation and prediction interval.
+
+    Parameters
+    ----------
+    ml : object
+        time series model
+    raw : pandas.DataFrame
+        DataFrame containing the raw data with an index to be used for interpolation.
+    ci : float, optional
+        Confidence interval for the prediction interval, by default 0.99.
+    tmin : datetime-like, optional
+        Minimum time for the simulation and prediction interval, by default None.
+    tmax : datetime-like, optional
+        Maximum time for the simulation and prediction interval, by default None.
+    smoothfreq : str, optional
+        Frequency for smoothing the prediction interval bounds, by default None.
+    savedir : pathlib.Path or str, optional
+        Directory to load the prediction interval from a file, by default None.
+
+    Returns
+    -------
+    sim_i : pandas.Series
+        Series containing the interpolated simulation results.
+    pi : pandas.DataFrame
+        DataFrame containing the prediction interval with columns ['lower', 'upper'].
+
+    Notes
+    -----
+    If `savedir` is provided and `ml` is not None, the prediction interval is loaded
+    from a file. Otherwise, it is computed using the model.
+    """
     if savedir is not None and ml is not None:
         logger.debug(f"Load prediction interval from file: pi_{ml.name}.pkl")
         sim = ml.simulate(tmin=tmin, tmax=tmax)

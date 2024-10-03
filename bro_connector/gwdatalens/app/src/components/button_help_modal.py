@@ -11,6 +11,17 @@ with open(ASSETS_PATH / "qc_dashboard_help.md", "r") as f:
 
 
 def render():
+    """Renders a help button and modal for the GW DataLens application.
+
+    This function creates a button that, when clicked, opens a modal containing
+    information about the GW DataLens application. The modal includes a header,
+    body with help content, and a footer with developer credits and a close button.
+
+    Returns
+    -------
+    dash.html.Div
+        A Dash HTML Div component containing the help button and modal.
+    """
     return html.Div(
         [
             dbc.Button(

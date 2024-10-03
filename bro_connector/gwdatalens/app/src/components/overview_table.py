@@ -7,6 +7,29 @@ from .styling import DATA_TABLE_HEADER_BGCOLOR
 
 
 def render(data: DataInterface, selected_data=None):
+    """Render an the piezometer overview table.
+
+    Parameters
+    ----------
+    data : DataInterface
+        An interface to the data source containing the required data.
+    selected_data : optional
+        Data that is selected, by default None.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing the rendered DataTable.
+
+    Notes
+    -----
+    The table displays columns ['bro_id', 'nitg_code', 'tube_number',
+    'screen_top', 'screen_bot', 'x', 'y', and 'metingen']. The table supports
+    native filtering and sorting, and has fixed headers with virtualization
+    enabled for better performance with large datasets. The style of the table
+    and its cells is customized, including conditional styling for selected
+    rows.
+    """
     df = data.db.gmw_gdf.reset_index()
     usecols = [
         "id",

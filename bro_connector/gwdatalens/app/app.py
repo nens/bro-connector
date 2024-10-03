@@ -1,20 +1,21 @@
 # %%
 import logging
 import os
-from pathlib import Path
 
 import dash_bootstrap_components as dbc
 import i18n
 import pastastore as pst
 from dash import CeleryManager, Dash, DiskcacheManager
+
 from gwdatalens.app.callbacks import register_callbacks
 from gwdatalens.app.settings import CUSTOM_CSS_PATH, LOCALE_PATH, config, settings
 from gwdatalens.app.src.cache import cache
 from gwdatalens.app.src.components.layout import create_layout
 from gwdatalens.app.src.data import DataInterface, DataSource, TravalInterface
 
-logger = logging.getLogger("waitress")
-logger.setLevel(logging.DEBUG)
+logging.basicConfig()
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # %% set some variables
 external_stylesheets = [
@@ -39,9 +40,16 @@ name = config["pastastore"]["name"]
 pastastore_path = config["pastastore"]["path"]
 
 if name.endswith(".zip"):
-    pstore = pst.PastaStore.from_zip(Path(pastastore_path) / name)
+    pstore = pst.PastaStore.from_zip(pastastore_path / name)
 else:
-    conn = pst.ArcticDBConnector(name=name, uri=f"lmdb://{pastastore_path}")
+    if config["pastastore"]["connector"] == "arcticdb":
+        conn = pst.ArcticDBConnector(name=name, uri=f"lmdb://{pastastore_path}")
+    elif config["pastastore"]["connector"] == "pas":
+        conn = pst.PasConnector(name=name, path=pastastore_path)
+    else:
+        raise ValueError(
+            f"Unknown connector type '{config['pastastore']['connector']}'"
+        )
     pstore = pst.PastaStore(conn)
     print(pstore)
 
@@ -87,7 +95,8 @@ else:
 
 
 if settings["DJANGO_APP"]:
-    from django_plotly_dash import DjangoDash
+    from django.conf import settings as django_settings  # noqa
+    from django_plotly_dash import DjangoDash  # noqa
 
     # create app
     app = DjangoDash(
@@ -102,7 +111,8 @@ if settings["DJANGO_APP"]:
     app.css.append_css(
         {
             "external_url": [
-                CUSTOM_CSS_PATH,
+                django_settings.STATIC_URL
+                + "dash/custom.css",  # Adjust this based on your directory structure
             ]
         }
     )
@@ -131,48 +141,3 @@ else:
             "CACHE_DIR": ".cache",
         },
     )
-
-# %%
-
-if 0:
-    names = []
-    for i in data.db.list_locations():
-        gmw_id, tube_nr = i.split("-")
-        tube_nr = int(tube_nr)
-        s = data.db.get_timeseries(gmw_id, tube_nr, observation_type="controlemeting")
-        if s.index.size > 0:
-            names.append((gmw_id, tube_nr))
-
-
-if 0:
-    import matplotlib.pyplot as plt
-    import traval
-
-    gmw_id = "GMW000000050707"
-    tube_nr = 2
-    series = data.db.get_timeseries(gmw_id, tube_nr)[data.db.value_column]
-    hp = data.db.get_timeseries(gmw_id, tube_nr, observation_type="controlemeting")[
-        data.db.value_column
-    ]
-    detector = traval.Detector(series)
-
-    ruleset = traval.RuleSet("manual_obs")
-    ruleset.add_rule(
-        "manual_obs",
-        traval.rulelib.rule_shift_to_manual_obs,
-        apply_to=0,
-        kwargs={"hseries": hp},
-    )
-    detector.apply_ruleset(ruleset)
-    cp = detector.comparisons[1]
-    compare = traval.ComparisonPlots(cp)
-    ax = compare.plot_series_comparison()
-    ax.plot(hp.index, hp, marker="x", ms=10, color="b", ls="none")
-
-    plt.show()
-
-
-# %%
-from hydropandas.io.knmi import get_stations
-
-get_stations("RD")

@@ -32,6 +32,39 @@ def register_model_callbacks(app, data):
         prevent_initial_call=True,
     )
     def generate_model(n_clicks, value, tmin, tmax, use_only_validated):
+        """Generate a time series model based on user input and update the stored copy.
+
+        Parameters
+        ----------
+        n_clicks : int
+            Number of clicks on the button that triggers the model generation.
+        value : str
+            Identifier for the time series in the format "gmw_id-tube_id".
+        tmin : str
+            Minimum timestamp for the model in a format recognized by `pd.Timestamp`.
+        tmax : str
+            Maximum timestamp for the model in a format recognized by `pd.Timestamp`.
+        use_only_validated : bool
+            Flag indicating whether to use only validated data points.
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - plotly.graph_objs._figure.Figure: Plotly figure of the model results.
+            - plotly.graph_objs._figure.Figure: Plotly figure of the model diagnostics.
+            - str: JSON representation of the generated model.
+            - bool: Flag to enable or disable the save button.
+            - tuple: Alert information containing:
+                - bool: Flag to show or hide the alert.
+                - str: Alert color ("success" or "danger").
+                - str: Alert message.
+
+        Raises
+        ------
+        PreventUpdate
+            If `n_clicks` is None or `value` is None.
+        """
         if n_clicks is not None:
             if value is not None:
                 try:
@@ -63,7 +96,7 @@ def register_model_callbacks(app, data):
                         ml.to_dict(), cls=PastasEncoder
                     )  # store generated model
                     return (
-                        ml.plotly.results(),
+                        ml.plotly.results(tmin=tmin, tmax=tmax),
                         ml.plotly.diagnostics(),
                         mljson,
                         False,  # enable save button
@@ -97,6 +130,26 @@ def register_model_callbacks(app, data):
         prevent_initial_call=True,
     )
     def save_model(n_clicks, mljson):
+        """Save a model from a JSON string when a button is clicked.
+
+        Parameters
+        ----------
+        n_clicks : int
+            The number of times the save button has been clicked.
+        mljson : str
+            The JSON string representation of the model to be saved.
+
+        Returns
+        -------
+        tuple
+            A tuple containing a boolean indicating success, a string for the alert
+            type, and a message string.
+
+        Raises
+        ------
+        PreventUpdate
+            If `n_clicks` is None or `mljson` is None.
+        """
         if n_clicks is None:
             raise PreventUpdate
         if mljson is not None:
@@ -131,6 +184,34 @@ def register_model_callbacks(app, data):
         prevent_initial_call=True,
     )
     def plot_model_results(value):
+        """Plot the results and diagnostics of a time series model.
+
+        Parameters
+        ----------
+        value : str or None
+            The identifier of the model to be plotted. If None, no model is selected.
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - plotly.graph_objs.Figure: The plotly figure of the model results.
+            - plotly.graph_objs.Figure: The plotly figure of the model diagnostics.
+            - bool: A flag indicating whether to activate model save button.
+            - tuple: A tuple containing:
+                - bool: A flag indicating if an alert should be shown.
+                - str: The color of the alert ('success' or 'warning').
+                - str: The alert message.
+            - datetime.datetime or None: The minimum time of the model settings,
+              or None if not available.
+            - datetime.datetime or None: The maximum time of the model settings,
+              or None if not available.
+
+        Raises
+        ------
+        Exception
+            If there is an error in retrieving or plotting the model.
+        """
         if value is not None:
             try:
                 ml = data.pstore.get_models(value)
@@ -183,6 +264,25 @@ def register_model_callbacks(app, data):
         prevent_initial_call=True,
     )
     def update_model_results_chart(*figs, **kwargs):
+        """Updates the model result plot.
+
+        Parameters
+        ----------
+        *figs : tuple
+            tuple(s) of name and figure dictionary.
+        **kwargs : dict
+            callback_context
+
+        Returns
+        -------
+        figure: dict
+            The figure corresponding to the triggered input.
+
+        Raises
+        ------
+        PreventUpdate
+            If no figures are provided.
+        """
         if len(kwargs) > 0:
             ctx_ = kwargs["callback_context"]
             triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
@@ -206,6 +306,25 @@ def register_model_callbacks(app, data):
         prevent_initial_call=True,
     )
     def update_model_diagnostics_chart(*figs, **kwargs):
+        """Updates the model diagnostics chart based on the triggered input.
+
+        Parameters
+        ----------
+        *figs : tuple
+            A variable length tuple of figures to be potentially updated.
+        **kwargs : dict
+            callback_context
+
+        Returns
+        -------
+        figure : dict
+            The updated figure corresponding to the triggered input.
+
+        Raises
+        ------
+        PreventUpdate
+            If no figures are provided in the `figs` argument.
+        """
         if len(kwargs) > 0:
             ctx_ = kwargs["callback_context"]
             triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
@@ -230,6 +349,25 @@ def register_model_callbacks(app, data):
         prevent_initial_call=True,
     )
     def toggle_model_save_button(*b, **kwargs):
+        """Toggles the model save button based on the provided inputs.
+
+        Parameters
+        ----------
+        *b : tuple
+            tuple of booleans indicating triggered state of button.
+        **kwargs : dict
+            callback_context
+
+        Returns
+        -------
+        bool
+            whether button is enabled or disabled.
+
+        Raises
+        ------
+        PreventUpdate
+            If none of the inputs are triggered.
+        """
         if len(kwargs) > 0:
             ctx_ = kwargs["callback_context"]
             triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
@@ -238,7 +376,7 @@ def register_model_callbacks(app, data):
             triggered_id = ctx.triggered_id
             inputs_list = ctx.inputs_list
 
-        if any([boolean is not None for boolean in b]):
+        if any(boolean is not None for boolean in b):
             for i in range(len(inputs_list)):
                 if inputs_list[i]["id"] == triggered_id:
                     break

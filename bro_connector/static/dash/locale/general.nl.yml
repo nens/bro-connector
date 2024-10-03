@@ -32,7 +32,6 @@ nl:
   datetime: Datum
   observations: Meting
   comment: Opmerking
-  reliable: Meting betrouwbaar
   qc_label: QC label
   show_all: Toon alle metingen
   show_all_tooltip: "Klik hier om alle OF alleen verdachte metingen weer te geven."
@@ -65,7 +64,8 @@ nl:
   manual_observations: "controle metingen"
   qc_export_status_flag_tooltip: "Kies of de beoordeling van alle metingen wordt geëxporteerd of alleen de beoordeling van de verdachte metingen."
   qc_export_status_flag_all: "Exporteer alle beoordelingen"
-  qc_export_status_flag_all_not_suspect: "Exporteer alle beoordelingen, maar niet al verdachte metingen"
+  qc_export_status_flag_all_not_suspect: "Exporteer alle beoordelingen, maar niet al verdacht beoordeelde metingen"
   qc_export_status_flag_suspect: "Exporteer alleen verdachte beoordelingen"
   qc_export_status_flag_placeholder: "Selecteer export optie..."
   alert_all_observations_checked: "Alle metingen zijn al beoordeeld!"
+  multiple_series_model_warning:  "Meerdere reeksen geselecteerd in Overzicht tabblad, gebruik dropdown om een tijdreeks te selecteren, of selecteer één reeks in Overzicht tabblad."

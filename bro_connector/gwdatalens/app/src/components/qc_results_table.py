@@ -9,6 +9,26 @@ from .styling import DATA_TABLE_HEADER_BGCOLOR
 
 
 def render(data):
+    """Render the QC results table.
+
+    Parameters
+    ----------
+    data : object
+        An object containing the data to be rendered. It is expected to have a
+        `traval` attribute with a `traval_result` DataFrame.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing the QC results table.
+
+    Notes
+    -----
+    - If `data.traval.traval_result` is None, an empty DataFrame is used.
+    - The table includes columns for [datetime, values, comments, incoming QC status,
+      update QC status, category].
+    - The table supports native filtering and virtualization for performance.
+    """
     if data.traval.traval_result is None:
         df = pd.DataFrame(
             columns=["id", "value", "comment", "status_quality_control", "category"],
