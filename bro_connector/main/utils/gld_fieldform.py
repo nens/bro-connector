@@ -134,7 +134,7 @@ class FieldFormGenerator:
 
             for tube in tubes:
                 sublocation = create_sublocation_dict(tube)
-                well_location["sublocations"].update(sublocation)
+                well_location[f"{well_name}"]["sublocations"].update(sublocation)
             
             locations.update(well_location)
         
@@ -171,8 +171,9 @@ class FieldFormGenerator:
         if not os.path.exists("../fieldforms"):
             os.mkdir("../fieldforms")
 
+        print(data)
         # Store the file locally
-        write_location_file(data=data, filename=f"../fieldforms/locations_{date_string}.json")
+        write_location_file(data=data, filename=f"../fieldforms/gld/locations_{date_string}.json")
 
         # Write local file to FTP
         write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
