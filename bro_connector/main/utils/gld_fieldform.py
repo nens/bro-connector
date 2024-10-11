@@ -10,9 +10,7 @@ from gmw import models as gmw_models
 from gld import models as gld_models
 from gmn import models as gmn_models
 
-maximum_difference_ratio = 0.2
-
-input_field_well_options = {
+input_field_options = {
     "foto1": {
         "type": "photo",
         "name": "foto 1"
@@ -21,13 +19,6 @@ input_field_well_options = {
         "type": "photo",
         "name": "foto 2"
     },
-    "opmerking": {
-        "type": "text",
-        "name": "Opmerking"
-    }
-}
-
-input_field_filter_options = {
     "waterstand": {
         "type": "number",
         "name": "Waterstand"
@@ -37,6 +28,18 @@ input_field_filter_options = {
         "name": "Opmerking"
     }
 }
+
+input_fields_filter = [
+    "",
+    "",
+    "",
+]
+
+input_fields_well = [
+    "",
+    "",
+    "",
+]
 
 def generate_random_color():
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
@@ -95,92 +98,11 @@ def delete_old_files_from_ftp():
                     sftp.remove(file)
                     print(f"Deleted {file} (age: {file_age.days} days)")
 
-def generate_sublocation_fields(tube) -> List[str]:
-    try:
-        put = gmw_models.GroundwaterMonitoringWellStatic.objects.get(
-            groundwater_monitoring_tube = tube
-        )
-    except gmw_models.GroundwaterMonitoringWellStatic.DoesNotExist:
-        return []
-    
-    configs = []
-    for config in gld_models.MeasurementConfiguration.objects.filter(
-        formation_resistance_dossier = frd
-    ):
-        configs.append(config.configuration_name)
-
-    return configs
-
-def calculate_minimum_resistance(formationresistance):
-    return round(formationresistance * (1-maximum_difference_ratio), 2)
-
-def generate_min_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
-    frd = gld_models.GroundwaterLevelDossier.objects.get_or_create(
-        groundwater_monitoring_tube = tube,
-        assessment_type = "geoohmkabelBepaling",
-        defaults=dict(
-            delivery_accountable_party = tube.groundwater_monitoring_well_static.delivery_accountable_party,
-            quality_regime = tube.groundwater_monitoring_well_static.quality_regime,
-        )
-    )[0]
-    min_values = {}
-    for config in gld_models.MeasurementConfiguration.objects.filter(
-        formation_resistance_dossier = frd
-    ):
-        # Get most recent measurement 
-        measurement = gld_models.GeoOhmMeasurementValue.objects.filter(
-            measurement_configuration = config
-        ).order_by("-datetime").first()
-
-        if measurement is None:
-            # Set Max value if no previous measurements are known.
-            min_values.update({f"weerstand_{config.configuration_name}": 0})
-        else:
-            minimum = calculate_minimum_resistance(measurement.formationresistance)
-            min_values.update({f"weerstand_{config.configuration_name}": minimum})
-
-    return min_values
-
-def calculate_maximum_resistance(formationresistance):
-    return round(formationresistance * (1+maximum_difference_ratio), 2)
-
-def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
-    frd = gld_models.GroundwaterLevelDossier.objects.get_or_create(
-        groundwater_monitoring_tube = tube,
-        assessment_type = "geoohmkabelBepaling",
-        defaults=dict(
-            delivery_accountable_party = tube.groundwater_monitoring_well_static.delivery_accountable_party,
-            quality_regime = tube.groundwater_monitoring_well_static.quality_regime,
-        )
-    )[0]
-    max_values = {}
-    for config in gld_models.MeasurementConfiguration.objects.filter(
-        formation_resistance_dossier = frd
-    ):
-        # Get most recent measurement 
-        measurement = gld_models.GeoOhmMeasurementValue.objects.filter(
-            measurement_configuration = config
-        ).order_by("-datetime").first()
-
-        if measurement is None:
-            # Set Max value if no previous measurements are known.
-            max_values.update({f"weerstand_{config.configuration_name}": 10000})
-        else:
-            maximum = calculate_maximum_resistance(measurement.formationresistance)
-            max_values.update({f"weerstand_{config.configuration_name}": maximum})
-
-    return max_values
-
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
-
     return {
         f"{filter_name}": {
-            "lat": tube.groundwater_monitoring_well_static.coordinates.y,
-            "lon": tube.groundwater_monitoring_well_static.coordinates.x,
-            "inputfields": generate_sublocation_fields(tube),
-            "min_values": generate_min_values(tube),
-            "max_values": generate_max_values(tube),
+            "inputfields": input_fields_filter,
         },
     }
 
@@ -191,33 +113,6 @@ class FieldFormGenerator:
     monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
     wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
     optimal: Optional[bool]
-
-
-    def update_postfix(self, config: gld_models.MeasurementConfiguration) -> None:
-        self.post_fix = config.configuration_name
-        self.config = config
-
-    def generate_inputfields(self) -> dict:
-        input_field = {}
-        for field in self.inputfields:
-            if field not in input_field_options.keys():
-                raise ValueError("Unknown input field.")
-            
-            input_field[f"{field}_{self.post_fix}"] = input_field_options[field]
-        
-        return input_field
-
-    def generate_inputfield_groups(self) -> dict:
-        name = f"{self.config.measurement_pair}-{self.config.flowcurrent_pair}"
-        return {
-            f"{self.post_fix}": {
-                "inputfields": [
-                    f"weerstand_{self.post_fix}",
-                    f"opmerking_{self.post_fix}"
-                ],
-                "name": name,
-            }
-        }
 
     def create_location_dict(self) -> None:
         locations = {}
@@ -230,18 +125,16 @@ class FieldFormGenerator:
                 f"{well_name}": {
                     "lat": well.coordinates.y,
                     "lon": well.coordinates.x,
-                    "inputfields": generate_location_fields(well),
+                    "inputfields": input_fields_well,
                     "sublocations": {},
                 }
             }
+            if hasattr(self, "group_name"):
+                well_location.update({"group": self.group_name})
+
             for tube in tubes:
-                if tube.number_of_geo_ohm_cables > 0:
-                    sublocation = create_sublocation_dict(tube)
-
-                    if hasattr(self, "group_name"):
-                        sublocation.update({"group": self.group_name})
-
-                    well_location["sublocations"].update(sublocation)
+                sublocation = create_sublocation_dict(tube)
+                well_location["sublocations"].update(sublocation)
             
             locations.update(well_location)
         
@@ -295,8 +188,7 @@ class FieldFormGenerator:
             inputfields.update(self.generate_inputfields())
             inputfield_groups.update(self.generate_inputfield_groups())
 
-        data["inputfield_groups"] = inputfield_groups
-        data["inputfields"] = inputfields
+        data["inputfields"] = input_field_options
         data["groups"] = {}
 
         if hasattr(self, "optimal"):

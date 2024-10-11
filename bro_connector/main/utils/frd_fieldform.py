@@ -253,7 +253,7 @@ class FieldFormGenerator:
             os.mkdir("../fieldforms")
 
         # Store the file locally
-        write_location_file(data=data, filename=f"../fieldforms/locations_{date_string}.json")
+        write_location_file(data=data, filename=f"../fieldforms/frd/locations_{date_string}.json")
 
         # Write local file to FTP
         write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")

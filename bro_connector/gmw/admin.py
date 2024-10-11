@@ -17,7 +17,7 @@ from gmw.custom_filters import (
     EventTypeFilter,
 )
 import main.utils.validators_admin as validators_admin
-from main.utils.fieldform import FieldFormGenerator
+from main.utils.frd_fieldform import FieldFormGenerator
 
 
 logger = logging.getLogger(__name__)

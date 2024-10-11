@@ -3,7 +3,7 @@ from .models import *
 from main.management.tasks.gmn_sync import sync_gmn
 from reversion_compare.helpers import patch_admin
 
-from main.utils.fieldform import FieldFormGenerator
+from main.utils.frd_fieldform import FieldFormGenerator
 
 
 def _register(model, admin_class):
