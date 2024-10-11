@@ -13,6 +13,10 @@ UNIT_CHOICES = (
     ("m", "m"),
     ("cm", "cm"),
     ("mm", "mm"),
+    ("m t.o.v. bkb", "m t.o.v. bkb"),
+    ("cm t.o.v. bkb", "cm t.o.v. bkb"),
+    ("mm t.o.v. bkb", "mm t.o.v. bkb"),
+    ("bar", "bar"),
 )
 
 PROCESSREFERENCE = (
