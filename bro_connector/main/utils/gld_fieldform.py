@@ -179,14 +179,6 @@ class FieldFormGenerator:
 
     def generate(self):
         data = {}
-        configs = gld_models.MeasurementConfiguration.objects.all().distinct("configuration_name")
-        # For all configurations generate the inputfields.
-        inputfields = {}
-        inputfield_groups = {}
-        for config in configs:
-            self.update_postfix(config)
-            inputfields.update(self.generate_inputfields())
-            inputfield_groups.update(self.generate_inputfield_groups())
 
         data["inputfields"] = input_field_options
         data["groups"] = {}
