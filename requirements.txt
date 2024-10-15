@@ -51,6 +51,7 @@ pastas
 pastastore
 plotly==5.20.0
 psycopg2==2.9.9
+psycopg2-binary
 pyOpenSSL
 pycparser==2.22
 Pygments==2.17.2
