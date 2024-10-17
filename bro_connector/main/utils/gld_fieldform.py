@@ -11,34 +11,59 @@ from gld import models as gld_models
 from gmn import models as gmn_models
 
 input_field_options = {
-    "foto1": {
-        "type": "photo",
-        "name": "foto 1"
+    "opneembaarheid": {
+      "name": "Grondwaterstand niet opneembaar?",
+        "type": "choice",
+        "options": [
+          "Nee, filter staat droog",
+          "Nee, beschadiging, reparatie benodigd",
+          "Nee, overig (geef infomatie via opmerking)"
+        ]
     },
-    "foto2": {
-        "type": "photo",
-        "name": "foto 2"
-    },
-    "waterstand": {
-        "type": "number",
-        "name": "Waterstand"
+    "grondwaterstand": {
+      "name": "Grondwaterstand tov bovenkant buis",
+      "type": "number",
+      "hint": "cm tov bovenkant peilfilter/stijgbuis"
     },
     "opmerking": {
-        "type": "text",
-        "name": "Opmerking"
-    }
-}
+      "type": "text",
+      "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
+      },
+    "foto 1": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 2": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 3": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 4": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 5": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      }
+  }
 
 input_fields_filter = [
-    "",
-    "",
-    "",
+    "opneembaarheid",
+    "opmerking",
+    "grondwaterstand",
 ]
 
 input_fields_well = [
-    "",
-    "",
-    "",
+    "opmerking",
+    "foto 1",
+    "foto 2",
+    "foto 3",
+    "foto 4",
+    "foto 5",
 ]
 
 def generate_random_color():
