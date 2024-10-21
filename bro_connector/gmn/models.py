@@ -110,7 +110,7 @@ class GroundwaterMonitoringNet(models.Model):
             )
 
         # Create a GMN_Closure event if an enddate is filled in
-        if self.end_date_monitoring != None and self.removed_from_BRO != True:
+        if self.end_date_monitoring is not None and self.removed_from_BRO is not True:
             IntermediateEvent.objects.create(
                 gmn=self,
                 event_type="GMN_Closure",
@@ -126,9 +126,33 @@ class GroundwaterMonitoringNet(models.Model):
         verbose_name_plural = "Groundwatermonitoring Meetnetten"
         ordering = ("name",)
 
+class Subgroup(models.Model):
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='subgroups', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    code = models.CharField(max_length=25, null=True, blank=True)
+    description = models.TextField()
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'gmn"."subgroup'
+        verbose_name = "GMN Subgroup"
+        verbose_name_plural = "GMN Subgroups"
+        ordering = ("name",)
+
 
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE)
+    subgroup = models.ForeignKey(
+        Subgroup, 
+        related_name='measuring_points', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        blank=True,
+        help_text='Optional value to define smaller groups within a network.'
+    )
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
@@ -145,7 +169,7 @@ class MeasuringPoint(models.Model):
     synced_to_bro = models.BooleanField(
         blank=False, null=True, default=False, editable=False
     )
-    added_to_gmn_date = models.DateField(blank=False, null=True)
+    added_to_gmn_date = models.DateField(blank=True, null=True)
     deleted_from_gmn_date = models.DateField(
         blank=True,
         null=True,
@@ -179,7 +203,7 @@ class MeasuringPoint(models.Model):
             )
 
         # Create GMN_MeasuringPointEndDate event if MP is deleted
-        if self.deleted_from_gmn_date != None and self.removed_from_BRO_gmn != True:
+        if self.deleted_from_gmn_date is not None and self.removed_from_BRO_gmn is not True:
             IntermediateEvent.objects.create(
                 gmn=self.gmn,
                 event_type="GMN_MeasuringPointEndDate",

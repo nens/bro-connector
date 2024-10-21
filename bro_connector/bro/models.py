@@ -54,7 +54,7 @@ class SecureCharField(CharField):
         """
         Decrypts the value retrieved from the database.
         """
-        if type(value) != str:
+        if not isinstance(value, str):
             return value
         value = str(self.f.decrypt(bytes(value, 'cp1252')), encoding='utf-8')
         return value
@@ -63,7 +63,7 @@ class SecureCharField(CharField):
         """
         Encrypts the value before storing it in the database.
         """
-        if type(value) != str:
+        if not isinstance(value, str):
             return value
         value = str(self.f.encrypt(bytes(value, 'utf-8')), 'cp1252')
         return value

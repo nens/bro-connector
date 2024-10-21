@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import *
+from .models import (
+    GroundwaterMonitoringNet,
+    Subgroup,
+    MeasuringPoint,
+    IntermediateEvent,
+    gmn_bro_sync_log
+)
 from main.management.tasks.gmn_sync import sync_gmn
 from reversion_compare.helpers import patch_admin
 
@@ -46,6 +52,17 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         generator.monitoringnetworks=queryset
         generator.generate()
 
+
+class SubgroupAdmin(admin.ModelAdmin):
+    list_display = (
+        "gmn",
+        "name",
+        "code",
+    )
+    list_filter = (
+        "gmn",
+        "name",
+    )
 
 class MeasuringPointAdmin(admin.ModelAdmin):
     list_display = (
@@ -120,8 +137,10 @@ _register(GroundwaterMonitoringNet, GroundwaterMonitoringNetAdmin)
 _register(MeasuringPoint, MeasuringPointAdmin)
 _register(IntermediateEvent, IntermediateEventAdmin)
 _register(gmn_bro_sync_log, gmn_bro_sync_logAdmin)
+_register(Subgroup, SubgroupAdmin)
 
 patch_admin(GroundwaterMonitoringNet)
+patch_admin(Subgroup)
 patch_admin(MeasuringPoint)
 patch_admin(IntermediateEvent)
 patch_admin(gmn_bro_sync_log)
