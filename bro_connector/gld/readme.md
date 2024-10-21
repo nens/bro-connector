@@ -1,3 +1,5 @@
+<img src=bro_connector/static/img/broconnector.png width="140">
+
 # Klassendiagram voor Grondwaterstand dossiers (GLD) #
 ```mermaid
 classDiagram

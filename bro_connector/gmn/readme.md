@@ -1,3 +1,6 @@
+
+<img src=bro_connector/static/img/broconnector.png width="140">
+
 # ClassDiagram voor Groundwatermonitoring Meetnetten (GMN) #
 ```mermaid
 classDiagram
@@ -154,9 +157,20 @@ classDiagram
     IntermediateEvent ..> "gmn" GroundwaterMonitoringNet
 
 ```
-# Beschrijving #
+# GMN - Grondwatermonitoringsnet
 
-Onder GMN vind je een CRUD voor de GroundwaterMonitoring Meetnetten, meetpunten en tussentijdse gebeurtenissen.
+Het Grondwatermonitoringsnet verbind een groep van meetpunten.
+Een meetpunt heeft een directe link aan de GMW, hij wijst namelijk naar een Filter.
+
+## Grondwatermonitoringsnet
+
+Het hoofd-object binnen de GMN categorie. Alle andere objecten zijn op een manier terug te leiden naar deze.
+Vanuit deze object-groep zijn dan ook de belangrijkste acties beschikbaar:
+
+1. Deliver GMN to BRO: Levert alle relevante gebeurtenissen voor de geselecteerde meetnetten aan de BRO (waar mogelijk).
+2. Check GMN Status from BRO: Controleert de status van een put, als er een levering te vinden is in de logs.
+3. Generate FieldForm: Genereerd een locaties bestand voor de FieldForm mobiele-app. FTP-instellingen noodzakelijk.
+4. Delete selected: Standaard functionaliteit binnen Django om meerdere entiteiten te verwijderen.
 
 # Functies #
 
@@ -190,6 +204,3 @@ Gebruikswijze:
 ```python python manage.py gmn_sync_to_bro```
 
 Dit commando synchroniseert alle onderliggende objecten naar BRO. Dit commando doet hetzelfde als Deliver GMN to BRO in de CRUD voor GMN objecten.
-
-
-
