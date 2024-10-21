@@ -68,12 +68,14 @@ class MeasuringPointAdmin(admin.ModelAdmin):
     list_display = (
         "code",
         "gmn",
+        "subgroup",
         "groundwater_monitoring_tube",
         "synced_to_bro",
         "removed_from_BRO_gmn",
     )
     list_filter = (
         "gmn",
+        "subgroup",
         "code",
     )
 

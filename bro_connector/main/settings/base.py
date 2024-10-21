@@ -212,6 +212,7 @@ ADMIN_REORDER = (
         "label": "Grondwatermonitoringnet (GMN)",
         "models": (
             "gmn.GroundwaterMonitoringNet",
+            "gmn.Subgroup",
             "gmn.MeasuringPoint",
             "gmn.IntermediateEvent",
             "gmn.gmn_bro_sync_log",
