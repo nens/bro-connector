@@ -51,14 +51,14 @@ def write_file_to_ftp(file: str, remote_filename: str):
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
     with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
-        with sftp.cd(ls.ftp_path):
+        with sftp.cd(ls.ftp_frd_path):
             sftp.put(localpath=file, remotepath=remote_filename)
 
 def delete_old_files_from_ftp():
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
     with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
-        with sftp.cd(ls.ftp_path):
+        with sftp.cd(ls.ftp_frd_path):
             # Get current date and time
             now = datetime.datetime.now()
             
