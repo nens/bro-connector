@@ -212,6 +212,7 @@ ADMIN_REORDER = (
         "label": "Grondwatermonitoringnet (GMN)",
         "models": (
             "gmn.GroundwaterMonitoringNet",
+            "gmn.Subgroup",
             "gmn.MeasuringPoint",
             "gmn.IntermediateEvent",
             "gmn.gmn_bro_sync_log",
@@ -347,6 +348,7 @@ JAZZMIN_SETTINGS = {
         "bro",
         "gmn",
         "gmn.GroundwaterMonitoringNet",
+        "gmn.Subgroup",
         "gmn.MeasuringPoint",
         "gmn.IntermediateEvent",
         "gmn.gmn_bro_sync_log",
@@ -425,6 +427,7 @@ JAZZMIN_SETTINGS = {
         "gmw.Instantie": "fas fa-solid fa-building",
         "gmn": "fas fa-regular fa-object-group",
         "gmn.GroundwaterMonitoringNet": "fas fa-project-diagram",
+        "gmn.Subgroup": "fas fa-project-diagram",
         "gmn.MeasuringPoint": "fas fa-ruler-vertical",
         "gmn.IntermediateEvent": "fas fa-calendar",
         "gmn.gmn_bro_sync_log": "fas fa-sync",
