@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL, DELIVERY_TYPE_CHOICES, LEVERINGSTATUS_CHOICES, EVENT_TYPE_CHOICES
 from gmw.models import GroundwaterMonitoringTubeStatic
 from bro.models import Organisation, BROProject
@@ -13,9 +14,9 @@ class GroundwaterMonitoringNet(models.Model):
         null=True,
         blank=True,
     )
-    deliver_to_bro = models.BooleanField(blank=False, null=True)
+    deliver_to_bro = models.BooleanField(blank=False, null=True, verbose_name="Leveren aan BRO?")
     gmn_bro_id = models.CharField(
-        max_length=255, null=True, blank=True, editable=False, verbose_name="Broid GMN"
+        max_length=255, null=True, blank=True, editable=False, verbose_name="BRO-ID GMN"
     )
     delivery_accountable_party = models.ForeignKey(
         Organisation,
@@ -39,11 +40,13 @@ class GroundwaterMonitoringNet(models.Model):
         max_length=255,
         null=True,
         blank=False,
+        verbose_name='Kwaliteitsregime'
     )
     object_id_accountable_party = models.CharField(
         max_length=255,
         null=True,
         blank=False,
+        verbose_name='Intern ID'
     )
     name = models.CharField(max_length=255, null=True, blank=False, verbose_name="Naam")
     delivery_context = models.CharField(
@@ -71,12 +74,13 @@ class GroundwaterMonitoringNet(models.Model):
     end_date_monitoring = models.DateField(
         blank=True,
         null=True,
+        verbose_name='Stopdatum monitoring',
         help_text="Als een Meetnet verwijderd moet worden uit de BRO, verwijder het dan NIET uit de BRO-Connector. Vul dit veld in om de verwijdering uit de BRO te realiseren.",
     )
     removed_from_BRO = models.BooleanField(
-        blank=False, null=True, default=False, editable=False
+        blank=False, null=True, default=False, editable=False, verbose_name='Verwijderd uit de BRO?'
     )
-    description = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True, verbose_name='Beschrijving')
 
     def __str__(self):
         return self.name
@@ -110,7 +114,7 @@ class GroundwaterMonitoringNet(models.Model):
             )
 
         # Create a GMN_Closure event if an enddate is filled in
-        if self.end_date_monitoring != None and self.removed_from_BRO != True:
+        if self.end_date_monitoring is not None and self.removed_from_BRO is not True:
             IntermediateEvent.objects.create(
                 gmn=self,
                 event_type="GMN_Closure",
@@ -122,13 +126,37 @@ class GroundwaterMonitoringNet(models.Model):
     class Meta:
         managed = True
         db_table = 'gmn"."groundwater_monitoring_net'
-        verbose_name = "Groundwatermonitoring Meetnet"
-        verbose_name_plural = "Groundwatermonitoring Meetnetten"
+        verbose_name = "Grondwatermonitoring Meetnet"
+        verbose_name_plural = "Grondwatermonitoring Meetnetten"
+        ordering = ("name",)
+
+class Subgroup(models.Model):
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='subgroups', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    code = models.CharField(max_length=25, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'gmn"."subgroup'
+        verbose_name = "Subgroup"
+        verbose_name_plural = "Subgroups"
         ordering = ("name",)
 
 
 class MeasuringPoint(models.Model):
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE)
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE, verbose_name='Meetnet')
+    subgroup = models.ForeignKey(
+        Subgroup, 
+        related_name='measuring_points', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        blank=True,
+        help_text='Optional value to define smaller groups within a network.'
+    )
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
@@ -145,11 +173,12 @@ class MeasuringPoint(models.Model):
     synced_to_bro = models.BooleanField(
         blank=False, null=True, default=False, editable=False
     )
-    added_to_gmn_date = models.DateField(blank=False, null=True)
+    added_to_gmn_date = models.DateField(blank=True, null=True, verbose_name='Datum toegevoegd aan meetnet')
     deleted_from_gmn_date = models.DateField(
         blank=True,
         null=True,
         help_text="Als een Meetpunt van een meetnet verwijderd moet worden, verwijder het object dan NIET uit de BRO-Connector, maar vul dit veld in!",
+        verbose_name='Datum uit meetnet gehaald'
     )
     removed_from_BRO_gmn = models.BooleanField(
         blank=False, null=True, default=False, editable=False
@@ -179,7 +208,7 @@ class MeasuringPoint(models.Model):
             )
 
         # Create GMN_MeasuringPointEndDate event if MP is deleted
-        if self.deleted_from_gmn_date != None and self.removed_from_BRO_gmn != True:
+        if self.deleted_from_gmn_date is not None and self.removed_from_BRO_gmn is not True:
             IntermediateEvent.objects.create(
                 gmn=self.gmn,
                 event_type="GMN_MeasuringPointEndDate",
@@ -189,6 +218,12 @@ class MeasuringPoint(models.Model):
                 deliver_to_bro=self.gmn.deliver_to_bro,
             )
 
+    def clean(self, *args, **kwargs):
+        if self.subgroup:
+            if self.subgroup.gmn != self.gmn:
+                raise ValidationError("Subgroup is deel van een ander Meetnet dan het geselecteerde Meetpunt.")
+
+
     class Meta:
         managed = True
         db_table = 'gmn"."measuring_point'
@@ -197,19 +232,20 @@ class MeasuringPoint(models.Model):
         ordering = ("code",)
 
 class IntermediateEvent(models.Model):
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE)
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, verbose_name='Meetnet')
+    measuring_point = models.ForeignKey(
+        MeasuringPoint, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Meetpunt"
+    )
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
         null=True,
         max_length=25,
+        verbose_name="Bericht type"
     )
-    event_date = models.DateField(blank=False, null=True)
-    synced_to_bro = models.BooleanField(blank=False, null=True, default=False)
-    measuring_point = models.ForeignKey(
-        MeasuringPoint, blank=True, null=True, on_delete=models.CASCADE
-    )
-    deliver_to_bro = models.BooleanField(blank=False, null=True, default=True)
+    event_date = models.DateField(blank=False, null=True, verbose_name="Datum gebeurtenis")
+    deliver_to_bro = models.BooleanField(blank=False, null=True, default=True, verbose_name="Leverplichtig BRO")
+    synced_to_bro = models.BooleanField(blank=False, null=True, default=False, verbose_name="Opgestuurd naar de BRO")
 
     def __str__(self):
         return f"{self.gmn} - {self.event_type} - {self.event_date}"
