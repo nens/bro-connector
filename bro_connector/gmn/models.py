@@ -126,8 +126,8 @@ class GroundwaterMonitoringNet(models.Model):
     class Meta:
         managed = True
         db_table = 'gmn"."groundwater_monitoring_net'
-        verbose_name = "Groundwatermonitoring Meetnet"
-        verbose_name_plural = "Groundwatermonitoring Meetnetten"
+        verbose_name = "Grondwatermonitoring Meetnet"
+        verbose_name_plural = "Grondwatermonitoring Meetnetten"
         ordering = ("name",)
 
 class Subgroup(models.Model):
@@ -221,7 +221,7 @@ class MeasuringPoint(models.Model):
     def clean(self, *args, **kwargs):
         if self.subgroup:
             if self.subgroup.gmn != self.gmn:
-                raise ValidationError("Subgroup is part of different GMN than selected for the measuring point.")
+                raise ValidationError("Subgroup is deel van een ander Meetnet dan het geselecteerde Meetpunt.")
 
 
     class Meta:
