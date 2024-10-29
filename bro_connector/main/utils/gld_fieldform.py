@@ -4,6 +4,7 @@ import pysftp
 import datetime
 import os
 import random
+from pyproj import Transformer
 
 from main import localsecret as ls
 from gmw import models as gmw_models
@@ -65,6 +66,15 @@ input_fields_well = [
     "foto 4",
     "foto 5",
 ]
+
+def convert_epsg28992_to_epsg4326(x, y):
+    # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
+    transformer = Transformer.from_crs("EPSG:28992", "EPSG:4326", always_xy=True)
+   
+    # Perform the transformation
+    lon, lat = transformer.transform(x, y)
+   
+    return lon, lat
 
 def generate_random_color():
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
@@ -145,11 +155,17 @@ class FieldFormGenerator:
             tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
                 groundwater_monitoring_well_static = well
             )
+
+            lon, lat = convert_epsg28992_to_epsg4326(
+                x=well.coordinates.x,
+                y=well.coordinates.y    
+            )
+
             well_name = well.__str__()
             well_location = {
                 f"{well_name}": {
-                    "lat": well.coordinates.y,
-                    "lon": well.coordinates.x,
+                    "lat": lat,
+                    "lon": lon,
                     "inputfields": input_fields_well,
                     "sublocations": {},
                 }

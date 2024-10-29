@@ -4,6 +4,7 @@ import pysftp
 import datetime
 import os
 import random
+from pyproj import Transformer
 
 from main import localsecret as ls
 from gmw import models as gmw_models
@@ -22,6 +23,15 @@ input_field_options = {
         "name": "Opmerking"
     }
 }
+
+def convert_epsg28992_to_epsg4326(x, y):
+    # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
+    transformer = Transformer.from_crs("EPSG:28992", "EPSG:4326", always_xy=True)
+   
+    # Perform the transformation
+    lon, lat = transformer.transform(x, y)
+   
+    return lon, lat
 
 def generate_random_color():
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
@@ -159,10 +169,15 @@ def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> Lis
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
 
+    lon, lat = convert_epsg28992_to_epsg4326(
+        x=tube.groundwater_monitoring_well_static.coordinates.x,
+        y=tube.groundwater_monitoring_well_static.coordinates.y    
+    )
+
     return {
         f"{filter_name}": {
-            "lat": tube.groundwater_monitoring_well_static.coordinates.y,
-            "lon": tube.groundwater_monitoring_well_static.coordinates.x,
+            "lat": lat,
+            "lon": lon,
             "inputfields": generate_sublocation_fields(tube),
             "min_values": generate_min_values(tube),
             "max_values": generate_max_values(tube),
