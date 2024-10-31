@@ -1,21 +1,43 @@
 {
   "inputfields": {
-    "foto1": {
-      "type": "photo",
-      "name": "foto 1"
+    "opneembaarheid": {
+      "name": "Grondwaterstand niet opneembaar?",
+        "type": "choice",
+        "options": [
+          "Nee, filter staat droog",
+          "Nee, beschadiging, reparatie benodigd",
+          "Nee, overig (geef infomatie via opmerking)"
+        ]
     },
-    "foto2": {
-      "type": "photo",
-      "name": "foto 2"
-    },
-    "waterstand": {
+    "grondwaterstand": {
+      "name": "Grondwaterstand tov bovenkant buis",
       "type": "number",
-      "name": "Waterstand"
+      "hint": "cm tov bovenkant peilfilter/stijgbuis"
     },
     "opmerking": {
       "type": "text",
-      "name": "Opmerking"
-    }
+      "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
+      },
+    "foto 1": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 2": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 3": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 4": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 5": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      }
   },
   "groups": {},
   "locations": {
