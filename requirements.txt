@@ -50,6 +50,7 @@ paramiko==3.4.0
 pastas
 pastastore
 plotly==5.20.0
+polars
 psycopg2==2.9.9
 pyOpenSSL
 pycparser==2.22
