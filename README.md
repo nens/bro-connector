@@ -47,6 +47,8 @@ Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard
 
 <img src=screenshots/bro_connector_GMW_map_zeeland.png>
 
+<img src=screenshots/20241104_MeetopstellingVisualisatie.png>
+
 <img src=screenshots/bro_connector_GMW_Datalens_overview.png>
 
 ## Initialisatie
