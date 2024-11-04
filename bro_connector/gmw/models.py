@@ -582,8 +582,8 @@ class Picture(models.Model):
         null=True,
         blank=True,
     )
-    recording_date = models.DateField(blank=True, null=True)
-    picture = models.BinaryField(blank=True, null=True, editable=True)
+    recording_datetime = models.DateTimeField(blank=True, null=True)
+    picture = models.ImageField(blank=True, null=True, editable=True)
     description = models.CharField(max_length=254, null=True, blank=True)
 
     class Meta:

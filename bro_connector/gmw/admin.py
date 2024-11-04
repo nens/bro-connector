@@ -430,11 +430,11 @@ class PictureAdmin(admin.ModelAdmin):
 
     list_display = (
         "groundwater_monitoring_well_static",
-        "recording_date",
+        "recording_datetime",
     )
     list_filter = (
         WellFilter,
-        "recording_date",
+        "recording_datetime",
     )
 
 

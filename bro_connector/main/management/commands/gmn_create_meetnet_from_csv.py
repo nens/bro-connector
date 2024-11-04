@@ -33,7 +33,7 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
         quality_regime = "IMBRO/A",
         delivery_context = "waterwetPeilbeheer",
         monitoring_purpose = "strategischBeheerKwantiteitRegionaal",
-        groundwater_aspect = groundwater_aspect
+        groundwater_aspect = groundwater_aspect,
     )[0]
     
     # creeër een lege dataframe die gevuld wordt met informatie welke putten en peilbuizen succesvol zijn toegevoegd aan een meetnet
@@ -56,10 +56,10 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
                 code = tube.__str__()
             )[0]
             print(measuring_point)
-            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in meetnet':1}]
+            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]
 
         else:
-            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in meetnet':0}]
+            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':0}]
         
         new_df = pl.DataFrame(new_row)
         df_ouput.extend(new_df)
