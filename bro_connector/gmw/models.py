@@ -1,5 +1,6 @@
 from django.db import models
 import django.contrib.gis.db.models as geo_models
+from django.utils.html import format_html
 from .choices import *  # noqa: F403
 import main.utils.validators_models as validators_models
 from bro.models import Organisation, BROProject, SecureCharField
@@ -583,8 +584,15 @@ class Picture(models.Model):
         blank=True,
     )
     recording_datetime = models.DateTimeField(blank=True, null=True)
-    picture = models.ImageField(blank=True, null=True, editable=True)
+    picture = models.ImageField(upload_to='static/gmw/pictures/',blank=True, null=True, editable=True)
     description = models.CharField(max_length=254, null=True, blank=True)
+
+    @property
+    def image_tag(self):
+        if self.picture:
+            return format_html(f'<img src="{self.picture.url}" style="max-width:100px; max-height:100px"/>')
+        else:
+            return format_html('No image available.')
 
     class Meta:
         managed = True

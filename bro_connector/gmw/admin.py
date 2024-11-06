@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
+from django.utils.html import format_html
+from image_uploader_widget.admin import ImageUploaderInline
 import reversion
 from reversion_compare.helpers import patch_admin
 import logging
@@ -54,6 +56,14 @@ class EventsInline(admin.TabularInline):
 
     extra = 0
     max_num = 0
+
+class PicturesInline(ImageUploaderInline):
+    model = gmw_models.Picture
+    
+    fields = ["picture"]
+
+    extra = 0
+    max_num = 3
 
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
@@ -130,7 +140,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         ),
     ]
 
-    inlines = (EventsInline,)
+    inlines = (PicturesInline, EventsInline,)
 
     actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
 
@@ -424,13 +434,10 @@ class EventAdmin(admin.ModelAdmin):
 
 
 class PictureAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-        models.BinaryField: {"widget": gmw_forms.BinaryFileInput()},
-    }
-
     list_display = (
         "groundwater_monitoring_well_static",
         "recording_datetime",
+        "image_tag",
     )
     list_filter = (
         WellFilter,
