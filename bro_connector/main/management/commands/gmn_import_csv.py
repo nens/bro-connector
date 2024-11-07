@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from gmn.models import GroundwaterMonitoringNet, MeasuringPoint
+from gmn.models import GroundwaterMonitoringNet, MeasuringPoint, Subgroup
 from gmw.models import GroundwaterMonitoringTubeStatic
 import polars as pl
 
@@ -16,22 +16,13 @@ def find_monitoring_tube(tube_str: str) -> GroundwaterMonitoringTubeStatic:
     ).order_by('groundwater_monitoring_tube_static_id').first()
     return tube
 
-def update_or_create_meetnet(df: pl.DataFrame, kantonnier: str) -> None:
-    gmn = GroundwaterMonitoringNet.objects.update_or_create(
-        name = kantonnier,
-        deliver_to_bro = False,
-        description = "Gemaakt ter groepering van meetrondes.",
-        quality_regime = "IMBRO/A",
-        delivery_context = "waterwetPeilbeheer",
-        monitoring_purpose = "strategischBeheerKwantiteitRegionaal",
-        groundwater_aspect = "kwantiteit",
-    )[0]
-
+def update_or_create_subgroup(df: pl.DataFrame, subgroup: Subgroup) -> None:
     for row in df.iter_rows(named=True):
         tube = find_monitoring_tube(row["unicode"])
         if tube:
             measuring_point = MeasuringPoint.objects.update_or_create(
-                gmn = gmn,
+                gmn = subgroup.gmn,
+                subgroup = subgroup,
                 groundwater_monitoring_tube = tube,
                 code = tube.__str__()
             )[0]
@@ -53,9 +44,23 @@ class Command(BaseCommand):
         df = pl.read_csv(csv_path, ignore_errors=True)
         print(df.columns)
 
+        gmn = GroundwaterMonitoringNet.objects.update_or_create(
+            name = "Meetrondes Kantonniers",
+            deliver_to_bro = False,
+            description = "Hoofgroepering van de Meetrondes.",
+            quality_regime = "IMBRO/A",
+            delivery_context = "waterwetPeilbeheer",
+            monitoring_purpose = "strategischBeheerKwantiteitRegionaal",
+            groundwater_aspect = "kwantiteit",
+        )[0]
+
         kantonniers = df.select('kantonnier').unique().drop_nulls()
         for kantonnier in kantonniers.iter_rows():
             kantonnier_naam = kantonnier[0]
-
             df_kantonier = df.filter(pl.col('kantonnier').eq(kantonnier_naam))
-            update_or_create_meetnet(df_kantonier, kantonnier_naam)
+
+            subgroup = Subgroup.objects.update_or_create(
+                gmn = gmn,
+                name = kantonnier_naam,
+            )[0]
+            update_or_create_subgroup(df_kantonier, subgroup)
