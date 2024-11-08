@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_admin_generator",
+    "image_uploader_widget",
     "django_extensions",
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "django_static_jquery",

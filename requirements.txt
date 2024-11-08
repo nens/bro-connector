@@ -50,6 +50,7 @@ paramiko==3.4.0
 pastas
 pastastore
 plotly==5.20.0
+polars
 psycopg2==2.9.9
 psycopg2-binary
 pyOpenSSL
@@ -77,3 +78,4 @@ urllib3==2.2.2
 uuid==1.30
 Werkzeug==3.0.2
 xmltodict==0.13.0
+django-image-uploader-widget
