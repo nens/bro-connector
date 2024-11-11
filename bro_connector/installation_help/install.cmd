@@ -110,41 +110,61 @@ if /I "%confirm%" EQU "yes" (
     "%PGADMIN_PATH%\psql" -U %PGUSER% -h %PGHOST% -p %PGPORT% -d %PGDATABASE% -f %SQL_FILE_PATH%
 )
 
+REM Read values from files
+set /p FERNET_KEY=<%CUR_DIR%\fernet_key.txt
+set /p SALT_STRING=<%CUR_DIR%\salt.txt
 
-copy %CUR_DIR%\..\main\localsecret_template.py %CUR_DIR%\..\main\localsecret.py
+echo "%FERNET_KEY%"
+echo "%SALT_STRING%"
+echo %CUR_DIR%
+pause
 
-REM Replace placeholders in the copied file with the actual values
+REM Create the file with placeholders
 (
+    echo # Constants and sensitive keys
+    echo FERNET_ENCRYPTION_KEY = "%FERNET_KEY%"
+    echo SALT_STRING = "%SALT_STRING%"
+    echo.
+    echo # Environment configuration
+    echo env = "development"
+    echo.
     echo # FTP server details
-    echo ftp_ip = ''
-    echo ftp_username = ''
-    echo ftp_password = ''
-    echo ftp_path = ''
+    echo ftp_ip = 'ftp.example.com'
+    echo ftp_username = 'your_username'
+    echo ftp_password = 'your_password'
     echo.
-    echo # Datbasename
-    echo database = "%PGDATABASE%"
+    echo # FTP paths
+    echo ftp_frd_path = '/FRD'
+    echo ftp_gld_path = '/GLD'
+    echo ftp_maintenance_path = '/ONDERHOUD'
+    echo ftp_gar_path = '/GAR'
     echo.
-    echo # Production db settings
-    echo p_user = "%PGUSER%"
-    echo p_password = "%PGPASSWORD%"
-    echo p_host = "%PGHOST%"
-    echo p_port = "%PGPORT%"
+    echo # Database name
+    echo database = "db_bro_connector"
     echo.
-    echo # Test db settings
-    echo t_user = "%PGUSER%"
-    echo t_password = "%PGPASSWORD%"
-    echo t_host = "%PGHOST%"
-    echo t_port = "%PGPORT%"
-    echo.
-    echo # Staging db settings
-    echo s_user = "%PGUSER%"
-    echo s_password = "%PGPASSWORD%"
-    echo s_host = "%PGHOST%"
-    echo s_port = "%PGPORT%"
+    echo # Database settings based on environment
+    echo if env == "production":
+    echo    user = ""
+    echo    password = ""
+    echo    host = ""
+    echo    port = ""
+    echo elif env == "staging":
+    echo    user = ""
+    echo    password = ""
+    echo    host = ""
+    echo    port = ""
+    echo else:
+    echo    user = "postgres"
+    echo    password = "postgres"
+    echo    host = "localhost"
+    echo    port = "5432"
     echo.
     echo # Lizard keys
-    echo validation_key = "%VALIDATION_KEY%"
+    echo validation_key = ""
 ) > %CUR_DIR%\..\main\localsecret.py
+
+del %CUR_DIR%\salt.txt
+del %CUR_DIR%\fernet_key.txt
 
 echo Warning! Currently all settings [production, staging and test] point to the same database. Correct this if wanted in the folder bro_connector/main/localsecret.py
 

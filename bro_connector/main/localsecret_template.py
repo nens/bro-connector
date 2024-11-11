@@ -1,32 +1,40 @@
 # FERNET_ENCRYPTION_KEY = ""
 # SALT_STRING = ""
 
-# FTP server details
+# env = "development"
+
+# # FTP server details
 # ftp_ip = 'ftp.example.com'
 # ftp_username = 'your_username'
 # ftp_password = 'your_password'
-# ftp_path = '/path/to/ftp/directory'
+
+# # Paths
+# ftp_frd_path = '/FRD'
+# ftp_gld_path = '/GLD'
+# ftp_maintenance_path = '/ONDERHOUD'
+# ftp_gar_path = '/GAR'
 
 # # Datbasename
 # database = ""
 
+# if env == "production":
 # # Production db settings
-# p_user = ""
-# p_password = ""
-# p_host = ""
-# p_port = ""
+#     user = ''
+#     password = ''
+#     host = ''
+#     port = ''
+# elif env == "staging":
+#     # Test db settings
+#     user = ''
+#     password = ''
+#     host = ''
+#     port = ''
+# else:
+#     # Staging db settings
+#     user = 'postgres'
+#     password = 'postgres'
+#     host = 'localhost'
+#     port = '5432'
 
-# # Test db settings
-# t_user = ""
-# t_password = ""
-# t_host = ""
-# t_port = ""
-
-# # Staging db settings
-# s_user = ""
-# s_password = ""
-# s_host = ""
-# s_port = ""
-
-# Lizard keys
+# # Lizard keys
 # validation_key = ""
