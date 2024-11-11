@@ -1,0 +1,28 @@
+[project]
+authors = [{name = "StevenHosper", email = "stevenhosper@gmail.nl"}]
+dependencies = ["django-jazzmin>=3.0.1,<4"]
+description = "Open-Source applicatie voor het beheer van Grondwatermonitoring (BRO)."
+name = "bro_connector"
+requires-python = ">= 3.11"
+version = "0.1.0"
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tool.pixi.pypi-dependencies]
+bro_connector = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+gdal = ">=3.9.3,<4"
+django = "==4.2"
+geopandas = ">=1.0.1,<2"
+dash = ">=2.18.1,<3"
+cryptography = ">=43.0.3,<44"
+polars = ">=0.20.26,<0.21"
