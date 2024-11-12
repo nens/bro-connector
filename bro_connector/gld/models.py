@@ -9,6 +9,7 @@ from django.db import models
 from .choices import *
 from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringTubeStatic
+from gmn.models import GroundwaterMonitoringNet
 import datetime
 
 
@@ -20,11 +21,17 @@ def s2d(string: str):
 
 class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
+    groundwater_monitoring_net = models.ManyToManyField(
+        GroundwaterMonitoringNet,
+        blank=True,
+        verbose_name="Meetnetten",
+    )
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=False,
+        related_name="groundwaterleveldossier"
     )
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
