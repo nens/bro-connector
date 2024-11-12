@@ -56,7 +56,7 @@ classDiagram
         date closure_date
         bool closed_in_bro
         }
-    FormationResistanceDossier ..> "delivery_accountable_party\ndelivery_responsible_party" Organisation
+    FormationResistanceDossier ..> "delivery_accountable_party\t\tdelivery_responsible_party" Organisation
 
 
 
