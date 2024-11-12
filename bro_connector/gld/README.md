@@ -1,19 +1,12 @@
 # Klassendiagram voor Grondwaterstand dossiers (GLD) #
 ```mermaid
 classDiagram
-    class Organisation{
-        str name
-        int company_number
-        str color
-        int bro_user
-        int bro_token
-    }
     class GroundwaterLevelDossier{
         int groundwater_level_dossier_id
         GroundwaterMonitoringTubeStatic groundwater_monitoring_tube
         str gld_bro_id
-        datetime research_start_date
-        datetime research_last_date
+        date research_start_date
+        date research_last_date
         datetime research_last_correction
     }
     GroundwaterLevelDossier ..> "groundwater_monitoring_tube" GroundWaterMonitoringTubeStatic
@@ -50,7 +43,7 @@ classDiagram
     class MeasurementTvp {
         int measurement_tvp_id
         Observation observation
-        datetime measurement_type
+        datetime measurement_time
         float field_value
         str field_value_unit
         float calculated_value
@@ -81,9 +74,9 @@ classDiagram
         str delivery_status
         str comments
         str last_changed
-        str corrections_applied
+        bool corrections_applied
         datetime timestamp_end_registration
-        str quality_rgime
+        str quality_regime
         str file
         str process_status
     }
@@ -100,6 +93,57 @@ classDiagram
         str sock_material
         float sediment_sump_length
     }
+    GroundWaterMonitoringTubeStatic ..> "groundwater_monitoring_well_static" GroundwaterMonitoringWellStatic
+
+    class GroundwaterMonitoringWellStatic{
+        int groundwater_monitoring_well_static_id
+        str registration_object_type
+        str bro_id
+        BROProject project
+        str request_reference
+        Organisation delivery_accountable_party
+        Organisation delivery_responsible_party
+        str quality_regime
+        str under_privilege
+        str delivery_context
+        str construction_standard
+        str initial_function
+        str nitg_code
+        str olga_code
+        str well_code
+        int monitoring_pdok_id
+        coordinates coordinates
+        coordinates coordinates_4236
+        str reference_system
+        str horizontal_positioning_method
+        str local_vertical_reference_point
+        float well_offset
+        str vertical_datum
+        bool in_management
+        bool deliver_gmw_to_bro
+        bool complete_bro
+        date last_horizontal_positioning_date
+        coordinates construction_coordinates
+    }
+    GroundwaterMonitoringWellStatic ..> "project" BROProject
+    GroundwaterMonitoringWellStatic ..> "delivery_accountable_party" Organisation
+    GroundwaterMonitoringWellStatic ..> "delivery_responsible_party" Organisation
+
+    class Organisation{
+        str name
+        int company_number
+        str color
+        int bro_user
+        int bro_token
+    }
+    class BROProject{
+        str name
+        int project_number
+        Organisation owner
+        list[Organisation] authorized
+    }
+    BROProject ..> "owner" Organisation
+    BROProject ..> "authorized" Organisation
 ```
 # Beschrijving #
 Onder het registratieobject kun je de volgende objecten beheren: GrondwaterstandsDossiers, Observaties, Meetpunt metadata, Meting en tijdwaarde paren, Ovservatie metadata, GLD registratie logs, GLD toevoegings logs

@@ -4,13 +4,6 @@
 # Klassendiagram voor Formatieweerstand Dossiers (FRD) #
 ```mermaid
 classDiagram
-    class Organisation{
-        str name
-        int company_number
-        str color
-        int bro_user
-        int bro_token
-    }
     class GroundwaterMonitoringTubeStatic{
         int groundwater_monitoring_tube_static_id
         GroundwaterMonitoringWellStatic groundwater_monitoring_well_static
@@ -42,6 +35,9 @@ classDiagram
         bool removed_from_BRO
         str description
         }
+    GroundwaterMonitoringNet ..> "project" BROProject
+    GroundwaterMonitoringNet ..> "delivery_accountable_party" Organisation
+    GroundwaterMonitoringNet ..> "delivery_responsible_party" Organisation
 
 
     class FormationResistanceDossier{
@@ -56,7 +52,8 @@ classDiagram
         date closure_date
         bool closed_in_bro
         }
-    FormationResistanceDossier ..> "del. acc. party, del. resp. party" Organisation
+    FormationResistanceDossier ..> "delivery_accountable_party" Organisation
+    FormationResistanceDossier ..> "delivery_responsible_party" Organisation
     FormationResistanceDossier ..> "groundwater_monitoring_tube" GroundwaterMonitoringTubeStatic
     FormationResistanceDossier ..> "groundwater_monitoring_net" GroundwaterMonitoringNet
 
@@ -68,6 +65,7 @@ classDiagram
         str assessment_procedure
     }
     ElectromagneticMeasurementMethod ..> "formation_resistance_dossier" FormationResistanceDossier
+    ElectromagneticMeasurementMethod ..> "measuring_responsible_party" Organisation
 
     class InstrumentConfiguration{
         FormationResistanceDossier formation_resistance_dossier
@@ -102,7 +100,8 @@ classDiagram
         GMWElectrodeReference elektrode1
         GMWElectrodeReference elektrode2
     }
-    ElectrodePair ..> "elektrode1, elektrode2" GMWElectrodeReference
+    ElectrodePair ..> "elektrode1" GMWElectrodeReference
+    ElectrodePair ..> "elektrode2" GMWElectrodeReference
 
     class MeasurementConfiguration{
         FormationResistanceDossier formation_resistance_dossier
@@ -111,7 +110,8 @@ classDiagram
         ElectrodePair flowcurrent_pair
     }
     MeasurementConfiguration ..> "formation_resistance_dossier" FormationResistanceDossier
-    MeasurementConfiguration ..> "measurement_pair, flowcurrent_pair" ElectrodePair
+    MeasurementConfiguration ..> "measurement_pair" ElectrodePair
+    MeasurementConfiguration ..> "flowcurrent_pair" ElectrodePair
 
     class ElectromagneticSeries{
         ElectromagneticMeasurementMethod electromagnetic_measurement_method
@@ -176,6 +176,22 @@ classDiagram
     FrdSyncLog ..> "frd" FormationResistanceDossier
     FrdSyncLog ..> "geo_ohm_measuring_method" GeoOhmMeasurementMethod
     FrdSyncLog ..> "electomagnetic_method" ElectromagneticMeasurementMethod
+
+    class Organisation{
+        str name
+        int company_number
+        str color
+        str bro_user
+        str bro_token
+    }
+    class BROProject{
+        str name
+        int project_number
+        Organisation owner
+        list[Organisation] authorized
+    }
+    BROProject ..> "owner" Organisation
+    BROProject ..> "authorized" Organisation
 
 ```
 
