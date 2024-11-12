@@ -1,3 +1,6 @@
+
+<img src=../static/img/broconnector.png width="140">
+
 # ClassDiagram voor Groundwatermonitoring Meetnetten (GMN) #
 ```mermaid
 classDiagram
