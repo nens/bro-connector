@@ -1,22 +1,20 @@
+
+<img src=../static/img/broconnector.png width="140">
+
 # Klassendiagram voor Grondwaterstand dossiers (GLD) #
 ```mermaid
 classDiagram
-        class Organisation{
-        str name
-        int company_number
-        str color
-        int bro_user
-        int bro_token
-    }
     class GroundwaterLevelDossier{
         int groundwater_level_dossier_id
+        GroundwaterMonitoringNet groundwater_monitoring_net
         GroundwaterMonitoringTubeStatic groundwater_monitoring_tube
         str gld_bro_id
-        datetime research_start_date
-        datetime research_last_date
+        date research_start_date
+        date research_last_date
         datetime research_last_correction
     }
-    GroundwaterLevelDossier ..> "groundwater_monitoring_tube" GroundWaterMonitoringTubeStatic
+    GroundwaterLevelDossier ..> "takes place in a" GroundWaterMonitoringTubeStatic
+    GroundwaterLevelDossier ..> "is part of a" GroundwaterMonitoringNet
     class Observation {
         int observation_id
         duration observationperiod
@@ -28,9 +26,9 @@ classDiagram
         GroundwaterLevelDossier groundwater_level_dossier
         bool up_to_date_in_bro
     }
-    Observation ..> "obseration_metadata" ObservationMetadata
-    Observation ..> "observation_process" ObservationProcess
-    Observation ..> "groundwater_level_dossier" GroundwaterLevelDossier
+    Observation ..> "has" ObservationMetadata
+    Observation ..> "is completed with" ObservationProcess
+    Observation ..> "belongs in a" GroundwaterLevelDossier
     class ObservationMetadata {
         int observation_metadata_id
         date date_stamp
@@ -38,7 +36,6 @@ classDiagram
         str status
         Organisation responsible_party
     }
-    ObservationMetadata ..> "responsible_party" Organisation
     class ObservationProcess {
         int observationprocess_id
         str process_reference
@@ -50,7 +47,7 @@ classDiagram
     class MeasurementTvp {
         int measurement_tvp_id
         Observation observation
-        datetime measurement_type
+        datetime measurement_time
         float field_value
         str field_value_unit
         float calculated_value
@@ -59,8 +56,8 @@ classDiagram
         str correction_reason
         MeasurementPointMetadata measurement_point_metadata
     }
-    MeasurementTvp ..> "observation" Observation
-    MeasurementTvp ..> "measurement_point_metadata" MeasurementPointMetadata
+    MeasurementTvp ..> "belongs in a" Observation
+    MeasurementTvp ..> "has" MeasurementPointMetadata
     class MeasurementPointMetadata {
         int measurement_point_metadata_id
         str status_quality_control
@@ -81,9 +78,9 @@ classDiagram
         str delivery_status
         str comments
         str last_changed
-        str corrections_applied
+        bool corrections_applied
         datetime timestamp_end_registration
-        str quality_rgime
+        str quality_regime
         str file
         str process_status
     }
@@ -99,6 +96,31 @@ classDiagram
         float screen_length
         str sock_material
         float sediment_sump_length
+    }
+    class GroundwaterMonitoringNet{
+        int id
+        BROProject project
+        bool deliver_to_bro
+        str gmn_bro_id
+        Organisation delivery_accountable_party
+        Organisation delivery_responsible_party
+        str quality_regime
+        str object_id_accountable_party
+        str name
+        str monitoring_purpose
+        str groundwater_aspect
+        date start_date_monitoring
+        date end_date_monitoring
+        bool removed_from_BRO
+        str description
+    }
+
+    class Organisation{
+        str name
+        int company_number
+        str color
+        int bro_user
+        int bro_token
     }
 ```
 # Beschrijving #

@@ -4,12 +4,10 @@ from base64 import b64decode, b64encode
 
 from django.core.management.base import BaseCommand
 from django.core.files import File
-from django.urls import path
-from gmn.models import GroundwaterMonitoringNet, MeasuringPoint
-from gmw.models import GroundwaterMonitoringTubeStatic, Picture, GroundwaterMonitoringWellStatic
+from gmw.models import Picture, GroundwaterMonitoringWellStatic
 
-from django.shortcuts import render
-
+import pysftp
+from main import localsecret as ls
 
 # herschrijf functie naar find_monitoring_well en GroundwaterMonitoringWellStatic
 def find_monitoring_well(well_code: str) -> GroundwaterMonitoringWellStatic:
@@ -19,15 +17,6 @@ def find_monitoring_well(well_code: str) -> GroundwaterMonitoringWellStatic:
         nitg_code = well_code
     ).order_by('groundwater_monitoring_well_static_id').first()
     return well
-
-# def jpg_to_binary (image_path: str):
-#     img = cv.imread(image_path, 2)
-#     # ret, bw_img = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
-#     bw = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
-#     print(type(bw))
-#     return bw
-
-
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -40,56 +29,51 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         photo_folder_path = str(options["foto"])
 
-        files = os.listdir(photo_folder_path)
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+        with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+            with sftp.cd(ls.ftp_gld_path):
+                files = sftp.listdir(ls.ftp_gld_path)
 
-        jpgs = [file for file in files if '.jpg' in file]
+                jpgs = [file for file in files if '.jpg' in file]
 
+                for jpg in jpgs:
+                    photo_nr, well_nr, filter_nr, datetime = jpg.split('_')[:-1] + [jpg.split('_')[-1][:-4]]
+                    
+                    # convert datetime into correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ])
+                    datetime = f'{datetime[:4]}-{datetime[4:6]}-{datetime[6:8]} {datetime[9:11]}:{datetime[11:13]}:{datetime[13:15]}'
 
+                    well = find_monitoring_well(well_nr)
+                    photo_path = f'{photo_folder_path}\{jpg}'
 
-        for jpg in jpgs:
-            photo_nr, well_nr, filter_nr, datetime = jpg.split('_')[:-1] + [jpg.split('_')[-1][:-4]]
-            
-            # convert datetime into correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ])
-            datetime = f'{datetime[:4]}-{datetime[4:6]}-{datetime[6:8]} {datetime[9:11]}:{datetime[11:13]}:{datetime[13:15]}'
+                    # Open the .jpg file in binary mode
+                    with sftp.open(jpg, mode='rb') as img_file:
 
-            well = find_monitoring_well(well_nr)
-            photo_path = f'{photo_folder_path}\{jpg}'
-            print(jpg)
+                        file_name = os.path.basename(photo_path)
+                        picture = Picture.objects.create(
+                            groundwater_monitoring_well_static=well,
+                            recording_datetime=datetime,
+                            picture=File(img_file, name=file_name),
+                            description="Foto's inspoelen",
+                            )
 
-            # Open the .jpg file in binary mode
-            with open(photo_path, "rb") as img_file:
+                    picture.save()
 
-                file_name = os.path.basename(photo_path)
-                picture = Picture.objects.create(
-                    groundwater_monitoring_well_static=well,
-                    recording_datetime=datetime,
-                    picture=File(img_file, name=file_name),
-                    description="Foto's inspoelen",
-                    )
-                           
-            
+                    print(f"Image {jpg} saved successfully as binary data.")
+                    
+                    verwerkt_path = ls.ftp_gld_path + '\verwerkt'
+                    if sftp.exists(verwerkt_path):
+                        print(f'folder verwerkt exists.')
+                    else:
+                        sftp.mkdir(verwerkt_path)
+                        print('folder verwerkt created')
 
-            # Create a Picture instance and assign the binary data
-            # picture = Picture(
-            #     groundwater_monitoring_well_static = well,
-            #     recording_datetime=datetime,
-            #     picture=binary_data,
-            #     description="Foto's inspoelen",
-            # )
+                    destination_path = verwerkt_path + f'\{jpg}'
+                    sftp.rename(ls.ftp_gld_path, destination_path)
+                    print(f"File moved from '{ls.ftp_gld_path}' to '{destination_path}'")
+                    
 
-            picture.save()
-
-            print(f"Image {jpg} saved successfully as binary data.")
-            print("")
-
-        
-
-        print('start listing pictures')
-
-        picture_data = []
-        pictures = Picture.objects.all()
-
-
+    
         # for picture in pictures:
         #     if picture.picture:
         #         picture.image_base64 = b64encode(picture.picture).decode('ascii')
