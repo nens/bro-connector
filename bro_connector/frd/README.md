@@ -166,9 +166,6 @@ classDiagram
         str delivery_id
         str delivery_type
     }
-    FrdSyncLog ..> "frd" FormationResistanceDossier
-    FrdSyncLog ..> "geo_ohm_measuring_method" GeoOhmMeasurementMethod
-    FrdSyncLog ..> "electomagnetic_method" ElectromagneticMeasurementMethod
 
 
 ```
