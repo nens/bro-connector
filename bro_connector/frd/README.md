@@ -56,9 +56,9 @@ classDiagram
         date closure_date
         bool closed_in_bro
         }
-    FormationResistanceDossier ..> "delivery_accountable_party\t\tdelivery_responsible_party" Organisation
-
-
+    FormationResistanceDossier ..> "del. acc. party, del. resp. party" Organisation
+    FormationResistanceDossier ..> "groundwater_monitoring_tube" GroundwaterMonitoringTubeStatic
+    FormationResistanceDossier ..> "groundwater_monitoring_net" GroundwaterMonitoringNet
 
     class ElectromagneticMeasurementMethod{
         FormationResistanceDossier formation_resistance_dossier
@@ -67,6 +67,8 @@ classDiagram
         str measuring_procedure
         str assessment_procedure
     }
+    ElectromagneticMeasurementMethod ..> "formation_resistance_dossier" FormationResistanceDossier
+
     class InstrumentConfiguration{
         FormationResistanceDossier formation_resistance_dossier
         str configuration_name
@@ -79,6 +81,9 @@ classDiagram
         float coilfrequency
         float instrument_length
     }
+    InstrumentConfiguration ..> "formation_resistance_dossier" FormationResistanceDossier
+    InstrumentConfiguration ..> "electromagnetic_measurement_method" ElectromagneticMeasurementMethod
+
     class GeoOhmMeasurementMethod{
         FormationResistanceDossier formation_resistance_dossier
         date measurement_date
@@ -86,6 +91,9 @@ classDiagram
         str measuring_procedure
         str assessment_procedure
     }
+    GeoOhmMeasurementMethod ..> "formation_resistance_dossier" FormationResistanceDossier
+    GeoOhmMeasurementMethod ..> "measuring_responsible_party" Organisation
+
     class GMWElectrodeReference{
         int cable_number
         int electrode_number
@@ -94,42 +102,61 @@ classDiagram
         GMWElectrodeReference elektrode1
         GMWElectrodeReference elektrode2
     }
+    ElectrodePair ..> "elektrode1, elektrode2" GMWElectrodeReference
+
     class MeasurementConfiguration{
         FormationResistanceDossier formation_resistance_dossier
         str configuration_name
         ElectrodePair measurement_pair
         ElectrodePair flowcurrent_pair
     }
+    MeasurementConfiguration ..> "formation_resistance_dossier" FormationResistanceDossier
+    MeasurementConfiguration ..> "measurement_pair, flowcurrent_pair" ElectrodePair
+
     class ElectromagneticSeries{
         ElectromagneticMeasurementMethod electromagnetic_measurement_method
     }
+    ElectromagneticSeries ..> "electromagnetic_measurement_method" ElectromagneticMeasurementMethod
+
     class GeoOhmMeasurementValue{
         GeoOhmMeasurementMethod geo_ohm_measurement_method
         float formationresistance
         MeasurementConfiguration measurement_configuration
         datetime datetime
     }
+    GeoOhmMeasurementValue ..> "geo_ohm_measurement_method" GeoOhmMeasurementMethod
+    GeoOhmMeasurementValue ..> "measurement_configuration" MeasurementConfiguration
+
     class ElectromagneticRecord{
         ElectromagneticSeries series
         float vertical_position
         float primary_measurement
         float secondary_measurement
     }
+    ElectromagneticRecord ..> "series" ElectromagneticSeries
+
     class CalculatedFormationresistanceMethod{
         GeoOhmMeasurementMethod geo_ohm_measurement_method
         ElectromagneticMeasurementMethod electromagnetic_measurement_method
         str responsible_party
         str assessment_procedure
     }
+    CalculatedFormationresistanceMethod ..> "geo_ohm_measurement_method"  GeoOhmMeasurementMethod
+    CalculatedFormationresistanceMethod ..> "electromagnetic_measurement_method" ElectromagneticMeasurementMethod
+
     class FormationresistanceSeries{
         CalculatedFormationresistanceMethod calculated_formationresistance
     }
+    FormationresistanceSeries ..> "calculated_formationresistance" CalculatedFormationresistanceMethod
+
     class FormationresistanceRecord{
         FormationresistanceSeries series
         float vertical_position
         float formationresistance
         str status_qualitycontrol
     }
+    FormationresistanceRecord ..> "series" FormationresistanceSeries
+
     class FrdSyncLog{
         bool synced
         datetime date_modified
@@ -146,6 +173,10 @@ classDiagram
         str delivery_id
         str delivery_type
     }
+    FrdSyncLog ..> "frd" FormationResistanceDossier
+    FrdSyncLog ..> "geo_ohm_measuring_method" GeoOhmMeasurementMethod
+    FrdSyncLog ..> "electomagnetic_method" GeoOElectromagneticMeasurementMethodhmMeasurementMethod
+
 ```
 
 # FRD - Formatieweerstand Dossiers 
