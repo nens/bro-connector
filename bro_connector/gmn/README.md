@@ -23,8 +23,6 @@ classDiagram
         str description
     }
     GroundwaterMonitoringNet ..> "project" BROProject
-    GroundwaterMonitoringNet ..> "delivery_accountable_party" Organisation
-    GroundwaterMonitoringNet ..> "delivery_responsible_party" Organisation
 
     class Subgroup{
         GroundwaterMonitoringNet gmn
@@ -89,7 +87,6 @@ classDiagram
         str process_status
         MeasuringPoint measuringpoint
     }
-    gmn_bro_sync_log ..> "measuringpoint" MeasuringPoint
     
     class Organisation{
         str name
@@ -104,8 +101,6 @@ classDiagram
         Organisation owner
         list[Organisation] authorized
     }
-    BROProject ..> "owner" Organisation
-    BROProject ..> "authorized" Organisation
 ```
 # Beschrijving #
 Onder GMN vind je een CRUD voor de GroundwaterMonitoring Meetnetten, meetpunten en tussentijdse gebeurtenissen.
