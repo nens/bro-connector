@@ -26,9 +26,9 @@ classDiagram
         GroundwaterLevelDossier groundwater_level_dossier
         bool up_to_date_in_bro
     }
-    Observation ..> "obseration_metadata" ObservationMetadata
-    Observation ..> "observation_process" ObservationProcess
-    Observation ..> "groundwater_level_dossier" GroundwaterLevelDossier
+    Observation ..> "has" ObservationMetadata
+    Observation ..> "is completed with" ObservationProcess
+    Observation ..> "belongs in a" GroundwaterLevelDossier
     class ObservationMetadata {
         int observation_metadata_id
         date date_stamp
@@ -56,8 +56,8 @@ classDiagram
         str correction_reason
         MeasurementPointMetadata measurement_point_metadata
     }
-    MeasurementTvp ..> "observation" Observation
-    MeasurementTvp ..> "measurement_point_metadata" MeasurementPointMetadata
+    MeasurementTvp ..> "belongs in a" Observation
+    MeasurementTvp ..> "has" MeasurementPointMetadata
     class MeasurementPointMetadata {
         int measurement_point_metadata_id
         str status_quality_control
