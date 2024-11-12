@@ -34,9 +34,7 @@ classDiagram
         date last_horizontal_positioning_date
         coordinates construction_coordinates
     }
-    GroundwaterMonitoringWellStatic ..> "project" BROProject
-    GroundwaterMonitoringWellStatic ..> "delivery_accountable_party" Organisation
-    GroundwaterMonitoringWellStatic ..> "delivery_responsible_party" Organisation
+    GroundwaterMonitoringWellStatic ..> "is registered in a" BROProject
 
     class GroundwaterMonitoringWellDynamic{
         int groundwater_monitoring_well_dynamic_id
@@ -60,7 +58,7 @@ classDiagram
         str collision_protection
         str remark
     }
-    GroundwaterMonitoringWellDynamic ..> "groundwater_monitoring_well_static" GroundwaterMonitoringWellStatic
+    GroundwaterMonitoringWellDynamic ..> "belongs to a" GroundwaterMonitoringWellStatic
 
     class GroundwaterMonitoringTubeStatic{
         int groundwater_monitoring_tube_static_id
@@ -75,7 +73,7 @@ classDiagram
         str sock_material
         float sediment_sump_length
     }
-    GroundwaterMonitoringTubeStatic ..> "groundwater_monitoring_well_static" GroundwaterMonitoringWellStatic
+    GroundwaterMonitoringTubeStatic ..> "is found in a" GroundwaterMonitoringWellStatic
 
     class GroundwaterMonitoringTubeDynamic{
         int groundwater_monitoring_tube_dynamic_id
@@ -93,14 +91,14 @@ classDiagram
         float inserted_part_length
         str inserted_part_material
     }
-    GroundwaterMonitoringTubeDynamic ..> "groundwater_monitoring_tube_static" GroundwaterMonitoringTubeStatic
+    GroundwaterMonitoringTubeDynamic ..> "belongs to a" GroundwaterMonitoringTubeStatic
 
     class GeoOhmCable{
         int geo_ohm_cable_id
         GroundwaterMonitoringTubeStatic groundwater_monitoring_tube_static
         int cable_number
     }
-    GeoOhmCable ..> "groundwater_monitoring_tube_static" GroundwaterMonitoringTubeStatic
+    GeoOhmCable ..> "is connected to a" GroundwaterMonitoringTubeStatic
 
     class ElectrodeStatic{
         int electrode_static_id
@@ -109,7 +107,7 @@ classDiagram
         str electrode_position
         int electrode_number
     }
-    ElectrodeStatic ..> "geo_ohm_cable" GeoOhmCable
+    ElectrodeStatic ..> "is part of a" GeoOhmCable
 
     class ElectrodeDynamic{
         int electrode_dynamic_id
@@ -117,7 +115,7 @@ classDiagram
         datetime date_from
         str electrode_status
     }
-    ElectrodeDynamic ..> "electrode_static" ElectrodeStatic
+    ElectrodeDynamic ..> "belongs to a" ElectrodeStatic
 
     class Event{
         int change_id
@@ -129,10 +127,10 @@ classDiagram
         ElectrodeDynamic electrode_dynamic
         bool delivered_to_bro
     }
-    Event ..> "groundwater_monitoring_well_static" GroundwaterMonitoringWellStatic
-    Event ..> "groundwater_monitoring_well_dynamic" GroundwaterMonitoringWellDynamic
-    Event ..> "groundwater_monitoring_tube_dynamic" GroundwaterMonitoringTubeDynamic
-    Event ..> "electrode_dynamic" ElectrodeDynamic
+    Event ..> "happens in a" GroundwaterMonitoringWellStatic
+    Event ..> "changes" GroundwaterMonitoringWellDynamic
+    Event ..> "changes" GroundwaterMonitoringTubeDynamic
+    Event ..> "changes" ElectrodeDynamic
     
     class gmw_registration_log{
         str date_modified
@@ -158,7 +156,7 @@ classDiagram
         image picture
         str description
     }
-    Picture ..> "groundwater_monitoring_well_static" GroundwaterMonitoringWellStatic
+    Picture ..> "is created of" GroundwaterMonitoringWellStatic
 
     class MaintenanceParty{
         int maintenance_party_id
@@ -186,10 +184,8 @@ classDiagram
         date execution_date
         MaintenanceParty execution_by
     }
-    Maintenance ..> "groundwater_monitoring_well_static" GroundwaterMonitoringWellStatic
-    Maintenance ..> "groundwater_monitoring_tube_static" GroundwaterMonitoringTubeStatic
-    Maintenance ..> "reporter" MaintenanceParty
-    Maintenance ..> "execution_by" MaintenanceParty
+    Maintenance ..> "done for a" GroundwaterMonitoringWellStatic
+    Maintenance ..> "execution by" MaintenanceParty
 
 
 
