@@ -22,7 +22,7 @@ classDiagram
         bool removed_from_BRO
         str description
     }
-    GroundwaterMonitoringNet ..> "project" BROProject
+    GroundwaterMonitoringNet ..> "is registered in a" BROProject
 
     class Subgroup{
         GroundwaterMonitoringNet gmn
@@ -30,7 +30,7 @@ classDiagram
         str code
         str description
     }
-    Subgroup ..> "gmn" GroundwaterMonitoringNet
+    Subgroup ..> "is part of a" GroundwaterMonitoringNet
     class MeasuringPoint{
         GroundwaterMonitoringNet gmn
         Subgroup subgroup
@@ -40,9 +40,9 @@ classDiagram
         date deleted_from_gmn_date
         bool removed_from_BRO_gmn
     }
-    MeasuringPoint ..> "gmn" GroundwaterMonitoringNet
-    MeasuringPoint ..> "subgroup" Subgroup
-    MeasuringPoint ..> "groundwater_monitoring_tube" GroundwaterMonitoringTubeStatic
+    MeasuringPoint ..> "is part of a" GroundwaterMonitoringNet
+    MeasuringPoint ..> "can belong to a" Subgroup
+    MeasuringPoint ..> "refers to a" GroundwaterMonitoringTubeStatic
 
     class GroundwaterMonitoringTubeStatic{
         int groundwater_monitoring_tube_static_id
