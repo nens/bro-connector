@@ -57,8 +57,7 @@ classDiagram
         bool closed_in_bro
         }
     FormationResistanceDossier ..> "delivery_accountable_party <br> delivery_responsible_party" Organisation
-    <!-- FormationResistanceDossier ..> "groundwater_monitoring_tube" GroundwaterMonitoringTubeStatic
-    FormationResistanceDossier ..> "groundwater_monitoring_net" GroundwaterMonitoringNet -->
+
 
 
     class ElectromagneticMeasurementMethod{
