@@ -35,9 +35,6 @@ classDiagram
         bool removed_from_BRO
         str description
         }
-    GroundwaterMonitoringNet ..> "project" BROProject
-    GroundwaterMonitoringNet ..> "delivery_accountable_party" Organisation
-    GroundwaterMonitoringNet ..> "delivery_responsible_party" Organisation
 
 
     class FormationResistanceDossier{
@@ -52,8 +49,6 @@ classDiagram
         date closure_date
         bool closed_in_bro
         }
-    FormationResistanceDossier ..> "delivery_accountable_party" Organisation
-    FormationResistanceDossier ..> "delivery_responsible_party" Organisation
     FormationResistanceDossier ..> "groundwater_monitoring_tube" GroundwaterMonitoringTubeStatic
     FormationResistanceDossier ..> "groundwater_monitoring_net" GroundwaterMonitoringNet
 
@@ -65,7 +60,6 @@ classDiagram
         str assessment_procedure
     }
     ElectromagneticMeasurementMethod ..> "formation_resistance_dossier" FormationResistanceDossier
-    ElectromagneticMeasurementMethod ..> "measuring_responsible_party" Organisation
 
     class InstrumentConfiguration{
         FormationResistanceDossier formation_resistance_dossier
@@ -90,7 +84,6 @@ classDiagram
         str assessment_procedure
     }
     GeoOhmMeasurementMethod ..> "formation_resistance_dossier" FormationResistanceDossier
-    GeoOhmMeasurementMethod ..> "measuring_responsible_party" Organisation
 
     class GMWElectrodeReference{
         int cable_number
@@ -177,21 +170,6 @@ classDiagram
     FrdSyncLog ..> "geo_ohm_measuring_method" GeoOhmMeasurementMethod
     FrdSyncLog ..> "electomagnetic_method" ElectromagneticMeasurementMethod
 
-    class Organisation{
-        str name
-        int company_number
-        str color
-        str bro_user
-        str bro_token
-    }
-    class BROProject{
-        str name
-        int project_number
-        Organisation owner
-        list[Organisation] authorized
-    }
-    BROProject ..> "owner" Organisation
-    BROProject ..> "authorized" Organisation
 
 ```
 
