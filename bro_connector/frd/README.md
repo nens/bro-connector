@@ -4,28 +4,75 @@
 # Klassendiagram voor Formatieweerstand Dossiers (FRD) #
 ```mermaid
 classDiagram
+    class Organisation{
+        str name
+        int company_number
+        str color
+        int bro_user
+        int bro_token
+    }
+    class GroundwaterMonitoringTubeStatic{
+        int groundwater_monitoring_tube_static_id
+        GroundwaterMonitoringWellStatic groundwater_monitoring_well_static
+        bool deliver_gld_to_bro
+        int tube_number
+        str tube_type
+        str artesian_well_cap_present
+        str sediment_sump_present
+        str tube_material
+        float screen_length
+        str sock_material
+        float sediment_sump_length
+    }
+    class GroundwaterMonitoringNet{
+        int id
+        BROProject project
+        bool deliver_to_bro
+        str gmn_bro_id
+        Organisation delivery_accountable_party
+        organisation delivery_responsible_party
+        str quality_regime
+        str object_id_accountable_party
+        str name
+        str delivery_context
+        str monitoring_purpose
+        str groundwater_aspect
+        date start_date_monitoring
+        date end_date_monitoring
+        bool removed_from_BRO
+        str description
+        }
+
+
     class FormationResistanceDossier{
         str frd_bro_id
-        delivery_accountable_party delivery_responsible_party
+        Organisation delivery_accountable_party
+        Organisation delivery_responsible_party
         str quality_regime
         str assessment_type
-        groundwater_monitoring_tube
-        groundwater_monitoring_net
+        GroundwaterMonitoringTubeStatic groundwater_monitoring_tube
+        GroundwaterMonitoringNet groundwater_monitoring_net
         bool deliver_to_bro
         date closure_date
         bool closed_in_bro
         }
-    class ElectromagneticMearsElectromagneticMeasurementMethod{
-        formation_resistance_dossier
+    FormationResistanceDossier ..> "delivery_accountable_party" Organisation
+    FormationResistanceDossier ..> "delivery_responsible_party" Organisation
+    FormationResistanceDossier ..> "groundwater_monitoring_tube" GroundwaterMonitoringTubeStatic
+    FormationResistanceDossier ..> "groundwater_monitoring_net" GroundwaterMonitoringNet
+
+
+    class ElectromagneticMeasurementMethod{
+        FormationResistanceDossier formation_resistance_dossier
         date measurement_date
-        measuring_responsible_party
+        Organisation measuring_responsible_party
         str measuring_procedure
         str assessment_procedure
     }
     class InstrumentConfiguration{
-        formation_resistance_dossier
+        FormationResistanceDossier formation_resistance_dossier
         str configuration_name
-        electromagnetic_measurement_method
+        ElectromagneticMeasurementMethod electromagnetic_measurement_method
         float relative_position_send_coil
         float relative_position_receive_coil
         str secondary_receive_coil
@@ -35,9 +82,9 @@ classDiagram
         float instrument_length
     }
     class GeoOhmMeasurementMethod{
-        formation_resistance_dossier
+        FormationResistanceDossier formation_resistance_dossier
         date measurement_date
-        measuring_responsible_party
+        Organisation measuring_responsible_party
         str measuring_procedure
         str assessment_procedure
     }
@@ -46,41 +93,41 @@ classDiagram
         int electrode_number
     }
     class ElectrodePair{
-        elektrode1
-        elektrode2
+        GMWElectrodeReference elektrode1
+        GMWElectrodeReference elektrode2
     }
     class MeasurementConfiguration{
-        formation_resistance_dossier
+        FormationResistanceDossier formation_resistance_dossier
         str configuration_name
-        measurement_pair
-        flowcurrent_pair
+        ElectrodePair measurement_pair
+        ElectrodePair flowcurrent_pair
     }
     class ElectromagneticSeries{
-        electromagnetic_measurement_method
+        ElectromagneticMeasurementMethod electromagnetic_measurement_method
     }
     class GeoOhmMeasurementValue{
-        geo_ohm_measurement_method
+        GeoOhmMeasurementMethod geo_ohm_measurement_method
         float formationresistance
-        measurement_configuration
+        MeasurementConfiguration measurement_configuration
         datetime datetime
     }
     class ElectromagneticRecord{
-        series
+        ElectromagneticSeries series
         float vertical_position
         float primary_measurement
         float secondary_measurement
     }
     class CalculatedFormationresistanceMethod{
-        geo_ohm_measurement_method
-        electromagnetic_measurement_method
+        GeoOhmMeasurementMethod geo_ohm_measurement_method
+        ElectromagneticMeasurementMethod electromagnetic_measurement_method
         str responsible_party
         str assessment_procedure
     }
     class FormationresistanceSeries{
-        calculated_formationresistance
+        CalculatedFormationresistanceMethod calculated_formationresistance
     }
     class FormationresistanceRecord{
-        series
+        FormationresistanceSeries series
         float vertical_position
         float formationresistance
         str status_qualitycontrol
@@ -90,9 +137,9 @@ classDiagram
         datetime date_modified
         str bro_id
         str event_type
-        frd
-        geo_ohm_measuring_method
-        electomagnetic_method
+        FormationResistanceDossier frd
+        GeoOhmMeasurementMethod geo_ohm_measuring_method
+        ElectromagneticMeasurementMethod electomagnetic_method
         str process_status
         str comment
         str xml_filepath
@@ -101,7 +148,6 @@ classDiagram
         str delivery_id
         str delivery_type
     }
-
 ```
 
 # FRD - Formatieweerstand Dossiers 

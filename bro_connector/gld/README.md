@@ -1,7 +1,7 @@
 # Klassendiagram voor Grondwaterstand dossiers (GLD) #
 ```mermaid
 classDiagram
-        class Organisation{
+    class Organisation{
         str name
         int company_number
         str color
