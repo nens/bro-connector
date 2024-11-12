@@ -175,7 +175,7 @@ classDiagram
     }
     FrdSyncLog ..> "frd" FormationResistanceDossier
     FrdSyncLog ..> "geo_ohm_measuring_method" GeoOhmMeasurementMethod
-    FrdSyncLog ..> "electomagnetic_method" GeoOElectromagneticMeasurementMethodhmMeasurementMethod
+    FrdSyncLog ..> "electomagnetic_method" ElectromagneticMeasurementMethod
 
 ```
 
