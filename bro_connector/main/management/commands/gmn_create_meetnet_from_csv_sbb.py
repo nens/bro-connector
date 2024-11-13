@@ -63,7 +63,13 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
 
 
 class Command(BaseCommand):
-    # command moet een meetnet_naam en een csv filepath als argument hebben
+    """
+    Class to:
+        - set up a GMN
+        - check up al existing filters in database
+        - create measuringpoints for each filter.
+    """
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--csv",
