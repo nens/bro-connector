@@ -30,29 +30,32 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     )[0]
     
     # creeër een lege dataframe die gevuld wordt met informatie welke putten en peilbuizen succesvol zijn toegevoegd aan een meetnet
-    df_ouput = pl.DataFrame({'put':[], 'peilbuis':[], 'in BRO':[]}, schema={'put':pl.String, 'peilbuis':pl.String, 'in meetnet':pl.Int64})
+    df_ouput = pl.DataFrame({'put':[], 'peilbuis':[], 'in BRO':[]}, schema={'put':pl.String, 'peilbuis':pl.Int64, 'in BRO':pl.Int64})
 
     print('')
     print(f'{meetnet_naam} zou {len(df)} peilbuizen moeten bevatten')
     
     for row in df.iter_rows(named=True):
-        well_id = row['put']
-        tube_nr = row['piezometer']
-        tube = find_monitoring_tube(well_id, well_id)
-        if tube:
-            measuring_point = MeasuringPoint.objects.update_or_create(
-                gmn = gmn,
-                groundwater_monitoring_tube = tube,
-                code = tube.__str__()
-            )[0]
-            print(measuring_point)
-            new_row = [{'put':well_id, 'peilbuis':tube_nr, 'in BRO':1}]
+        if row['Opgeruimd'] == 'Nee':
+            well_id = row['NITG-Nr']
+            tube_nr = row['Buis-Nr']
+            tube = find_monitoring_tube(well_id, tube_nr)
+            if tube:
+                measuring_point = MeasuringPoint.objects.update_or_create(
+                    gmn = gmn,
+                    groundwater_monitoring_tube = tube,
+                    code = tube.__str__()
+                )[0]
+                print(measuring_point)
+                new_row = [{'put':well_id, 'peilbuis':tube_nr, 'in BRO':1}]
 
+            else:
+                new_row = [{'put':well_id, 'peilbuis':tube_nr, 'in BRO':0}]
+            
+            new_df = pl.DataFrame(new_row)
+            df_ouput.extend(new_df)
         else:
-            new_row = [{'put':well_id, 'peilbuis':tube_nr, 'in BRO':0}]
-        
-        new_df = pl.DataFrame(new_row)
-        df_ouput.extend(new_df)
+            print(f"put {row['NITG-Nr']} is opgeruimd")
 
     path = ouput_path + f"\{meetnet_naam}.csv"
     df_ouput.write_csv(path, separator=',')
@@ -92,4 +95,13 @@ class Command(BaseCommand):
         
         df = pl.read_csv(csv_path, ignore_errors=True)
 
-        update_or_create_meetnet(df, 'staatsbosbeheer (SBB)', output_path)
+        # check the name of the csv file to determine if it is for Natuurmonumenten or Het Zeeuwse Landschap
+        print(csv_path)
+        if "Natuurmonumenten" in str(csv_path):
+            print("adding Natuurmonumenten meetnet")
+            update_or_create_meetnet(df, 'Natuurmonumenten', output_path)
+        elif "HZL" in str(csv_path):
+            print("adding Het Zeeuwse Landschap meetnet")
+            update_or_create_meetnet(df, 'Het Zeeuwse Landschap', output_path)
+        else:
+            print("The provided csv-file does not contain Natuurmonumenten or HZL in the name, so it is unclear which meetnet to add it to")
