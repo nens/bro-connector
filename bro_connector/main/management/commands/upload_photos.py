@@ -19,6 +19,14 @@ def find_monitoring_well(well_code: str) -> GroundwaterMonitoringWellStatic:
     return well
 
 class Command(BaseCommand):
+    """
+    Class to:
+        - uploading photo's from a specified path
+        
+        photo's follow the name:
+        "foto {number}_{nitg code}_yyyymmdd-hhmmss.jpg"
+    """
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--foto",
@@ -71,34 +79,3 @@ class Command(BaseCommand):
                     destination_path = verwerkt_path + f'\{jpg}'
                     sftp.rename(ls.ftp_gld_path, destination_path)
                     print(f"File moved from '{ls.ftp_gld_path}' to '{destination_path}'")
-                    
-
-    
-        # for picture in pictures:
-        #     if picture.picture:
-        #         picture.image_base64 = b64encode(picture.picture).decode('ascii')
-
-
-
-
-
-            # print(binary_image_path)
-            # print(binary_image_path_2)
-            # print(len(photo_path))
-            # print(len(binary_image_path))
-            # print(len(binary_image_path_2))
-            # binary_test = jpg_to_binary (photo_path)
-            # print(photo_path)
-            # print(binary_image_path)
-            # print(len(binary_image_path))
-            # print(list(binary_image_path[:10]))
-
-            # print(len(bytes(str(list(binary_image_path)), 'utf-8')))
-
-# print(foto)
-# print(put)
-# print(buis)
-# print(datetime) 
-
-
-# print('')
