@@ -43,6 +43,6 @@ def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
         metadata.delete()
 
 @receiver(pre_save, sender=MeasurementTvp)
-def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
+def pre_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     if not instance.calculated_value and instance.field_value:
         instance.calculated_value = _calculate_value(instance.field_value, instance.field_value_unit)
