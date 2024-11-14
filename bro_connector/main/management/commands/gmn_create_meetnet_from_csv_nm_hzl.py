@@ -60,6 +60,10 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     path = ouput_path + f"\{meetnet_naam}.csv"
     df_ouput.write_csv(path, separator=',')
 
+    print("")
+    print(f'voor {len(df_ouput)} putten werd een poging gedaan om het toe te voegen aan het meetnet')
+    print(f'bij {df_ouput.select(pl.sum("in BRO")).item()} is dit ook daadwerkelijk gelukt')
+
     print("Operatie succesvol afgerond.")
 
 
