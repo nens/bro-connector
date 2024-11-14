@@ -8,7 +8,7 @@ from .models import (
 )
 from main.management.tasks.gmn_sync import sync_gmn
 from reversion_compare.helpers import patch_admin
-
+from .forms import GroundwaterMonitoringNetForm, SubgroupForm
 from main.utils.frd_fieldform import FieldFormGenerator
 
 
@@ -17,6 +17,7 @@ def _register(model, admin_class):
 
 
 class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
+    form = GroundwaterMonitoringNetForm
     list_display = (
         "id",
         "gmn_bro_id",
@@ -52,8 +53,15 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         generator.monitoringnetworks=queryset
         generator.generate()
 
+    @admin.action(description="Generate GLD FieldForm")
+    def generate_gld_fieldform(self, request, queryset):
+        generator = FieldFormGenerator()
+        generator.monitoringnetworks=queryset
+        generator.generate()
+
 
 class SubgroupAdmin(admin.ModelAdmin):
+    form = SubgroupForm
     list_display = (
         "gmn",
         "name",

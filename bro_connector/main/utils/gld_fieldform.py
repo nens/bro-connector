@@ -166,8 +166,11 @@ class FieldFormGenerator:
                 f"{well_name}": {
                     "lat": lat,
                     "lon": lon,
-                    "inputfields": input_fields_well,
-                    "sublocations": {},
+                    "sublocations": {
+                        f"{well_name}": {
+                            "inputfields": input_fields_well,
+                        }
+                    },
                 }
             }
             if hasattr(self, "group_name"):
@@ -192,14 +195,31 @@ class FieldFormGenerator:
         for monitoring_network in gmn_models.GroundwaterMonitoringNet.objects.all():
             groups[monitoring_network.name] = {
                 "name": monitoring_network.name,
-                "color": generate_random_color()
+                "color": monitoring_network.color
             }
         
+        return groups
+    
+    def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
+        groups = {}
+        for subgroup in monitoringnetwork.subgroup_set.all():
+            groups[subgroup.code] = {
+                "name": subgroup.code,
+                "color": subgroup.color,
+            }
+
         return groups
 
     def write_measuringpoints_to_wells(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> None:
         measuringpoints = gmn_models.MeasuringPoint.objects.filter(
             gmn = monitoringnetwork
+        )
+        for measuringpoint in measuringpoints:
+            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+
+    def write_measuringpoints_to_wells_subgroup(self, subgroup: gmn_models.Subgroup) -> None:
+        measuringpoints = gmn_models.MeasuringPoint.objects.filter(
+            subgroup = subgroup
         )
         for measuringpoint in measuringpoints:
             self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
@@ -257,17 +277,30 @@ class FieldFormGenerator:
 
 
         if hasattr(self, "monitoringnetworks"):
-            # data["groups"] = self.write_monitoringnetworks_to_list()
-            # locations = {}
-            # for monitoringnetwork in self.monitoringnetworks:
-            #     self._flush_wells()
-            #     self._set_current_group(str(monitoringnetwork.name))
-            #     self.write_measuringpoints_to_wells(monitoringnetwork)
-            #     locations.update(self.create_location_dict())
-            
-            # data["locations"] = locations
-            # self._write_data(data)
-            return
+            if len(self.monitoringnetworks) == 1:
+                # Use subgroups of network if available.
+                monitoringnetwork = self.monitoringnetworks[0]
+                data["groups"] = self.write_subgroups_to_dict(monitoringnetwork)
+                locations = {}
+                for subgroup in monitoringnetwork.subgroup_set.all():
+                    self._flush_wells()
+                    self._set_current_group(str(subgroup.name))
+                    self.write_measuringpoints_to_wells_subgroup(subgroup)
+                    locations.update(self.create_location_dict())
+                
+                data["locations"] = locations
+                self._write_data(data)
+            else:
+                data["groups"] = self.write_monitoringnetworks_to_dict()
+                locations = {}
+                for monitoringnetwork in self.monitoringnetworks:
+                    self._flush_wells()
+                    self._set_current_group(str(monitoringnetwork.name))
+                    self.write_measuringpoints_to_wells(monitoringnetwork)
+                    locations.update(self.create_location_dict())
+                
+                data["locations"] = locations
+                self._write_data(data)
 
         elif hasattr(self, "wells"):
             data["locations"] = self.create_location_dict()

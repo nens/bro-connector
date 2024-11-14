@@ -81,6 +81,7 @@ class GroundwaterMonitoringNet(models.Model):
         blank=False, null=True, default=False, editable=False, verbose_name='Verwijderd uit de BRO?'
     )
     description = models.TextField(null=True, blank=True, verbose_name='Beschrijving')
+    color = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -135,6 +136,7 @@ class Subgroup(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     code = models.CharField(max_length=25, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    color = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name

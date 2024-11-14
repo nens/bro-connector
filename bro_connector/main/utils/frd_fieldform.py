@@ -273,6 +273,16 @@ class FieldFormGenerator:
         # Write local file to FTP
         write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
 
+    def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
+        groups = {}
+        for subgroup in monitoringnetwork.subgroup_set.all():
+            groups[subgroup.code] = {
+                "name": subgroup.code,
+                "color": generate_random_color(),
+            }
+
+        return groups
+
     def generate(self):
         data = {}
         configs = frd_models.MeasurementConfiguration.objects.all().distinct("configuration_name")
@@ -320,16 +330,30 @@ class FieldFormGenerator:
 
 
         if hasattr(self, "monitoringnetworks"):
-            data["groups"] = self.write_monitoringnetworks_to_list()
-            locations = {}
-            for monitoringnetwork in self.monitoringnetworks:
-                self._flush_wells()
-                self._set_current_group(str(monitoringnetwork.name))
-                self.write_measuringpoints_to_wells(monitoringnetwork)
-                locations.update(self.create_location_dict())
-            
-            data["locations"] = locations
-            self._write_data(data)
+            if len(self.monitoringnetworks) == 1:
+                # Use subgroups of network if available.
+                monitoringnetwork = self.monitoringnetworks[0]
+                data["groups"] = self.write_subgroups_to_dict(monitoringnetwork)
+                locations = {}
+                for subgroup in monitoringnetwork.subgroup_set.all():
+                    self._flush_wells()
+                    self._set_current_group(str(monitoringnetwork.name))
+                    self.write_measuringpoints_to_wells(monitoringnetwork)
+                    locations.update(self.create_location_dict())
+                
+                data["locations"] = locations
+                self._write_data(data)
+            else:
+                data["groups"] = self.write_monitoringnetworks_to_dict()
+                locations = {}
+                for monitoringnetwork in self.monitoringnetworks:
+                    self._flush_wells()
+                    self._set_current_group(str(monitoringnetwork.name))
+                    self.write_measuringpoints_to_wells(monitoringnetwork)
+                    locations.update(self.create_location_dict())
+                
+                data["locations"] = locations
+                self._write_data(data)
 
         elif hasattr(self, "wells"):
             data["locations"] = self.create_location_dict()
