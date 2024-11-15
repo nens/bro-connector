@@ -8,15 +8,34 @@ from .models import (
 )
 from main.management.tasks.gmn_sync import sync_gmn
 from reversion_compare.helpers import patch_admin
-
-from main.utils.frd_fieldform import FieldFormGenerator
+from .forms import GroundwaterMonitoringNetForm, SubgroupForm
+from main.utils.frd_fieldform import FieldFormGenerator as FRD_FieldFormGenerator
+from main.utils.gld_fieldform import FieldFormGenerator as GLD_FieldFormGenerator
 
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
 
+class MeasuringPointsInline(admin.TabularInline):
+    model = MeasuringPoint
+    fields = (
+        "subgroup",
+        "groundwater_monitoring_tube",
+        "code",
+    )
+    readonly_fields = (
+        "subgroup",
+        "groundwater_monitoring_tube",
+        "code",
+    )
+
+    extra = 0
+    max_num = 0
+    ordering = ("subgroup", "groundwater_monitoring_tube",)
+
 class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
+    form = GroundwaterMonitoringNetForm
     list_display = (
         "id",
         "gmn_bro_id",
@@ -35,7 +54,10 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
-    actions = ["deliver_to_bro", "check_status", "generate_frd_fieldform"]
+    inlines = (MeasuringPointsInline,)
+
+
+    actions = ["deliver_to_bro", "check_status", "generate_frd_fieldform", "generate_gld_fieldform"]
 
     @admin.action(description="Deliver GMN to BRO")
     def deliver_to_bro(self, request, queryset):
@@ -47,13 +69,20 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
 
     @admin.action(description="Generate FRD FieldForm")
     def generate_frd_fieldform(self, request, queryset):
-        generator = FieldFormGenerator()
+        generator = FRD_FieldFormGenerator()
         generator.inputfields = ["weerstand", "opmerking"]
+        generator.monitoringnetworks=queryset
+        generator.generate()
+
+    @admin.action(description="Generate GLD FieldForm")
+    def generate_gld_fieldform(self, request, queryset):
+        generator = GLD_FieldFormGenerator()
         generator.monitoringnetworks=queryset
         generator.generate()
 
 
 class SubgroupAdmin(admin.ModelAdmin):
+    form = SubgroupForm
     list_display = (
         "gmn",
         "name",
@@ -63,6 +92,8 @@ class SubgroupAdmin(admin.ModelAdmin):
         "gmn",
         "name",
     )
+
+    inlines = (MeasuringPointsInline,)
 
 class MeasuringPointAdmin(admin.ModelAdmin):
     list_display = (
