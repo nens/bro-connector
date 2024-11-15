@@ -36,7 +36,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "deliver_to_bro",
     )
 
-    actions = ["deliver_to_bro", "check_status", "generate_frd_fieldform"]
+    actions = ["deliver_to_bro", "check_status", "generate_frd_fieldform", "generate_gld_fieldform"]
 
     @admin.action(description="Deliver GMN to BRO")
     def deliver_to_bro(self, request, queryset):

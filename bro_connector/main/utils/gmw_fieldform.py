@@ -14,15 +14,163 @@ from gmn import models as gmn_models
 maximum_difference_ratio = 0.2
 
 input_field_options = {
-    "weerstand": {
-        "type": "number",
-        "name": "Weerstand"
+    "positie_bovenkantbuis":{
+      "name": "Positie bovenkantbuis",
+      "type": "number",
+    },
+    "methode_positiebepaling_bovenkantbuis":{
+      "name": "Buisstatus",
+      "type": "choice",
+      "options": [
+          "afgeleidSbl",
+          "AHN1",
+          "AHN2",
+          "AHN3",
+          "AHN4",
+          "GPSOnbekend",
+          "kaartOnbekend",
+          "onbekend",
+          "RTKGPS0tot4cm",
+          "RTKGPS10tot20cm",
+          "RTKGPS20tot100cm",
+          "RTKGPS4tot10cm",
+          "tachymetrie0tot10cm",
+          "tachymetrie10tot50cm",
+          "waterpassing0tot2cm",
+          "waterpassing2tot4cm",
+          "waterpassing4tot10cm",
+        ]
+    },
+    "buisstatus":{
+      "name": "Buisstatus",
+      "type": "choice",
+      "options": [
+          "gebruiksklaar",
+          "nietGebruiksklaar",
+          "onbekend",
+          "onbruikbaar",
+      ]
+    },
+    "buisdiameter": {
+      "name": "Buisdiameter",
+      "type": "number",
+    },
+    "buismateriaal": {
+      "name": "Buismateriaal",
+      "type": "choice",
+      "options": [
+          "asbest",
+          "beton",
+          "gres",
+          "hout",
+          "houtStaal",
+          "ijzer",
+          "koper",
+          "koperStaal",
+          "messing",
+          "onbekend",
+          "pe",
+          "peHighDensity",
+          "peHighDensityPvc",
+          "peLowDensity",
+          "pePvc",
+          "pvc",
+          "pvcStaal",
+          "staal",
+          "staalGegalvaniseerd",
+          "staalRoestvrij",
+          "teflon",
+      ]
+    },
+    "buis_lengte": {
+      "name": "Maaiveldhoogte",
+      "type": "number",
+    },
+    "maaiveldhoogte": {
+      "name": "Maaiveldhoogte",
+      "type": "number",
+      "hint": "in mNAP"
+    },
+    "methode_positiebepaling_maaiveld": {
+      "name": "Methode positiebepaling maaiveld",
+      "type": "choice",
+      "options": [
+          "afgeleidBovenkantBuis",
+          "AHN1",
+          "AHN2",
+          "AHN3",
+          "AHN4",
+          "geen",
+          "GPSOnbekend",
+          "kaartOnbekend",
+          "onbekend",
+          "RTKGPS0tot4cm",
+          "RTKGPS10tot20cm",
+          "RTKGPS20tot100cm",
+          "RTKGPS4tot10cm",
+          "tachymetrie0tot10cm",
+          "tachymetrie10tot50cm",
+          "waterpassing0tot2cm",
+          "waterpassing2tot4cm",
+          "waterpassing4tot10cm",
+        ]
+    },
+    "beschermconstructie": {
+      "name": "Beschermconstructie",
+      "type": "choice",
+      "options": [
+          "geen",
+          "koker",
+          "kokerDeelsMetaal",
+          "kokerMetaal",
+          "kokerNietMetaal",
+          "onbekend",
+          "pot",
+          "potNietWaterdicht",
+          "potWaterdicht",
+        ]
     },
     "opmerking": {
-        "type": "text",
-        "name": "Opmerking"
-    }
-}
+      "type": "text",
+      "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
+      },
+    "foto 1": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 2": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 3": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 4": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
+    "foto 5": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      }
+  }
+
+input_fields_filter = [
+    "opmerking",
+]
+
+input_fields_well = [
+    "opmerking",
+    "maaiveldhoogte",
+    "methode_positiebepaling_maaiveld",
+    "beschermconstructie",
+    "foto 1",
+    "foto 2",
+    "foto 3",
+    "foto 4",
+    "foto 5",
+]
 
 def convert_epsg28992_to_epsg4326(x, y):
     # Create a Transformer object for converting from EPSG:28992 to EPSG:4326

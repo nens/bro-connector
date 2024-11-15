@@ -142,7 +142,7 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
     }
 
 class FieldFormGenerator:
-    inputfields: List[dict]
+    inputfields: List[dict] = input_field_options
 
     # QuerySets
     monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
