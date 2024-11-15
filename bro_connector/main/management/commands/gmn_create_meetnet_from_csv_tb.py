@@ -150,8 +150,8 @@ class Command(BaseCommand):
         # read csv's
         df_sbb = pl.read_csv(csv_path + "\SBB_peilbuizen.csv", ignore_errors=True)
         # nm en HZL zijn toegestuurd als xlsx, deze zijn omgezet naar csv
-        df_nm = pl.read_csv(csv_path + "\Peilbuizen Natuurmonumenten Zeeland Dino TNO.csv")
-        df_hzl = pl.read_csv(csv_path + "\Peilbuizen HZL BRO TNO lijst.csv")
+        df_nm = pl.read_csv(csv_path + "\Peilbuizen Natuurmonumenten Zeeland Dino TNO.csv", ignore_errors=True)
+        df_hzl = pl.read_csv(csv_path + "\Peilbuizen HZL BRO TNO lijst.csv", ignore_errors=True)
 
         # filter csv's to only select tubes that need to be put into meetnet 
         df_sbb = df_sbb.filter(pl.col("status") == "Afstoten")
