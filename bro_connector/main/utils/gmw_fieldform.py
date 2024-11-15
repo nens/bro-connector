@@ -82,7 +82,7 @@ input_field_options = {
           "teflon",
       ]
     },
-    "buis_lengte": {
+    "buislengte": {
       "name": "Maaiveldhoogte",
       "type": "number",
     },
@@ -158,6 +158,12 @@ input_field_options = {
 
 input_fields_filter = [
     "opmerking",
+    "positie_bovenkantbuis",
+    "methode_positiebepaling_bovenkantbuis",
+    "buisstatus",
+    "buisdiameter",
+    "buismateriaal",
+    "buislengte",
 ]
 
 input_fields_well = [
@@ -209,7 +215,7 @@ def write_file_to_ftp(file: str, remote_filename: str):
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
     with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
-        with sftp.cd(ls.ftp_frd_path):
+        with sftp.cd(ls.ftp_gmw_path):
             sftp.put(localpath=file, remotepath=remote_filename)
 
 def delete_old_files_from_ftp():
@@ -316,24 +322,14 @@ def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> Lis
 
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
-
-    lon, lat = convert_epsg28992_to_epsg4326(
-        x=tube.groundwater_monitoring_well_static.coordinates.x,
-        y=tube.groundwater_monitoring_well_static.coordinates.y    
-    )
-
     return {
         f"{filter_name}": {
-            "lat": lat,
-            "lon": lon,
-            "inputfields": generate_sublocation_fields(tube),
-            "min_values": generate_min_values(tube),
-            "max_values": generate_max_values(tube),
+            "inputfields": input_fields_filter,
         },
     }
 
 class FieldFormGenerator:
-    inputfields: Optional[List[dict]]
+    inputfields: Optional[List[dict]] = input_field_options
 
     # QuerySets
     monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
@@ -374,14 +370,32 @@ class FieldFormGenerator:
             tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
                 groundwater_monitoring_well_static = well
             )
+
+            lon, lat = convert_epsg28992_to_epsg4326(
+                x=well.coordinates.x,
+                y=well.coordinates.y    
+            )
+
+            well_name = well.__str__()
+            well_location = {
+                f"{well_name}": {
+                    "lat": lat,
+                    "lon": lon,
+                    "sublocations": {
+                        f"{well_name}": {
+                            "inputfields": input_fields_well,
+                        }
+                    },
+                }
+            }
+            if hasattr(self, "group_name"):
+                well_location.update({"group": self.group_name})
+
             for tube in tubes:
-                if tube.number_of_geo_ohm_cables > 0:
-                    sublocation = create_sublocation_dict(tube)
-
-                    if hasattr(self, "group_name"):
-                        sublocation.update({"group": self.group_name})
-
-                    locations.update(sublocation)
+                sublocation = create_sublocation_dict(tube)
+                well_location[f"{well_name}"]["sublocations"].update(sublocation)
+            
+            locations.update(well_location)
         
         return locations
 
@@ -417,64 +431,62 @@ class FieldFormGenerator:
             os.mkdir("../fieldforms")
 
         # Store the file locally
-        write_location_file(data=data, filename=f"../fieldforms/frd/locations_{date_string}.json")
+        write_location_file(data=data, filename=f"../fieldforms/gmw/locations_{date_string}.json")
 
         # Write local file to FTP
         write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
 
     def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
         groups = {}
-        for subgroup in monitoringnetwork.subgroup_set.all():
+        for subgroup in monitoringnetwork.subgroups.all():
             groups[subgroup.code] = {
                 "name": subgroup.code,
-                "color": generate_random_color(),
+                "color": subgroup.color,
             }
 
         return groups
 
-    def generate(self):
-        data = {}
-        configs = frd_models.MeasurementConfiguration.objects.all().distinct("configuration_name")
-        # For all configurations generate the inputfields.
-        inputfields = {}
-        inputfield_groups = {}
-        for config in configs:
-            self.update_postfix(config)
-            inputfields.update(self.generate_inputfields())
-            inputfield_groups.update(self.generate_inputfield_groups())
+    def write_measuringpoints_to_wells_subgroup(self, subgroup: gmn_models.Subgroup) -> None:
+        measuringpoints = gmn_models.MeasuringPoint.objects.filter(
+            subgroup = subgroup
+        )
+        for measuringpoint in measuringpoints:
+            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
 
-        data["inputfield_groups"] = inputfield_groups
-        data["inputfields"] = inputfields
-        data["groups"] = {}
+    def generate(self):
+        data = {
+            "inputfields": input_field_options,
+            "groups": {},
+        }
 
         if hasattr(self, "optimal"):
             if self.optimal:
-                data["groups"].update(self.write_monitoringnetworks_to_dict())
+                # data["groups"].update(self.write_monitoringnetworks_to_dict())
 
-                locations = {}
-                wells_in_file = []
-                # Any that are not in a meetroute should be grouped by meetnets
-                for monitoringnetwork in gmn_models.GroundwaterMonitoringNet.objects.all():
-                    self._flush_wells()
-                    self._set_current_group(str(monitoringnetwork.name))
-                    self.write_measuringpoints_to_wells(monitoringnetwork)
-                    locations.update(self.create_location_dict())
-                    wells_pk_list = [obj.pk for obj in self.wells]
-                    wells_in_file += wells_pk_list
+                # locations = {}
+                # wells_in_file = []
+                # # Any that are not in a meetroute should be grouped by meetnets
+                # for monitoringnetwork in gmn_models.GroundwaterMonitoringNet.objects.all():
+                #     self._flush_wells()
+                #     self._set_current_group(str(monitoringnetwork.name))
+                #     self.write_measuringpoints_to_wells(monitoringnetwork)
+                #     locations.update(self.create_location_dict())
+                #     wells_pk_list = [obj.pk for obj in self.wells]
+                #     wells_in_file += wells_pk_list
 
 
-                self._flush_wells()
-                self._set_current_group(None)
+                # self._flush_wells()
+                # self._set_current_group(None)
 
-                mps = gmw_models.GroundwaterMonitoringWellStatic.objects.all().exclude(pk__in=wells_in_file)
-                for mp in mps:
-                    self.wells.append(mp)
+                # mps = gmw_models.GroundwaterMonitoringWellStatic.objects.all().exclude(pk__in=wells_in_file)
+                # for mp in mps:
+                #     self.wells.append(mp)
 
-                locations.update(self.create_location_dict())
+                # locations.update(self.create_location_dict())
 
-                # All others should be included without grouping
-                data["locations"] = locations
-                self._write_data(data)
+                # # All others should be included without grouping
+                # data["locations"] = locations
+                # self._write_data(data)
                 return
 
 
@@ -484,10 +496,10 @@ class FieldFormGenerator:
                 monitoringnetwork = self.monitoringnetworks[0]
                 data["groups"] = self.write_subgroups_to_dict(monitoringnetwork)
                 locations = {}
-                for subgroup in monitoringnetwork.subgroup_set.all():
+                for subgroup in monitoringnetwork.subgroups.all():
                     self._flush_wells()
-                    self._set_current_group(str(monitoringnetwork.name))
-                    self.write_measuringpoints_to_wells(monitoringnetwork)
+                    self._set_current_group(str(subgroup.name))
+                    self.write_measuringpoints_to_wells_subgroup(subgroup)
                     locations.update(self.create_location_dict())
                 
                 data["locations"] = locations

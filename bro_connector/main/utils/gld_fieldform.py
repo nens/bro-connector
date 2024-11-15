@@ -174,12 +174,12 @@ class FieldFormGenerator:
                 }
             }
             if hasattr(self, "group_name"):
-                well_location.update({"group": self.group_name})
+                well_location[f"{well_name}"].update({"group": self.group_name})
 
             for tube in tubes:
                 sublocation = create_sublocation_dict(tube)
                 well_location[f"{well_name}"]["sublocations"].update(sublocation)
-            
+
             locations.update(well_location)
         
         return locations
@@ -202,11 +202,19 @@ class FieldFormGenerator:
     
     def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
         groups = {}
-        for subgroup in monitoringnetwork.subgroup_set.all():
-            groups[subgroup.code] = {
-                "name": subgroup.code,
+        print(monitoringnetwork.subgroups.all())
+        print(monitoringnetwork.name)
+        print(monitoringnetwork.color)
+
+        for subgroup in monitoringnetwork.subgroups.all():
+            print(subgroup)
+            print(subgroup.name)
+            groups[subgroup.name] = {
+                "name": subgroup.name,
                 "color": subgroup.color,
             }
+        
+        print(groups)
 
         return groups
 
@@ -240,10 +248,10 @@ class FieldFormGenerator:
         write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
 
     def generate(self):
-        data = {}
-
-        data["inputfields"] = input_field_options
-        data["groups"] = {}
+        data = {
+            "inputfields": input_field_options,
+            "groups": {},
+        }
 
         if hasattr(self, "optimal"):
             if self.optimal:
@@ -282,9 +290,10 @@ class FieldFormGenerator:
                 monitoringnetwork = self.monitoringnetworks[0]
                 data["groups"] = self.write_subgroups_to_dict(monitoringnetwork)
                 locations = {}
-                for subgroup in monitoringnetwork.subgroup_set.all():
+                for subgroup in monitoringnetwork.subgroups.all():
+                    print(subgroup)
                     self._flush_wells()
-                    self._set_current_group(str(subgroup.name))
+                    self._set_current_group(subgroup.name)
                     self.write_measuringpoints_to_wells_subgroup(subgroup)
                     locations.update(self.create_location_dict())
                 
