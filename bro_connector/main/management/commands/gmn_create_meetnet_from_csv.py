@@ -55,7 +55,7 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
                 groundwater_monitoring_tube = tube,
                 code = tube.__str__()
             )[0]
-            print(measuring_point)
+            # print(measuring_point)
             new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]
 
         else:
@@ -67,13 +67,23 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     path = ouput_path + f"\{meetnet_naam}.csv"
     df_ouput.write_csv(path, separator=',')
 
+    print("")
+    print(f'voor {len(df_ouput)} putten werd een poging gedaan om het toe te voegen aan het meetnet')
+    print(f'bij {df_ouput.select(pl.sum("in BRO")).item()} is dit ook daadwerkelijk gelukt')
+
     print("Operatie succesvol afgerond.")
 
 
 
 
 class Command(BaseCommand):
-    # command moet een meetnet_naam en een csv filepath als argument hebben
+    """
+    Class to:
+        - set up a GMN
+        - check up al existing filters in database
+        - create measuringpoints for each filter.
+    """
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--csv",
