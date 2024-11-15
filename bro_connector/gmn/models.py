@@ -1,9 +1,21 @@
 from django.db import models
+import random
 from django.core.exceptions import ValidationError
 from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL, DELIVERY_TYPE_CHOICES, LEVERINGSTATUS_CHOICES, EVENT_TYPE_CHOICES
 from gmw.models import GroundwaterMonitoringTubeStatic
 from bro.models import Organisation, BROProject
 
+
+def get_color_value():
+    # Generate random values for red, green, and blue components
+    red = random.randint(0, 255)
+    green = random.randint(0, 255)
+    blue = random.randint(0, 255)
+
+    # Convert decimal values to hexadecimal and format them
+    color_code = f"#{red:02x}{green:02x}{blue:02x}"
+
+    return color_code
 
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
@@ -102,6 +114,9 @@ class GroundwaterMonitoringNet(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
+        if not self.color or self.color == "#000000":
+            self.color = get_color_value()
+
         super().save(*args, **kwargs)
 
         # Create a new GMN_StartRegistration event when a new meetnet is added
@@ -140,6 +155,11 @@ class Subgroup(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.color or self.color == "#000000":
+            self.color = get_color_value()
+        super().save(*args, **kwargs)
 
     class Meta:
         managed = True
