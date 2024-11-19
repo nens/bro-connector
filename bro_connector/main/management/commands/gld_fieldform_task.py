@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Create PMG FieldFrom
         try:
-            generator1 = FieldFormGenerator(path=ls.ftp_gld_pmg_path)
+            generator1 = FieldFormGenerator(ftp_path=ls.ftp_gld_pmg_path)
             generator1.generate()
             # generator1.delete_old_files_from_ftp()
         except Exception as e:
@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
         # Create HMN FieldFrom
         try:
-            generator2 = FieldFormGenerator(path=ls.ftp_gld_hnm_path)
+            generator2 = FieldFormGenerator(ftp_path=ls.ftp_gld_hnm_path)
             generator2.generate()
             # generator2.delete_old_files_from_ftp()
         except Exception as e:

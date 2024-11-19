@@ -115,24 +115,24 @@ class FieldFormGenerator:
     monitoringnetworks: Optional[list[gmn_models.GroundwaterMonitoringNet]]
     wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
     optimal: Optional[bool]
-    path: Optional[Path]
+    ftp_path: Optional[Path]
 
     def __init__(self, *args, **kwargs) -> None:
-        self.path = kwargs.get("path", None)
-        if self.path:
+        self.ftp_path = kwargs.get("path", None)
+        if self.ftp_path:
             self.monitoringnetworks = [self._get_monitoring_network_for_path()]
 
     def _get_monitoring_network_for_path(self) -> gmn_models.GroundwaterMonitoringNet | None:
-        if self.path == "/GLD_HMN":
+        if self.ftp_path == "/GLD_HMN":
             gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
                 name = 'terreinbeheerders'
             ).first()
-        elif self.path == "/GLD_PMG":
+        elif self.ftp_path == "/GLD_PMG":
             gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
                 name = 'Meetrondes Kantonniers'
             ).first()
         else:
-            raise ValueError(f"Unknown Path: {self.path}.")
+            raise ValueError(f"Unknown Path: {self.ftp_path}.")
         
         return gmn
 
@@ -140,14 +140,14 @@ class FieldFormGenerator:
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
         with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
-            with sftp.cd(self.path):
+            with sftp.cd(self.ftp_path):
                 sftp.put(localpath=file, remotepath=remote_filename)
 
     def delete_old_files_from_ftp(self):
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
         with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
-            with sftp.cd(self.path):
+            with sftp.cd(self.ftp_path):
                 # Get current date and time
                 now = datetime.datetime.now()
                 
