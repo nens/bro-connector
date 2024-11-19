@@ -184,7 +184,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         csv_path = str(options["csv"])
         output_path = str(options["output"])
-        if not os.path.isdir(output_path):
+        if not os.path.isdir(csv_path):
             raise ValueError("Invalid path to csv's supplied")
         if not os.path.isdir(output_path):
             raise ValueError('Invalid output path supplied')
