@@ -258,6 +258,14 @@ QUALITYREGIME = (
 
 VERTICALDATUM = (("NAP", "NAP"),)
 
+WELL_STATUS = (
+    ("inGebruik", "In gebruik"),
+    ("inAanleg", "In aanleg"),
+    ("gedempt", "Gedempt"),
+    ("nietBruikbaar", "Niet bruikbaar"),
+    ("onbekend", "Onbekend"),
+)
+
 WELLHEADPROTECTOR_SUBTYPES = (
     ("DNS", "DNS"),
     ("model X", "model X"),

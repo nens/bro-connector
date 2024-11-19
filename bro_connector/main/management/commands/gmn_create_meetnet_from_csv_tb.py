@@ -10,7 +10,6 @@ import os
 
 def find_monitoring_tube(well: str, tube: str) -> GroundwaterMonitoringTubeStatic:
     # print(f'well: {well}; tube_nr: {tube}.')
-
     tube = GroundwaterMonitoringTubeStatic.objects.filter(
         groundwater_monitoring_well_static__nitg_code = well,
         tube_number = tube

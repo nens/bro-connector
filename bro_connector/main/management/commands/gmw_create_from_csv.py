@@ -3,7 +3,6 @@ from django.contrib.gis.geos import Point
 from gmw.models import GroundwaterMonitoringWellStatic
 import polars as pl
 import os
-
 def find_monitoring_well(nitg: str) -> GroundwaterMonitoringWellStatic:
     well = GroundwaterMonitoringWellStatic.objects.filter(
         nitg_code = nitg
