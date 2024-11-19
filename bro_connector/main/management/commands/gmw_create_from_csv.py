@@ -3,28 +3,17 @@ from django.contrib.gis.geos import Point
 from gmw.models import GroundwaterMonitoringWellStatic
 import polars as pl
 import os
-
-def find_monitoring_well(nitg: str, coordinates) -> GroundwaterMonitoringWellStatic:
-    # split_string = tube_str.split(sep="-")
-    # well_code = split_string[0]
-    # tube_nr = split_string[1]
-
-    # print(f'nitg: {nitg}.')
-    if nitg == None:
-        well = GroundwaterMonitoringWellStatic.objects.filter(
-            coordinates = coordinates
-        ).order_by('groundwater_monitoring_well_static_id').first()
-    else:
-        well = GroundwaterMonitoringWellStatic.objects.filter(
-            nitg_code = nitg,
-            coordinates = coordinates
-        ).order_by('groundwater_monitoring_well_static_id').first()
+def find_monitoring_well(nitg: str) -> GroundwaterMonitoringWellStatic:
+    well = GroundwaterMonitoringWellStatic.objects.filter(
+        nitg_code = nitg
+    ).order_by('groundwater_monitoring_well_static_id').first()
     return well
 
 # make function to create gmw
 def create_monitoring_well(df: pl.DataFrame):
 
     exists = 0
+    no_or_invalid_nitg = 0
     did_not_exist = 0
 
     for row in df.iter_rows(named=True):
@@ -34,30 +23,30 @@ def create_monitoring_well(df: pl.DataFrame):
         longitude, latitude = x, y
         point = Point(longitude, latitude)
 
-        if nitg_code == "[onbekend]" or nitg_code == None:
-            well = find_monitoring_well(None, point)
+        # if the nitg code is unknown or empty, or it does not start with a "B" to indicate a groundwater monitoring well, skip adding it.
+        # else, check if it is already in the dataset, if not, add it with the nitg code and coordinates
+        if (nitg_code == "[onbekend]") or (nitg_code == None) or (not nitg_code.startswith("B")):
+            no_or_invalid_nitg += 1
+            print(f'well: {nitg_code}; \tcoordinates in RD: {x}, {y} \tis invalid and will not be created')
+            continue
         else:
-            well = find_monitoring_well(nitg_code, point)
+            well = find_monitoring_well(nitg_code)
 
         if well:
-            print(f'well: {nitg_code}; coordinates in RD: {x}, {y} exists')
+            print(f'well: {nitg_code}; \tcoordinates in RD: {x}, {y} \texists')
             exists += 1
 
         else:
-            print(f'well: {nitg_code}; coordinates in RD: {x}, {y} did not exist, creating well static')
+            print(f'well: {nitg_code}; \tcoordinates in RD: {x}, {y} \tdid not exist')
             did_not_exist += 1
-
-            if nitg_code == "[onbekend]" or nitg_code == None:
-                well = GroundwaterMonitoringWellStatic.objects.create(
-                    coordinates = point,
-                )
-            else:
-                well = GroundwaterMonitoringWellStatic.objects.create(
-                    nitg_code = nitg_code,
-                    coordinates = point,
-                )
+        
+            well = GroundwaterMonitoringWellStatic.objects.create(
+                nitg_code = nitg_code,
+                coordinates = point,
+            )
 
     print(f'already exist: {exists}')
+    print(f'no or invalid nitg code: {no_or_invalid_nitg}')
     print(f'did not exist: {did_not_exist}')
 
 

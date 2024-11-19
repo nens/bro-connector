@@ -9,13 +9,20 @@ import polars as pl
 import os
 
 def find_monitoring_tube(well: str, tube: str) -> GroundwaterMonitoringTubeStatic:
-    print(f'well: {well}; tube_nr: {tube}.')
-
+    # print(f'well: {well}; tube_nr: {tube}.')
     tube = GroundwaterMonitoringTubeStatic.objects.filter(
         groundwater_monitoring_well_static__nitg_code = well,
         tube_number = tube
     ).order_by('groundwater_monitoring_tube_static_id').first()
     return tube
+
+def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic, subgroup: Subgroup) -> MeasuringPoint:
+    measuring_point = MeasuringPoint.objects.filter(
+        gmn = gmn,
+        groundwater_monitoring_tube = tube,
+        subgroup = subgroup,
+    ).first()
+    return measuring_point
 
 def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: pl.DataFrame, meetnet_naam: str, ouput_path: str) -> None:
     groundwater_aspect = "kwantiteit"
@@ -50,17 +57,29 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
         name = "Het Zeeuwse Landschap",
     )[0]
 
+    already_in_meetnet_ssb = 0
+    added_sbb = 0
+
     for row_sbb in df_sbb.iter_rows(named=True):
         well_sbb, tube_sbb = row_sbb['put'], row_sbb['piezometer']
         tube = find_monitoring_tube(well_sbb, tube_sbb)
         if tube:
-            measuring_point = MeasuringPoint.objects.update_or_create(
-                gmn = gmn,
-                groundwater_monitoring_tube = tube,
-                subgroup = subgroep_sbb,
-                code = tube.__str__()
-            )[0]
-            print(measuring_point)
+            # find if the measuring_point already exists for this gmn and tube
+            measuring_point = find_measuringpoint(gmn, tube, subgroep_sbb)
+            # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+            if measuring_point:
+                print(f'well: {well_sbb}; tube_nr: {tube_sbb} \t already in gmn.')
+                already_in_meetnet_ssb += 1
+            # if no measuring_point exists yet for this gmn and tube, create it
+            else:
+                print(f'well: {well_sbb}; tube_nr: {tube_sbb} \t not in gmn.')
+                measuring_point = MeasuringPoint.objects.update_or_create(
+                    gmn = gmn,
+                    groundwater_monitoring_tube = tube,
+                    subgroup = subgroep_sbb,
+                    code = tube.__str__()
+                )[0]
+                added_sbb += 1
             new_row = [{'put':well_sbb, 'peilbuis':tube_sbb, 'subgroep':subgroep_sbb.name, 'in BRO':1}]
         else:
             new_row = [{'put':well_sbb, 'peilbuis':tube_sbb, 'subgroep':subgroep_sbb.name, 'in BRO':0}]
@@ -68,17 +87,29 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
         new_df = pl.DataFrame(new_row)
         df_ouput.extend(new_df)
 
+    already_in_meetnet_nm = 0
+    added_nm = 0
+
     for row_nm in df_nm.iter_rows(named=True): 
         well_nm, tube_nm = row_nm['NITG-Nr'], row_nm['Buis-Nr']
         tube = find_monitoring_tube(well_nm, tube_nm)
         if tube:
-            measuring_point = MeasuringPoint.objects.update_or_create(
-                gmn = gmn,
-                groundwater_monitoring_tube = tube,
-                subgroup = subgroep_nm,
-                code = tube.__str__()
-            )[0]
-            print(measuring_point)
+            # find if the measuring_point already exists for this gmn and tube
+            measuring_point = find_measuringpoint(gmn, tube, subgroep_nm)
+            # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+            if measuring_point:
+                print(f'well: {well_nm}; tube_nr: {tube_nm} \t already in gmn.')
+                already_in_meetnet_nm += 1
+            # if no measuring_point exists yet for this gmn and tube, create it
+            else:
+                print(f'well: {well_nm}; tube_nr: {tube_nm} \t not in gmn.')
+                measuring_point = MeasuringPoint.objects.update_or_create(
+                    gmn = gmn,
+                    groundwater_monitoring_tube = tube,
+                    subgroup = subgroep_nm,
+                    code = tube.__str__()
+                )[0]
+                added_nm += 1
             new_row = [{'put':well_nm, 'peilbuis':tube_nm, 'subgroep':subgroep_nm.name, 'in BRO':1}]
         else:
             new_row = [{'put':well_nm, 'peilbuis':tube_nm, 'subgroep':subgroep_nm.name, 'in BRO':0}]
@@ -86,18 +117,29 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
         new_df = pl.DataFrame(new_row)
         df_ouput.extend(new_df)
 
+    already_in_meetnet_hzl = 0
+    added_hzl = 0
 
     for row_hzl in df_hzl.iter_rows(named=True):
         well_hzl, tube_hzl = row_hzl['NITG-Nr'], row_hzl['Buis-Nr']
         tube = find_monitoring_tube(well_hzl, tube_hzl)
         if tube:
-            measuring_point = MeasuringPoint.objects.update_or_create(
-                gmn = gmn,
-                groundwater_monitoring_tube = tube,
-                subgroup = subgroep_hzl,
-                code = tube.__str__()
-            )[0]
-            print(measuring_point)
+            # find if the measuring_point already exists for this gmn and tube
+            measuring_point = find_measuringpoint(gmn, tube, subgroep_hzl)
+            # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+            if measuring_point:
+                print(f'well: {well_hzl}; tube_nr: {tube_hzl} \t already in gmn.')
+                already_in_meetnet_hzl += 1
+            # if no measuring_point exists yet for this gmn and tube, create it
+            else:
+                print(f'well: {well_hzl}; tube_nr: {tube_hzl} \t not in gmn.')
+                measuring_point = MeasuringPoint.objects.update_or_create(
+                    gmn = gmn,
+                    groundwater_monitoring_tube = tube,
+                    subgroup = subgroep_hzl,
+                    code = tube.__str__()
+                )[0]
+                added_hzl += 1
             new_row = [{'put':well_hzl, 'peilbuis':tube_hzl, 'subgroep':subgroep_hzl.name, 'in BRO':1}]
         else:
             new_row = [{'put':well_hzl, 'peilbuis':tube_hzl, 'subgroep':subgroep_hzl.name, 'in BRO':0}]
@@ -113,8 +155,9 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
     column_sum = df_ouput.select(pl.sum("in BRO")).item()
 
     print(column_sum, "tubes are in the BRO out of", len(df_ouput))
-
-
+    print(f"ssb: {already_in_meetnet_ssb} were already in the subgroup and meetnet out of {len(df_sbb)}\t {added_sbb} were newly added")
+    print(f"nm: {already_in_meetnet_nm} were already in the subgroup and meetnet out of {len(df_nm)}\t {added_nm} were newly added")
+    print(f"hzl: {already_in_meetnet_hzl} were already in the subgroup and meetnet out of {len(df_hzl)}\t {added_hzl} were newly added")
 
 
 
