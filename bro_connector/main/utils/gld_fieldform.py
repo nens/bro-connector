@@ -5,10 +5,10 @@ import datetime
 import os
 import random
 from pyproj import Transformer
+from pathlib import Path
 
 from main import localsecret as ls
 from gmw import models as gmw_models
-from gld import models as gld_models
 from gmn import models as gmn_models
 
 input_field_options = {
@@ -100,39 +100,6 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
-def write_file_to_ftp(file: str, remote_filename: str):
-    cnopts = pysftp.CnOpts()
-    cnopts.hostkeys = None
-    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
-        with sftp.cd(ls.ftp_gld_path):
-            sftp.put(localpath=file, remotepath=remote_filename)
-
-def delete_old_files_from_ftp():
-    cnopts = pysftp.CnOpts()
-    cnopts.hostkeys = None
-    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
-        with sftp.cd(ls.ftp_gld_path):
-            # Get current date and time
-            now = datetime.datetime.now()
-            
-            # list files in the current directory
-            files = sftp.listdir()
-            for file in files:
-                if not str(file).startswith('locations'):
-                    continue
-
-                file_date = str(file).split('_')[1][0:8]
-                file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
-                
-                # Calculate the age of the file
-                file_age = now - file_time
-                
-                # Check if the file is older than a month
-                if file_age > datetime.timedelta(days=30):
-                    # Delete the file
-                    sftp.remove(file)
-                    print(f"Deleted {file} (age: {file_age.days} days)")
-
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
     return {
@@ -145,9 +112,62 @@ class FieldFormGenerator:
     inputfields: List[dict] = input_field_options
 
     # QuerySets
-    monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
+    monitoringnetworks: Optional[list[gmn_models.GroundwaterMonitoringNet]]
     wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
     optimal: Optional[bool]
+    path: Optional[Path]
+
+    def __init__(self, *args, **kwargs) -> None:
+        self.path = kwargs.get("path", None)
+        if self.path:
+            self.monitoringnetworks = [self._get_monitoring_network_for_path()]
+
+    def _get_monitoring_network_for_path(self) -> gmn_models.GroundwaterMonitoringNet | None:
+        if self.path == "/GLD_HMN":
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
+                name = 'terreinbeheerders'
+            ).first()
+        elif self.path == "/GLD_PMG":
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
+                name = 'Meetrondes Kantonniers'
+            ).first()
+        else:
+            raise ValueError(f"Unknown Path: {self.path}.")
+        
+        return gmn
+
+    def write_file_to_ftp(self, file: str, remote_filename: str):
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+        with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+            with sftp.cd(self.path):
+                sftp.put(localpath=file, remotepath=remote_filename)
+
+    def delete_old_files_from_ftp(self):
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+        with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+            with sftp.cd(self.path):
+                # Get current date and time
+                now = datetime.datetime.now()
+                
+                # list files in the current directory
+                files = sftp.listdir()
+                for file in files:
+                    if not str(file).startswith('locations'):
+                        continue
+
+                    file_date = str(file).split('_')[1][0:8]
+                    file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
+                    
+                    # Calculate the age of the file
+                    file_age = now - file_time
+                    
+                    # Check if the file is older than a month
+                    if file_age > datetime.timedelta(days=30):
+                        # Delete the file
+                        sftp.remove(file)
+                        print(f"Deleted {file} (age: {file_age.days} days)")
 
     def create_location_dict(self) -> None:
         locations = {}
@@ -245,7 +265,7 @@ class FieldFormGenerator:
         write_location_file(data=data, filename=f"../fieldforms/gld/locations_{date_string}.json")
 
         # Write local file to FTP
-        write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
+        self.write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
 
     def generate(self):
         data = {
