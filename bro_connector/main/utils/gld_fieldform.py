@@ -124,13 +124,13 @@ class FieldFormGenerator:
 
     def _get_monitoring_network_for_path(self) -> gmn_models.GroundwaterMonitoringNet | None:
         if self.ftp_path == "/GLD_HMN":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
                 name = 'terreinbeheerders'
-            ).first()
+            )
         elif self.ftp_path == "/GLD_PMG":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
                 name = 'Meetrondes Kantonniers'
-            ).first()
+            )
         else:
             raise ValueError(f"Unknown Path: {self.ftp_path}.")
         
