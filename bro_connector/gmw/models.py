@@ -3,27 +3,29 @@ import django.contrib.gis.db.models as geo_models
 from django.utils.html import format_html
 from .choices import *  # noqa: F403
 import main.utils.validators_models as validators_models
-from bro.models import Organisation, BROProject, SecureCharField
+from bro.models import Organisation, BROProject
 import datetime
 from .utils import generate_put_code
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
-    registration_object_type = models.CharField(max_length=256, blank=True, null=True)
-    bro_id = models.CharField(max_length=15, blank=True, null=True)
+    registration_object_type = models.CharField(max_length=256, blank=True, null=True) # Is deze nodig??
+    bro_id = models.CharField(max_length=15, blank=True, null=True, verbose_name="BRO ID")
     project = models.ForeignKey(
         BROProject,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        verbose_name="Project",
     )
-    request_reference = models.CharField(max_length=255, blank=True, null=True)
+    request_reference = models.CharField(max_length=255, blank=True, null=True, verbose_name="Berichtreferentie")
     delivery_accountable_party = models.ForeignKey(
         Organisation,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="delivery_accountable_party",
+        verbose_name="Bronhouder",
     )
     delivery_responsible_party = models.ForeignKey(
         Organisation,
@@ -31,31 +33,32 @@ class GroundwaterMonitoringWellStatic(models.Model):
         null=True,
         blank=True,
         related_name="delivery_responsible_party",
+        verbose_name="Dataleverancier",
     )
-    quality_regime = models.CharField(choices=QUALITYREGIME, max_length=256, blank=True, null=True)
-    under_privilege = models.CharField(choices=UNDERPRIVILIGE, max_length=256, blank=True, null=True)
+    quality_regime = models.CharField(choices=QUALITYREGIME, max_length=256, blank=True, null=True, verbose_name="Kwaliteitsregime")
+    under_privilege = models.CharField(choices=UNDERPRIVILIGE, max_length=256, blank=True, null=True, verbose_name="Onder voorrecht", help_text="Ja wanneer kwaliteitsregime is IMBRO/A.")
     delivery_context = models.CharField(
-        choices=DELIVERYCONTEXT, max_length=200, blank=True, null=True
+        choices=DELIVERYCONTEXT, max_length=200, blank=True, null=True, verbose_name="Kader aanlevering"
     )
     construction_standard = models.CharField(
-        choices=CONSTRUCTIONSTANDARD, max_length=200, blank=True, null=True
+        choices=CONSTRUCTIONSTANDARD, max_length=200, blank=True, null=True, verbose_name="Bouw standaard"
     )
     initial_function = models.CharField(
-        choices=INITIALFUNCTION, max_length=200, blank=True, null=True
+        choices=INITIALFUNCTION, max_length=200, blank=True, null=True, verbose_name="Initiële functie"
     )
-    nitg_code = models.CharField(max_length=256, blank=True, null=True)
-    olga_code = models.CharField(max_length=256, blank=True, null=True)
-    well_code = models.CharField(max_length=256, blank=True, null=True)
+    nitg_code = models.CharField(max_length=256, blank=True, null=True, verbose_name="NITG-code")
+    olga_code = models.CharField(max_length=256, blank=True, null=True, verbose_name="OLGA-code")
+    well_code = models.CharField(max_length=256, blank=True, null=True, verbose_name="Putcode")
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     coordinates = geo_models.PointField(
-        srid=28992, blank=True, null=True, editable=False
+        srid=28992, blank=True, null=True, editable=False, verbose_name="RD Coordinaten"
     )  # This field type is a guess.
     coordinates_4236 = geo_models.PointField(
-        srid=4326, blank=True, null=True, editable=False, help_text="Passief veld. Vul deze niet in. Wordt automatisch berekend op basis van de RD coordinaten in het coordinates field."
+        srid=4326, blank=True, null=True, editable=False, help_text="Passief veld. Vul deze niet in. Wordt automatisch berekend op basis van de RD coordinaten in het coordinates field.", verbose_name="Standaard coordinaten"
     )
-    reference_system = models.CharField(max_length=256, blank=True, null=True)
+    reference_system = models.CharField(max_length=256, blank=True, null=True, verbose_name="Referentie stelsel")
     horizontal_positioning_method = models.CharField(
-        choices=HORIZONTALPOSITIONINGMETHOD, max_length=200, blank=True, null=True
+        choices=HORIZONTALPOSITIONINGMETHOD, max_length=200, blank=True, null=True, verbose_name="Methode horizontale locatiebepaling"
     )
     local_vertical_reference_point = models.CharField(
         choices=LOCALVERTICALREFERENCEPOINT, max_length=200, blank=True, null=True
@@ -67,15 +70,18 @@ class GroundwaterMonitoringWellStatic(models.Model):
 
     # Added for additional wells that are not owned by the user
     in_management = models.BooleanField(
-        null=True, blank=True, default=True, editable=True
+        null=True, blank=True, default=True, editable=True, verbose_name="In beheer"
+    )
+    well_status = models.CharField(
+        max_length=50, choices=WELL_STATUS, default='inGebruik', editable=True, verbose_name="Putstatus"
     )
 
     # Added for GMW delivery
     deliver_gmw_to_bro = models.BooleanField(
-        blank=True, default=False
+        blank=True, default=False, verbose_name="Moet naar de BRO"
     )  # Should information of this well be delivered to the BRO
     complete_bro = models.BooleanField(
-        blank=True, default=False
+        blank=True, default=False, verbose_name="BRO Compleet"
     )  # Is the data in the table complete as required for the BRO
 
     # Customization fields
@@ -148,8 +154,9 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        verbose_name="Put"
     )
-    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD", verbose_name="Geldig vanaf")
     ground_level_stable = models.CharField(choices=BOOLEAN_CHOICES, max_length=254, null=True, blank=True)
     well_stability = models.CharField(
         choices=WELLSTABILITY, max_length=200, blank=True, null=True
