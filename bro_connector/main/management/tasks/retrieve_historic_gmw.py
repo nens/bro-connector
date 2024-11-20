@@ -216,6 +216,7 @@ class InitializeData:
                     "vertical_datum": self.gmw_dict.get("verticalDatum", None),
                     "well_code": self.gmw_dict.get("wellCode", None),
                     "deliver_gmw_to_bro": True,
+                    "complete_bro": True,
                 },
             )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)
 

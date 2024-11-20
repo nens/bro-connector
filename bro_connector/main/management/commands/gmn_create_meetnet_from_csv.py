@@ -12,13 +12,20 @@ def find_monitoring_tube(tube_str: str) -> GroundwaterMonitoringTubeStatic:
     well_code = split_string[0]
     tube_nr = split_string[1]
 
-    print(f'well: {well_code}; tube_nr: {tube_nr}.')
+    # print(f'well: {well_code}; tube_nr: {tube_nr}.')
 
     tube = GroundwaterMonitoringTubeStatic.objects.filter(
         groundwater_monitoring_well_static__nitg_code = well_code,
         tube_number = tube_nr
     ).order_by('groundwater_monitoring_tube_static_id').first()
     return tube
+
+def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic) -> MeasuringPoint:
+    measuring_point = MeasuringPoint.objects.filter(
+        gmn = gmn,
+        groundwater_monitoring_tube = tube,
+    ).first()
+    return measuring_point
 
 def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: str) -> None:
     if "kwal" in meetnet_naam:
@@ -37,25 +44,36 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     )[0]
     
     # creeër een lege dataframe die gevuld wordt met informatie welke putten en peilbuizen succesvol zijn toegevoegd aan een meetnet
-    df_ouput = pl.DataFrame({'put':[], 'peilbuis':[], 'in meetnet':[]}, schema={'put':pl.String, 'peilbuis':pl.String, 'in meetnet':pl.Int64})
+    df_ouput = pl.DataFrame({'put':[], 'peilbuis':[], 'in BRO':[]}, schema={'put':pl.String, 'peilbuis':pl.String, 'in BRO':pl.Int64})
 
     # filter op peilbuizen die in meetnet zitten
     df_filtered = df.filter(pl.col(meetnet_naam) == 1)
     print('')
     print(f'{meetnet_naam} zou {len(df_filtered)} peilbuizen moeten bevatten')
+
+    already_in_meetnet = 0
     
     for row in df_filtered.iter_rows(named=True):
         tube = find_monitoring_tube(row["unicode"])
         split_string = row['unicode'].split(sep="-")
         well_code = split_string[0]
         tube_nr = split_string[1]
+        # if the tube exists
         if tube:
-            measuring_point = MeasuringPoint.objects.update_or_create(
-                gmn = gmn,
-                groundwater_monitoring_tube = tube,
-                code = tube.__str__()
-            )[0]
-            print(measuring_point)
+            # find if the measuring_point already exists for this gmn and tube
+            measuring_point = find_measuringpoint(gmn, tube)
+            # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+            if measuring_point:
+                # print(f'well: {well_code}; tube_nr: {tube_nr} \t already in gmn.')
+                already_in_meetnet += 1
+            # if no measuring_point exists yet for this gmn and tube, create it
+            else:
+                # print(f'well: {well_code}; tube_nr: {tube_nr} \t not in gmn.')
+                measuring_point = MeasuringPoint.objects.update_or_create(
+                    gmn = gmn,
+                    groundwater_monitoring_tube = tube,
+                    code = tube.__str__()
+                )[0]
             new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]
 
         else:
@@ -67,13 +85,23 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     path = ouput_path + f"\{meetnet_naam}.csv"
     df_ouput.write_csv(path, separator=',')
 
+    print("")
+    print(f'voor {len(df_ouput)} putten werd een poging gedaan om het toe te voegen aan het meetnet')
+    print(f'bij {df_ouput.select(pl.sum("in BRO")).item()} is dit ook daadwerkelijk gelukt waarvan {already_in_meetnet} er al in stonden')
+
     print("Operatie succesvol afgerond.")
 
 
 
 
 class Command(BaseCommand):
-    # command moet een meetnet_naam en een csv filepath als argument hebben
+    """
+    Class to:
+        - set up a GMN
+        - check up al existing filters in database
+        - create measuringpoints for each filter.
+    """
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--csv",

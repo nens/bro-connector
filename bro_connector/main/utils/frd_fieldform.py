@@ -4,6 +4,7 @@ import pysftp
 import datetime
 import os
 import random
+from pyproj import Transformer
 
 from main import localsecret as ls
 from gmw import models as gmw_models
@@ -22,6 +23,15 @@ input_field_options = {
         "name": "Opmerking"
     }
 }
+
+def convert_epsg28992_to_epsg4326(x, y):
+    # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
+    transformer = Transformer.from_crs("EPSG:28992", "EPSG:4326", always_xy=True)
+   
+    # Perform the transformation
+    lon, lat = transformer.transform(x, y)
+   
+    return lon, lat
 
 def generate_random_color():
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
@@ -159,10 +169,15 @@ def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> Lis
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
 
+    lon, lat = convert_epsg28992_to_epsg4326(
+        x=tube.groundwater_monitoring_well_static.coordinates.x,
+        y=tube.groundwater_monitoring_well_static.coordinates.y    
+    )
+
     return {
         f"{filter_name}": {
-            "lat": tube.groundwater_monitoring_well_static.coordinates.y,
-            "lon": tube.groundwater_monitoring_well_static.coordinates.x,
+            "lat": lat,
+            "lon": lon,
             "inputfields": generate_sublocation_fields(tube),
             "min_values": generate_min_values(tube),
             "max_values": generate_max_values(tube),
@@ -170,7 +185,7 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
     }
 
 class FieldFormGenerator:
-    inputfields: List[dict]
+    inputfields: Optional[List[dict]]
 
     # QuerySets
     monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
@@ -184,11 +199,12 @@ class FieldFormGenerator:
 
     def generate_inputfields(self) -> dict:
         input_field = {}
-        for field in self.inputfields:
-            if field not in input_field_options.keys():
-                raise ValueError("Unknown input field.")
-            
-            input_field[f"{field}_{self.post_fix}"] = input_field_options[field]
+        if self.inputfields:
+            for field in self.inputfields:
+                if field not in input_field_options.keys():
+                    raise ValueError("Unknown input field.")
+                
+                input_field[f"{field}_{self.post_fix}"] = input_field_options[field]
         
         return input_field
 
@@ -258,6 +274,16 @@ class FieldFormGenerator:
         # Write local file to FTP
         write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
 
+    def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
+        groups = {}
+        for subgroup in monitoringnetwork.subgroup_set.all():
+            groups[subgroup.code] = {
+                "name": subgroup.code,
+                "color": generate_random_color(),
+            }
+
+        return groups
+
     def generate(self):
         data = {}
         configs = frd_models.MeasurementConfiguration.objects.all().distinct("configuration_name")
@@ -305,16 +331,30 @@ class FieldFormGenerator:
 
 
         if hasattr(self, "monitoringnetworks"):
-            data["groups"] = self.write_monitoringnetworks_to_list()
-            locations = {}
-            for monitoringnetwork in self.monitoringnetworks:
-                self._flush_wells()
-                self._set_current_group(str(monitoringnetwork.name))
-                self.write_measuringpoints_to_wells(monitoringnetwork)
-                locations.update(self.create_location_dict())
-            
-            data["locations"] = locations
-            self._write_data(data)
+            if len(self.monitoringnetworks) == 1:
+                # Use subgroups of network if available.
+                monitoringnetwork = self.monitoringnetworks[0]
+                data["groups"] = self.write_subgroups_to_dict(monitoringnetwork)
+                locations = {}
+                for subgroup in monitoringnetwork.subgroup_set.all():
+                    self._flush_wells()
+                    self._set_current_group(str(monitoringnetwork.name))
+                    self.write_measuringpoints_to_wells(monitoringnetwork)
+                    locations.update(self.create_location_dict())
+                
+                data["locations"] = locations
+                self._write_data(data)
+            else:
+                data["groups"] = self.write_monitoringnetworks_to_dict()
+                locations = {}
+                for monitoringnetwork in self.monitoringnetworks:
+                    self._flush_wells()
+                    self._set_current_group(str(monitoringnetwork.name))
+                    self.write_measuringpoints_to_wells(monitoringnetwork)
+                    locations.update(self.create_location_dict())
+                
+                data["locations"] = locations
+                self._write_data(data)
 
         elif hasattr(self, "wells"):
             data["locations"] = self.create_location_dict()

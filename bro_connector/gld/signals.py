@@ -1,11 +1,26 @@
 from django.db.models.signals import (
     post_save,
     post_delete,
+    pre_save,
 )
 from django.dispatch import receiver
 from .models import gld_registration_log, GroundwaterLevelDossier, MeasurementTvp
 from gmw.models import GroundwaterMonitoringTubeStatic
 import reversion
+
+def _calculate_value(field_value: float, unit: str):
+    """
+    For now only supports m / cm / mm.
+    Conversion to 
+    """
+    if unit == "m":
+        return field_value
+    elif unit == "cm":
+        return field_value / 10
+    elif unit == "mm":
+        return field_value / 100
+    else:
+        return None
 
 @receiver(post_save, sender=gld_registration_log)
 def on_save_gld_synchronisatie_log(sender, instance: gld_registration_log, created, **kwargs):
@@ -26,3 +41,8 @@ def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     metadata = instance.measurement_point_metadata
     if metadata:
         metadata.delete()
+
+@receiver(pre_save, sender=MeasurementTvp)
+def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
+    if not instance.calculated_value and instance.field_value:
+        instance.calculated_value = _calculate_value(instance.field_value, instance.field_value_unit)
