@@ -69,7 +69,7 @@ class Command(BaseCommand):
                         with sftp.open(jpg, mode='rb') as img_file:
 
                             file_name = os.path.basename(photo_path)
-                            picture = Picture.objects.create(
+                            picture = Picture.objects.update_or_create(
                                 groundwater_monitoring_well_static=well,
                                 recording_datetime=datetime,
                                 picture=File(img_file, name=file_name),
