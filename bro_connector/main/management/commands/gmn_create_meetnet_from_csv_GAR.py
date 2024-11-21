@@ -42,18 +42,11 @@ def create_measuring_point (gmn: GroundwaterMonitoringNet, tube: GroundwaterMoni
         )[0]
     return measuring_point
 
-def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic, subgroup = False) -> MeasuringPoint:
-    if not subgroup:
-        measuring_point = MeasuringPoint.objects.filter(
-            gmn = gmn,
-            groundwater_monitoring_tube = tube,
-        ).first()
-    else:
-        measuring_point = MeasuringPoint.objects.filter(
-            gmn = gmn,
-            subgroup = subgroup,
-            groundwater_monitoring_tube = tube,
-        ).first()
+def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic) -> MeasuringPoint:
+    measuring_point = MeasuringPoint.objects.filter(
+        gmn = gmn,
+        groundwater_monitoring_tube = tube,
+    ).first()
     return measuring_point
 
 def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: str) -> None:
@@ -93,6 +86,8 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     print('')
     print(f'{meetnet_naam} zou {len(df)} peilbuizen moeten bevatten')
 
+    done = 0
+
     for row in df.iter_rows(named=True):
         # to catch if the NITGcode is incorrect and does not contain
         try:
@@ -123,66 +118,115 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
                 p1 = "C"
 
 
-            # also repeat for creating subgroups if the respective column contains a 1
+
+            # testing
+
             if row["Perceel 2"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P2)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P2.id).exists():
+                    # if so, print that it was already in
                     p2 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P2)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P2)
                     p2 = "C"
-                    
+
             if row["Perceel 3"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P3)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P3.id).exists():
+                    # if so, print that it was already in
                     p3 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P3)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P3)
                     p3 = "C"
 
             if row["Perceel 4"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P4)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P4.id).exists():
+                    # if so, print that it was already in
                     p4 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P4)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P4)
                     p4 = "C"
-                    
+
             if row["Perceel 5"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P5)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P5.id).exists():
+                    # if so, print that it was already in
                     p5 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P5)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P5)
                     p5 = "C"
 
-            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]
+            print(f"{well_code}-{tube_nr}: \tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
 
-        else:
-            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':0}]
+            done += 1
+            if done == 10:
+                break
+
+    #         # add subgroups to measuring_point if needed
+    #         if row["Perceel 2"] == 1:
+    #             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+
+    #             if measuring_point:
+    #                 p2 = "A"
+    #             # if no measuring_point exists yet for this gmn and tube, create it
+    #             if not measuring_point:
+    #                 measuring_point = create_measuring_point(gmn, tube, subgroep_P2)
+    #                 p2 = "C"
+                    
+    #         if row["Perceel 3"] == 1:
+    #             measuring_point = find_measuringpoint(gmn, tube, subgroep_P3)
+    #             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+    #             if measuring_point:
+    #                 p3 = "A"
+    #             # if no measuring_point exists yet for this gmn and tube, create it
+    #             if not measuring_point:
+    #                 measuring_point = create_measuring_point(gmn, tube, subgroep_P3)
+    #                 p3 = "C"
+
+    #         if row["Perceel 4"] == 1:
+    #             measuring_point = find_measuringpoint(gmn, tube, subgroep_P4)
+    #             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+    #             if measuring_point:
+    #                 p4 = "A"
+    #             # if no measuring_point exists yet for this gmn and tube, create it
+    #             if not measuring_point:
+    #                 measuring_point = create_measuring_point(gmn, tube, subgroep_P4)
+    #                 p4 = "C"
+                    
+    #         if row["Perceel 5"] == 1:
+    #             measuring_point = find_measuringpoint(gmn, tube, subgroep_P5)
+    #             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
+    #             if measuring_point:
+    #                 p5 = "A"
+    #             # if no measuring_point exists yet for this gmn and tube, create it
+    #             if not measuring_point:
+    #                 measuring_point = create_measuring_point(gmn, tube, subgroep_P5)
+    #                 p5 = "C"
+
+    #         new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]
+
+    #     else:
+    #         new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':0}]
         
 
-        print(f"{well_code}-{tube_nr}: \tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
-        new_df = pl.DataFrame(new_row)
-        df_ouput.extend(new_df)
+    #     print(f"{well_code}-{tube_nr}: \tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
+    #     new_df = pl.DataFrame(new_row)
+    #     df_ouput.extend(new_df)
 
-    path = ouput_path + f"\{meetnet_naam}.csv"
-    df_ouput.write_csv(path, separator=',')
+    # path = ouput_path + f"\{meetnet_naam}.csv"
+    # df_ouput.write_csv(path, separator=',')
 
-    print("")
-    print(f'voor {len(df_ouput)} putten werd een poging gedaan om het toe te voegen aan het meetnet')
-    print(f'bij {df_ouput.select(pl.sum("in BRO")).item()} is dit ook daadwerkelijk gelukt')
+    # print("")
+    # print(f'voor {len(df_ouput)} putten werd een poging gedaan om het toe te voegen aan het meetnet')
+    # print(f'bij {df_ouput.select(pl.sum("in BRO")).item()} is dit ook daadwerkelijk gelukt')
     
 
-    print("Operatie succesvol afgerond.")
+    # print("Operatie succesvol afgerond.")
 
 
 
@@ -201,19 +245,20 @@ class Command(BaseCommand):
             type=str,
             help="Het path naar de CSV met informatie over de meetnetten.",
         )
-        parser.add_argument(
-            "--output",
-            type=str,
-            help="Het path waar de output csv files moeten komen waar van alle putten aangegeven staat of ze aan het meetnet zijn toegevoegd",
-        )
+        # parser.add_argument(
+        #     "--output",
+        #     type=str,
+        #     help="Het path waar de output csv files moeten komen waar van alle putten aangegeven staat of ze aan het meetnet zijn toegevoegd",
+        # )
     
     def handle(self, *args, **options):
         csv_path = str(options["csv"])
-        output_path = str(options["output"])
+        # output_path = str(options["output"])
+        output_path = 0
         if not os.path.isdir(csv_path):
             raise ValueError("Invalid path to csv's supplied")
-        if not os.path.isdir(output_path):
-            raise ValueError('Invalid output path supplied')
+        # if not os.path.isdir(output_path):
+        #     raise ValueError('Invalid output path supplied')
         
 
         df_2021 = pl.read_csv(csv_path + "\GWMeetnetZld Bemonsteringsronde 2021 tbv json FieldForm.csv", ignore_errors=True)

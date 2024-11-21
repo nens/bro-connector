@@ -173,6 +173,7 @@ class MeasuringPoint(models.Model):
     subgroup = models.ManyToManyField(
         Subgroup, 
         related_name='measuring_points',
+        blank=True,
         help_text='Optional value to define smaller groups within a network.'
     )
     groundwater_monitoring_tube = models.ForeignKey(
