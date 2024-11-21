@@ -117,12 +117,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         csv_path = str(options["csv"])
         output_path = str(options["output"])
-        if not csv_path or not csv_path.endswith('.csv'):
+        if not os.path.isdir(csv_path):
             raise ValueError('Invalid CSV-file supplied.')
         if not os.path.isdir(output_path):
             raise ValueError('Invalid output path supplied')
         
-        df = pl.read_csv(csv_path, ignore_errors=True)
+        df = pl.read_csv(csv_path + "\Export grondwatermeetnet Functies xGMNx.csv", ignore_errors=True)
 
         column_name_list = ['pmg_kwantiteit', 'krw_kwantiteit', 'pmg_kwal_2006', 'krw_kwal_2006', 'pmg_kwal_2015', 'krw_kwal_2015', 'pmg_kwal_2012', 'krw_kwal_2012', 'pmg_kwal_2017', 'krw_kwal_2017', 'krw_kwantiteit2019']
 
