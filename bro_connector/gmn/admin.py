@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import (
     GroundwaterMonitoringNet,
     Subgroup,
+    MeasuringPointSubgroup,
     MeasuringPoint,
     IntermediateEvent,
     gmn_bro_sync_log
@@ -16,6 +17,17 @@ from main.utils.gld_fieldform import FieldFormGenerator as GLD_FieldFormGenerato
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
+class MeasuringPointSubgroupInline(admin.TabularInline):
+    model = MeasuringPointSubgroup
+    fiels = (
+        "measuring_point",
+        "subgroup",
+    )
+    readonly_fields = (
+        "measuring_point",
+        "subgroup",
+    )
+    extra = 1
 
 class MeasuringPointsInline(admin.TabularInline):
     model = MeasuringPoint
@@ -93,13 +105,13 @@ class SubgroupAdmin(admin.ModelAdmin):
         "name",
     )
 
-    inlines = (MeasuringPointsInline,)
+    inlines = (MeasuringPointSubgroupInline,)
 
 class MeasuringPointAdmin(admin.ModelAdmin):
     list_display = (
         "code",
         "gmn",
-        "subgroup",
+        "list_subgroups",
         "groundwater_monitoring_tube",
         "synced_to_bro",
         "removed_from_BRO_gmn",
@@ -109,7 +121,7 @@ class MeasuringPointAdmin(admin.ModelAdmin):
         "subgroup",
         "code",
     )
-
+    inlines = (MeasuringPointSubgroupInline,)
 
 class IntermediateEventAdmin(admin.ModelAdmin):
     list_display = (

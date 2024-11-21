@@ -168,14 +168,12 @@ class Subgroup(models.Model):
         verbose_name_plural = "Subgroups"
         ordering = ("name",)
 
-
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE, verbose_name='Meetnet')
-    subgroup = models.ForeignKey(
+    subgroup = models.ManyToManyField(
         Subgroup, 
-        related_name='measuring_points', 
-        on_delete=models.SET_NULL, 
-        null=True,
+        through="MeasuringPointSubgroup",
+        related_name='measuring_points',
         blank=True,
         help_text='Optional value to define smaller groups within a network.'
     )
@@ -244,6 +242,9 @@ class MeasuringPoint(models.Model):
         if self.subgroup:
             if self.subgroup.gmn != self.gmn:
                 raise ValidationError("Subgroup is deel van een ander Meetnet dan het geselecteerde Meetpunt.")
+            
+    def list_subgroups(self):
+        return ", ".join([subgroup.name for subgroup in self.subgroup.all()])
 
 
     class Meta:
@@ -253,6 +254,17 @@ class MeasuringPoint(models.Model):
         verbose_name_plural = "Meetpunten"
         ordering = ("code",)
 
+class MeasuringPointSubgroup(models.Model):
+    measuring_point = models.ForeignKey(
+        MeasuringPoint,
+        on_delete=models.CASCADE,
+    )
+    subgroup = models.ForeignKey(
+        Subgroup,
+        on_delete=models.SET_NULL,
+        null = True,
+    )
+    
 class IntermediateEvent(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, verbose_name='Meetnet')
     measuring_point = models.ForeignKey(
