@@ -16,11 +16,10 @@ def find_monitoring_tube(well: str, tube: str) -> GroundwaterMonitoringTubeStati
     ).order_by('groundwater_monitoring_tube_static_id').first()
     return tube
 
-def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic, subgroup: Subgroup) -> MeasuringPoint:
+def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic) -> MeasuringPoint:
     measuring_point = MeasuringPoint.objects.filter(
         gmn = gmn,
         groundwater_monitoring_tube = tube,
-        subgroup = subgroup,
     ).first()
     return measuring_point
 
@@ -65,7 +64,7 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
         tube = find_monitoring_tube(well_sbb, tube_sbb)
         if tube:
             # find if the measuring_point already exists for this gmn and tube
-            measuring_point = find_measuringpoint(gmn, tube, subgroep_sbb)
+            measuring_point = find_measuringpoint(gmn, tube)
             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
             if measuring_point:
                 print(f'well: {well_sbb}; tube_nr: {tube_sbb} \t already in gmn.')
@@ -76,10 +75,14 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
                 measuring_point = MeasuringPoint.objects.update_or_create(
                     gmn = gmn,
                     groundwater_monitoring_tube = tube,
-                    subgroup = subgroep_sbb,
                     code = tube.__str__()
                 )[0]
+                
+            # check if the subgroup has not been added to the measuringpoint yet
+            if not measuring_point.subgroup.filter(id=subgroep_sbb.id).exists():
+                measuring_point.subgroup.add(subgroep_sbb)
                 added_sbb += 1
+                    
             new_row = [{'put':well_sbb, 'peilbuis':tube_sbb, 'subgroep':subgroep_sbb.name, 'in BRO':1}]
         else:
             new_row = [{'put':well_sbb, 'peilbuis':tube_sbb, 'subgroep':subgroep_sbb.name, 'in BRO':0}]
@@ -95,7 +98,7 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
         tube = find_monitoring_tube(well_nm, tube_nm)
         if tube:
             # find if the measuring_point already exists for this gmn and tube
-            measuring_point = find_measuringpoint(gmn, tube, subgroep_nm)
+            measuring_point = find_measuringpoint(gmn, tube)
             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
             if measuring_point:
                 print(f'well: {well_nm}; tube_nr: {tube_nm} \t already in gmn.')
@@ -106,10 +109,15 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
                 measuring_point = MeasuringPoint.objects.update_or_create(
                     gmn = gmn,
                     groundwater_monitoring_tube = tube,
-                    subgroup = subgroep_nm,
                     code = tube.__str__()
                 )[0]
+                
+            # check if the subgroup has not been added to the measuringpoint yet
+            if not measuring_point.subgroup.filter(id=subgroep_nm.id).exists():
+                measuring_point.subgroup.add(subgroep_nm)
                 added_nm += 1
+
+
             new_row = [{'put':well_nm, 'peilbuis':tube_nm, 'subgroep':subgroep_nm.name, 'in BRO':1}]
         else:
             new_row = [{'put':well_nm, 'peilbuis':tube_nm, 'subgroep':subgroep_nm.name, 'in BRO':0}]
@@ -125,7 +133,7 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
         tube = find_monitoring_tube(well_hzl, tube_hzl)
         if tube:
             # find if the measuring_point already exists for this gmn and tube
-            measuring_point = find_measuringpoint(gmn, tube, subgroep_hzl)
+            measuring_point = find_measuringpoint(gmn, tube)
             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
             if measuring_point:
                 print(f'well: {well_hzl}; tube_nr: {tube_hzl} \t already in gmn.')
@@ -136,10 +144,14 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
                 measuring_point = MeasuringPoint.objects.update_or_create(
                     gmn = gmn,
                     groundwater_monitoring_tube = tube,
-                    subgroup = subgroep_hzl,
                     code = tube.__str__()
                 )[0]
+                
+            # check if the subgroup has not been added to the measuringpoint yet
+            if not measuring_point.subgroup.filter(id=subgroep_hzl.id).exists():
+                measuring_point.subgroup.add(subgroep_hzl)
                 added_hzl += 1
+
             new_row = [{'put':well_hzl, 'peilbuis':tube_hzl, 'subgroep':subgroep_hzl.name, 'in BRO':1}]
         else:
             new_row = [{'put':well_hzl, 'peilbuis':tube_hzl, 'subgroep':subgroep_hzl.name, 'in BRO':0}]
@@ -155,9 +167,9 @@ def update_or_create_meetnet(df_sbb: pl.DataFrame, df_nm: pl.DataFrame, df_hzl: 
     column_sum = df_ouput.select(pl.sum("in BRO")).item()
 
     print(column_sum, "tubes are in the BRO out of", len(df_ouput))
-    print(f"ssb: {already_in_meetnet_ssb} were already in the subgroup and meetnet out of {len(df_sbb)}\t {added_sbb} were newly added")
-    print(f"nm: {already_in_meetnet_nm} were already in the subgroup and meetnet out of {len(df_nm)}\t {added_nm} were newly added")
-    print(f"hzl: {already_in_meetnet_hzl} were already in the subgroup and meetnet out of {len(df_hzl)}\t {added_hzl} were newly added")
+    print(f"ssb: {already_in_meetnet_ssb} were already in the meetnet out of {len(df_sbb)}\t {added_sbb} were newly added")
+    print(f"nm: {already_in_meetnet_nm} were already in the meetnet out of {len(df_nm)}\t {added_nm} were newly added")
+    print(f"hzl: {already_in_meetnet_hzl} were already in the meetnet out of {len(df_hzl)}\t {added_hzl} were newly added")
 
 
 
