@@ -96,7 +96,11 @@ class GroundwaterMonitoringNet(models.Model):
     color = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        if self.name:
+            return self.name
+        elif self.id:
+            return self.id
+        return "New Monitoring Net"
 
     def __unicode__(self):
         return self.name
@@ -154,7 +158,12 @@ class Subgroup(models.Model):
     color = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self) -> str:
-        return self.name
+        if self.name:
+            return self.name
+        elif self.id:
+            return self.id
+        else:
+            return "New subgroup"
 
     def save(self, *args, **kwargs):
         if not self.color or self.color == "#000000":
@@ -204,7 +213,12 @@ class MeasuringPoint(models.Model):
     )
 
     def __str__(self):
-        return self.code
+        if self.code:
+            return self.code
+        elif self.id:
+            return self.id
+        else:
+            return "New monitoring point"
 
     def save(self, *args, **kwargs):
         if self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code is None:
