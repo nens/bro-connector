@@ -172,9 +172,7 @@ class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE, verbose_name='Meetnet')
     subgroup = models.ManyToManyField(
         Subgroup, 
-        through="MeasuringPointSubgroup",
         related_name='measuring_points',
-        blank=True,
         help_text='Optional value to define smaller groups within a network.'
     )
     groundwater_monitoring_tube = models.ForeignKey(
