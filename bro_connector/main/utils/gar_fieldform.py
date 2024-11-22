@@ -11,21 +11,7 @@ from main import localsecret as ls
 from gmw import models as gmw_models
 from gmn import models as gmn_models
 
-input_field_options = {
-    "opneembaarheid": {
-      "name": "Grondwaterstand niet opneembaar?",
-        "type": "choice",
-        "options": [
-          "Nee, filter staat droog",
-          "Nee, beschadiging, reparatie benodigd",
-          "Nee, overig (geef infomatie via opmerking)"
-        ]
-    },
-    "grondwaterstand": {
-      "name": "Grondwaterstand tov bovenkant buis",
-      "type": "number",
-      "hint": "cm tov bovenkant peilfilter/stijgbuis"
-    },
+ipfo_w = {
     "opmerking": {
       "type": "text",
       "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
@@ -49,23 +35,251 @@ input_field_options = {
     "foto 5": {
       "type": "photo",
       "hint": "Foto ter ondersteuning"
-      }
-  }
+      },
+}
+ipfo_f = {
+    "landgebruik": {
+        'name': 'Dominant landgebruik',
+        'type': 'choice',
+        # 'hint': 'max 2 selecteren',
+        'options': ['Grasland',
+                    'Akkerbouw',
+                    'Glastuinbouw, bomen-&bollenteelt',
+                    'Bos, natuur en water',
+                    'Bebouwd',
+                    'Industrie']
+    },
+    "beschadiging":  {
+        'name': 'Beschadiging put en filter?',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    "afdekking": {
+        'name': 'Correcte afdekking put?',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    # "grondwaterstand": {
+    #   "name": "Grondwaterstand tov bovenkant buis",
+    #   "type": "number",
+    #   "hint": "cm tov bovenkant peilfilter/stijgbuis"
+    # },
+    "gws_voor_pompen": {
+        'name': 'Grondwaterstand voor het voorpompen [cm] *',
+        'type': 'number',
+        'hint': 'cm tov bovenkant peilfilter/stijgbuis'
+    },
+    "gws_na_pompen": {
+        'name': 'Grondwaterstand na het voorpompen [cm] *',
+        'type': 'number',
+        'hint': 'cm tov bovenkant peilfilter/stijgbuis'
+    },
+    "bovenkant_peilfilter": {
+        'name': 'Bovenkant peilfilter [cm]',
+        'type': 'number',
+        'hint': 'cm+mv'
+    },
+    "onderkant_peilfilter": {
+        'name': 'Onderkant peilfilter [cm]',
+        'type': 'number',
+        'hint': 'cm tov bovenkant peilfilter/stijgbuis'
+    },
+    "pomptype": {
+        'name': 'Pomptype *',
+        'type': 'choice',
+        'options': ['onderwaterpomp', 'peristaltischePomp',
+                    'vacuümpomp', 'anders', 'onbekend']
+    },
+    "lengte_waterkolom": {
+        'name': 'Lengte waterkolom [cm]',
+        'type': 'number',
+        'hint': 'cm'
+    },
+    "inwendige_diameter_filter": {
+        'name': 'Inwendige diameter filter [mm]',
+        'type': 'number',
+        'hint': 'mm'
+    },
+    "voorpompvolume": {
+        'name': 'Voorpompvolume',
+        'type': 'number',
+        'hint': 'l'
+    },
+    "voorpompdebiet": {
+        'name': 'Voorpompdebiet [l/min]',
+        'type': 'number',
+        'hint': 'l/min; maximaal 8 l/min'
+    },
+    "bemonsteringsdebiet": {
+        'name': 'Bemonsteringsdebiet [l/min]',
+        'type': 'number',
+        'hint': 'l/min'
+    },
+    "toestroming_filter": {
+        'name': 'Toestroming filter',
+        'type': 'choice',
+        'options': ['Goed', 'Matig', 'Slecht']
+    },
+    "zuurgraad_0": {
+        'name': 'Zuurgraad na 0 minuten [pH]',
+        'type': 'number',
+        'hint': 'pH'
+    },
+    "zuurgraad_3": {
+        'name': 'Zuurgraad na 3 minuten [pH]',
+        'type': 'number',
+        'hint': 'pH'
+    },
+    "zuurgraad_6": {
+        'name': 'Zuurgraad na 6 minuten [pH]',
+        'type': 'number',
+        'hint': 'pH'
+    },
+    "geleidbaarheid_0": {
+        'name': 'Geleidbaarheid na 0 minuten [µS/cm]',
+        'type': 'number',
+        'hint': 'µS/cm'
+    },
+    "geleidbaarheid_3": {
+        'name': 'Geleidbaarheid na 3 minuten [µS/cm]',
+        'type': 'number',
+        'hint': 'µS/cm'
+    },
+    "geleidbaarheid_6": {
+        'name': 'Geleidbaarheid na 6 minuten [µS/cm]',
+        'type': 'number',
+        'hint': 'µS/cm'
+    },
+    'zuurstof': {
+        'name': 'Zuurstof (O2) [mg/l] *',
+        'type': 'number',
+        'hint': 'mg/l'
+    },
+    'temperatuur': {
+        'name': 'Temperatuur [ºC] *',
+        'type': 'number',
+        'hint': 'ºC'
+    },
+    'temperatuur_moeilijk': {
+        'name': 'Temperatuur moeilijk te bepalen *',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    'waterstofcarbonaat': {
+        'name': 'Waterstofcarbonaat (HCO3) [mg/l] *',
+        'type': 'number',
+        'hint': 'mg/l'
+    },
+    'troebelheid': {
+        'name': 'Troebelheid [NTU] *',
+        'type': 'number',
+        'hint': 'NTU'
+    },
+    'bicarbonaat': {
+        'name': 'Bicarbonaat [mg/l] *',
+        'type': 'number',
+        'hint': 'mg/l'
+    },
+    'afwijking_meetapparatuur': {
+        'name': 'Afwijking meetapparatuur *',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    'contaminatie_door_verbrandingsmotor': {
+        'name': 'Contaminatie door verbrandingsmotor *',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    'bemonsteringsprocedure': {
+        'name': 'Bemonsteringsprocedure *',
+        'type': 'choice',
+        'options': [
+            'NEN5744v1991',
+            'NEN5744v2011-A1v2013',
+            'NEN5745v1997',
+            'NTA8017v2008',
+            'NTA8017v2016',
+            'SIKBProtocol2002vanafV4',
+            'onbekend',
+        ]
+    },
+    'inline_filter_afwijkend': {
+        'name': 'Inline filter afwijkend *',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    'slang_hergebruikt': {
+        'name': 'Slang hergebruikt *',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    'monster_belucht': {
+        'name': 'Monster belucht *',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    'afwijkend_gekoeld': {
+        'name': 'Afwijkend gekoeld *',
+        'type': 'choice',
+        'options': ['Ja', 'Nee', 'Onbekend']
+    },
+    "kleur": {
+        'name': 'Kleur *',
+        'type': 'choice',
+        'options': [
+            'kleurloos',
+            'wit',
+            'grijs',
+            'zwart',
+            'rood',
+            'oranje',
+            'geel',
+            'groen',
+            'blauw',
+            'paars',
+            'bruin',
+            'roestbruin',
+            'beige',
+            'creme',
+        ]
+    },
+    "bijkleur": {
+        'name': 'Bijkleur *',
+        'type': 'choice',
+        'options': [
+            'kleurloos',
+            'wit',
+            'grijs',
+            'zwart',
+            'rood',
+            'oranje',
+            'geel',
+            'groen',
+            'blauw',
+            'paars',
+            'bruin',
+            'roestbruin',
+            'beige',
+            'creme',
+        ]
+    },
+    "kleursterkte": {
+        'name': 'Kleursterkte *',
+        'type': 'choice',
+        'options': ['zeer licht', 'licht', 'neutraal', 'donker',
+                    'zeer donker']
+    },
+    "bijzonderheden": {
+        'name': 'Bijzonderheden',
+        'type': 'text',
+        'hint': 'Overige informatie'
+    }
+}
+input_field_options = ipfo_w.update(ipfo_f)
 
-input_fields_filter = [
-    "opneembaarheid",
-    "opmerking",
-    "grondwaterstand",
-]
+input_fields_filter = ipfo_f.keys()
 
-input_fields_well = [
-    "opmerking",
-    "foto 1",
-    "foto 2",
-    "foto 3",
-    "foto 4",
-    "foto 5",
-]
+input_fields_well = ipfo_w.keys()
 
 def convert_epsg28992_to_epsg4326(x, y):
     # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
@@ -107,8 +321,8 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
         f"{filter_name}": {
             "inputfields": input_fields_filter,
             "properties": {
+                # TO DO: Add perceel & other fields
                 "Bovenkantbuis hoogte ": filter_state.tube_top_position,
-                "Diameter": filter_state.tube_top_diameter,
                 "Bovenkant filter hoogte ": filter_state.screen_top_position,
                 "Onderkant filter hoogte ": filter_state.screen_bottom_position,
             },
@@ -126,22 +340,6 @@ class FieldFormGenerator:
 
     def __init__(self, *args, **kwargs) -> None:
         self.ftp_path = kwargs.get("path", None)
-        if self.ftp_path:
-            self.monitoringnetworks = [self._get_monitoring_network_for_path()]
-
-    def _get_monitoring_network_for_path(self) -> gmn_models.GroundwaterMonitoringNet | None:
-        if self.ftp_path == "/GLD_HMN":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
-                name = 'terreinbeheerders'
-            )
-        elif self.ftp_path == "/GLD_PMG":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
-                name = 'Meetrondes Kantonniers'
-            )
-        else:
-            raise ValueError(f"Unknown Path: {self.ftp_path}.")
-        
-        return gmn
 
     def write_file_to_ftp(self, file: str, remote_filename: str):
         cnopts = pysftp.CnOpts()
@@ -229,19 +427,12 @@ class FieldFormGenerator:
     
     def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
         groups = {}
-        print(monitoringnetwork.subgroups.all())
-        print(monitoringnetwork.name)
-        print(monitoringnetwork.color)
 
         for subgroup in monitoringnetwork.subgroups.all():
-            print(subgroup)
-            print(subgroup.name)
             groups[subgroup.name] = {
                 "name": subgroup.name,
                 "color": subgroup.color,
             }
-        
-        print(groups)
 
         return groups
 
