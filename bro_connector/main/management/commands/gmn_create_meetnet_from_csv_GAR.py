@@ -42,18 +42,11 @@ def create_measuring_point (gmn: GroundwaterMonitoringNet, tube: GroundwaterMoni
         )[0]
     return measuring_point
 
-def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic, subgroup = False) -> MeasuringPoint:
-    if not subgroup:
-        measuring_point = MeasuringPoint.objects.filter(
-            gmn = gmn,
-            groundwater_monitoring_tube = tube,
-        ).first()
-    else:
-        measuring_point = MeasuringPoint.objects.filter(
-            gmn = gmn,
-            subgroup = subgroup,
-            groundwater_monitoring_tube = tube,
-        ).first()
+def find_measuringpoint(gmn: GroundwaterMonitoringNet, tube: GroundwaterMonitoringTubeStatic) -> MeasuringPoint:
+    measuring_point = MeasuringPoint.objects.filter(
+        gmn = gmn,
+        groundwater_monitoring_tube = tube,
+    ).first()
     return measuring_point
 
 def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: str) -> None:
@@ -72,19 +65,19 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     # create subgroups
     subgroep_P2 = Subgroup.objects.update_or_create(
         gmn = gmn,
-        name = "Perceel 2",
+        name = meetnet_naam+"_Perceel_2",
     )[0]
     subgroep_P3 = Subgroup.objects.update_or_create(
         gmn = gmn,
-        name = "Perceel 3",
+        name = meetnet_naam+"_Perceel_3",
     )[0]
     subgroep_P4 = Subgroup.objects.update_or_create(
         gmn = gmn,
-        name = "Perceel 4",
+        name = meetnet_naam+"_Perceel_4",
     )[0]
     subgroep_P5 = Subgroup.objects.update_or_create(
         gmn = gmn,
-        name = "Perceel 5",
+        name = meetnet_naam+"_Perceel_5",
     )[0]
     
     # creeër een lege dataframe die gevuld wordt met informatie welke putten en peilbuizen succesvol zijn toegevoegd aan een meetnet
@@ -92,6 +85,8 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
 
     print('')
     print(f'{meetnet_naam} zou {len(df)} peilbuizen moeten bevatten')
+
+    done = 0
 
     for row in df.iter_rows(named=True):
         # to catch if the NITGcode is incorrect and does not contain
@@ -123,45 +118,45 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
                 p1 = "C"
 
 
-            # also repeat for creating subgroups if the respective column contains a 1
+            # add subgroups to measuring_point if needed
             if row["Perceel 2"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P2)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P2.id).exists():
+                    # if so, print that it was already in
                     p2 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P2)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P2)
                     p2 = "C"
-                    
+
             if row["Perceel 3"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P3)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P3.id).exists():
+                    # if so, print that it was already in
                     p3 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P3)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P3)
                     p3 = "C"
 
             if row["Perceel 4"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P4)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P4.id).exists():
+                    # if so, print that it was already in
                     p4 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P4)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P4)
                     p4 = "C"
-                    
+
             if row["Perceel 5"] == 1:
-                measuring_point = find_measuringpoint(gmn, tube, subgroep_P5)
-                # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
-                if measuring_point:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P5.id).exists():
+                    # if so, print that it was already in
                     p5 = "A"
-                # if no measuring_point exists yet for this gmn and tube, create it
-                if not measuring_point:
-                    measuring_point = create_measuring_point(gmn, tube, subgroep_P5)
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P5)
                     p5 = "C"
 
             new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]

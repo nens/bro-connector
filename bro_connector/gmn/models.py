@@ -96,7 +96,11 @@ class GroundwaterMonitoringNet(models.Model):
     color = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        if self.name:
+            return self.name
+        elif self.id:
+            return self.id
+        return "New Monitoring Net"
 
     def __unicode__(self):
         return self.name
@@ -154,7 +158,12 @@ class Subgroup(models.Model):
     color = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self) -> str:
-        return self.name
+        if self.name:
+            return self.name
+        elif self.id:
+            return self.id
+        else:
+            return "New subgroup"
 
     def save(self, *args, **kwargs):
         if not self.color or self.color == "#000000":
@@ -168,14 +177,11 @@ class Subgroup(models.Model):
         verbose_name_plural = "Subgroups"
         ordering = ("name",)
 
-
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE, verbose_name='Meetnet')
-    subgroup = models.ForeignKey(
+    subgroup = models.ManyToManyField(
         Subgroup, 
-        related_name='measuring_points', 
-        on_delete=models.SET_NULL, 
-        null=True,
+        related_name='measuring_points',
         blank=True,
         help_text='Optional value to define smaller groups within a network.'
     )
@@ -207,7 +213,12 @@ class MeasuringPoint(models.Model):
     )
 
     def __str__(self):
-        return self.code
+        if self.code:
+            return self.code
+        elif self.id:
+            return self.id
+        else:
+            return "New monitoring point"
 
     def save(self, *args, **kwargs):
         if self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code is None:
@@ -241,9 +252,12 @@ class MeasuringPoint(models.Model):
             )
 
     def clean(self, *args, **kwargs):
-        if self.subgroup:
-            if self.subgroup.gmn != self.gmn:
+        for subgroup in self.subgroup.all():
+            if subgroup.gmn != self.gmn:
                 raise ValidationError("Subgroup is deel van een ander Meetnet dan het geselecteerde Meetpunt.")
+            
+    def list_subgroups(self):
+        return ", ".join([subgroup.name for subgroup in self.subgroup.all()])
 
 
     class Meta:
@@ -253,6 +267,17 @@ class MeasuringPoint(models.Model):
         verbose_name_plural = "Meetpunten"
         ordering = ("code",)
 
+class MeasuringPointSubgroup(models.Model):
+    measuring_point = models.ForeignKey(
+        MeasuringPoint,
+        on_delete=models.CASCADE,
+    )
+    subgroup = models.ForeignKey(
+        Subgroup,
+        on_delete=models.SET_NULL,
+        null = True,
+    )
+    
 class IntermediateEvent(models.Model):
     gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, verbose_name='Meetnet')
     measuring_point = models.ForeignKey(

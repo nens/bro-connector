@@ -93,13 +93,10 @@ class SubgroupAdmin(admin.ModelAdmin):
         "name",
     )
 
-    inlines = (MeasuringPointsInline,)
-
 class MeasuringPointAdmin(admin.ModelAdmin):
     list_display = (
         "code",
         "gmn",
-        "subgroup",
         "groundwater_monitoring_tube",
         "synced_to_bro",
         "removed_from_BRO_gmn",
@@ -109,7 +106,6 @@ class MeasuringPointAdmin(admin.ModelAdmin):
         "subgroup",
         "code",
     )
-
 
 class IntermediateEventAdmin(admin.ModelAdmin):
     list_display = (
