@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Manager
 import django.contrib.gis.db.models as geo_models
 from django.utils.html import format_html
 from .choices import *  # noqa: F403
@@ -90,6 +91,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
         srid=28992, blank=True, null=True, editable=False
     )  # This field type is a guess.
 
+    state: Manager["GroundwaterMonitoringWellDynamic"]
+
     @property
     def x(self):
         return self.coordinates.x
@@ -154,7 +157,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="Put"
+        verbose_name="state"
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD", verbose_name="Geldig vanaf")
     ground_level_stable = models.CharField(choices=BOOLEAN_CHOICES, max_length=254, null=True, blank=True)
@@ -240,6 +243,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name='state',
     )
     deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(
@@ -262,6 +266,8 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         null=True, 
         validators=[validators_models.zandvanglengte_validator]
     )
+
+    state: Manager["GroundwaterMonitoringTubeDynamic"]
 
     @property
     def number_of_geo_ohm_cables(self):
@@ -289,6 +295,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name='state',
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     tube_top_diameter = models.IntegerField(blank=True, null=True)

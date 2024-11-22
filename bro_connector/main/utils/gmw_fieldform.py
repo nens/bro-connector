@@ -246,9 +246,16 @@ def delete_old_files_from_ftp():
 
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
+    filter_state = tube.state.order_by('date_from').last()
     return {
         f"{filter_name}": {
             "inputfields": input_fields_filter,
+            "properties": {
+                "Bovenkantbuis hoogte ": filter_state.tube_top_position,
+                "Diameter": filter_state.tube_top_diameter,
+                "Bovenkant filter hoogte ": filter_state.screen_top_position,
+                "Onderkant filter hoogte ": filter_state.screen_bottom_position,
+            },
         },
     }
 
@@ -301,6 +308,7 @@ class FieldFormGenerator:
             )
 
             well_name = well.__str__()
+            well_state = well.state.order_by("date_from").last()
             well_location = {
                 f"{well_name}": {
                     "lat": lat,
@@ -308,6 +316,9 @@ class FieldFormGenerator:
                     "sublocations": {
                         f"{well_name}": {
                             "inputfields": input_fields_well,
+                            "properties": {
+                                "Maaiveldhoogte": well_state.ground_level_position,
+                            },
                         }
                     },
                 }
