@@ -61,13 +61,14 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         csv_path = str(options["csv"])
-        if not csv_path or not csv_path.endswith('.csv'):
-            raise ValueError('Invalid CSV-file supplied.')
+        if not os.path.isdir(csv_path):
+            raise ValueError("Invalid path to csv's supplied")
         
-        df = pl.read_csv(csv_path, ignore_errors=True)
-
-
-
+        df = pl.read_csv(csv_path+"\Peilbuizen natuur.csv", ignore_errors=True)
         create_monitoring_well(df)
+        df = pl.read_csv(csv_path+"\Peilbuizen Natuurmonumenten Zeeland Dino TNO.csv", ignore_errors=True)
+        create_monitoring_well(df)
+
+
 
         
