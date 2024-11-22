@@ -292,7 +292,7 @@ class MeasurementTvp(models.Model):
     calculated_value = models.DecimalField(
         max_digits=25, decimal_places=5, blank=True, null=True
     )
-    corrected_value = models.DecimalField(
+    value_to_be_corrected = models.DecimalField(
         max_digits=25, decimal_places=5, blank=True, null=True
     )
     correction_time = models.DateTimeField(blank=True, null=True)
