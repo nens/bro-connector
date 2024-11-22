@@ -64,10 +64,11 @@ class Command(BaseCommand):
         if not os.path.isdir(csv_path):
             raise ValueError("Invalid path to csv's supplied")
         
-        df = pl.read_csv(csv_path+"\Peilbuizen natuur.csv", ignore_errors=True)
-        create_monitoring_well(df)
-        df = pl.read_csv(csv_path+"\Peilbuizen Natuurmonumenten Zeeland Dino TNO.csv", ignore_errors=True)
-        create_monitoring_well(df)
+        df_1 = pl.read_csv(csv_path + "\Peilbuizen natuur.csv", ignore_errors=True)
+        create_monitoring_well(df_1)
+
+        df_2 = pl.read_csv(csv_path + "\Peilbuizen Natuurmonumenten Zeeland Dino TNO.csv", ignore_errors=True)
+        create_monitoring_well(df_2)
 
 
 

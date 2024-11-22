@@ -1,214 +1,214 @@
-﻿Label,TARGET_FID,NITG_nr,werk_ID,Xcoord RD,Ycoord RD,beheerder,GBD_NM
-Grondwater (bestaand),1,B43C0369,B43C0369,60970.00,411010.00,SBB,Dijkwater
-Grondwater (bestaand),2,B43C0391,B43C0391,60922.00,410957.00,SBB,Dijkwater
-Grondwater (bestaand),3,B43C0368,B43C0368,60080.00,411160.00,SBB,Dijkwater
-Grondwater (bestaand),4,B43C0389,B43C0389,60036.00,411203.00,SBB,Dijkwater
-Grondwater (bestaand),5,B43C0390,B43C0390,60030.00,411219.00,SBB,Dijkwater
-Grondwater (bestaand),6,P43C0005,P43C0005,60870.00,410910.00,SBB,Schouwe Duiveland (Dijkwater)
-Grondwater (bestaand),7,B43C0372,B43C0372,67979.00,405260.00,HZL,Bruintjeskreek
-Grondwater (bestaand),8,B43C0377,B43C0377,68104.00,405338.00,HZL,Bruintjeskreek
-Grondwater (bestaand),9,B43C0284,B43C0284,67891.00,405534.00,HZL,Bruintjeskreek
-Grondwater (bestaand),10,B43C0380,B43C0380,68612.00,405599.00,HZL,Bruintjeskreek
-Grondwater (bestaand),11,B43C0381,B43C0381,68569.00,405675.00,HZL,Bruintjeskreek
-Grondwater (bestaand),12,B43C0378,B43C0378,68628.00,405570.00,HZL,Bruintjeskreek
-Grondwater (bestaand),13,B43C0382,B43C0382,68504.00,405790.00,HZL,Bruintjeskreek
-Grondwater (bestaand),14,B43C0384,B43C0384,68420.00,405487.00,HZL,Bruintjeskreek
-Grondwater (bestaand),15,B43C0385,B43C0385,68543.00,405720.00,HZL,Bruintjeskreek
-Grondwater (bestaand),16,B43C0371,B43C0371,67845.00,405170.00,HZL,Bruintjeskreek
-Grondwater (bestaand),17,B43C0373,B43C0373,67956.00,405236.00,HZL,Bruintjeskreek
-Grondwater (bestaand),18,B43C0374,B43C0374,67958.00,405237.00,HZL,Bruintjeskreek
-Grondwater (bestaand),19,B43C0375,B43C0375,67958.00,405236.00,HZL,Bruintjeskreek
-Grondwater (bestaand),20,B43C0376,B43C0376,67980.00,405225.00,HZL,Bruintjeskreek
-Grondwater (bestaand),21,B43C0383,B43C0383,67955.00,405295.00,HZL,Bruintjeskreek
-Grondwater (bestaand),22,B43D0296,B43D0296,70423.00,401633.00,SBB,Van Haaftenpolder
-Grondwater (bestaand),23,B43D0295,B43D0295,70102.00,401872.00,SBB,Van Haaftenpolder
-Grondwater (bestaand),24,B43D0297,B43D0297,70158.00,402015.00,SBB,Tholen
-Grondwater (bestaand),25,B49A0218,B49A0218,65196.00,394049.00,SBB,Scherpenissepolder
-Grondwater (bestaand),26,B49A0257,B49A0257,60458.00,391352.00,HZL,Yerseke moer
-Grondwater (bestaand),27,B49A0246,B49A0246,60646.00,390285.00,HZL,Yerseke moer
-Grondwater (bestaand),28,B49A0280,B49A0280,60222.00,390718.00,HZL,Yerseke moer
-Grondwater (bestaand),29,B49A0284,B49A0284,60629.00,389816.00,HZL,Yerseke moer
-Grondwater (bestaand),30,B49A0285,B49A0285,60535.00,390217.00,HZL,Yerseke moer
-Grondwater (bestaand),31,B49A0279,B49A0279,60150.00,390557.00,HZL,Yerseke moer
-Grondwater (bestaand),32,B49A0286,B49A0286,60436.00,390567.00,HZL,Yerseke moer
-Grondwater (bestaand),33,B49A0282,B49A0282,60361.00,390999.00,HZL,Yerseke moer
-Grondwater (bestaand),34,B49A0283,B49A0283,60730.00,389390.00,HZL,Yerseke moer
-Grondwater (bestaand),35,B49A0281,B49A0281,60359.00,390999.00,HZL,Yerseke moer
-Grondwater (bestaand),36,B55A0374,B55A0374,66640.00,369385.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),37,B55A0373,B55A0373,66600.00,369400.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),38,B55A0378,B55A0378,66210.00,368920.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),39,B55A0376,B55A0376,66160.00,368970.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),40,B55A0377,B55A0377,66190.00,368940.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),41,B55A0372,B55A0372,66480.00,369470.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),42,B55A0371,B55A0371,66460.00,369480.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),43,B55A0375,B55A0375,66670.00,369360.00,SBB,Vlaamsche kreek
-Grondwater (bestaand),44,P55A0009,P55A0009,65770.00,369640.00,SBB,Hontenisse en Hulst (Vlaamse Kreek)
-Grondwater (bestaand),45,P55A0011,P55A0011,66540.00,369570.00,SBB,Hontenisse en Hulst (Vlaamse Kreek)
-Grondwater (bestaand),46,B42B0097,B42B0097,38430.00,412790.00,SBB,Het Zeepe
-Grondwater (bestaand),47,B42B0023,B42B0023,38880.00,412569.00,SBB,Het Zeepe
-Grondwater (bestaand),48,B42B0004,B42B0004,39280.00,413809.00,NM,Het Zeepe
-Grondwater (bestaand),49,B42B0005,B42B0005,39277.00,413814.00,NM,Het Zeepe
-Grondwater (bestaand),50,B42B0099,B42B0099,38080.00,412640.00,SBB,Schouwse duinen
-Grondwater (bestaand),51,B42B0154,B42B0154,37750.75,414326.40,Overig,vroon Nieuw-Haamstede
+Label,TARGET_FID,NITG_nr,werk_ID,Xcoord RD,Ycoord RD,beheerder,GBD_NM
+Grondwater (bestaand),1,B43C0369,B43C0369,60970,411010,SBB,Dijkwater
+Grondwater (bestaand),2,B43C0391,B43C0391,60922,410957,SBB,Dijkwater
+Grondwater (bestaand),3,B43C0368,B43C0368,60080,411160,SBB,Dijkwater
+Grondwater (bestaand),4,B43C0389,B43C0389,60036,411203,SBB,Dijkwater
+Grondwater (bestaand),5,B43C0390,B43C0390,60030,411219,SBB,Dijkwater
+Grondwater (bestaand),6,P43C0005,P43C0005,60870,410910,SBB,Schouwe Duiveland (Dijkwater)
+Grondwater (bestaand),7,B43C0372,B43C0372,67979,405260,HZL,Bruintjeskreek
+Grondwater (bestaand),8,B43C0377,B43C0377,68104,405338,HZL,Bruintjeskreek
+Grondwater (bestaand),9,B43C0284,B43C0284,67891,405534,HZL,Bruintjeskreek
+Grondwater (bestaand),10,B43C0380,B43C0380,68612,405599,HZL,Bruintjeskreek
+Grondwater (bestaand),11,B43C0381,B43C0381,68569,405675,HZL,Bruintjeskreek
+Grondwater (bestaand),12,B43C0378,B43C0378,68628,405570,HZL,Bruintjeskreek
+Grondwater (bestaand),13,B43C0382,B43C0382,68504,405790,HZL,Bruintjeskreek
+Grondwater (bestaand),14,B43C0384,B43C0384,68420,405487,HZL,Bruintjeskreek
+Grondwater (bestaand),15,B43C0385,B43C0385,68543,405720,HZL,Bruintjeskreek
+Grondwater (bestaand),16,B43C0371,B43C0371,67845,405170,HZL,Bruintjeskreek
+Grondwater (bestaand),17,B43C0373,B43C0373,67956,405236,HZL,Bruintjeskreek
+Grondwater (bestaand),18,B43C0374,B43C0374,67958,405237,HZL,Bruintjeskreek
+Grondwater (bestaand),19,B43C0375,B43C0375,67958,405236,HZL,Bruintjeskreek
+Grondwater (bestaand),20,B43C0376,B43C0376,67980,405225,HZL,Bruintjeskreek
+Grondwater (bestaand),21,B43C0383,B43C0383,67955,405295,HZL,Bruintjeskreek
+Grondwater (bestaand),22,B43D0296,B43D0296,70423,401633,SBB,Van Haaftenpolder
+Grondwater (bestaand),23,B43D0295,B43D0295,70102,401872,SBB,Van Haaftenpolder
+Grondwater (bestaand),24,B43D0297,B43D0297,70158,402015,SBB,Tholen
+Grondwater (bestaand),25,B49A0218,B49A0218,65196,394049,SBB,Scherpenissepolder
+Grondwater (bestaand),26,B49A0257,B49A0257,60458,391352,HZL,Yerseke moer
+Grondwater (bestaand),27,B49A0246,B49A0246,60646,390285,HZL,Yerseke moer
+Grondwater (bestaand),28,B49A0280,B49A0280,60222,390718,HZL,Yerseke moer
+Grondwater (bestaand),29,B49A0284,B49A0284,60629,389816,HZL,Yerseke moer
+Grondwater (bestaand),30,B49A0285,B49A0285,60535,390217,HZL,Yerseke moer
+Grondwater (bestaand),31,B49A0279,B49A0279,60150,390557,HZL,Yerseke moer
+Grondwater (bestaand),32,B49A0286,B49A0286,60436,390567,HZL,Yerseke moer
+Grondwater (bestaand),33,B49A0282,B49A0282,60361,390999,HZL,Yerseke moer
+Grondwater (bestaand),34,B49A0283,B49A0283,60730,389390,HZL,Yerseke moer
+Grondwater (bestaand),35,B49A0281,B49A0281,60359,390999,HZL,Yerseke moer
+Grondwater (bestaand),36,B55A0374,B55A0374,66640,369385,SBB,Vlaamsche kreek
+Grondwater (bestaand),37,B55A0373,B55A0373,66600,369400,SBB,Vlaamsche kreek
+Grondwater (bestaand),38,B55A0378,B55A0378,66210,368920,SBB,Vlaamsche kreek
+Grondwater (bestaand),39,B55A0376,B55A0376,66160,368970,SBB,Vlaamsche kreek
+Grondwater (bestaand),40,B55A0377,B55A0377,66190,368940,SBB,Vlaamsche kreek
+Grondwater (bestaand),41,B55A0372,B55A0372,66480,369470,SBB,Vlaamsche kreek
+Grondwater (bestaand),42,B55A0371,B55A0371,66460,369480,SBB,Vlaamsche kreek
+Grondwater (bestaand),43,B55A0375,B55A0375,66670,369360,SBB,Vlaamsche kreek
+Grondwater (bestaand),44,P55A0009,P55A0009,65770,369640,SBB,Hontenisse en Hulst (Vlaamse Kreek)
+Grondwater (bestaand),45,P55A0011,P55A0011,66540,369570,SBB,Hontenisse en Hulst (Vlaamse Kreek)
+Grondwater (bestaand),46,B42B0097,B42B0097,38430,412790,SBB,Het Zeepe
+Grondwater (bestaand),47,B42B0023,B42B0023,38880,412569,SBB,Het Zeepe
+Grondwater (bestaand),48,B42B0004,B42B0004,39280,413809,NM,Het Zeepe
+Grondwater (bestaand),49,B42B0005,B42B0005,39277,413814,NM,Het Zeepe
+Grondwater (bestaand),50,B42B0099,B42B0099,38080,412640,SBB,Schouwse duinen
+Grondwater (bestaand),51,B42B0154,B42B0154,37750.75,414326.4,Overig,vroon Nieuw-Haamstede
 Grondwater (bestaand),52,B42B0155,B42B0155,39055.79,414437.88,Overig,vroon Nieuw-Haamstede
-Grondwater (bestaand),53,[onbekend],WERK_ID#54,38892.23,415527.20,Overig,vroon Nieuw-Haamstede
-Grondwater (bestaand),54,B42B0144,B42B0144,37771.00,414889.00,Overig,vroon Nieuw-Haamstede
-Grondwater (bestaand),55,B42B0056,B42B0056,39630.00,415510.00,SBB,Haamstede
-Grondwater (bestaand),56,B42B0007,B42B0007,37300.00,412700.00,SBB,Haamstede
-Grondwater (bestaand),57,B42B0102,B42B0102,38550.00,414205.00,NM,Haamstede
-Grondwater (bestaand),58,B42B0138,B42B0138,39846.00,413206.00,NM,Haamstede
-Grondwater (bestaand),59,B42B0115,B42B0115,39900.00,412540.00,NM,Haamstede
-Grondwater (bestaand),60,B42B0126,B42B0126,38060.00,416027.00,Overig,Haamstede
-Grondwater (bestaand),61,B42D0041,B42D0041,39097.00,412363.00,SBB,Het Zeepe
-Grondwater (bestaand),62,B42D0044,B42D0044,39585.00,411940.00,SBB,Het Zeepe
-Grondwater (bestaand),63,B42D0045,B42D0045,39360.00,412155.00,SBB,Het Zeepe
-Grondwater (bestaand),64,B42D0509,B42D0509,37650.00,412359.00,SBB,Schouwse duinen
-Grondwater (bestaand),65,B42D0043,B42D0043,37566.00,411880.00,SBB,Schouwse duinen
-Grondwater (bestaand),66,B42D0504,B42D0504,37525.00,412294.00,SBB,Schouwse duinen
+Grondwater (bestaand),53,[onbekend],WERK_ID#54,38892.23,415527.2,Overig,vroon Nieuw-Haamstede
+Grondwater (bestaand),54,B42B0144,B42B0144,37771,414889,Overig,vroon Nieuw-Haamstede
+Grondwater (bestaand),55,B42B0056,B42B0056,39630,415510,SBB,Haamstede
+Grondwater (bestaand),56,B42B0007,B42B0007,37300,412700,SBB,Haamstede
+Grondwater (bestaand),57,B42B0102,B42B0102,38550,414205,NM,Haamstede
+Grondwater (bestaand),58,B42B0138,B42B0138,39846,413206,NM,Haamstede
+Grondwater (bestaand),59,B42B0115,B42B0115,39900,412540,NM,Haamstede
+Grondwater (bestaand),60,B42B0126,B42B0126,38060,416027,Overig,Haamstede
+Grondwater (bestaand),61,B42D0041,B42D0041,39097,412363,SBB,Het Zeepe
+Grondwater (bestaand),62,B42D0044,B42D0044,39585,411940,SBB,Het Zeepe
+Grondwater (bestaand),63,B42D0045,B42D0045,39360,412155,SBB,Het Zeepe
+Grondwater (bestaand),64,B42D0509,B42D0509,37650,412359,SBB,Schouwse duinen
+Grondwater (bestaand),65,B42D0043,B42D0043,37566,411880,SBB,Schouwse duinen
+Grondwater (bestaand),66,B42D0504,B42D0504,37525,412294,SBB,Schouwse duinen
 Grondwater (bestaand),67,B42D0040,B42D0040,38285.16,410859.96,SBB,Schouwse duinen
-Grondwater (bestaand),68,B42D0038,B42D0038,38515.00,411779.00,SBB,Haamstede
-Grondwater (bestaand),69,B42D0503,B42D0503,38510.00,411760.00,SBB,Haamstede
-Grondwater (bestaand),70,B42D0416,B42D0416,38665.00,412210.00,SBB,Haamstede
-Grondwater (bestaand),71,B42E0009,B42E0009,40320.00,412860.00,NM,Het Zeepe
-Grondwater (bestaand),72,B42E0043,B42E0043,42423.00,415051.00,SBB,Hoge/Lage Zoom
+Grondwater (bestaand),68,B42D0038,B42D0038,38515,411779,SBB,Haamstede
+Grondwater (bestaand),69,B42D0503,B42D0503,38510,411760,SBB,Haamstede
+Grondwater (bestaand),70,B42D0416,B42D0416,38665,412210,SBB,Haamstede
+Grondwater (bestaand),71,B42E0009,B42E0009,40320,412860,NM,Het Zeepe
+Grondwater (bestaand),72,B42E0043,B42E0043,42423,415051,SBB,Hoge/Lage Zoom
 Grondwater (bestaand),73,B42E0993,B42E0993,42777.03,416553.38,SBB,Oosterenban
-Grondwater (bestaand),74,B42E0334,B42E0334,41000.00,416100.00,PART,Oosterenban
-Grondwater (bestaand),75,B42E0333,B42E0333,41850.00,416260.00,SBB,Oosterenban
-Grondwater (bestaand),76,B42E0332,B42E0332,42250.00,415630.00,SBB,Oosterenban
-Grondwater (bestaand),77,B42E0341,B42E0341,42260.00,415644.00,SBB,Oosterenban
-Grondwater (bestaand),78,B42E0342,B42E0342,42265.00,415644.00,SBB,Oosterenban
-Grondwater (bestaand),79,B42E0343,B42E0343,42282.00,415659.00,SBB,Oosterenban
+Grondwater (bestaand),74,B42E0334,B42E0334,41000,416100,PART,Oosterenban
+Grondwater (bestaand),75,B42E0333,B42E0333,41850,416260,SBB,Oosterenban
+Grondwater (bestaand),76,B42E0332,B42E0332,42250,415630,SBB,Oosterenban
+Grondwater (bestaand),77,B42E0341,B42E0341,42260,415644,SBB,Oosterenban
+Grondwater (bestaand),78,B42E0342,B42E0342,42265,415644,SBB,Oosterenban
+Grondwater (bestaand),79,B42E0343,B42E0343,42282,415659,SBB,Oosterenban
 Grondwater (bestaand),80,B42E0276,B42E0276,40622.27,413379.71,NM,Slot Haamstede
-Grondwater (bestaand),81,B42E0256,B42E0256,40182.00,414270.00,Overig,vroon Nieuw-Haamstede
-Grondwater (bestaand),82,B42E0008,B42E0008,40300.00,413880.00,NM,Haamstede
-Grondwater (bestaand),83,B42E0286,B42E0286,42300.00,416910.00,Overig,Haamstede
-Grondwater (bestaand),84,B42E0275,B42E0275,41347.00,414080.00,Overig,Haamstede
-Grondwater (bestaand),85,B42E0304,B42E0304,40910.00,415100.00,SBB,Haamstede
-Grondwater (bestaand),86,[onbekend],WERK_ID#87,43990.00,417970.00,Overig,Haamstede
-Grondwater (bestaand),87,[onbekend],WERK_ID#88,42300.00,416100.00,SBB,Haamstede
-Grondwater (bestaand),88,B42E0335,B42E0335,40945.00,415550.00,PART,Kop van Schouwen
-Grondwater (bestaand),89,B42E0336,B42E0336,41020.00,414970.00,SBB,Kop van Schouwen
-Grondwater (bestaand),90,P42E0001,P42E0001,41470.00,415480.00,PART,Kop van Schouwen
-Grondwater (bestaand),91,P42E0002,P42E0002,41760.00,415995.00,PART,Kop van Schouwen
-Grondwater (bestaand),92,B42E0261,B42E0261,46718.00,413408.00,SBB,Prunje
-Grondwater (bestaand),93,B42E0337,B42E0337,45455.00,418010.00,SBB,Zoeten en zouten haard
-Grondwater (bestaand),94,B42E0338,B42E0338,45440.00,418070.00,SBB,Zoeten en zouten haard
-Grondwater (bestaand),95,P42E0003,P42E0003,45450.00,417975.00,SBB,Kop van Schouwen
-Grondwater (bestaand),96,P42E0004,P42E0004,45550.00,418020.00,SBB,Kop van Schouwen
+Grondwater (bestaand),81,B42E0256,B42E0256,40182,414270,Overig,vroon Nieuw-Haamstede
+Grondwater (bestaand),82,B42E0008,B42E0008,40300,413880,NM,Haamstede
+Grondwater (bestaand),83,B42E0286,B42E0286,42300,416910,Overig,Haamstede
+Grondwater (bestaand),84,B42E0275,B42E0275,41347,414080,Overig,Haamstede
+Grondwater (bestaand),85,B42E0304,B42E0304,40910,415100,SBB,Haamstede
+Grondwater (bestaand),86,[onbekend],WERK_ID#87,43990,417970,Overig,Haamstede
+Grondwater (bestaand),87,[onbekend],WERK_ID#88,42300,416100,SBB,Haamstede
+Grondwater (bestaand),88,B42E0335,B42E0335,40945,415550,PART,Kop van Schouwen
+Grondwater (bestaand),89,B42E0336,B42E0336,41020,414970,SBB,Kop van Schouwen
+Grondwater (bestaand),90,P42E0001,P42E0001,41470,415480,PART,Kop van Schouwen
+Grondwater (bestaand),91,P42E0002,P42E0002,41760,415995,PART,Kop van Schouwen
+Grondwater (bestaand),92,B42E0261,B42E0261,46718,413408,SBB,Prunje
+Grondwater (bestaand),93,B42E0337,B42E0337,45455,418010,SBB,Zoeten en zouten haard
+Grondwater (bestaand),94,B42E0338,B42E0338,45440,418070,SBB,Zoeten en zouten haard
+Grondwater (bestaand),95,P42E0003,P42E0003,45450,417975,SBB,Kop van Schouwen
+Grondwater (bestaand),96,P42E0004,P42E0004,45550,418020,SBB,Kop van Schouwen
 Grondwater (bestaand),97,[onbekend],WERK_ID#98,43354.38,411862.32,NM,Koudekerksche inlaag
-Grondwater (bestaand),98,B42G0186,B42G0186,47881.00,411546.00,SBB,Weevers- en Flauwersinlaag
+Grondwater (bestaand),98,B42G0186,B42G0186,47881,411546,SBB,Weevers- en Flauwersinlaag
 Grondwater (bestaand),99,[onbekend],WERK_ID#100,51292.01,408255.79,NM,Borrendamme
-Grondwater (bestaand),100,B42H0219,B42H0219,59990.00,411230.00,SBB,Dijkwater
+Grondwater (bestaand),100,B42H0219,B42H0219,59990,411230,SBB,Dijkwater
 Grondwater (bestaand),101,B42H0166,B42H0166,55118.97,410801.26,SBB,Schuddebeurs
-Grondwater (bestaand),102,B42H0109,B42H0109,55200.00,410530.00,SBB,Schuddebeurs
-Grondwater (bestaand),103,B42C0118,B42C0118,27876.00,400983.00,HZL,Oranjezon
-Grondwater (bestaand),104,B42C0175,B42C0175,29771.00,401411.00,HZL,Oranjezon
-Grondwater (bestaand),105,B42C0117,B42C0117,29293.00,401613.00,HZL,Oranjezon
-Grondwater (bestaand),106,[onbekend],WERK_ID#107,27748.00,400682.00,HZL,Oranjezon
-Grondwater (bestaand),107,B42C0104,B42C0104,29054.00,401033.00,HZL,Oranjezon
-Grondwater (bestaand),108,B42C0103,B42C0103,28333.00,400910.00,HZL,Oranjezon
-Grondwater (bestaand),109,B42D0473,B42D0473,30113.00,401513.00,HZL,Oranjezon
-Grondwater (bestaand),110,B42D0058,B42D0058,34609.00,401367.00,SBB,Schotsman
-Grondwater (bestaand),111,B42D0543,B42D0543,34520.00,401070.00,SBB,Schotsman
-Grondwater (bestaand),112,B42D0544,B42D0544,34875.00,401050.00,SBB,Schotsman
-Grondwater (bestaand),113,B42D0546,B42D0546,34980.00,400605.00,SBB,Schotsman
-Grondwater (bestaand),114,B42D0542,B42D0542,34260.00,401070.00,SBB,Schotsman
-Grondwater (bestaand),115,B42D0545,B42D0545,34700.00,400190.00,SBB,Schotsman
-Grondwater (bestaand),116,B42D0501,B42D0501,30704.00,401180.00,HZL,Oranjezon
-Grondwater (bestaand),117,B42D0491,B42D0491,30016.00,401201.00,HZL,Oranjezon
-Grondwater (bestaand),118,B42D0804,B42D0804,34501.00,400414.00,SBB,Veerse Meer (Schotsman)
-Grondwater (bestaand),119,B42D0805,B42D0805,34501.00,400413.00,SBB,Veerse Meer (Schotsman)
-Grondwater (bestaand),120,B42D0808,B42D0808,34442.00,400500.00,SBB,Veerse Meer (Schotsman)
-Grondwater (bestaand),121,B42D0809,B42D0809,34442.00,400501.00,SBB,Veerse Meer (Schotsman)
-Grondwater (bestaand),122,B42D0547,B42D0547,35449.00,400442.00,SBB,Schotsman
-Grondwater (bestaand),123,B42D0539,B42D0539,35170.00,401420.00,SBB,Schotsman
-Grondwater (bestaand),124,B48A0003,B48A0003,24975.00,389715.00,SBB,Biggekerke
-Grondwater (bestaand),125,B48A0197,B48A0197,29867.00,390866.00,PART,Ter Hooge
-Grondwater (bestaand),126,B48A0198,B48A0198,29843.00,390350.00,PART,Ter Hooge
-Grondwater (bestaand),127,B48A0199,B48A0199,29598.00,390788.00,PART,Ter Hooge
-Grondwater (bestaand),128,B48A0200,B48A0200,29840.00,390264.00,PART,Ter Hooge
-Grondwater (bestaand),129,B48B0240,B48B0240,29989.00,390856.00,PART,Ter Hooge
-Grondwater (bestaand),130,B48B0149,B48B0149,34072.00,392930.00,HZL,Oude Veerseweg
-Grondwater (bestaand),131,B48B0150,B48B0150,33813.00,392905.00,HZL,Oude Veerseweg
-Grondwater (bestaand),132,B48B0237,B48B0237,33928.00,392680.00,HZL,Oude Veerseweg
-Grondwater (bestaand),133,B48B0239,B48B0239,33852.00,392865.00,HZL,Oude Veerseweg
-Grondwater (bestaand),134,B48B0238,B48B0238,33890.00,392740.00,HZL,Oude Veerseweg
-Grondwater (bestaand),135,B48B0235,B48B0235,30100.00,390363.00,PART,Ter Hooge
-Grondwater (bestaand),136,B48B0236,B48B0236,30052.00,390540.00,PART,Ter Hooge
-Grondwater (bestaand),137,B48B0241,B48B0241,30173.00,390830.00,PART,Ter Hooge
-Grondwater (bestaand),138,B48B0246,B48B0246,36884.00,393197.00,HZL,Heggengebied Arnemuiden
-Grondwater (bestaand),139,B48E0294,B48E0294,42149.00,396380.00,NM,Middelplaten
-Grondwater (bestaand),140,B48E0290,B48E0290,42152.00,396245.00,NM,Middelplaten
-Grondwater (bestaand),141,B48E0292,B48E0292,42150.00,396309.00,NM,Middelplaten
-Grondwater (bestaand),142,B48E0286,B48E0286,42152.00,396062.00,NM,Middelplaten
-Grondwater (bestaand),143,B48E0288,B48E0288,42152.00,396177.00,NM,Middelplaten
-Grondwater (bestaand),144,B48E0068,B48E0068,48445.00,395568.00,NM,Kwistenburg
-Grondwater (bestaand),145,B42H0222,B42H0222,57390.00,404110.00,SBB,krekengebied Ouwerkerk
-Grondwater (bestaand),146,B42H0221,B42H0221,57160.00,404060.00,SBB,krekengebied Ouwerkerk
-Grondwater (bestaand),147,B42H0220,B42H0220,56960.00,404025.00,SBB,krekengebied Ouwerkerk
-Grondwater (bestaand),148,B48E0195,B48E0195,48800.00,387760.00,NM,Ganzenreservaat Sinoutskerke
-Grondwater (bestaand),149,B48E0295,B48E0295,45880.00,387890.00,HZL,Landlust
-Grondwater (bestaand),150,B48G0239,B48G0239,44350.00,383290.00,NM,Blazekop
-Grondwater (bestaand),151,B48G0242,B48G0242,47700.00,385425.00,NM,Heggengebied Nisse
-Grondwater (bestaand),152,B48G0240,B48G0240,47150.00,385180.00,NM,Heggengebied Nisse
-Grondwater (bestaand),153,B48G0241,B48G0241,47450.00,385300.00,NM,Heggengebied Nisse
-Grondwater (bestaand),154,B48F0233,B48F0233,58803.00,388144.00,SBB,Kapelsche Moer
-Grondwater (bestaand),155,B48F0196,B48F0196,58200.00,390260.00,SBB,Kapelsche Moer
-Grondwater (bestaand),156,B48F0229,B48F0229,58203.00,390250.00,SBB,Kapelsche Moer
-Grondwater (bestaand),157,B48F0200,B48F0200,58620.00,389000.00,SBB,Kapelsche Moer
-Grondwater (bestaand),158,B48F0230,B48F0230,58810.00,389980.00,SBB,Kapelsche Moer
-Grondwater (bestaand),159,B48F0232,B48F0232,58615.00,389021.00,SBB,Kapelsche Moer
-Grondwater (bestaand),160,B48F0249,B48F0249,58615.00,389020.00,SBB,Kapelsche Moer
-Grondwater (bestaand),161,B48F0237,B48F0237,59314.00,390306.00,HZL,Yerseke moer
-Grondwater (bestaand),162,B48F0238,B48F0238,59336.00,390347.00,HZL,Yerseke moer
-Grondwater (bestaand),163,B48F0235,B48F0235,59420.00,389655.00,HZL,Yerseke moer
-Grondwater (bestaand),164,B48F0236,B48F0236,59552.00,389862.00,HZL,Yerseke moer
-Grondwater (bestaand),165,B48F0239,B48F0239,59745.00,390300.00,HZL,Yerseke moer
-Grondwater (bestaand),166,B48F0234,B48F0234,58205.00,388337.00,SBB,Zuid Beveland (Kapelse Moer)
-Grondwater (bestaand),167,B48H0255,B48H0255,50745.00,385076.00,NM,Zwaaksche weel
-Grondwater (bestaand),168,B48H0325,B48H0325,51045.00,385200.00,NM,Zwaaksche weel
-Grondwater (bestaand),169,B47H0107,B47H0107,14820.00,377700.00,HZL,Oudelandsepolder
-Grondwater (bestaand),170,B47H0109,B47H0109,14940.00,377620.00,HZL,Oudelandsepolder
-Grondwater (bestaand),171,B47H0110,B47H0110,15040.00,377540.00,HZL,Oudelandsepolder
-Grondwater (bestaand),172,B47H0108,B47H0108,19095.00,377020.00,SBB,Zeeuws-Vlaanderen-West
-Grondwater (bestaand),173,B47H0111,B47H0111,19180.00,377030.00,SBB,Zeeuws-Vlaanderen-West
-Grondwater (bestaand),174,B53F0053,B53F0053,16809.00,366812.00,Overig,Stierskreek
-Grondwater (bestaand),175,B54A0043,B54A0043,20400.00,370225.00,HZL,Sophiapolder
-Grondwater (bestaand),176,B54A0046,B54A0046,22201.00,370525.00,HZL,Sophiapolder
-Grondwater (bestaand),177,B48D0257,B48D0257,36088.00,376617.00,HZL,Plaskreek
-Grondwater (bestaand),178,B48G0238,B48G0238,45310.00,378855.00,NM,Inlaag 1887
-Grondwater (bestaand),179,B54E0357,B54E0357,40480.00,373110.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),180,B54E0378,B54E0378,40366.00,373714.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),181,B54E0364,B54E0364,40240.00,372340.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),182,B54E0365,B54E0365,40260.00,372240.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),183,B54E0360,B54E0360,40400.00,372710.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),184,B54E0358,B54E0358,40300.00,372770.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),185,B54E0359,B54E0359,40360.00,372740.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),186,B54E0361,B54E0361,40500.00,372645.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),187,B54E0379,B54E0379,40291.00,372766.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),188,B54E0362,B54E0362,40265.00,372580.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),189,B54E0380,B54E0380,40348.00,372705.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),190,B54E0363,B54E0363,40180.00,372420.00,SBB,Braakmanpolder noord
-Grondwater (bestaand),191,B54E0356,B54E0356,44490.00,369580.00,SBB,Braakman (Blikkenweitje)
-Grondwater (bestaand),192,P54E0004,P54E0004,44250.00,370230.00,SBB,Braakman (Blikkenweitje)
-Grondwater (bestaand),193,P54E0005,P54E0005,44450.00,369560.00,SBB,Braakman (Blikkenweitje)
-Grondwater (bestaand),194,P54E0006,P54E0006,40260.00,372585.00,SBB,Braakman
+Grondwater (bestaand),102,B42H0109,B42H0109,55200,410530,SBB,Schuddebeurs
+Grondwater (bestaand),103,B42C0118,B42C0118,27876,400983,HZL,Oranjezon
+Grondwater (bestaand),104,B42C0175,B42C0175,29771,401411,HZL,Oranjezon
+Grondwater (bestaand),105,B42C0117,B42C0117,29293,401613,HZL,Oranjezon
+Grondwater (bestaand),106,[onbekend],WERK_ID#107,27748,400682,HZL,Oranjezon
+Grondwater (bestaand),107,B42C0104,B42C0104,29054,401033,HZL,Oranjezon
+Grondwater (bestaand),108,B42C0103,B42C0103,28333,400910,HZL,Oranjezon
+Grondwater (bestaand),109,B42D0473,B42D0473,30113,401513,HZL,Oranjezon
+Grondwater (bestaand),110,B42D0058,B42D0058,34609,401367,SBB,Schotsman
+Grondwater (bestaand),111,B42D0543,B42D0543,34520,401070,SBB,Schotsman
+Grondwater (bestaand),112,B42D0544,B42D0544,34875,401050,SBB,Schotsman
+Grondwater (bestaand),113,B42D0546,B42D0546,34980,400605,SBB,Schotsman
+Grondwater (bestaand),114,B42D0542,B42D0542,34260,401070,SBB,Schotsman
+Grondwater (bestaand),115,B42D0545,B42D0545,34700,400190,SBB,Schotsman
+Grondwater (bestaand),116,B42D0501,B42D0501,30704,401180,HZL,Oranjezon
+Grondwater (bestaand),117,B42D0491,B42D0491,30016,401201,HZL,Oranjezon
+Grondwater (bestaand),118,B42D0804,B42D0804,34501,400414,SBB,Veerse Meer (Schotsman)
+Grondwater (bestaand),119,B42D0805,B42D0805,34501,400413,SBB,Veerse Meer (Schotsman)
+Grondwater (bestaand),120,B42D0808,B42D0808,34442,400500,SBB,Veerse Meer (Schotsman)
+Grondwater (bestaand),121,B42D0809,B42D0809,34442,400501,SBB,Veerse Meer (Schotsman)
+Grondwater (bestaand),122,B42D0547,B42D0547,35449,400442,SBB,Schotsman
+Grondwater (bestaand),123,B42D0539,B42D0539,35170,401420,SBB,Schotsman
+Grondwater (bestaand),124,B48A0003,B48A0003,24975,389715,SBB,Biggekerke
+Grondwater (bestaand),125,B48A0197,B48A0197,29867,390866,PART,Ter Hooge
+Grondwater (bestaand),126,B48A0198,B48A0198,29843,390350,PART,Ter Hooge
+Grondwater (bestaand),127,B48A0199,B48A0199,29598,390788,PART,Ter Hooge
+Grondwater (bestaand),128,B48A0200,B48A0200,29840,390264,PART,Ter Hooge
+Grondwater (bestaand),129,B48B0240,B48B0240,29989,390856,PART,Ter Hooge
+Grondwater (bestaand),130,B48B0149,B48B0149,34072,392930,HZL,Oude Veerseweg
+Grondwater (bestaand),131,B48B0150,B48B0150,33813,392905,HZL,Oude Veerseweg
+Grondwater (bestaand),132,B48B0237,B48B0237,33928,392680,HZL,Oude Veerseweg
+Grondwater (bestaand),133,B48B0239,B48B0239,33852,392865,HZL,Oude Veerseweg
+Grondwater (bestaand),134,B48B0238,B48B0238,33890,392740,HZL,Oude Veerseweg
+Grondwater (bestaand),135,B48B0235,B48B0235,30100,390363,PART,Ter Hooge
+Grondwater (bestaand),136,B48B0236,B48B0236,30052,390540,PART,Ter Hooge
+Grondwater (bestaand),137,B48B0241,B48B0241,30173,390830,PART,Ter Hooge
+Grondwater (bestaand),138,B48B0246,B48B0246,36884,393197,HZL,Heggengebied Arnemuiden
+Grondwater (bestaand),139,B48E0294,B48E0294,42149,396380,NM,Middelplaten
+Grondwater (bestaand),140,B48E0290,B48E0290,42152,396245,NM,Middelplaten
+Grondwater (bestaand),141,B48E0292,B48E0292,42150,396309,NM,Middelplaten
+Grondwater (bestaand),142,B48E0286,B48E0286,42152,396062,NM,Middelplaten
+Grondwater (bestaand),143,B48E0288,B48E0288,42152,396177,NM,Middelplaten
+Grondwater (bestaand),144,B48E0068,B48E0068,48445,395568,NM,Kwistenburg
+Grondwater (bestaand),145,B42H0222,B42H0222,57390,404110,SBB,krekengebied Ouwerkerk
+Grondwater (bestaand),146,B42H0221,B42H0221,57160,404060,SBB,krekengebied Ouwerkerk
+Grondwater (bestaand),147,B42H0220,B42H0220,56960,404025,SBB,krekengebied Ouwerkerk
+Grondwater (bestaand),148,B48E0195,B48E0195,48800,387760,NM,Ganzenreservaat Sinoutskerke
+Grondwater (bestaand),149,B48E0295,B48E0295,45880,387890,HZL,Landlust
+Grondwater (bestaand),150,B48G0239,B48G0239,44350,383290,NM,Blazekop
+Grondwater (bestaand),151,B48G0242,B48G0242,47700,385425,NM,Heggengebied Nisse
+Grondwater (bestaand),152,B48G0240,B48G0240,47150,385180,NM,Heggengebied Nisse
+Grondwater (bestaand),153,B48G0241,B48G0241,47450,385300,NM,Heggengebied Nisse
+Grondwater (bestaand),154,B48F0233,B48F0233,58803,388144,SBB,Kapelsche Moer
+Grondwater (bestaand),155,B48F0196,B48F0196,58200,390260,SBB,Kapelsche Moer
+Grondwater (bestaand),156,B48F0229,B48F0229,58203,390250,SBB,Kapelsche Moer
+Grondwater (bestaand),157,B48F0200,B48F0200,58620,389000,SBB,Kapelsche Moer
+Grondwater (bestaand),158,B48F0230,B48F0230,58810,389980,SBB,Kapelsche Moer
+Grondwater (bestaand),159,B48F0232,B48F0232,58615,389021,SBB,Kapelsche Moer
+Grondwater (bestaand),160,B48F0249,B48F0249,58615,389020,SBB,Kapelsche Moer
+Grondwater (bestaand),161,B48F0237,B48F0237,59314,390306,HZL,Yerseke moer
+Grondwater (bestaand),162,B48F0238,B48F0238,59336,390347,HZL,Yerseke moer
+Grondwater (bestaand),163,B48F0235,B48F0235,59420,389655,HZL,Yerseke moer
+Grondwater (bestaand),164,B48F0236,B48F0236,59552,389862,HZL,Yerseke moer
+Grondwater (bestaand),165,B48F0239,B48F0239,59745,390300,HZL,Yerseke moer
+Grondwater (bestaand),166,B48F0234,B48F0234,58205,388337,SBB,Zuid Beveland (Kapelse Moer)
+Grondwater (bestaand),167,B48H0255,B48H0255,50745,385076,NM,Zwaaksche weel
+Grondwater (bestaand),168,B48H0325,B48H0325,51045,385200,NM,Zwaaksche weel
+Grondwater (bestaand),169,B47H0107,B47H0107,14820,377700,HZL,Oudelandsepolder
+Grondwater (bestaand),170,B47H0109,B47H0109,14940,377620,HZL,Oudelandsepolder
+Grondwater (bestaand),171,B47H0110,B47H0110,15040,377540,HZL,Oudelandsepolder
+Grondwater (bestaand),172,B47H0108,B47H0108,19095,377020,SBB,Zeeuws-Vlaanderen-West
+Grondwater (bestaand),173,B47H0111,B47H0111,19180,377030,SBB,Zeeuws-Vlaanderen-West
+Grondwater (bestaand),174,B53F0053,B53F0053,16809,366812,Overig,Stierskreek
+Grondwater (bestaand),175,B54A0043,B54A0043,20400,370225,HZL,Sophiapolder
+Grondwater (bestaand),176,B54A0046,B54A0046,22201,370525,HZL,Sophiapolder
+Grondwater (bestaand),177,B48D0257,B48D0257,36088,376617,HZL,Plaskreek
+Grondwater (bestaand),178,B48G0238,B48G0238,45310,378855,NM,Inlaag 1887
+Grondwater (bestaand),179,B54E0357,B54E0357,40480,373110,SBB,Braakmanpolder noord
+Grondwater (bestaand),180,B54E0378,B54E0378,40366,373714,SBB,Braakmanpolder noord
+Grondwater (bestaand),181,B54E0364,B54E0364,40240,372340,SBB,Braakmanpolder noord
+Grondwater (bestaand),182,B54E0365,B54E0365,40260,372240,SBB,Braakmanpolder noord
+Grondwater (bestaand),183,B54E0360,B54E0360,40400,372710,SBB,Braakmanpolder noord
+Grondwater (bestaand),184,B54E0358,B54E0358,40300,372770,SBB,Braakmanpolder noord
+Grondwater (bestaand),185,B54E0359,B54E0359,40360,372740,SBB,Braakmanpolder noord
+Grondwater (bestaand),186,B54E0361,B54E0361,40500,372645,SBB,Braakmanpolder noord
+Grondwater (bestaand),187,B54E0379,B54E0379,40291,372766,SBB,Braakmanpolder noord
+Grondwater (bestaand),188,B54E0362,B54E0362,40265,372580,SBB,Braakmanpolder noord
+Grondwater (bestaand),189,B54E0380,B54E0380,40348,372705,SBB,Braakmanpolder noord
+Grondwater (bestaand),190,B54E0363,B54E0363,40180,372420,SBB,Braakmanpolder noord
+Grondwater (bestaand),191,B54E0356,B54E0356,44490,369580,SBB,Braakman (Blikkenweitje)
+Grondwater (bestaand),192,P54E0004,P54E0004,44250,370230,SBB,Braakman (Blikkenweitje)
+Grondwater (bestaand),193,P54E0005,P54E0005,44450,369560,SBB,Braakman (Blikkenweitje)
+Grondwater (bestaand),194,P54E0006,P54E0006,40260,372585,SBB,Braakman
 Grondwater (bestaand),195,[onbekend],WERK_ID#196,50687.93,379691.64,NM,Sint Jacobspolderweg
-Grondwater (bestaand),196,B54F0043,B54F0043,50114.00,373017.00,SBB,Margarethapolder
-Grondwater (bestaand),197,B54F0044,B54F0044,59320.00,374330.00,SBB,Hengstdijkse putting
-Grondwater (bestaand),198,B54F0109,B54F0109,59250.00,373840.00,SBB,Hengstdijkse putting
-Grondwater (bestaand),199,B54F0110,B54F0110,59620.00,374690.00,SBB,Hengstdijkse putting
-Grondwater (bestaand),200,B54G0066,B54G0066,45232.00,359565.00,SBB,Canisvliet
-Grondwater (bestaand),201,P54G0003,P54G0003,45507.00,359329.00,SBB,Zuiddorpe (Canisvliet)
+Grondwater (bestaand),196,B54F0043,B54F0043,50114,373017,SBB,Margarethapolder
+Grondwater (bestaand),197,B54F0044,B54F0044,59320,374330,SBB,Hengstdijkse putting
+Grondwater (bestaand),198,B54F0109,B54F0109,59250,373840,SBB,Hengstdijkse putting
+Grondwater (bestaand),199,B54F0110,B54F0110,59620,374690,SBB,Hengstdijkse putting
+Grondwater (bestaand),200,B54G0066,B54G0066,45232,359565,SBB,Canisvliet
+Grondwater (bestaand),201,P54G0003,P54G0003,45507,359329,SBB,Zuiddorpe (Canisvliet)
 Grondwater (nieuw),202,,WERK_ID#204,61939.26,406487.31,PART,De Maire (Oosterland)
 Grondwater (nieuw),203,,WERK_ID#205,61860.94,406405.82,PART,De Maire (Oosterland)
 Grondwater (nieuw),204,,WERK_ID#206,65993.39,406076.83,HZL,Willempolder
-Grondwater (nieuw),205,,WERK_ID#207,71194.64,407752.50,HZL,Plaat van de Vliet
+Grondwater (nieuw),205,,WERK_ID#207,71194.64,407752.5,HZL,Plaat van de Vliet
 Grondwater (nieuw),206,,WERK_ID#208,71393.89,407542.06,HZL,Plaat van de Vliet
 Grondwater (nieuw),207,,WERK_ID#209,72037.01,400669.14,SBB,Schorren van de Eendracht
 Grondwater (nieuw),208,,WERK_ID#210,72110.03,400726.29,SBB,Schorren van de Eendracht
 Grondwater (nieuw),209,,WERK_ID#211,74402.25,405463.78,HZL,Slikken van de Heen
-Grondwater (nieuw),210,,WERK_ID#212,74043.00,405707.97,HZL,Slikken van de Heen
+Grondwater (nieuw),210,,WERK_ID#212,74043,405707.97,HZL,Slikken van de Heen
 Grondwater (nieuw),211,,WERK_ID#213,73798.16,405857.22,HZL,Slikken van de Heen
 Grondwater (nieuw),212,,WERK_ID#214,73567.33,405996.41,HZL,Slikken van de Heen
 Grondwater (nieuw),213,,WERK_ID#215,66416.12,394062.16,SBB,Scherpenissepolder
@@ -221,8 +221,8 @@ Grondwater (nieuw),219,,WERK_ID#221,70820.93,392810.99,SBB,Schakerloopolder
 Grondwater (nieuw),220,,WERK_ID#222,69251.55,381747.37,SBB,Vinkenisse kreek
 Grondwater (nieuw),221,,WERK_ID#223,69227.32,381761.23,SBB,Vinkenisse kreek
 Grondwater (nieuw),222,,WERK_ID#224,73835.23,383397.13,NM,aanzet Oesterdam
-Grondwater (nieuw),223,,WERK_ID#225,74163.31,383177.00,NM,aanzet Oesterdam
-Grondwater (nieuw),224,,WERK_ID#226,73962.23,383316.70,NM,aanzet Oesterdam
+Grondwater (nieuw),223,,WERK_ID#225,74163.31,383177,NM,aanzet Oesterdam
+Grondwater (nieuw),224,,WERK_ID#226,73962.23,383316.7,NM,aanzet Oesterdam
 Grondwater (nieuw),225,,WERK_ID#227,75620.51,384582.98,HBL,Markiezaat
 Grondwater (nieuw),226,,WERK_ID#228,75530.02,384563.93,HBL,Markiezaat
 Grondwater (nieuw),227,,WERK_ID#229,75434.77,384543.29,HBL,Markiezaat
@@ -230,21 +230,21 @@ Grondwater (nieuw),228,,WERK_ID#230,75959.44,385728.68,HBL,Markiezaat
 Grondwater (nieuw),229,,WERK_ID#231,76018.18,385817.58,HBL,Markiezaat
 Grondwater (nieuw),230,,WERK_ID#232,76086.44,385931.88,HBL,Markiezaat
 Grondwater (nieuw),231,,WERK_ID#233,60270.31,374484.63,SBB,Hengstdijkse putting
-Grondwater (nieuw),232,,WERK_ID#234,60112.80,373703.52,SBB,Hengstdijkse putting
+Grondwater (nieuw),232,,WERK_ID#234,60112.8,373703.52,SBB,Hengstdijkse putting
 Grondwater (nieuw),233,,WERK_ID#235,65905.83,371700.02,SBB,Graauwsche kreek
 Grondwater (nieuw),234,,WERK_ID#236,65940.37,371686.55,SBB,Graauwsche kreek
-Grondwater (nieuw),235,,WERK_ID#237,65886.17,371774.10,SBB,Graauwsche kreek
+Grondwater (nieuw),235,,WERK_ID#237,65886.17,371774.1,SBB,Graauwsche kreek
 Grondwater (nieuw),236,,WERK_ID#238,65906.68,371805.19,SBB,Graauwsche kreek
 Grondwater (nieuw),237,,WERK_ID#239,39634.55,412963.14,NM,Het Zeepe
 Grondwater (nieuw),238,,WERK_ID#240,39959.43,416713.83,SBB,Oosterenban
 Grondwater (nieuw),239,,WERK_ID#241,39747.81,416945.01,Overig,Schouwse duinen
 Grondwater (nieuw),240,,WERK_ID#242,37318.03,413476.24,SBB,Schouwse duinen
 Grondwater (nieuw),241,,WERK_ID#243,39184.67,416808.15,Overig,Schouwse duinen
-Grondwater (nieuw),242,,WERK_ID#244,39803.30,415518.76,SBB,Oosterenban
+Grondwater (nieuw),242,,WERK_ID#244,39803.3,415518.76,SBB,Oosterenban
 Grondwater (nieuw),243,,WERK_ID#245,39567.84,410220.86,NM,Westenschouwse inlaag
 Grondwater (nieuw),244,,WERK_ID#246,39574.49,410222.45,NM,Westenschouwse inlaag
 Grondwater (nieuw),245,,WERK_ID#247,58502.97,419473.63,SBB,Veermansplaat
-Grondwater (nieuw),246,,WERK_ID#248,42888.95,415264.40,SBB,Hoge/Lage Zoom
+Grondwater (nieuw),246,,WERK_ID#248,42888.95,415264.4,SBB,Hoge/Lage Zoom
 Grondwater (nieuw),247,,WERK_ID#249,43965.43,417654.98,PART,Moermond
 Grondwater (nieuw),248,,WERK_ID#250,44125.55,417528.93,PART,Moermond
 Grondwater (nieuw),249,,WERK_ID#251,44299.68,417412.46,PART,Moermond
@@ -257,10 +257,10 @@ Grondwater (nieuw),255,,WERK_ID#257,43662.66,418125.74,Overig,Schouwse duinen
 Grondwater (nieuw),256,,WERK_ID#258,40832.97,413230.76,NM,Slot Haamstede
 Grondwater (nieuw),257,,WERK_ID#259,41186.99,413496.93,NM,Slot Haamstede
 Grondwater (nieuw),258,,WERK_ID#261,48343.88,411909.28,SBB,Prunje
-Grondwater (nieuw),259,,WERK_ID#262,57527.70,415739.58,SBB,Slik Bommenede
+Grondwater (nieuw),259,,WERK_ID#262,57527.7,415739.58,SBB,Slik Bommenede
 Grondwater (nieuw),260,,WERK_ID#263,57334.56,415575.54,SBB,Slik Bommenede
 Grondwater (nieuw),261,,WERK_ID#264,57710.62,415859.73,SBB,Slik Bommenede
-Grondwater (nieuw),262,,WERK_ID#265,58764.72,418417.50,SBB,Veermansplaat
+Grondwater (nieuw),262,,WERK_ID#265,58764.72,418417.5,SBB,Veermansplaat
 Grondwater (nieuw),263,,WERK_ID#266,59278.87,417238.69,SBB,Veermansplaat
 Grondwater (nieuw),264,,WERK_ID#269,26852.68,400289.25,SBB,Duinbeek/Berkenbosch
 Grondwater (nieuw),265,,WERK_ID#270,26777.31,400400.43,SBB,Duinbeek/Berkenbosch
@@ -272,21 +272,21 @@ Grondwater (nieuw),270,,WERK_ID#275,28602.35,400375.57,PART,Zeeduin
 Grondwater (nieuw),271,,WERK_ID#276,29124.71,400386.34,PART,Zeeduin
 Grondwater (nieuw),272,,WERK_ID#277,28262.88,401617.88,HZL,Oranjezon
 Grondwater (nieuw),273,,WERK_ID#278,24914.65,399221.53,PART,Hoogduin
-Grondwater (nieuw),274,,WERK_ID#279,24886.10,399315.90,PART,Hoogduin
+Grondwater (nieuw),274,,WERK_ID#279,24886.1,399315.9,PART,Hoogduin
 Grondwater (nieuw),275,,WERK_ID#280,20957.58,396589.91,SBB,Vroon Westkapelle
 Grondwater (nieuw),276,,WERK_ID#281,20049.63,396545.56,SBB,Vroon Westkapelle
 Grondwater (nieuw),277,,WERK_ID#282,26040.32,399822.71,SBB,Duinbeek/Berkenbosch
 Grondwater (nieuw),278,,WERK_ID#283,29290.65,394347.44,HZL,St.Laurense Weihoek
 Grondwater (nieuw),279,,WERK_ID#284,30708.41,401022.22,HZL,Beekshoekpolder
-Grondwater (nieuw),280,,WERK_ID#285,30425.00,401210.00,HZL,Beekshoekpolder
+Grondwater (nieuw),280,,WERK_ID#285,30425,401210,HZL,Beekshoekpolder
 Grondwater (nieuw),281,,WERK_ID#286,30267.98,401739.75,HZL,Oranjezon
 Grondwater (nieuw),282,,WERK_ID#287,31255.22,401698.29,HZL,Oranjezon
 Grondwater (nieuw),283,,WERK_ID#288,30588.08,401712.29,HZL,Oranjezon
-Grondwater (nieuw),284,,WERK_ID#289,30375.00,401930.00,HZL,Oranjezon
-Grondwater (nieuw),285,,WERK_ID#290,30405.00,401470.00,HZL,Oranjezon
+Grondwater (nieuw),284,,WERK_ID#289,30375,401930,HZL,Oranjezon
+Grondwater (nieuw),285,,WERK_ID#290,30405,401470,HZL,Oranjezon
 Grondwater (nieuw),286,,WERK_ID#291,34480.39,394159.33,HZL,Oude Veerseweg
 Grondwater (nieuw),287,,WERK_ID#292,30445.04,393919.39,HZL,St.Laurense Weihoek
-Grondwater (nieuw),288,,WERK_ID#293,30565.88,395037.60,HZL,St.Laurense Weihoek
+Grondwater (nieuw),288,,WERK_ID#293,30565.88,395037.6,HZL,St.Laurense Weihoek
 Grondwater (nieuw),289,,WERK_ID#294,37549.47,396498.19,SBB,Haringvreter
 Grondwater (nieuw),290,,WERK_ID#295,37319.28,396469.09,SBB,Haringvreter
 Grondwater (nieuw),291,,WERK_ID#296,35185.85,394056.27,HZL,Oude Veerseweg
@@ -308,7 +308,7 @@ Grondwater (nieuw),306,,WERK_ID#313,49905.53,393509.79,NM,Oosterschenge
 Grondwater (nieuw),307,,WERK_ID#314,47853.56,392526.04,NM,Oosterschenge
 Grondwater (nieuw),308,,WERK_ID#315,48027.76,392608.33,NM,Oosterschenge
 Grondwater (nieuw),309,,WERK_ID#316,48461.46,387460.62,NM,Ganzenreservaat Sinoutskerke
-Grondwater (nieuw),310,,WERK_ID#317,54633.70,392696.81,SBB,Deessche watergang
+Grondwater (nieuw),310,,WERK_ID#317,54633.7,392696.81,SBB,Deessche watergang
 Grondwater (nieuw),311,,WERK_ID#318,54578.72,392654.88,SBB,Deessche watergang
 Grondwater (nieuw),312,,WERK_ID#319,59946.96,392426.27,HZL,Koude en Kaarspolder
 Grondwater (nieuw),313,,WERK_ID#320,59823.52,392313.55,HZL,Koude en Kaarspolder
@@ -319,18 +319,18 @@ Grondwater (nieuw),317,,WERK_ID#325,50499.32,384739.75,NM,Zwaaksche weel
 Grondwater (nieuw),318,,WERK_ID#326,50492.46,384663.83,NM,Zwaaksche weel
 Grondwater (nieuw),319,,WERK_ID#327,51482.44,385677.98,NM,Zwaaksche weel
 Grondwater (nieuw),320,,WERK_ID#329,18792.23,379459.46,HZL,Herdijkte Zwarte Polder
-Grondwater (nieuw),321,,WERK_ID#330,15842.00,375518.65,HZL,Verschepolder
+Grondwater (nieuw),321,,WERK_ID#330,15842,375518.65,HZL,Verschepolder
 Grondwater (nieuw),322,,WERK_ID#331,15094.23,375802.95,HZL,Willem-Leopoldpolder
 Grondwater (nieuw),323,,WERK_ID#332,15202.09,375834.65,HZL,Willem-Leopoldpolder
 Grondwater (nieuw),324,,WERK_ID#333,18871.69,379159.87,HZL,Herdijkte Zwarte Polder
-"Grondwater (nieuw),325,,WERK_ID#334,15096.45,378046.54,HZL,""Kievittepolder	"""
+Grondwater (nieuw),325,,WERK_ID#334,15096.45,378046.54,HZL,Kievittepolder
 Grondwater (nieuw),326,,WERK_ID#335,23191.27,375799.17,HZL,De Blikken
 Grondwater (nieuw),327,,WERK_ID#336,23206.21,375880.48,HZL,De Blikken
 Grondwater (nieuw),328,,WERK_ID#337,23610.83,375594.69,HZL,De Blikken
 Grondwater (nieuw),329,,WERK_ID#338,26544.59,377994.21,HZL,Baarzandsche Krrek
 Grondwater (nieuw),330,,WERK_ID#339,26616.84,377989.17,HZL,Baarzandsche Krrek
 Grondwater (nieuw),331,,WERK_ID#340,23303.48,370237.27,SBB,De Plate
-Grondwater (nieuw),332,,WERK_ID#341,23351.10,370196.79,SBB,De Plate
+Grondwater (nieuw),332,,WERK_ID#341,23351.1,370196.79,SBB,De Plate
 Grondwater (nieuw),333,,WERK_ID#342,23227.18,374878.09,HZL,De Reep
 Grondwater (nieuw),334,,WERK_ID#343,23315.35,374813.21,HZL,De Reep
 Grondwater (nieuw),335,,WERK_ID#344,23490.28,372066.51,HZL,Groote gat (Oostburg)
@@ -339,12 +339,12 @@ Grondwater (nieuw),337,,WERK_ID#346,23500.07,371963.21,HZL,Groote gat (Oostburg)
 Grondwater (nieuw),338,,WERK_ID#347,20696.34,370591.77,HZL,Sophiapolder
 Grondwater (nieuw),339,,WERK_ID#348,21716.76,370411.87,HZL,Sophiapolder
 Grondwater (nieuw),340,,WERK_ID#349,20663.28,370564.24,HZL,Sophiapolder
-Grondwater (nieuw),341,,WERK_ID#350,20418.90,370340.81,HZL,Sophiapolder
+Grondwater (nieuw),341,,WERK_ID#350,20418.9,370340.81,HZL,Sophiapolder
 Grondwater (nieuw),342,,WERK_ID#351,33565.42,377569.81,HZL,inlaag Hoofdplaat
 Grondwater (nieuw),343,,WERK_ID#352,33229.33,377637.16,HZL,inlaag Hoofdplaat
 Grondwater (nieuw),344,,WERK_ID#353,36474.76,376810.19,HZL,Plaskreek
 Grondwater (nieuw),345,,WERK_ID#354,39460.67,370332.72,SBB,Braakman zuid
-Grondwater (nieuw),346,,WERK_ID#355,39482.90,370305.73,SBB,Braakman zuid
+Grondwater (nieuw),346,,WERK_ID#355,39482.9,370305.73,SBB,Braakman zuid
 Grondwater (nieuw),347,,WERK_ID#356,39579.69,372889.35,SBB,Braakmanpolder noord
 Grondwater (nieuw),348,,WERK_ID#357,39130.03,371999.69,SBB,Braakmanpolder noord
 Grondwater (nieuw),349,,WERK_ID#358,22211.48,366135.06,SBB,Groote Gat (St.Kruis)
@@ -353,12 +353,12 @@ Grondwater (nieuw),351,,WERK_ID#360,23170.61,366066.97,Overig,Groote Gat (St.Kru
 Grondwater (nieuw),352,,WERK_ID#361,23175.62,366031.34,Overig,Groote Gat (St.Kruis)
 Grondwater (nieuw),353,,WERK_ID#362,40625.48,371507.71,SBB,Riemenskreken
 Grondwater (nieuw),354,,WERK_ID#363,40589.85,371496.56,SBB,Riemenskreken
-Grondwater (nieuw),355,,WERK_ID#364,49686.60,373311.25,SBB,Margarethapolder
+Grondwater (nieuw),355,,WERK_ID#364,49686.6,373311.25,SBB,Margarethapolder
 Grondwater (nieuw),356,,WERK_ID#365,49699.22,373271.05,SBB,Margarethapolder
-Grondwater (nieuw),357,,WERK_ID#366,45274.65,371854.70,Overig,Westelijke Rijks waterleiding
+Grondwater (nieuw),357,,WERK_ID#366,45274.65,371854.7,Overig,Westelijke Rijks waterleiding
 Grondwater (nieuw),358,,WERK_ID#367,45301.45,371878.41,Overig,Westelijke Rijks waterleiding
 Grondwater (nieuw),359,,WERK_ID#368,56367.86,379957.93,SBB,Schor van Hontenisse
-Grondwater (nieuw),360,,WERK_ID#369,56898.00,380365.28,SBB,Schor van Hontenisse
+Grondwater (nieuw),360,,WERK_ID#369,56898,380365.28,SBB,Schor van Hontenisse
 Grondwater (nieuw),361,,WERK_ID#370,56899.58,380343.32,SBB,Schor van Hontenisse
 Grondwater (nieuw),362,,WERK_ID#371,58784.62,373315.28,SBB,De Vogel
 Grondwater (nieuw),363,,WERK_ID#372,58779.86,373269.24,SBB,De Vogel
@@ -378,23 +378,23 @@ Grondwater (nieuw),376,,WERK_ID#385,53806.35,366224.32,PART,Dries Arendskreek
 Grondwater (nieuw),377,,WERK_ID#386,53824.95,366258.03,PART,Dries Arendskreek
 Grondwater (nieuw),378,,WERK_ID#387,57343.23,368632.37,PART,Groot Eiland
 Grondwater (nieuw),379,,WERK_ID#388,57394.56,368624.43,PART,Groot Eiland
-Grondwater (nieuw),380,,WERK_ID#389,57433.72,368600.00,PART,Groot Eiland
+Grondwater (nieuw),380,,WERK_ID#389,57433.72,368600,PART,Groot Eiland
 Grondwater (nieuw),381,,WERK_ID#390,58831.49,367291.71,PART,Groot Eiland
 Grondwater (nieuw),382,,WERK_ID#391,58790.22,367261.55,PART,Groot Eiland
 Grondwater (nieuw),383,,WERK_ID#392,58744.18,367239.32,PART,Groot Eiland
 Grondwater (nieuw),384,,WERK_ID#393,58087.48,367349.14,PART,Groot Eiland
-Grondwater (nieuw),385,,WERK_ID#394,59355.40,367224.73,PART,Oude Vaart
+Grondwater (nieuw),385,,WERK_ID#394,59355.4,367224.73,PART,Oude Vaart
 Grondwater (nieuw),386,,WERK_ID#395,59363.34,367258.06,PART,Oude Vaart
 Grondwater (nieuw),387,,WERK_ID#396,55625.59,362496.68,SBB,Groote Gat (Koewacht)
 Grondwater (nieuw),388,,WERK_ID#397,55592.89,362471.28,SBB,Groote Gat (Koewacht)
 Grondwater (nieuw),558,,WERK_ID#568,39224.29,413381.92,NM,Het Zeepe
-Grondwater (nieuw),559,,WERK_ID#569,39684.30,410020.96,NM,Westenschouwse inlaag
+Grondwater (nieuw),559,,WERK_ID#569,39684.3,410020.96,NM,Westenschouwse inlaag
 Grondwater (nieuw),560,,WERK_ID#570,51470.67,409574.61,NM,Brasweg
 Grondwater (nieuw),561,,WERK_ID#571,52332.26,409397.94,NM,Brasweg
 Grondwater (nieuw),562,,WERK_ID#572,48334.76,387683.47,NM,Ganzenreservaat Sinoutskerke
-Grondwater (nieuw),563,,WERK_ID#573,48921.28,388259.20,NM,Ganzenreservaat Sinoutskerke
+Grondwater (nieuw),563,,WERK_ID#573,48921.28,388259.2,NM,Ganzenreservaat Sinoutskerke
 Grondwater (nieuw),564,,WERK_ID#574,48982.43,388831.26,NM,Ganzenreservaat Sinoutskerke
 Grondwater (nieuw),565,,WERK_ID#575,47892.64,385284.04,NM,Heggengebied Nisse
 Grondwater (nieuw),566,,WERK_ID#576,47034.93,385418.58,NM,Heggengebied Nisse
 Grondwater (nieuw),567,,WERK_ID#577,50481.16,384585.61,NM,Zwaaksche weel
-Grondwater (nieuw),568,,WERK_ID#578,51364.12,385796.30,NM,Zwaaksche weel
+Grondwater (nieuw),568,,WERK_ID#578,51364.12,385796.3,NM,Zwaaksche weel
