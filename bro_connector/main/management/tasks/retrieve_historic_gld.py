@@ -150,6 +150,21 @@ def get_censor_reason(
 
     return None
 
+def _calculate_value(field_value: float, unit: str):
+    """
+    For now only supports m / cm / mm.
+    Conversion to 
+    """
+    if field_value is None or unit is None:
+        return None
+    if unit == "m":
+        return field_value
+    elif unit == "cm":
+        return field_value / 10
+    elif unit == "mm":
+        return field_value / 100
+    else:
+        return None
 
 def get_tube(bro_id: str, tube_number: int) -> str:
     try:
@@ -300,6 +315,14 @@ class InitializeData:
         )
 
     def measurement_tvp(self, measurement_number: int) -> None:
+        calculated_value = _calculate_value(
+            self.gmw_dict.get(
+                f"{self.observation_number}_point_value", None
+            )[measurement_number],
+            self.gmw_dict.get(f"{self.observation_number}_unit", None)[
+                measurement_number
+            ]
+        )
         self.measurement_tvp_instance = MeasurementTvp.objects.create(
             observation=self.observation_instance,
             measurement_time=str_to_datetime(self.gmw_dict.get(
@@ -311,6 +334,7 @@ class InitializeData:
             field_value_unit=self.gmw_dict.get(f"{self.observation_number}_unit", None)[
                 measurement_number
             ],
+            calculated_value=calculated_value,
             measurement_point_metadata=self.metadata_measurement_tvp_instance,
         )
 
