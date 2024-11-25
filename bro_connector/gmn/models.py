@@ -313,7 +313,7 @@ class gmn_bro_sync_log(models.Model):
         null=True,
         max_length=25,
     )
-    gmn_bro_id = models.CharField(max_length=254, null=True, blank=True)
+    gmn_bro_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="BRO-ID GMN")
     object_id_accountable_party = models.CharField(
         max_length=255, null=True, blank=True
     )
