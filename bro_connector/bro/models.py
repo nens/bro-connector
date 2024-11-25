@@ -69,8 +69,8 @@ class SecureCharField(CharField):
         return value
 
 class Organisation(models.Model):
-    name = models.CharField(max_length=50, null=True, blank=True)
-    company_number = models.IntegerField(blank=True)
+    name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Naam")
+    company_number = models.IntegerField(blank=True, verbose_name="KVK")
     color = models.CharField(max_length=50, null=True, blank=True)
     bro_user = SecureCharField()
     bro_token = SecureCharField()

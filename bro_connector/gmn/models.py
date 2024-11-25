@@ -151,8 +151,8 @@ class GroundwaterMonitoringNet(models.Model):
         ordering = ("name",)
 
 class Subgroup(models.Model):
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='subgroups', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100, null=False, blank=False)
+    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='subgroups', on_delete=models.CASCADE, verbose_name="GMN")
+    name = models.CharField(max_length=100, null=False, blank=False, verbose_name="Naam")
     code = models.CharField(max_length=25, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     color = models.CharField(max_length=50, null=True, blank=True)
@@ -190,6 +190,7 @@ class MeasuringPoint(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=False,
+        verbose_name="Grondwatermonitoring buis"
     )
     code = models.CharField(
         max_length=255,
@@ -199,7 +200,7 @@ class MeasuringPoint(models.Model):
         editable=False,
     )
     synced_to_bro = models.BooleanField(
-        blank=False, null=True, default=False, editable=False
+        blank=False, null=True, default=False, editable=False, verbose_name="Opgestuurd naar de BRO"
     )
     added_to_gmn_date = models.DateField(blank=True, null=True, verbose_name='Datum toegevoegd aan meetnet')
     deleted_from_gmn_date = models.DateField(
@@ -209,7 +210,7 @@ class MeasuringPoint(models.Model):
         verbose_name='Datum uit meetnet gehaald'
     )
     removed_from_BRO_gmn = models.BooleanField(
-        blank=False, null=True, default=False, editable=False
+        blank=False, null=True, default=False, editable=False, verbose_name='Verwijderd uit de BRO?'
     )
 
     def __str__(self):
