@@ -1,11 +1,63 @@
-{% extends "admin/base.html" %} {% block title %}{% if subtitle %}{{ subtitle }}
-| {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{%
-endblock %}{% endblock %} {% block extrahead %}
-<link rel="icon" href="{{STATIC_URL}}img/favicon.ico" sizes="48x48" />
-{% endblock %} {% block branding %}
-<h1 id="site-name">
-  <a href="{% url 'admin:index' %}"
-    >{{ site_header|default:_('Django administration') }}</a
-  >
-</h1>
-{% endblock %} {% block nav-global %}{% endblock %}
+{% extends "admin/base.html" %}
+
+{% block title %}
+    {% if subtitle %}{{ subtitle }} | {% endif %}
+    {{ title }} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}  <!-- This ensures that the existing content in the extrahead block is included -->
+    <link rel="icon" href="{{ STATIC_URL }}img/favicon.ico" sizes="48x48" />
+    <script>
+        console.log("Custom script loaded into <head> section to alter navbar items!");
+        // Your custom JavaScript code
+        document.addEventListener("DOMContentLoaded", function () {
+          const menuTextMappings = {
+              "Bro": "BRO",
+              "Gmw": "GMW",
+              "Gmn": "GMN",
+              "Gld": "GLD",
+              "Frd": "FRD",
+          };
+          const dropdownTextMappings = {
+            "Gmw Synchronisatie Logs": "GMW Synchronisatie Logs",
+            "Gmn Synchronisatie Logs": "GMN Synchronisatie Logs",
+            "Gld Registratie Logs": "GLD Registratie Logs",
+            "Gld Toevoeging Logs": "GLD Toevoeging Logs",
+            "Gmw Elektrode Referenties": "GMW Elektrode Referenties",
+            "Frd Synchronisatie Logs": "FRD Synchronisatie Logs"
+          }
+
+          const dropdownLinks = document.querySelectorAll(".main-header .nav-link.dropdown-toggle");
+
+          const dropdownItems = document.querySelectorAll(".main-header .dropdown-item");
+
+          dropdownLinks.forEach(function (link) {
+              const currentText = link.textContent.trim();
+              if (menuTextMappings[currentText]) {
+                  link.textContent = menuTextMappings[currentText];
+                  // console.log(`Updated ${currentText} to: ${menuTextMappings[currentText]}`);
+              }
+          });
+
+          dropdownItems.forEach(function (link) {
+              const currentText = link.textContent.trim();
+              if (dropdownTextMappings[currentText]) {
+                  link.textContent = dropdownTextMappings[currentText];
+                  // console.log(`Updated ${currentText} to: ${dropdownTextMappings[currentText]}`);
+              }
+          });
+
+      });
+    </script>
+{% endblock %}
+
+{% block branding %}
+    <h1 id="site-name">
+        <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+    </h1>
+{% endblock %}
+
+{% block nav-global %}
+    {{ block.super }}  <!-- Retain any content defined in the parent template -->
+{% endblock %}
