@@ -6,10 +6,9 @@
 classDiagram
     class GroundwaterMonitoringWellStatic{
         int groundwater_monitoring_well_static_id
-        str registration_object_type
+        str internal_id
         str bro_id
         BROProject project
-        str request_reference
         Organisation delivery_accountable_party
         Organisation delivery_responsible_party
         str quality_regime

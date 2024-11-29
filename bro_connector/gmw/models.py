@@ -10,7 +10,7 @@ from .utils import generate_put_code
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
-    registration_object_type = models.CharField(max_length=256, blank=True, null=True) # Is deze nodig??
+    internal_id = models.CharField(max_length=50, verbose_name="Veldnaam")
     bro_id = models.CharField(max_length=15, blank=True, null=True, verbose_name="BRO ID")
     project = models.ForeignKey(
         BROProject,
@@ -19,7 +19,6 @@ class GroundwaterMonitoringWellStatic(models.Model):
         blank=True,
         verbose_name="Project",
     )
-    request_reference = models.CharField(max_length=255, blank=True, null=True, verbose_name="Berichtreferentie")
     delivery_accountable_party = models.ForeignKey(
         Organisation,
         on_delete=models.CASCADE,
@@ -94,8 +93,13 @@ class GroundwaterMonitoringWellStatic(models.Model):
     state: Manager["GroundwaterMonitoringWellDynamic"]
 
     @property
+    def is_surface(self):
+        return self.internal_id.lower().startswith("p")
+
+    @property
     def x(self):
         return self.coordinates.x
+    
     @property
     def y(self):
         return self.coordinates.y
