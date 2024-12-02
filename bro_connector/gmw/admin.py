@@ -100,10 +100,9 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
             "",
             {
                 "fields": [
-                    "registration_object_type",
+                    "internal_id",
                     "project",
                     "bro_id",
-                    "request_reference",
                     "delivery_accountable_party",
                     "delivery_responsible_party",
                     "quality_regime",
