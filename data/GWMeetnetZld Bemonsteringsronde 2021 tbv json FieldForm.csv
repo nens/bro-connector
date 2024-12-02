@@ -1,4 +1,4 @@
-NITGcode,X,Y,Maaiveld [cm NAP],Bovenkant Filter [cm NAP],Onderkant Filter [cm NAP],Lengte dichte buis [m],Perceel  1,Perceel 2,Perceel 3,Perceel 4,Perceel 5,KRW_GWL,KRW_Meetpunt,Opmerking
+NITGcode,X,Y,Maaiveld [cm NAP],Bovenkant Filter [cm NAP],Onderkant Filter [cm NAP],Lengte dichte buis [m],Perceel 1,Perceel 2,Perceel 3,Perceel 4,Perceel 5,KRW_GWL,KRW_Meetpunt,Opmerking
 B42B0066-1,39527,415288,400,-300,-500,7,1,1,1,1,1,,true,
 B42B0066-3,39527,415288,400,-1910,-2110,23.1,1,1,0,0,0,,true,
 B42B0154-1,37761,414316,549,341,241,2.08,1,0,0,0,1,,false,Hangt logger in
