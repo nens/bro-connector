@@ -247,7 +247,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='state',
+        related_name='tube',
     )
     deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(
