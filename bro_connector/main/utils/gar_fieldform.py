@@ -16,6 +16,22 @@ ipfo_w = {
       "type": "text",
       "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
       },
+    "maaiveldhoogte": {
+        "type": "number",
+        "hint": "Hoogte in meter NAP"
+    },
+    "methode_positiebepaling_maaiveld": {
+        "name": "methode positiebepaling maaiveld",
+        "type": "choice",
+        "options": [
+            "GPS",
+            "Waterpas"
+        ]
+    },
+    "beschermconstructie":{
+        "type": "text",
+        "hint": "Het type beschermconstructie wat is aangebracht"
+    },
     "foto 1": {
       "type": "photo",
       "hint": "Foto ter ondersteuning"
@@ -269,17 +285,77 @@ ipfo_f = {
         'options': ['zeer licht', 'licht', 'neutraal', 'donker',
                     'zeer donker']
     },
+    "foto": {
+      "type": "photo",
+      "hint": "Foto ter ondersteuning"
+      },
     "bijzonderheden": {
         'name': 'Bijzonderheden',
         'type': 'text',
         'hint': 'Overige informatie'
     }
 }
-input_field_options = ipfo_w.update(ipfo_f)
 
-input_fields_filter = ipfo_f.keys()
+input_fields_well_locations = [
+    "opmerking",
+    "maaiveldhoogte",
+    "methode_positiebepaling_maaiveld",
+    "beschermconstructie",
+    "foto 1",
+    "foto 2",
+    "foto 3",
+    "foto 4",
+    "foto 5",
+]
 
-input_fields_well = ipfo_w.keys()
+input_fields_filter_locations = [
+    "landgebruik",
+    "beschadiging",
+    "afdekking",
+    "gws_voor_pompen"
+    "gws_na_pompen",
+    "bovenkant_peilfilter",
+    "onderkant_peilfilter",
+    "pomptype",
+    "lengte_waterkolom",
+    "inwendige_diameter_filter",
+    "voorpompvolume",
+    "voorpompdebiet",
+    "bemonsteringsdebiet",
+    "toestroming_filter",
+    "zuurgraad_0",
+    "zuurgraad_3",
+    "zuurgraad_6",
+    "geleidbaarheid_0",
+    "geleidbaarheid_3",
+    "geleidbaarheid_6",
+    'zuurstof',
+    'temperatuur',
+    'temperatuur_moeilijk',
+    'waterstofcarbonaat',
+    'troebelheid',
+    'bicarbonaat',
+    'afwijking_meetapparatuur',
+    'contaminatie_door_verbrandingsmotor',
+    'bemonsteringsprocedure',
+    'inline_filter_afwijkend',
+    'slang_hergebruikt',
+    'monster_belucht',
+    'afwijkend_gekoeld',
+    "kleur",
+    "bijkleur",
+    "kleursterkte",
+    "foto",
+    "bijzonderheden",
+]
+
+input_field_options = ipfo_w.copy() # to avoid modifying the original
+input_field_options.update(ipfo_f)
+
+
+input_fields_filter = ipfo_f
+
+input_fields_well = ipfo_w
 
 def convert_epsg28992_to_epsg4326(x, y):
     # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
@@ -314,23 +390,48 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
+def perceel_property(tube: gmw_models.GroundwaterMonitoringTubeStatic, perceel_check: str) -> str:
+    measuring_point = gmn_models.MeasuringPoint.objects.filter(groundwater_monitoring_tube=tube).all()
+    if measuring_point:
+        check = 0
+        for measuring_point_i in measuring_point:
+            subgroup = measuring_point_i.subgroup.all()
+            for subgroup_i in subgroup:
+                if perceel_check in subgroup_i.name:
+                    check = 1
+                else:
+                    continue
+        if check == 1:
+            return "Ja"
+        else:
+            return "Nee"
+    else:
+        return "Nee"
+    
+
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
     filter_state = tube.state.order_by('date_from').last()
     return {
         f"{filter_name}": {
-            "inputfields": input_fields_filter,
+            "inputfields": input_fields_filter_locations,
             "properties": {
                 # TO DO: Add perceel & other fields
                 "Bovenkantbuis hoogte ": filter_state.tube_top_position,
                 "Bovenkant filter hoogte ": filter_state.screen_top_position,
                 "Onderkant filter hoogte ": filter_state.screen_bottom_position,
+                "diameter buis [mm]": filter_state.tube_top_diameter,
+                "Perceel 1": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_1"),
+                "Perceel 2": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_2"),
+                "Perceel 3": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_3"),
+                "Perceel 4": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_4"),
+                "Perceel 5": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_5"),
             },
         },
     }
 
 class FieldFormGenerator:
-    inputfields: List[dict] = input_field_options
+    inputfields: Optional[List[dict]] = input_field_options
 
     # QuerySets
     monitoringnetworks: Optional[list[gmn_models.GroundwaterMonitoringNet]]
@@ -393,7 +494,7 @@ class FieldFormGenerator:
                     "lon": lon,
                     "sublocations": {
                         f"{well_name}": {
-                            "inputfields": input_fields_well,
+                            "inputfields": input_fields_well_locations,
                         }
                     },
                 }
@@ -458,7 +559,6 @@ class FieldFormGenerator:
         if not os.path.exists("../fieldforms"):
             os.mkdir("../fieldforms")
 
-        print(data)
         # Store the file locally
         write_location_file(data=data, filename=f"../fieldforms/gld/locations_{date_string}.json")
 
