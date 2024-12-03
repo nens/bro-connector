@@ -598,8 +598,6 @@ class FieldFormGenerator:
                 
                 data["locations"] = locations
 
-                well_distance(data["locations"])
-
                 self._write_data(data)
             else:
                 data["groups"] = self.write_monitoringnetworks_to_dict()
