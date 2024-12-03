@@ -92,6 +92,8 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
 
     done = 0
 
+    unique_wells = []
+
     for row in df.iter_rows(named=True):
         # to catch if the NITGcode is incorrect and does not contain
         try:
@@ -108,7 +110,7 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
 
         # if the tube exists
         if tube:
-            
+
             net, p1, p2, p3, p4, p5 = "-", "-", "-", "-", "-", "-"
 
             # find if the measuring_point already exists for this gmn and tube, main group
@@ -175,7 +177,10 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
             new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]
 
         else:
-            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':0}]
+            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':0}]        
+            
+        if well_code not in unique_wells and p1 != 0:
+            unique_wells.append(well_code)
         
 
         print(f"{well_code}-{tube_nr}: \tnet:{net}\tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
@@ -186,8 +191,9 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     df_ouput.write_csv(path, separator=',')
 
     print("")
-    print(f'voor {len(df_ouput)} putten werd een poging gedaan om het toe te voegen aan het meetnet')
+    print(f'voor {len(df_ouput)} tubes werd een poging gedaan om het toe te voegen aan het meetnet')
     print(f'bij {df_ouput.select(pl.sum("in BRO")).item()} is dit ook daadwerkelijk gelukt')
+    print(f'dit zijn {len(unique_wells)} unique putten')
     
 
     print("Operatie succesvol afgerond.")
