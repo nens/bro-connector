@@ -16,22 +16,6 @@ ipfo_w = {
       "type": "text",
       "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
       },
-    "maaiveldhoogte": {
-        "type": "number",
-        "hint": "Hoogte in meter NAP"
-    },
-    "methode_positiebepaling_maaiveld": {
-        "name": "methode positiebepaling maaiveld",
-        "type": "choice",
-        "options": [
-            "GPS",
-            "Waterpas"
-        ]
-    },
-    "beschermconstructie":{
-        "type": "text",
-        "hint": "Het type beschermconstructie wat is aangebracht"
-    },
     "foto 1": {
       "type": "photo",
       "hint": "Foto ter ondersteuning"
@@ -298,9 +282,6 @@ ipfo_f = {
 
 input_fields_well_locations = [
     "opmerking",
-    "maaiveldhoogte",
-    "methode_positiebepaling_maaiveld",
-    "beschermconstructie",
     "foto 1",
     "foto 2",
     "foto 3",
@@ -309,6 +290,7 @@ input_fields_well_locations = [
 ]
 
 input_fields_filter_locations = [
+    "foto",
     "landgebruik",
     "beschadiging",
     "afdekking",
@@ -345,7 +327,6 @@ input_fields_filter_locations = [
     "kleur",
     "bijkleur",
     "kleursterkte",
-    "foto",
     "bijzonderheden",
 ]
 
@@ -616,6 +597,9 @@ class FieldFormGenerator:
                     locations.update(self.create_location_dict())
                 
                 data["locations"] = locations
+
+                well_distance(data["locations"])
+
                 self._write_data(data)
             else:
                 data["groups"] = self.write_monitoringnetworks_to_dict()
