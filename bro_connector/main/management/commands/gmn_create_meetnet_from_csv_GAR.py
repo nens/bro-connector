@@ -182,8 +182,11 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
         if well_code not in unique_wells and p1 != 0:
             unique_wells.append(well_code)
         
+        if net == 0:
+            print(f"{well_code}-{tube_nr}: \tnet:{net}")
+        else:
+            print(f"{well_code}-{tube_nr}: \tnet:{net}\tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
 
-        print(f"{well_code}-{tube_nr}: \tnet:{net}\tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
         new_df = pl.DataFrame(new_row)
         df_ouput.extend(new_df)
 
