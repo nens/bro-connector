@@ -433,9 +433,9 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, kr
                 "inputfields": input_fields_filter_locations,
                 "properties": {
                     # TO DO: Add perceel & other fields
-                    "Bovenkantbuis hoogte [mNAP]": filter_state.tube_top_position,
-                    "Bovenkant filter hoogte [mNAP]": filter_state.screen_top_position,
-                    "Onderkant filter hoogte [mNAP]": filter_state.screen_bottom_position,
+                    "Bovenkantbuis [mNAP]": filter_state.tube_top_position,
+                    "Bovenkant filter [mNAP]": filter_state.screen_top_position,
+                    "Onderkant filter [mNAP]": filter_state.screen_bottom_position,
                     "Diameter buis [mm]": filter_state.tube_top_diameter,
                     "Perceel 1": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_1"),
                     "Perceel 2": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_2"),
