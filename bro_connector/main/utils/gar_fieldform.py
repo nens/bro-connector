@@ -14,27 +14,33 @@ from gmn import models as gmn_models
 ipfo_w = {
     "opmerking": {
       "type": "text",
-      "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
+      "name": "Opmerking",
+      "hint": "Onderhoud / bereikbaarheid"
       },
     "foto 1": {
       "type": "photo",
-      "hint": "Foto ter ondersteuning"
+      "name": "Foto 1",
+      "hint": "Locatie"
       },
     "foto 2": {
       "type": "photo",
-      "hint": "Foto ter ondersteuning"
+      "name": "Foto 2",
+      "hint": "Afwerking put"
       },
     "foto 3": {
       "type": "photo",
-      "hint": "Foto ter ondersteuning"
+      "name": "Foto 3",
+      "hint": "Filterstelling"
       },
     "foto 4": {
       "type": "photo",
-      "hint": "Foto ter ondersteuning"
+      "name": "Foto 4",
+      "hint": "Detail"
       },
     "foto 5": {
       "type": "photo",
-      "hint": "Foto ter ondersteuning"
+      "Name": "Foto 5",
+      "hint": "Enz."
       },
 }
 ipfo_f = {
@@ -271,7 +277,8 @@ ipfo_f = {
     },
     "foto": {
       "type": "photo",
-      "hint": "Foto ter ondersteuning"
+      "name": "Foto",
+      "hint": "m.b.t. filter / bemonstering"
       },
     "bijzonderheden": {
         'name': 'Bijzonderheden',
@@ -290,7 +297,6 @@ input_fields_well_locations = [
 ]
 
 input_fields_filter_locations = [
-    "foto",
     "landgebruik",
     "beschadiging",
     "afdekking",
@@ -328,6 +334,7 @@ input_fields_filter_locations = [
     "bijkleur",
     "kleursterkte",
     "bijzonderheden",
+    "foto",
 ]
 
 input_field_options = ipfo_w.copy() # to avoid modifying the original
@@ -389,27 +396,56 @@ def perceel_property(tube: gmw_models.GroundwaterMonitoringTubeStatic, perceel_c
     else:
         return "Nee"
     
+def format_integer(num):
+    if num < 10:
+        return f"00{num}"
+    elif num < 100:
+        return f"0{num}"
+    else:
+        return str(num)
+    
+def list_krw_tubes() -> list:
+    substring = 'krw'
+    # select all nets containing 'krw' in their name
+    filtered_nets = gmn_models.GroundwaterMonitoringNet.objects.filter(name__icontains=substring)
 
-def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
+    # get all MeasuringPoints from these nets
+    measuring_points = gmn_models.MeasuringPoint.objects.filter(gmn__in=filtered_nets)
+
+    # construct the tube name in the same format as the tube code
+    tube_name_formated = [f"{item.code.split('_')[0]}-{format_integer(int(item.code.split('_')[1] ))}" for item in measuring_points]
+    return tube_name_formated
+    
+
+def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, krw_list: list) -> dict:
     filter_name = tube.__str__()
+
     filter_state = tube.state.order_by('date_from').last()
-    return {
-        f"{filter_name}": {
-            "inputfields": input_fields_filter_locations,
-            "properties": {
-                # TO DO: Add perceel & other fields
-                "Bovenkantbuis hoogte ": filter_state.tube_top_position,
-                "Bovenkant filter hoogte ": filter_state.screen_top_position,
-                "Onderkant filter hoogte ": filter_state.screen_bottom_position,
-                "diameter buis [mm]": filter_state.tube_top_diameter,
-                "Perceel 1": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_1"),
-                "Perceel 2": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_2"),
-                "Perceel 3": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_3"),
-                "Perceel 4": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_4"),
-                "Perceel 5": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_5"),
+
+    krw = "Nee"
+
+    if filter_state:
+        if filter_name in krw_list:
+            krw = "Ja"
+
+        return {
+            f"{filter_name}": {
+                "inputfields": input_fields_filter_locations,
+                "properties": {
+                    # TO DO: Add perceel & other fields
+                    "Bovenkantbuis hoogte [mNAP]": filter_state.tube_top_position,
+                    "Bovenkant filter hoogte [mNAP]": filter_state.screen_top_position,
+                    "Onderkant filter hoogte [mNAP]": filter_state.screen_bottom_position,
+                    "Diameter buis [mm]": filter_state.tube_top_diameter,
+                    "Perceel 1": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_1"),
+                    "Perceel 2": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_2"),
+                    "Perceel 3": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_3"),
+                    "Perceel 4": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_4"),
+                    "Perceel 5": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_5"),
+                    "KRW-locatie": krw,
+                },
             },
-        },
-    }
+        }
 
 class FieldFormGenerator:
     inputfields: Optional[List[dict]] = input_field_options
@@ -456,7 +492,7 @@ class FieldFormGenerator:
                         sftp.remove(file)
                         print(f"Deleted {file} (age: {file_age.days} days)")
 
-    def create_location_dict(self) -> None:
+    def create_location_dict(self, krw_list: list) -> None:
         locations = {}
         for well in self.wells:  
             tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
@@ -484,7 +520,7 @@ class FieldFormGenerator:
                 well_location[f"{well_name}"].update({"group": self.group_name})
 
             for tube in tubes:
-                sublocation = create_sublocation_dict(tube)
+                sublocation = create_sublocation_dict(tube, krw_list)
                 well_location[f"{well_name}"]["sublocations"].update(sublocation)
 
             locations.update(well_location)
@@ -507,16 +543,15 @@ class FieldFormGenerator:
         
         return groups
     
-    def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
-        groups = {}
+    def write_subgroups_to_dict(self) -> dict:
+            groups = {}
 
-        for subgroup in monitoringnetwork.subgroups.all():
-            groups[subgroup.name] = {
-                "name": subgroup.name,
-                "color": subgroup.color,
+            groups["GAR"] = {
+                "name": "GAR",
+                "color": "#a9034a",
             }
 
-        return groups
+            return groups
 
     def write_measuringpoints_to_wells(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> None:
         measuringpoints = gmn_models.MeasuringPoint.objects.filter(
@@ -544,7 +579,7 @@ class FieldFormGenerator:
         write_location_file(data=data, filename=f"../fieldforms/gar/locations_{date_string}.json")
 
         # Write local file to FTP
-        self.write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
+        self.write_file_to_ftp(file=f"../fieldforms/gar/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
 
     def generate(self):
         data = {
@@ -587,14 +622,15 @@ class FieldFormGenerator:
             if len(self.monitoringnetworks) == 1:
                 # Use subgroups of network if available.
                 monitoringnetwork = self.monitoringnetworks[0]
-                data["groups"] = self.write_subgroups_to_dict(monitoringnetwork)
+                data["groups"] = self.write_subgroups_to_dict()
+                krw_tubes = list_krw_tubes()
                 locations = {}
                 for subgroup in monitoringnetwork.subgroups.all():
                     print(subgroup)
                     self._flush_wells()
-                    self._set_current_group(subgroup.name)
+                    self._set_current_group("GAR")
                     self.write_measuringpoints_to_wells_subgroup(subgroup)
-                    locations.update(self.create_location_dict())
+                    locations.update(self.create_location_dict(krw_tubes))
                 
                 data["locations"] = locations
 
