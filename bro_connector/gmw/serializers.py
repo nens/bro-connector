@@ -30,10 +30,14 @@ class GMWSerializer(serializers.ModelSerializer):
     
     def get_groundlevel_position(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         last_state = obj.state.last()
+        if not last_state:
+            return None
         return last_state.ground_level_position
     
     def get_well_head_protector(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         last_state = obj.state.last()
+        if not last_state:
+            return None
         return last_state.well_head_protector
     
     def get_picture(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
