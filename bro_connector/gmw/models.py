@@ -99,6 +99,19 @@ class GroundwaterMonitoringWellStatic(models.Model):
     @property
     def is_surface(self):
         return self.internal_id.lower().startswith("p")
+    
+    is_surface.fget.short_description = "Is oppervlakte put"
+
+    @property
+    def report(self):
+        remarks = self.state.all().order_by('date_from')
+        report = ""
+        for remark in remarks:
+            report += f"{remark.date_from.date()}: {remark.remark}\n\n"
+
+        return report
+    
+    report.fget.short_description = 'Rapport'
 
     @property
     def x(self):
@@ -121,6 +134,8 @@ class GroundwaterMonitoringWellStatic(models.Model):
             return self.project.project_number
         else:
             None
+    
+    project_number.fget.short_description = "Projectnummer"
     
     def cx(self):
         return self.construction_coordinates.x
@@ -169,41 +184,42 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         verbose_name="Put",
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD", verbose_name="Geldig vanaf")
-    ground_level_stable = models.CharField(choices=BOOLEAN_CHOICES, max_length=254, null=True, blank=True)
+    ground_level_stable = models.CharField(choices=BOOLEAN_CHOICES, max_length=254, null=True, blank=True, verbose_name="Maaiveld stabiliteit")
     well_stability = models.CharField(
-        choices=WELLSTABILITY, max_length=200, blank=True, null=True
+        choices=WELLSTABILITY, max_length=200, blank=True, null=True, verbose_name="Putstabiliteit"
     )
-    owner = models.IntegerField(blank=True, null=True)
-    maintenance_responsible_party = models.IntegerField(blank=True, null=True)
+    owner = models.IntegerField(blank=True, null=True, verbose_name="Eigenaar") # Should actually also be an organisation
+    maintenance_responsible_party = models.IntegerField(blank=True, null=True, verbose_name="Onderhoud verantwoordelijke partij")
     well_head_protector = models.CharField(
-        choices=WELLHEADPROTECTOR, max_length=200, blank=True, null=True
+        choices=WELLHEADPROTECTOR, max_length=200, blank=True, null=True, verbose_name="Beschermconstructie"
     )
     ground_level_position = models.FloatField(
         blank=True, 
         null=True,
         validators=[validators_models.maaiveldhoogte_validation],
+        verbose_name="Maaiveld hoogte",
     )
     ground_level_positioning_method = models.CharField(
-        choices=GROUNDLEVELPOSITIONINGMETHOD, max_length=200, blank=True, null=True
+        choices=GROUNDLEVELPOSITIONINGMETHOD, max_length=200, blank=True, null=True, verbose_name="Methode positiebepaling maaiveld"
     )
 
     # CUSTOMIZATION FIELDS
     well_head_protector_subtype = models.CharField(
-        max_length=254, choices=WELLHEADPROTECTOR_SUBTYPES, null=True, blank=True
+        max_length=254, choices=WELLHEADPROTECTOR_SUBTYPES, null=True, blank=True, verbose_name="Beschermconstructie"
     )
-    lock = models.CharField(max_length=254, choices=LOCKS, null=True, blank=True)
-    key = models.CharField(max_length=254, blank=True, null=True)
-    place = models.CharField(max_length=254, null=True, blank=True)
-    street = models.CharField(max_length=254, null=True, blank=True)
-    location_description = models.CharField(max_length=254, null=True, blank=True)
-    label = models.CharField(max_length=254, choices=LABELS, null=True, blank=True)
+    lock = models.CharField(max_length=254, choices=LOCKS, null=True, blank=True, verbose_name="Slot")
+    key = models.CharField(max_length=254, blank=True, null=True, verbose_name="Sleutel")
+    place = models.CharField(max_length=254, null=True, blank=True, verbose_name="Plaats")
+    street = models.CharField(max_length=254, null=True, blank=True, verbose_name="Straat")
+    location_description = models.CharField(max_length=254, null=True, blank=True, verbose_name="Beschrijving locatie")
+    label = models.CharField(max_length=254, choices=LABELS, null=True, blank=True, verbose_name="Label")
     foundation = models.CharField(
-        max_length=254, choices=FOUNDATIONS, null=True, blank=True
+        max_length=254, choices=FOUNDATIONS, null=True, blank=True, verbose_name="Fundering"
     )
     collision_protection = models.CharField(
-        max_length=254, choices=COLLISION_PROTECTION_TYPES, null=True, blank=True
+        max_length=254, choices=COLLISION_PROTECTION_TYPES, null=True, blank=True, verbose_name="Bots bescherming"
     )
-    remark = models.TextField(blank=True, null=True)
+    remark = models.TextField(blank=True, null=True, verbose_name="Commentaar")
 
     def __str__(self):
         if self.date_till:
@@ -280,6 +296,18 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     state: Manager["GroundwaterMonitoringTubeDynamic"]
 
     @property
+    def report(self):
+        remarks = self.state.all().order_by('date_from')
+        report = ""
+        for remark in remarks:
+            report += f"{remark.date_from.date()}: {remark.remark}\n\n"
+
+        return report
+    
+    report.fget.short_description = 'Rapport'
+
+
+    @property
     def number_of_geo_ohm_cables(self):
         return GeoOhmCable.objects.filter(
             groundwater_monitoring_tube_static=self
@@ -306,12 +334,14 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         null=True,
         blank=True,
         related_name='state',
+        verbose_name="Buis"
     )
-    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
-    tube_top_diameter = models.IntegerField(blank=True, null=True)
-    variable_diameter = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True)
+    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD", verbose_name="Datum vanaf")
+    tube_top_diameter = models.IntegerField(blank=True, null=True, verbose_name="Diameter bovenkantbuis")
+    variable_diameter = models.CharField(choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True, verbose_name="Variabele diameter")
     tube_status = models.CharField(
-        choices=TUBESTATUS, max_length=200, blank=True, null=True
+        choices=TUBESTATUS, max_length=200, blank=True, null=True,
+        verbose_name="Buisstatus"
     )
     tube_top_position = models.FloatField(
         blank=True, 
@@ -320,26 +350,33 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         help_text="Hoogte bovenkant buis. Eenheid: mNAP"
     )
     tube_top_positioning_method = models.CharField(
-        choices=TUBETOPPOSITIONINGMETHOD, max_length=200, blank=True, null=True
+        choices=TUBETOPPOSITIONINGMETHOD, max_length=200, blank=True, null=True,
+        verbose_name="Methode locatiebepaling bovenkantbuis"
     )
     tube_packing_material = models.CharField(
-        choices=TUBEPACKINGMATERIAL, max_length=200, blank=True, null=True
+        choices=TUBEPACKINGMATERIAL, max_length=200, blank=True, null=True,
+        verbose_name="Aanvul materiaal buis"
     )
     glue = models.CharField(choices=GLUE, max_length=200, blank=True, null=True)
     plain_tube_part_length = models.FloatField(
-        blank=True, null=True
+        blank=True, null=True,
+        verbose_name="Lengte stijgbuis"
     )  # Lengte stijbuisdeel
     inserted_part_diameter = models.FloatField(
         blank=True, 
         null=True, 
         validators=[validators_models.diameter_bovenkant_ingeplaatst_deel_validation],
+        verbose_name="Diameter ingeplaatst deel"
     )  # This field type is a guess.
     inserted_part_length = models.FloatField(
         blank=True, 
         null=True,
         validators=[validators_models.lengte_ingeplaatst_deel_validation],
+        verbose_name="Lengte ingeplaatst deel"
     )  # This field type is a guess.
-    inserted_part_material = models.CharField(max_length=200, blank=True, null=True)
+    inserted_part_material = models.CharField(max_length=200, blank=True, null=True, verbose_name="Materiaal ingeplaatst deel")
+    remark = models.TextField(blank=True, null=True, verbose_name="Commentaar")
+
 
     @property
     def date_till(self):
