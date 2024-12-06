@@ -93,6 +93,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     readonly_fields = (
         "lat",
         "lon",
+        "report"
     )
 
     fieldsets = [
@@ -288,7 +289,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     )
     list_filter = (WellFilter, "deliver_gld_to_bro")
 
-    readonly_fields = ["number_of_geo_ohm_cables", "in_monitoring_net"]
+    readonly_fields = ["number_of_geo_ohm_cables", "in_monitoring_net", "report"]
 
     actions = ["deliver_gld_to_true"]
 

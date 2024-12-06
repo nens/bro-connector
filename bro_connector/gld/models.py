@@ -282,24 +282,25 @@ class ObservationProcess(models.Model):
 class MeasurementTvp(models.Model):
     measurement_tvp_id = models.AutoField(primary_key=True)
     observation = models.ForeignKey(
-        Observation, on_delete=models.CASCADE, null=True, blank=True
+        Observation, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Observatie"
     )
-    measurement_time = models.DateTimeField(blank=True, null=True)
+    measurement_time = models.DateTimeField(blank=True, null=True, verbose_name="Tijd meting")
     field_value = models.DecimalField(
-        max_digits=25, decimal_places=3, blank=True, null=True
+        max_digits=25, decimal_places=3, blank=True, null=True, verbose_name="Veldmeting"
     )
-    field_value_unit = models.CharField(choices=UNIT_CHOICES, max_length=255, blank=False, null=False, default="m")
+    field_value_unit = models.CharField(choices=UNIT_CHOICES, max_length=255, blank=False, null=False, default="m", verbose_name="Veld eenheid")
     calculated_value = models.DecimalField(
-        max_digits=25, decimal_places=5, blank=True, null=True
+        max_digits=25, decimal_places=5, blank=True, null=True, verbose_name="Berekende waarde"
     )
     value_to_be_corrected = models.DecimalField(
-        max_digits=25, decimal_places=5, blank=True, null=True
+        max_digits=25, decimal_places=5, blank=True, null=True, verbose_name="Te corrigeren waarde"
     )
-    correction_time = models.DateTimeField(blank=True, null=True)
-    correction_reason = models.CharField(max_length=255, blank=True, null=True)
+    correction_time = models.DateTimeField(blank=True, null=True, verbose_name="Correctie tijd")
+    correction_reason = models.CharField(max_length=255, blank=True, null=True, verbose_name="Correctie reden")
     measurement_point_metadata = models.ForeignKey(
-        "MeasurementPointMetadata", on_delete=models.CASCADE, null=True, blank=True
+        "MeasurementPointMetadata", on_delete=models.CASCADE, null=True, blank=True, verbose_name="Meting metadata"
     )
+    comment = models.CharField(max_length=255, null=True, blank=True, verbose_name="Commentaar")
 
     class Meta:
         managed = True
