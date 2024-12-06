@@ -29,21 +29,25 @@ class EventTypeFilter(SimpleListFilter):
         return queryset
 
 class WellFilter(AutocompleteFilter):
+    template="admin/autocomplete_filter.html"
     title = "Put"
     field_name = "groundwater_monitoring_well_static"
     is_placeholder_title = True
 
 class WellDynamicFilter(AutocompleteFilter):
+    template="admin/autocomplete_filter.html"
     title = "Putgeschiedenis"
     field_name = "groundwater_monitoring_well_dynamic"
     is_placeholder_title = True
 
 class TubeFilter(AutocompleteFilter):
+    template="admin/autocomplete_filter.html"
     title = "Filter"
     field_name = "groundwater_monitoring_tube_static"
     is_placeholder_title = True
 
 class TubeDynamicFilter(AutocompleteFilter):
+    template="admin/autocomplete_filter.html"
     title = "Filtergeschiedenis"
     field_name = "groundwater_monitoring_tube_dynamic"
     is_placeholder_title = True

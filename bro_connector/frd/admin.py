@@ -56,6 +56,13 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     readonly_fields = ["frd_bro_id", "first_measurement", "most_recent_measurement", "closure_date"]
 
+    search_fields = [
+        "frd_bro_id",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+    ]
+
     @admin.action(description="Deliver FRD to BRO")
     def deliver_to_bro(self, request, queryset):
         syncer = FRDSync()

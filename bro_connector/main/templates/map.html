@@ -49,6 +49,19 @@
       <h4>GMN's:</h4>
       <div
         class="mapbox-checkbox-wrapper"
+        onclick="event.preventDefault();"
+      >
+        <label class="mapbox-button-deselect" for="checkbox-button-all">
+          <button
+            type="button"
+            onclick="event.stopPropagation(); deselectAllCheckboxes()"
+          >
+            Deselect All
+          </button>
+        </label>
+      </div>
+      <div
+        class="mapbox-checkbox-wrapper"
         onclick="event.preventDefault(); handleGmnClick('noLinked', this)"
       >
         <label class="mapbox-checkbox-label" for="checkbox-no-linked">

@@ -52,27 +52,66 @@ const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 const createPopup = (well) => {
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
+  const gldPageUrl = `/admin/gld/groundwaterleveldossier/?q=${well.bro_id}`;
+  const frdPageUrl = `/admin/frd/formationresistancedossier/?q=${well.bro_id}`;
   const popupContent = `
-              <div style="background-color: white; padding: 1em; border-radius: 10px">
-                <a href="${objectPageUrl}" target="_blank"><strong>${
-    well.bro_id
-  }</strong></a><br>
-                Well Code: ${well.well_code}<br>
-                Quality regime: ${well.quality_regime}<br>
-                Registration Object Type: ${well.registration_object_type}<br>
-                Delivery Context: ${well.delivery_context}<br>
-                Construction Standard: ${well.construction_standard}<br>
-                Initial Function: ${well.initial_function}<br>
-                Horizontal Positioning Method: ${
-                  well.horizontal_positioning_method
-                }<br>
-                Local Vertical Reference Point: ${
-                  well.local_vertical_reference_point
-                }<br>
-                Vertical Datum: ${well.vertical_datum}<br>
-                Deliver GMW to BRO: ${checkOrCross(well.deliver_gmw_to_bro)}<br>
-                Complete BRO: ${checkOrCross(well.complete_bro)}<br>
-                In Management: ${checkOrCross(well.in_management)}<br>
+              <div id="popup-content">
+                <a href="${objectPageUrl}" target="_blank"><strong style="font-size: 18px;">${
+                  well.bro_id
+                }</strong></a>
+                <hr width="100%" size="2">
+                <div class="well-item">
+                  <span class="label">Putcode:</span> 
+                  <span class="value">${well.well_code}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Kwaliteitsregime:</span> 
+                  <span class="value">${well.quality_regime}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Maaiveld hoogte:</span> 
+                  <span class="value">${well.groundlevel_position}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Beschermconstructie:</span> 
+                  <span class="value">${well.well_head_protector}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Constructie standaard:</span> 
+                  <span class="value">${well.construction_standard}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Initiele functie:</span> 
+                  <span class="value">${well.initial_function}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Methode locatiebepaling:</span> 
+                  <span class="value">${well.horizontal_positioning_method}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">GMW naar BRO:</span> 
+                  <span class="value">${checkOrCross(well.deliver_gmw_to_bro)}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">BRO compleet:</span> 
+                  <span class="value">${checkOrCross(well.complete_bro)}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">In beheer:</span> 
+                  <span class="value">${checkOrCross(well.in_management)}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Zoek GLDs: </span> 
+                  <span class="value"><a href="${gldPageUrl}" target="_blank">GLDs</a></span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Zoek FRDs: </span> 
+                  <span class="value"><a href="${frdPageUrl}" target="_blank">FRDs</a></span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Foto: </span> 
+                  <span class="value">${well.picture}</span>
+                </div>
               </div>
               <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
                 <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>

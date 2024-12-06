@@ -1,6 +1,7 @@
 #deck-gl-canvas {
-  height: 800px;
-  width: 1000px;
+  height: 75vh;
+  width: 75vw;
+  border: rgb(77, 77, 77) solid 1px;
 }
 
 #deck-gl-canvas hr {
@@ -19,6 +20,7 @@
   top: 20px;
   z-index: 100;
   background-color: white;
+  max-height: 28vh;
 }
 
 #legend-bottom {
@@ -28,6 +30,7 @@
   z-index: 100;
   background-color: white;
   padding: 1em;
+  max-height: 30vh;
 }
 
 .mapbox-checkbox-wrapper {
@@ -50,6 +53,15 @@
   user-select: none;
   display: flex;
   align-items: center;
+  margin-bottom: 0;
+  font-weight: 200 !important;
+}
+
+.mapbox-button-deselect {
+  cursor: pointer;
+
+  user-select: none;
+  display: flex;
   margin-bottom: 0;
   font-weight: 200 !important;
 }
@@ -120,7 +132,7 @@
   right: 0;
   background-color: white;
   padding: 1em;
-  max-height: 500px;
+  max-height: 30vh;
   overflow: auto;
   flex-direction: column;
   width: 200px;
@@ -146,4 +158,29 @@
 
 .hamburger-open .hamburger-line:last-of-type {
   transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+#popup-content {
+  background-color: white;
+  padding: 1em;
+  border-radius: 10px;
+  border: 1px solid black;
+  border-radius: 4px;
+}
+
+.well-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  border-bottom: 1px solid gray;
+}
+
+.label {
+  text-align: left;
+  flex: 1;
+}
+
+.value {
+  text-align: right;
+  flex: 1;
 }

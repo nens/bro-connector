@@ -25,7 +25,6 @@ class CompanyAdmin(admin.ModelAdmin):
     form = bro_forms.CompanyForm
 
     list_display = (
-        "id",
         "name",
         "company_number",
         "color",
@@ -38,7 +37,6 @@ class CompanyAdmin(admin.ModelAdmin):
 
 class BROProjectAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
         "name",
         "project_number",
         "owner",
