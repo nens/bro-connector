@@ -91,6 +91,10 @@ class GroundwaterMonitoringWellStatic(models.Model):
     )  # This field type is a guess.
 
     state: Manager["GroundwaterMonitoringWellDynamic"]
+    tube: Manager["GroundwaterMonitoringTubeStatic"]
+    picture: Manager["Picture"]
+    event: Manager["Event"]
+    maintenance: Manager["Maintenance"]
 
     @property
     def is_surface(self):
@@ -117,7 +121,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
             return self.project.project_number
         else:
             None
-
+    
     def cx(self):
         return self.construction_coordinates.x
 
@@ -161,7 +165,8 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="state"
+        related_name="state",
+        verbose_name="Put",
     )
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD", verbose_name="Geldig vanaf")
     ground_level_stable = models.CharField(choices=BOOLEAN_CHOICES, max_length=254, null=True, blank=True)
@@ -248,6 +253,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         null=True,
         blank=True,
         related_name='tube',
+        verbose_name="Put",
     )
     deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(
@@ -499,6 +505,8 @@ class Event(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="event",
+        verbose_name="Put",
     )
     groundwater_monitoring_well_dynamic = models.ForeignKey(
         GroundwaterMonitoringWellDynamic,
@@ -600,6 +608,8 @@ class Picture(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        verbose_name="Put",
+        related_name="picture"
     )
     recording_datetime = models.DateTimeField(blank=True, null=True)
     picture = models.ImageField(upload_to='static/gmw/pictures/',blank=True, null=True, editable=True)
@@ -648,6 +658,8 @@ class Maintenance(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        verbose_name="Put",
+        related_name="maintenance"
     )
     groundwater_monitoring_tube_static = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
@@ -666,7 +678,7 @@ class Maintenance(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name="Reporter",
+        related_name="reporter",
     )  # Maintenance_party_id
     execution_date = models.DateField(blank=True, null=True)
     execution_by = models.ForeignKey(
@@ -674,7 +686,7 @@ class Maintenance(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name="Executioner",
+        related_name="executioner",
     )  # Maintenance_party_id
 
     class Meta:
