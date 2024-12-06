@@ -428,6 +428,10 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, kr
         if filter_name in krw_list:
             krw = "Ja"
 
+        str_tube_top_diameter = str(filter_state.tube_top_diameter)
+        if str_tube_top_diameter == "None":
+            str_tube_top_diameter = "Onbekend"
+
         return {
             f"{filter_name}": {
                 "inputfields": input_fields_filter_locations,
@@ -436,7 +440,7 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, kr
                     "Bovenkantbuis [mNAP]": str(filter_state.tube_top_position),
                     "Bovenkant filter [mNAP]": str(filter_state.screen_top_position),
                     "Onderkant filter [mNAP]": str(filter_state.screen_bottom_position),
-                    "Diameter buis [mm]": str(filter_state.tube_top_diameter),
+                    "Diameter buis [mm]": str_tube_top_diameter,
                     "Perceel 1": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_1"),
                     "Perceel 2": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_2"),
                     "Perceel 3": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_3"),
