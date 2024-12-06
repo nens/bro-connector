@@ -63,6 +63,10 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     )[0]
 
     # create subgroups
+    subgroep_P1 = Subgroup.objects.update_or_create(
+        gmn = gmn,
+        name = meetnet_naam+"_Perceel_1",
+    )[0]
     subgroep_P2 = Subgroup.objects.update_or_create(
         gmn = gmn,
         name = meetnet_naam+"_Perceel_2",
@@ -88,6 +92,8 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
 
     done = 0
 
+    unique_wells = []
+
     for row in df.iter_rows(named=True):
         # to catch if the NITGcode is incorrect and does not contain
         try:
@@ -100,25 +106,34 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
         well_code = split_string[0]
         tube_nr = split_string[1]
 
-        p1, p2, p3, p4, p5 = 0, 0, 0, 0, 0
+        net, p1, p2, p3, p4, p5 = 0, 0, 0, 0, 0, 0
 
         # if the tube exists
         if tube:
-            
-            p1, p2, p3, p4, p5 = "-", "-", "-", "-", "-"
+
+            net, p1, p2, p3, p4, p5 = "-", "-", "-", "-", "-", "-"
 
             # find if the measuring_point already exists for this gmn and tube, main group
             measuring_point = find_measuringpoint(gmn, tube)
             # if so, print that it is already in the gmn and don't add a new measuring point with update_or_create()
             if measuring_point:
-                p1 = "A"
+                net = "A"
             # if no measuring_point exists yet for this gmn and tube, create it
             if not measuring_point:
                 measuring_point = create_measuring_point(gmn, tube)
-                p1 = "C"
-
+                net = "C"
 
             # add subgroups to measuring_point if needed
+            if row["Perceel 1"] == 1:
+                # find if the measuring_point already has this subgroup
+                if measuring_point.subgroup.filter(id=subgroep_P1.id).exists():
+                    # if so, print that it was already in
+                    p1 = "A"
+                else:
+                    # else, add it and print that it was created
+                    measuring_point.subgroup.add(subgroep_P1)
+                    p1 = "C"
+                    
             if row["Perceel 2"] == 1:
                 # find if the measuring_point already has this subgroup
                 if measuring_point.subgroup.filter(id=subgroep_P2.id).exists():
@@ -162,10 +177,16 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
             new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':1}]
 
         else:
-            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':0}]
+            new_row = [{'put':well_code, 'peilbuis':tube_nr, 'in BRO':0}]        
+            
+        if well_code not in unique_wells and p1 != 0:
+            unique_wells.append(well_code)
         
+        if net == 0:
+            print(f"{well_code}-{tube_nr}: \tnet:{net}")
+        else:
+            print(f"{well_code}-{tube_nr}: \tnet:{net}\tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
 
-        print(f"{well_code}-{tube_nr}: \tP1:{p1}\tP2:{p2}\tP3:{p3}\tP4:{p4}\tP5:{p5},")
         new_df = pl.DataFrame(new_row)
         df_ouput.extend(new_df)
 
@@ -173,8 +194,9 @@ def update_or_create_meetnet(df: pl.DataFrame, meetnet_naam: str, ouput_path: st
     df_ouput.write_csv(path, separator=',')
 
     print("")
-    print(f'voor {len(df_ouput)} putten werd een poging gedaan om het toe te voegen aan het meetnet')
+    print(f'voor {len(df_ouput)} tubes werd een poging gedaan om het toe te voegen aan het meetnet')
     print(f'bij {df_ouput.select(pl.sum("in BRO")).item()} is dit ook daadwerkelijk gelukt')
+    print(f'dit zijn {len(unique_wells)} unique putten')
     
 
     print("Operatie succesvol afgerond.")
