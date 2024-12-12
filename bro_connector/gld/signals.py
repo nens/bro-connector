@@ -4,21 +4,37 @@ from django.db.models.signals import (
     pre_save,
 )
 from django.dispatch import receiver
-from .models import gld_registration_log, GroundwaterLevelDossier, MeasurementTvp
+from .models import gld_registration_log, GroundwaterLevelDossier, MeasurementTvp, MeasurementPointMetadata
 from gmw.models import GroundwaterMonitoringTubeStatic
 import reversion
 
-def _calculate_value(field_value: float, unit: str):
+def _calculate_value(field_value: float, unit: str) -> float | None:
     """
     For now only supports m / cm / mm.
-    Conversion to 
+    Conversion to mNAP
     """
     if unit == "m":
         return field_value
     elif unit == "cm":
-        return field_value / 10
-    elif unit == "mm":
         return field_value / 100
+    elif unit == "mm":
+        return field_value / 1000
+    else:
+        return None
+
+def _calculate_value_tube(field_value: float, unit: str, tube_top_position: float) -> float | None:
+    """
+    For now only supports m tov bkb / cm tov bkb / mm tov bkb.
+    Conversion to mNAP
+    """
+    if unit == "m t.o.v. bkb":
+        return field_value + tube_top_position
+    elif unit == "cm t.o.v. bkb":
+        return (field_value / 100) + tube_top_position
+    elif unit == "mm t.o.v. bkb":
+        return (field_value / 1000) + tube_top_position
+    elif unit == "bar":
+        return (field_value * 10.1974) + tube_top_position
     else:
         return None
 
@@ -44,5 +60,24 @@ def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
 
 @receiver(pre_save, sender=MeasurementTvp)
 def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
+    if not instance.measurement_point_metadata:
+        metadata = MeasurementPointMetadata.objects.create()
+        instance.measurement_point_metadata = metadata
+
     if not instance.calculated_value and instance.field_value:
-        instance.calculated_value = _calculate_value(instance.field_value, instance.field_value_unit)
+        if instance.field_value_unit in ["m", "cm", "mm"]:
+            instance.calculated_value = _calculate_value(instance.field_value, instance.field_value_unit)
+        else:
+            # Access the related groundwater_monitoring_tube_static instance
+            tube_static: GroundwaterMonitoringTubeStatic = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube_static
+
+            # Retrieve the latest state
+            latest_state = tube_static.state.order_by('-date_from').first()
+
+            # Get the tube_top_position
+            if latest_state:
+                tube_top_position = latest_state.tube_top_position
+            else:
+                tube_top_position = None
+
+            instance.calculated_value = _calculate_value_tube(instance.field_value, instance.field_value_unit, tube_top_position)

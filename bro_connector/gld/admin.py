@@ -99,7 +99,7 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
     list_display = (
         "observation",
         "measurement_time",
-        "field_value",
+        "calculated_value",
     )
     autocomplete_fields = ("measurement_point_metadata",)
     list_filter = (ObservationFilter,)

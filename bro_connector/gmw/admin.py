@@ -123,6 +123,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "in_management",
                     "deliver_gmw_to_bro",
                     "complete_bro",
+                    "report",
                 ],
             },
         ),
