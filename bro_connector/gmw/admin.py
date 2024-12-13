@@ -44,15 +44,6 @@ class EventsInline(admin.TabularInline):
         "event_name",
         "event_date",
     )
-    show_change_link = True
-
-    readonly_fields = (
-        "groundwater_monitoring_well_static",
-        "groundwater_monitoring_well_dynamic",
-        "groundwater_monitoring_tube_dynamic",
-        "electrode_dynamic",
-        "delivered_to_bro",
-    )
 
     extra = 0
     max_num = 0
@@ -64,6 +55,35 @@ class PicturesInline(ImageUploaderInline):
 
     extra = 0
     max_num = 3
+
+
+class WellDynamicInline(admin.TabularInline):
+    model = gmw_models.GroundwaterMonitoringWellDynamic
+    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
+    fields = (
+        "date_from",
+        "well_head_protector",
+        "ground_level_position",
+        "ground_level_positioning_method",
+        "remark",
+    )
+
+    readonly_fields = ["date_from"]
+
+
+class TubeDynamicInline(admin.TabularInline):
+    model = gmw_models.GroundwaterMonitoringWellDynamic
+    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
+    fields = (
+        "date_from",
+        "tube_top_diameter",
+        "tube_top_position",
+        "tube_top_positioning_method",
+        "tube_status",
+        "remark",
+    )
+
+    readonly_fields = ["date_from"]
 
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
@@ -141,7 +161,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         ),
     ]
 
-    inlines = (PicturesInline, EventsInline,)
+    inlines = (PicturesInline, WellDynamicInline, EventsInline,)
 
     actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
 
@@ -291,6 +311,8 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     list_filter = (WellFilter, "deliver_gld_to_bro")
 
     readonly_fields = ["number_of_geo_ohm_cables", "in_monitoring_net", "report"]
+
+    inlines = (TubeDynamicInline,)
 
     actions = ["deliver_gld_to_true"]
 
