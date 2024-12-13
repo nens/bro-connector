@@ -78,7 +78,12 @@ class DataSourceTemplate(ABC):
         """
 
     @abstractmethod
-    def get_timeseries(self, gmw_id: str, tube_id: int) -> pd.DataFrame:
+    def get_timeseries(
+        self,
+        gmw_id: str,
+        tube_id: int,
+        observation_type: Optional[str] = None,
+    ) -> pd.DataFrame:
         """Get time series.
 
         Parameters
@@ -87,6 +92,8 @@ class DataSourceTemplate(ABC):
             id of the observation well
         tube_id : int
             tube number of the observation well
+        observation_type : str, optional
+            type of observation, for BRO "reguliereMeting" or "controlemeting"
 
         Returns
         -------
@@ -104,9 +111,29 @@ class DataSourceTemplate(ABC):
             dataframe containig error detection results after manual review.
         """
 
+    @property
+    @abstractmethod
+    def backend(self):
+        """Backend of the data source."""
 
-class DataSource(DataSourceTemplate):
-    """DataSource class connecting to Provincie Zeelands postgresql database.
+    @abstractmethod
+    def get_nitg_code(self, i):
+        """Return the nitg code for a given index.
+
+        Parameters
+        ----------
+        i : str
+            index of the observation well
+
+        Returns
+        -------
+        str
+            nitg code if it is available, otherwise an empty string
+        """
+
+
+class PostgreSQLDataSource(DataSourceTemplate):
+    """DataSource class connecting to Provincie Zeelands PostgreSQL database.
 
     Parameters
     ----------
@@ -144,6 +171,8 @@ class DataSource(DataSourceTemplate):
         Sets the quality control fields.
     """
 
+    backend = "postgresql"
+
     def __init__(self, config):
         # init connection to database OR just read in some data from somewhere
         # Connect to database using psycopg2
@@ -156,7 +185,7 @@ class DataSource(DataSourceTemplate):
         except Exception as e:
             logger.error(f"Database not connected successfully: {e}")
 
-        self.value_column = "field_value"
+        self.value_column = "calculated_value"
         self.qualifier_column = "status_quality_control"
         self.source = "zeeland"
 
@@ -242,8 +271,11 @@ class DataSource(DataSourceTemplate):
 
         # add number of measurements
         gdf["metingen"] = 0
-        hasobs = [x for x in self.list_locations() if x in gdf.index]
-        gdf.loc[hasobs, "metingen"] = 1
+        count = self.count_measurements_per_filter()
+        count.index = (
+            count["bro_id"] + "-" + count["tube_number"].apply("{:03g}".format)
+        )
+        gdf.loc[count.index, "metingen"] = count["Metingen"].values
 
         # add location data in RD and lat/lon in WGS84
         gdf["x"] = gdf.geometry.x
@@ -256,8 +288,8 @@ class DataSource(DataSourceTemplate):
 
         # sort data:
         gdf.sort_values(
-            ["metingen", "nitg_code", "tube_number"],
-            ascending=[False, True, True],
+            ["nitg_code", "tube_number"],
+            ascending=[True, True],
             inplace=True,
         )
         gdf["id"] = range(gdf.index.size)
@@ -323,6 +355,25 @@ class DataSource(DataSourceTemplate):
         distsorted = gdf.join(dist, how="right").sort_values("distance", ascending=True)
         return distsorted
 
+    def get_nitg_code(self, i):
+        """Return the nitg code for a given index.
+
+        Parameters
+        ----------
+        i : str
+            index of the observation well
+
+        Returns
+        -------
+        str
+            nitg code if it is available, otherwise an empty string
+        """
+        nitg = self.gmw_gdf.at[i, "nitg_code"]
+        if isinstance(nitg, str) and len(nitg) > 0:
+            return f" ({nitg})"
+        else:
+            return ""
+
     def get_timeseries(
         self,
         gmw_id: str,
@@ -381,6 +432,9 @@ class DataSource(DataSourceTemplate):
             )
             .order_by(datamodel.MeasurementTvp.measurement_time)
         )
+        # NOTE: print sql statement
+        # from sqlalchemy.dialects import postgresql
+        # print( str(q.compile(dialect=postgresql.dialect())))
         with self.engine.connect() as con:
             df = pd.read_sql(stmt, con=con, index_col="measurement_time")
 
@@ -396,7 +450,7 @@ class DataSource(DataSourceTemplate):
             # make sure all measurements are in m
             mask = df["field_value_unit"] == "cm"
             if mask.any():
-                df.loc[mask, "field_value"] /= 100
+                df.loc[mask, "field_value"] /= 100.0
                 df.loc[mask, "field_value_unit"] = "m"
 
             # convert all other measurements to NaN
@@ -508,14 +562,15 @@ class DataSource(DataSourceTemplate):
         return df
 
 
-class DataSourceHydropandas(DataSourceTemplate):
-    def __init__(self, extent=None, oc=None, fname=None, source="dino", **kwargs):
+class HydropandasDataSource(DataSourceTemplate):
+    backend = "hydropandas"
+
+    def __init__(self, extent=None, oc=None, fname=None, source="bro", **kwargs):
         if oc is None:
             if fname is None:
-                fname = "obs_collection.pickle"
+                fname = "obs_collection.zip"
             if os.path.isfile(fname):
-                with open(fname, "rb") as file:
-                    oc = pickle.load(file)
+                oc = pd.read_pickle(fname)
             else:
                 import hydropandas as hpd
 
@@ -551,18 +606,38 @@ class DataSourceHydropandas(DataSourceTemplate):
             GeoDataFrame containing groundwater monitoring well locations and metadata
         """
         oc = self.oc
-        gdf = gpd.GeoDataFrame(oc, geometry=gpd.points_from_xy(oc.x, oc.y))
+        use_cols = oc.columns.difference({"obs"})
+        gdf = gpd.GeoDataFrame(
+            oc.loc[:, use_cols], geometry=gpd.points_from_xy(oc.x, oc.y)
+        )
         columns = {
             "monitoring_well": "bro_id",
             "screen_bottom": "screen_bot",
             "tube_nr": "tube_number",
+            "tube_top": "tube_top_position",
         }
         gdf = gdf.rename(columns=columns)
         gdf["nitg_code"] = ""
 
+        # add location data in RD and lat/lon in WGS84
+        transformer = Transformer.from_proj(EPSG_28992, WGS84, always_xy=False)
+        gdf.loc[:, ["lon", "lat"]] = np.vstack(
+            transformer.transform(gdf["x"].values, gdf["y"].values)
+        ).T
+
         # add number of measurements
         gdf["metingen"] = self.oc.stats.n_observations
         gdf["bro_id"] = gdf.index.tolist()
+
+        # sort data
+        gdf.sort_values(
+            ["bro_id", "tube_number"],
+            ascending=[True, True],
+            inplace=True,
+        )
+
+        # add id
+        gdf["id"] = range(gdf.index.size)
 
         return gdf
 
@@ -579,9 +654,10 @@ class DataSourceHydropandas(DataSourceTemplate):
         """
         oc = self.oc
         locations = []
-        mask = [not x.loc[:, self.value_column].dropna().empty for x in oc["obs"]]
+        mask = [not x.dropna(how="all").empty for x in oc["obs"]]
         for index in oc[mask].index:
-            locations.append(tuple(oc.loc[index, ["monitoring_well", "tube_nr"]]))
+            # locations.append(tuple(oc.loc[index, ["monitoring_well", "tube_nr"]]))
+            locations.append(index)
         return locations
 
     def list_locations_sorted_by_distance(self, name):
@@ -595,7 +671,31 @@ class DataSourceHydropandas(DataSourceTemplate):
         )
         return distsorted
 
-    def get_timeseries(self, gmw_id: str, tube_id: int) -> pd.DataFrame:
+    def get_nitg_code(self, i):
+        """Return the nitg code for a given index.
+
+        Parameters
+        ----------
+        i : str
+            index of the observation well
+
+        Returns
+        -------
+        str
+            nitg code if it is available, otherwise an empty string
+        """
+        nitg = self.gmw_gdf.at[i, "nitg_code"]
+        if isinstance(nitg, str) and len(nitg) > 0:
+            return f" ({nitg})"
+        else:
+            return ""
+
+    def get_timeseries(
+        self,
+        gmw_id: str,
+        tube_id: Optional[Union[int, str]] = None,
+        observation_type="reguliereMeting",
+    ) -> pd.DataFrame:
         """Return a Pandas Series for the measurements for gmw_id and tube_id.
 
         Values returned in m. Return None when there are no measurements.
@@ -612,10 +712,17 @@ class DataSourceHydropandas(DataSourceTemplate):
         pd.DataFrame
             time series of head observations.
         """
+        # empty return for controlemeting
+        if observation_type == "controlemeting":
+            return pd.Series()
+
         if self.source == "bro":
             name = f"{gmw_id}_{tube_id}"  # bro
         elif self.source == "dino":
-            name = f"{gmw_id}-{tube_id}"  # dino
+            if isinstance(tube_id, str):
+                name = f"{gmw_id}-{tube_id}"  # dino
+            elif isinstance(tube_id, int):
+                name = f"{gmw_id}-{tube_id:03g}"
         else:
             raise ValueError
 

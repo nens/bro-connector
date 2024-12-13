@@ -6,13 +6,16 @@ import pandas as pd
 import pastas as ps
 from dash import Input, Output, State, ctx, no_update
 from dash.exceptions import PreventUpdate
+from packaging.version import parse
 from pastas.extensions import register_plotly
 from pastas.io.pas import PastasEncoder
+from pastastore.version import __version__ as PASTASTORE_VERSION
 
 from gwdatalens.app.src.components import ids
 
 register_plotly()
 
+PASTASTORE_GT_1_7_1 = parse(PASTASTORE_VERSION) > parse("1.7.1")
 
 # %% MODEL TAB
 
@@ -71,15 +74,42 @@ def register_model_callbacks(app, data):
                     tmin = pd.Timestamp(tmin)
                     tmax = pd.Timestamp(tmax)
                     # get time series
-                    gmw_id, tube_id = value.split("-")
+                    if "-" in value:
+                        gmw_id, tube_id = value.split("-")
+                    elif "_" in value:
+                        gmw_id, tube_id = value.split("_")
+                    else:
+                        raise ValueError(
+                            "Error splitting name into monitoring well ID "
+                            f"and tube number: {value}"
+                        )
                     ts = data.db.get_timeseries(gmw_id, tube_id)
                     if use_only_validated:
                         mask = ts.loc[:, data.db.qualifier_column] == "goedgekeurd"
-                        ts = ts.loc[mask, data.db.value_column]
+                        ts = ts.loc[mask, data.db.value_column].dropna()
                     else:
-                        ts = ts.loc[:, data.db.value_column]
-                    # update stored copy
-                    data.pstore.update_oseries(ts, value)
+                        ts = ts.loc[:, data.db.value_column].dropna()
+
+                    if value in data.pstore.oseries_names:
+                        # update stored copy
+                        data.pstore.update_oseries(ts, value)
+                    else:
+                        # add series to database
+                        metadata = data.db.gmw_gdf.loc[value].to_dict()
+                        data.pstore.add_oseries(ts, value, metadata)
+                        print(
+                            f"Head time series '{value}' added to pastastore database."
+                        )
+
+                    if pd.isna(tmin):
+                        tmin = ts.index[0]
+                    if pd.isna(tmax):
+                        tmax = ts.index[-1]
+
+                    # get meteorological info, if need be, and pastastore is up-to-date
+                    if PASTASTORE_GT_1_7_1:
+                        data.get_knmi_data(value)
+
                     # create model
                     ml = ps.Model(ts)
                     data.pstore.add_recharge(ml)
@@ -92,9 +122,8 @@ def register_model_callbacks(app, data):
                         report=False,
                         initial=False,
                     )
-                    mljson = json.dumps(
-                        ml.to_dict(), cls=PastasEncoder
-                    )  # store generated model
+                    # store generated model
+                    mljson = json.dumps(ml.to_dict(), cls=PastasEncoder)
                     return (
                         ml.plotly.results(tmin=tmin, tmax=tmax),
                         ml.plotly.diagnostics(),

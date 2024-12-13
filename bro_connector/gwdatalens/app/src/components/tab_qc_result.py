@@ -347,7 +347,7 @@ def render_qc_label_dropdown():
     )
 
 
-def render_export_dropdown_and_tooltip():
+def render_export_dropdown_and_tooltip(disabled=True):
     """Renders a dropdown component for exporting QC status flags.
 
     Returns
@@ -384,6 +384,7 @@ def render_export_dropdown_and_tooltip():
             searchable=True,
             clearable=False,
             placeholder=i18n.t("general.qc_export_status_flag_placeholder"),
+            disabled=disabled,
         ),
         dbc.Tooltip(
             i18n.t("general.qc_export_status_flag_tooltip"),
@@ -408,7 +409,8 @@ def render_content(data: DataInterface, figure: dict):
     dbc.Container
         A Dash Bootstrap Container with the rendered content.
     """
-    disabled = figure is None
+    disabled_csv = figure is None
+    disabled_db = figure is None or data.db.backend == "hydropandas"
     return dbc.Container(
         [
             dbc.Row([render_qc_chart(figure)]),
@@ -448,9 +450,11 @@ def render_content(data: DataInterface, figure: dict):
             dbc.Row([qc_results_table.render(data)]),
             dbc.Row(
                 [
-                    dbc.Col([render_export_to_csv_button(disabled)], width="auto"),
-                    dbc.Col([render_export_to_database_button(disabled)], width="auto"),
-                    dbc.Col(render_export_dropdown_and_tooltip(), width=2),
+                    dbc.Col([render_export_to_csv_button(disabled_csv)], width="auto"),
+                    dbc.Col(
+                        [render_export_to_database_button(disabled_db)], width="auto"
+                    ),
+                    dbc.Col(render_export_dropdown_and_tooltip(disabled_db), width=2),
                 ]
             ),
         ],
