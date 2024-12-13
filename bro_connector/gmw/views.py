@@ -15,8 +15,6 @@ import bro.serializers as bro_serializers
 
 
 def gmw_map_context(request):
-    start_time = time.time()
-
     # Pre-fetch related data to reduce database hits
     gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
         Prefetch(
@@ -24,7 +22,6 @@ def gmw_map_context(request):
             queryset=gmn_models.MeasuringPoint.objects.select_related('gmn')
         )
     )
-
 
     # Serialize GroundwaterMonitoringWellStatic with only required fields
     wells = serializers.GMWSerializer(gmw_qs, many=True).data
@@ -34,9 +31,6 @@ def gmw_map_context(request):
     instantie_qs = Organisation.objects.filter(id__in=party_ids)
     instanties = bro_serializers.OrganisationSerializer(instantie_qs, many=True).data
 
-    # Serialize GroundwaterLevelDossier
-    glds = serializers.GLDSerializer(GroundwaterLevelDossier.objects.all(), many=True).data
-
     # Use a set for unique GMNs
     gmns = {gmn for well in wells for gmn in well.get('linked_gmns', [])}
 
@@ -44,11 +38,5 @@ def gmw_map_context(request):
         "wells": wells,
         "gmns": list(gmns),  # Convert set to list
         "organisations": instanties,
-        "groundwater_level_dossiers": glds,
     }
-
-    print(wells[0])
-
-    end_time = time.time()
-    print(f"Time taken: {end_time - start_time:.2f}s")
     return render(request, "map.html", context)
