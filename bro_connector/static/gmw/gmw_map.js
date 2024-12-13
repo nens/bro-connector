@@ -65,30 +65,6 @@ const createPopup = (well) => {
                   <span class="value">${well.well_code}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Kwaliteitsregime:</span> 
-                  <span class="value">${well.quality_regime}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Maaiveld hoogte:</span> 
-                  <span class="value">${well.groundlevel_position}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Beschermconstructie:</span> 
-                  <span class="value">${well.well_head_protector}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Constructie standaard:</span> 
-                  <span class="value">${well.construction_standard}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Initiele functie:</span> 
-                  <span class="value">${well.initial_function}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Methode locatiebepaling:</span> 
-                  <span class="value">${well.horizontal_positioning_method}</span>
-                </div>
-                <div class="well-item">
                   <span class="label">GMW naar BRO:</span> 
                   <span class="value">${checkOrCross(well.deliver_gmw_to_bro)}</span>
                 </div>
@@ -99,6 +75,10 @@ const createPopup = (well) => {
                 <div class="well-item">
                   <span class="label">In beheer:</span> 
                   <span class="value">${checkOrCross(well.in_management)}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">GMNs:</span> 
+                  <span class="value">${well.linked_gmns}</span>
                 </div>
                 <div class="well-item">
                   <span class="label">Zoek GLDs: </span> 

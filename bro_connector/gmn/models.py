@@ -251,11 +251,6 @@ class MeasuringPoint(models.Model):
                 measuring_point=self,
                 deliver_to_bro=self.gmn.deliver_to_bro,
             )
-
-    def clean(self, *args, **kwargs):
-        for subgroup in self.subgroup.all():
-            if subgroup.gmn != self.gmn:
-                raise ValidationError("Subgroup is deel van een ander Meetnet dan het geselecteerde Meetpunt.")
             
     def list_subgroups(self):
         return ", ".join([subgroup.name for subgroup in self.subgroup.all()])
