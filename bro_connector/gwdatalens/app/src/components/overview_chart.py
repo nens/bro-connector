@@ -75,17 +75,24 @@ def plot_obs(names, data):
         return {"layout": {"title": i18n.t("general.no_plot")}}
 
     hasobs = list(data.db.list_locations())
-    title = None
+    no_data = []
 
     traces = []
     for name in names:
         # split into monitoringwell and tube_number
-        monitoring_well, tube_nr = name.split("-")
+        if "-" in name:
+            monitoring_well, tube_nr = name.split("-")
+        elif "_" in name:
+            monitoring_well, tube_nr = name.split("_")
+        else:
+            raise ValueError(
+                f"Error splitting name into monitoring well ID and tube number: {name}"
+            )
         tube_nr = int(tube_nr)
 
         # no obs
         if name not in hasobs:
-            title = i18n.t("general.no_plot")
+            no_data.append(True)
             continue
 
         df = data.db.get_timeseries(gmw_id=monitoring_well, tube_id=tube_nr)
@@ -93,19 +100,17 @@ def plot_obs(names, data):
         if df is None:
             continue
 
-        df.loc[:, data.db.qualifier_column] = df.loc[
-            :, data.db.qualifier_column
-        ].fillna("")
+        df[data.db.qualifier_column] = df.loc[:, data.db.qualifier_column].fillna("")
 
         if len(names) == 1:
-            title = None
+            no_data.append(False)
             ts = df[data.db.value_column]
             trace_i = go.Scattergl(
                 x=ts.index,
                 y=ts.values,
                 mode="lines",
                 line={"width": 1, "color": "gray"},
-                name=name + f" ({data.db.gmw_gdf.at[name, 'nitg_code']})",
+                name=name + data.db.get_nitg_code(name),
                 legendgroup=f"{name}-{tube_nr}",
                 showlegend=True,
             )
@@ -156,6 +161,7 @@ def plot_obs(names, data):
                 )
                 traces.append(trace_mo)
         else:
+            no_data.append(False)
             ts = df[data.db.value_column]
             trace_i = go.Scattergl(
                 x=ts.index,
@@ -169,7 +175,6 @@ def plot_obs(names, data):
             )
             traces.append(trace_i)
     layout = {
-        "title": title,
         # "xaxis": {"range": [sim.index[0], sim.index[-1]]},
         "yaxis": {"title": "(m NAP)"},
         "legend": {
@@ -184,5 +189,7 @@ def plot_obs(names, data):
         # "margin": dict(t=20, b=20, l=50, r=20),
         "margin-top": 0,
     }
-
-    return {"data": traces, "layout": layout}
+    if all(no_data):
+        return None
+    else:
+        return {"data": traces, "layout": layout}

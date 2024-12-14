@@ -1,4 +1,5 @@
 import pandas as pd
+from hydropandas.io.knmi import get_nearest_station_xy
 
 
 class DataInterface:
@@ -59,6 +60,54 @@ class DataInterface:
             tmax = pd.Timestamp.today().normalize() - pd.Timedelta(days=1)
             pstore.hpd.update_knmi_meteo(tmax=tmax)
         return pstore
+
+    def get_knmi_data(self, name):
+        """Get nearest KNMI meteo time series for a location.
+
+        Downloads RD, RH and EV24 time series from nearest stations for a particular
+        observation well. Only downloaded if the station is not yet contained in the
+        pastastore.
+
+        Parameters
+        ----------
+        name : str
+            The name of the observation well.
+        """
+        # download both RH and RD to check which is nearest
+        for meteo_var, kind in [
+            ("RD", "prec"),
+            ("RH", "prec"),
+            ("EV24", "evap"),
+        ]:
+            # get nearest station ID
+            stn = get_nearest_station_xy(
+                self.pstore.oseries.loc[[name], ["x", "y"]].to_numpy(),
+                meteo_var=meteo_var,
+            )[0]
+            # check if station already in store, if not, download and store time series
+            if "meteo_var" in self.pstore.stresses.columns:
+                stored_stations = self.pstore.stresses.loc[
+                    self.pstore.stresses["meteo_var"] == meteo_var,
+                    "station",
+                ].values
+            else:
+                stored_stations = []
+            if stn not in stored_stations:
+                from pastastore.extensions import activate_hydropandas_extension  # noqa: I001
+
+                activate_hydropandas_extension()
+
+                # download and store data
+                self.pstore.hpd.download_nearest_knmi_meteo(name, meteo_var, kind)
+                print(
+                    "Downloading and storing KNMI time series '%s' for '%s'"
+                    % (meteo_var, name)
+                )
+            else:
+                print(
+                    "Nearest KNMI time series '%s' for '%s' already in pastastore"
+                    % (meteo_var, name)
+                )
 
     def attach_traval(self, traval):
         """Attach a traval interface.

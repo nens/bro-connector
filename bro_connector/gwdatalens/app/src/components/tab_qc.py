@@ -43,8 +43,14 @@ def render_datepicker_tmin(data, selected_data):
     """
     if selected_data is not None and len(selected_data) == 1:
         name = selected_data[0]
-        gmw_id, tube_id = name.split("-")
-        # TODO: replace with get_tmin() from database
+        if "-" in name:
+            gmw_id, tube_id = name.split("-")
+        elif "_" in name:
+            gmw_id, tube_id = name.split("_")
+        else:
+            raise ValueError(
+                f"Error splitting name into monitoring well ID and tube number: {name}"
+            )
         ts = data.db.get_timeseries(gmw_id, tube_id)
         start_date = ts.index[0].to_pydatetime()
         disabled = False
@@ -84,7 +90,14 @@ def render_datepicker_tmax(data, selected_data):
     """
     if selected_data is not None and len(selected_data) == 1:
         name = selected_data[0]
-        gmw_id, tube_id = name.split("-")
+        if "-" in name:
+            gmw_id, tube_id = name.split("-")
+        elif "_" in name:
+            gmw_id, tube_id = name.split("_")
+        else:
+            raise ValueError(
+                f"Error splitting name into monitoring well ID and tube number: {name}"
+            )
         ts = data.db.get_timeseries(gmw_id, tube_id)
         end_date = ts.index[-1].to_pydatetime()
         disabled = False

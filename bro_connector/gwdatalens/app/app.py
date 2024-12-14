@@ -2,6 +2,7 @@
 import logging
 import os
 
+# from pathlib import Path
 import dash_bootstrap_components as dbc
 import i18n
 import pastastore as pst
@@ -11,7 +12,12 @@ from gwdatalens.app.callbacks import register_callbacks
 from gwdatalens.app.settings import CUSTOM_CSS_PATH, LOCALE_PATH, config, settings
 from gwdatalens.app.src.cache import cache
 from gwdatalens.app.src.components.layout import create_layout
-from gwdatalens.app.src.data import DataInterface, DataSource, TravalInterface
+from gwdatalens.app.src.data import (
+    DataInterface,
+    # HydropandasDataSource,
+    PostgreSQLDataSource,
+    TravalInterface,
+)
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -29,13 +35,19 @@ external_stylesheets = [
 i18n.set("locale", settings["LOCALE"])
 i18n.load_path.append(LOCALE_PATH)
 
-# %% Set up backend
+# %% Connect to database
 
-# connect to database
-db = DataSource(config=config["database"])
+# postgreql database
+db = PostgreSQLDataSource(config=config["database"])
 
-# load pastastore
-# name = "zeeland"
+# hydropandas 'database'
+# db = HydropandasDataSource(extent=[116500, 120000, 439000, 442000], source="bro")
+# db = HydropandasDataSource(
+#     fname=Path(__file__).parent / ".." / "data" / "example_obscollection.zip",
+#     source="bro",
+# )
+
+# %% load pastastore
 name = config["pastastore"]["name"]
 pastastore_path = config["pastastore"]["path"]
 
@@ -52,6 +64,8 @@ else:
         )
     pstore = pst.PastaStore(conn)
     print(pstore)
+
+# %% traval interface
 
 # load ruleset
 traval_interface = TravalInterface(db, pstore)
@@ -141,3 +155,5 @@ else:
             "CACHE_DIR": ".cache",
         },
     )
+
+# %%

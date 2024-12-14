@@ -23,9 +23,15 @@ if settings["DJANGO_APP"]:
         "port": localsecret.port,
     }
 else:
-    with open(DATALENS_APP_PATH / "database.toml", "rb") as f:
-        dbase = tomli.load(f)
-        config["database"] = dbase["database"]
+    try:
+        with open(DATALENS_APP_PATH / "database.toml", "rb") as f:
+            dbase = tomli.load(f)
+            config["database"] = dbase["database"]
+    except FileNotFoundError:
+        print(
+            f"No {DATALENS_APP_PATH}/database.toml file found. Ignore this message if using "
+            "HydropandasDataSource."
+        )
 
 # %% set paths accordingly
 
@@ -36,4 +42,3 @@ else:
 
 LOCALE_PATH = ASSETS_PATH / "locale"
 CUSTOM_CSS_PATH = str(ASSETS_PATH / "custom.css")
-MAPBOX_ACCESS_TOKEN = str(ASSETS_PATH / ".mapbox_access_token")
