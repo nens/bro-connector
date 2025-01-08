@@ -64,20 +64,20 @@ class Command(BaseCommand):
         # 3.2 staat er een opmerking, filter deze put eruit
         DINO_3 = DINO_2[DINO_2['Opmerking'].isna()]
 
-        # 4 filter op of een rij "Provincie Zeeland" bevat als client, owner of monitor of "PRV_ZEELAND" in CAA set
-        DINO_4 = DINO_3[(DINO_3['Beherende inst. (Client)'] == 'Provincie Zeeland') |
-                        (DINO_3['Opdrachtgevende inst. (Owner)'] == 'Provincie Zeeland') |
-                        (DINO_3['Waarnemende inst. (Monitor)'] == 'Provincie Zeeland') |
-                        ('PRV_ZEELAND' in DINO_3['CCA set (Bronhouder waar de put aan is voorgelegd);;'])]
+        # 4 filter op of een rij "Provincie Zeeland" bevat als client, owner of monitor of "PRV_ZEELAND" in CAA set, NIET NODIG
+        # DINO_4 = DINO_3[(DINO_3['Beherende inst. (Client)'] == 'Provincie Zeeland') |
+        #                 (DINO_3['Opdrachtgevende inst. (Owner)'] == 'Provincie Zeeland') |
+        #                 (DINO_3['Waarnemende inst. (Monitor)'] == 'Provincie Zeeland') |
+        #                 ('PRV_ZEELAND' in DINO_3['CCA set (Bronhouder waar de put aan is voorgelegd);;'])]
 
-        unique_wells_nitg = DINO_4['NITG-Nr'].unique()
+        unique_wells_nitg = DINO_3['NITG-Nr'].unique()
         
         well_found = 0
         well_not_found = 0
         tube_found = 0
         tube_not_found = 0
         for well_nitg in unique_wells_nitg:
-            DINO_5 = DINO_4[DINO_4['NITG-Nr'] == well_nitg]
+            DINO_5 = DINO_3[DINO_3['NITG-Nr'] == well_nitg]
 
             well = find_well(well_nitg)
 
@@ -94,20 +94,21 @@ class Command(BaseCommand):
                         df_ouput = pd.concat([df_ouput, pd.DataFrame([output_row])], ignore_index=True)
                         tube_found += 1
                     else: # tube not found
-                        tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
-                            groundwater_monitoring_well_static = well,
-                            tube_number = int(dino_row['Buis-Nr'])
-                        )[0]
                         tube_not_found += 1
                         output_row = {'put':dino_row['NITG-Nr'], 'peilbuis':dino_row['Buis-Nr'], 'put toegevoegd aan database':'nee', 'peilbuis toegevoegd aan database':'ja'}
                         df_ouput = pd.concat([df_ouput, pd.DataFrame([output_row])], ignore_index=True)
+
+                        # tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
+                        #     groundwater_monitoring_well_static = well,
+                        #     tube_number = int(dino_row['Buis-Nr'])
+                        # )[0]
                         
-                        if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
-                            measuring_point = MeasuringPoint.objects.update_or_create(
-                                gmn = dino_gmn,
-                                groundwater_monitoring_tube = tube,
-                                code = tube.__str__()
-                            )[0]
+                        # if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
+                        #     measuring_point = MeasuringPoint.objects.update_or_create(
+                        #         gmn = dino_gmn,
+                        #         groundwater_monitoring_tube = tube,
+                        #         code = tube.__str__()
+                        #     )[0]
                 well_found += 1
 
             else: # well was not found
@@ -121,11 +122,11 @@ class Command(BaseCommand):
                 longitude, latitude = x, y
                 point = Point(longitude, latitude)
 
-                well = GroundwaterMonitoringWellStatic.objects.update_or_create(
-                    nitg_code = well_nitg,
-                    coordinates = point,
-                    in_management = False,
-                )[0]
+                # well = GroundwaterMonitoringWellStatic.objects.update_or_create(
+                #     nitg_code = well_nitg,
+                #     coordinates = point,
+                #     in_management = False,
+                # )[0]
                 well.internal_id = str(well)
 
 
@@ -133,24 +134,24 @@ class Command(BaseCommand):
                     dino_row = DINO_5.iloc[i]
                     tube_not_found += 1
                     
-                    tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
-                        groundwater_monitoring_well_static = well,
-                        tube_number = int(dino_row['Buis-Nr'])
-                    )[0]
+                    # tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
+                    #     groundwater_monitoring_well_static = well,
+                    #     tube_number = int(dino_row['Buis-Nr'])
+                    # )[0]
 
-                    if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
-                        measuring_point = MeasuringPoint.objects.update_or_create(
-                            gmn = dino_gmn,
-                            groundwater_monitoring_tube = tube,
-                            code = tube.__str__()
-                        )[0]
+                    # if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
+                    #     measuring_point = MeasuringPoint.objects.update_or_create(
+                    #         gmn = dino_gmn,
+                    #         groundwater_monitoring_tube = tube,
+                    #         code = tube.__str__()
+                    #     )[0]
                     
                     output_row = {'put':dino_row['NITG-Nr'], 'peilbuis':dino_row['Buis-Nr'], 'put toegevoegd aan database':'ja', 'peilbuis toegevoegd aan database':'ja'}
                     df_ouput = pd.concat([df_ouput, pd.DataFrame([output_row])], ignore_index=True)
 
 
         print(f"{well_found} wells found and {well_not_found} wells not found out of {len(unique_wells_nitg)} total wells tried")
-        print(f"{tube_found} tubes found and {tube_not_found} tubes not found out of {len(DINO_4)} total tubes tried")
+        print(f"{tube_found} tubes found and {tube_not_found} tubes not found out of {len(DINO_3)} total tubes tried")
         print()
         full_output_path = output_path+"\DINO_inspoelen.csv"
         df_ouput.to_csv(full_output_path, index=False)
