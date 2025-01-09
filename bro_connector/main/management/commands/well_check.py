@@ -119,7 +119,7 @@ class Command(BaseCommand):
         print(f"number of None nitg code wells: {i}, number of tubes: {j}, number of wells without tube {k}")
 
         savepath = output_path + f"\putten_met_lege_waardes.csv"
-        df.to_csv(savepath)
+        df.to_csv(savepath, index=False)
 
 
 
