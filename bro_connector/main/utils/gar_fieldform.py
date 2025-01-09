@@ -417,7 +417,7 @@ def list_krw_tubes() -> list:
     return tube_name_formated
     
 
-def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, krw_list: list) -> dict:
+def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, krw_list: list, well_org_name: str) -> dict:
     filter_name = tube.__str__()
 
     filter_state = tube.state.order_by('date_from').last()
@@ -447,6 +447,7 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, kr
                     "Perceel 4": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_4"),
                     "Perceel 5": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_5"),
                     "KRW-locatie": krw,
+                    "Eigenaar put": well_org_name,
                 },
             },
         }
@@ -508,6 +509,8 @@ class FieldFormGenerator:
                 y=well.coordinates.y    
             )
 
+            well_org_name = well.delivery_accountable_party.name
+            
             well_name = well.__str__()
             well_location = {
                 f"{well_name}": {
@@ -516,6 +519,9 @@ class FieldFormGenerator:
                     "sublocations": {
                         f"{well_name}": {
                             "inputfields": input_fields_well_locations,
+                            "properties": {
+                                "Eigenaar put": well_org_name,
+                            },
                         }
                     },
                 }
@@ -524,7 +530,7 @@ class FieldFormGenerator:
                 well_location[f"{well_name}"].update({"group": self.group_name})
 
             for tube in tubes:
-                sublocation = create_sublocation_dict(tube, krw_list)
+                sublocation = create_sublocation_dict(tube, krw_list, well_org_name)
                 well_location[f"{well_name}"]["sublocations"].update(sublocation)
 
             locations.update(well_location)
