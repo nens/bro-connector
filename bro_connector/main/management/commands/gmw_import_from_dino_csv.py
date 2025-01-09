@@ -98,17 +98,17 @@ class Command(BaseCommand):
                         output_row = {'put':dino_row['NITG-Nr'], 'peilbuis':dino_row['Buis-Nr'], 'put toegevoegd aan database':'nee', 'peilbuis toegevoegd aan database':'ja'}
                         df_ouput = pd.concat([df_ouput, pd.DataFrame([output_row])], ignore_index=True)
 
-                        # tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
-                        #     groundwater_monitoring_well_static = well,
-                        #     tube_number = int(dino_row['Buis-Nr'])
-                        # )[0]
+                        tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
+                            groundwater_monitoring_well_static = well,
+                            tube_number = int(dino_row['Buis-Nr'])
+                        )[0]
                         
-                        # if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
-                        #     measuring_point = MeasuringPoint.objects.update_or_create(
-                        #         gmn = dino_gmn,
-                        #         groundwater_monitoring_tube = tube,
-                        #         code = tube.__str__()
-                        #     )[0]
+                        if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
+                            measuring_point = MeasuringPoint.objects.update_or_create(
+                                gmn = dino_gmn,
+                                groundwater_monitoring_tube = tube,
+                                code = tube.__str__()
+                            )[0]
                 well_found += 1
 
             else: # well was not found
@@ -122,11 +122,11 @@ class Command(BaseCommand):
                 longitude, latitude = x, y
                 point = Point(longitude, latitude)
 
-                # well = GroundwaterMonitoringWellStatic.objects.update_or_create(
-                #     nitg_code = well_nitg,
-                #     coordinates = point,
-                #     in_management = False,
-                # )[0]
+                well = GroundwaterMonitoringWellStatic.objects.update_or_create(
+                    nitg_code = well_nitg,
+                    coordinates = point,
+                    in_management = False,
+                )[0]
                 well.internal_id = str(well)
 
 
@@ -134,17 +134,17 @@ class Command(BaseCommand):
                     dino_row = DINO_5.iloc[i]
                     tube_not_found += 1
                     
-                    # tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
-                    #     groundwater_monitoring_well_static = well,
-                    #     tube_number = int(dino_row['Buis-Nr'])
-                    # )[0]
+                    tube = GroundwaterMonitoringTubeStatic.objects.update_or_create(
+                        groundwater_monitoring_well_static = well,
+                        tube_number = int(dino_row['Buis-Nr'])
+                    )[0]
 
-                    # if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
-                    #     measuring_point = MeasuringPoint.objects.update_or_create(
-                    #         gmn = dino_gmn,
-                    #         groundwater_monitoring_tube = tube,
-                    #         code = tube.__str__()
-                    #     )[0]
+                    if int(dino_row['Buis-Nr']) == 1: # add the first tube, tube nr 1, to the dino gmn
+                        measuring_point = MeasuringPoint.objects.update_or_create(
+                            gmn = dino_gmn,
+                            groundwater_monitoring_tube = tube,
+                            code = tube.__str__()
+                        )[0]
                     
                     output_row = {'put':dino_row['NITG-Nr'], 'peilbuis':dino_row['Buis-Nr'], 'put toegevoegd aan database':'ja', 'peilbuis toegevoegd aan database':'ja'}
                     df_ouput = pd.concat([df_ouput, pd.DataFrame([output_row])], ignore_index=True)
