@@ -333,6 +333,8 @@ JAZZMIN_SETTINGS = {
         {"app": "frd"},
         # gwdatalens app
         {"name": "GWDataLens", "url": "/gwdatalens", "permissions": ["auth.view_user"]},
+        # model admin to link to (Permissions checked against model)
+        {"name": "BRO check", "url": "/bro_complete", "permissions": ["auth.view_user"]},
     ],
     "usermenu_links": [
         {
