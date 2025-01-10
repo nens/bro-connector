@@ -4,6 +4,8 @@ from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringWel
 # import polars as pl
 import pandas as pd
 import os
+import datetime
+
 
 def find_monitoring_tube(nitg_code: str, loc) -> GroundwaterMonitoringTubeStatic:
     # if nitg_code is given and not None
@@ -187,7 +189,11 @@ class Command(BaseCommand):
 
                     df = pd.concat([df, df_row], ignore_index=True)
 
-        savepath = output_path + f"\putten_overzicht.csv"
+
+        cur_date = datetime.datetime.now().date()
+        date_string = cur_date.strftime("%Y%m%d")
+
+        savepath = output_path + f"\putten_overzicht_{date_string}.csv"
         df.to_csv(savepath, index=False)
 
 
