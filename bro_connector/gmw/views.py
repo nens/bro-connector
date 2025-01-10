@@ -40,3 +40,6 @@ def gmw_map_context(request):
         "organisations": instanties,
     }
     return render(request, "map.html", context)
+
+def bro_complete(request):
+    return

@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from gmw.views import gmw_map_context
+from gmw.views import gmw_map_context, bro_complete
 from main.dash import visualisatie_meetopstelling
 from django.contrib import admin
 
@@ -24,4 +24,5 @@ visualisatie_meetopstelling # noqa
 
 urlpatterns = [
     path("map/", gmw_map_context, name="gmw_map"),
+    path("bro_complete/", bro_complete, name="bro_complete"),
 ]
