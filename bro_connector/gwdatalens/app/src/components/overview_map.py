@@ -3,16 +3,11 @@ import numpy as np
 import plotly.graph_objs as go
 from dash import dcc
 
-from gwdatalens.app.settings import MAPBOX_ACCESS_TOKEN, settings
+from gwdatalens.app.settings import settings
 from gwdatalens.app.src.cache import TIMEOUT, cache
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.data import DataInterface
 from gwdatalens.app.src.utils import conditional_cache
-
-try:
-    mapbox_access_token = open(MAPBOX_ACCESS_TOKEN, "r").read()
-except FileNotFoundError:
-    mapbox_access_token = None
 
 
 @conditional_cache(
@@ -29,7 +24,6 @@ def render(
         id=ids.OVERVIEW_MAP,
         figure=draw_map(
             df,
-            mapbox_access_token,
             selected_data=selected_data,
         ),
         style={
@@ -47,17 +41,14 @@ def render(
 
 def draw_map(
     df,
-    mapbox_access_token=MAPBOX_ACCESS_TOKEN,
     selected_data=None,
 ):
-    """Draw ScatterMapBox.
+    """Draw ScatterMap.
 
     Parameters
     ----------
     df : pandas.DataFrame
         data to plot
-    mapbox_access_token : str
-        mapbox access token, see Readme for more information
 
     Returns
     -------
@@ -68,10 +59,10 @@ def draw_map(
 
     if selected_data is not None:
         pts_data = np.nonzero(df.loc[mask, "name"].isin(selected_data))[0].tolist()
-        # pts_nodata = np.nonzero(df.loc[~mask, "name"].isin(selected_data))[0].tolist()
+        pts_nodata = np.nonzero(df.loc[~mask, "name"].isin(selected_data))[0].tolist()
     else:
         pts_data = None
-        # pts_nodata = None
+        pts_nodata = None
 
     # NOTE: this does not work as map and table have to be similarly ordered for
     # synchronized selection to work.
@@ -79,16 +70,16 @@ def draw_map(
 
     # oseries data for map
     pb_data = {
-        "lat": df.loc[mask, "lat"],
-        "lon": df.loc[mask, "lon"],
-        "name": "PMG Kwantiteit",
-        # customdata=df.loc[mask, "z"],
-        "type": "scattermapbox",
-        "text": df.loc[mask, "name"].tolist(),
-        "textposition": "top center" if mapbox_access_token else None,
-        "textfont": {"size": 12, "color": "black"} if mapbox_access_token else None,
-        "mode": "markers" if mapbox_access_token else "markers",
-        "marker": go.scattermapbox.Marker(
+        "lat": df.loc[:, "lat"],
+        "lon": df.loc[:, "lon"],
+        "name": i18n.t("general.monitoring_wells"),
+        # customdata=df.loc[:, "z"],
+        "type": "scattermap",
+        "text": df.loc[:, "name"].tolist(),
+        "textposition": "top center",
+        "textfont": {"size": 12, "color": "black"},
+        "mode": "markers",
+        "marker": go.scattermap.Marker(
             size=6,
             # sizeref=0.5,
             # sizemin=2,
@@ -123,14 +114,13 @@ def draw_map(
         "lon": df.loc[~mask, "lon"],
         "name": i18n.t("general.no_data"),
         # customdata=df.loc[~mask, "z"],
-        "type": "scattermapbox",
+        "type": "scattermap",
         "text": df.loc[~mask, "name"].tolist(),
-        "textposition": "top center" if mapbox_access_token else None,
-        "textfont": {"size": 12, "color": "black"} if mapbox_access_token else None,
-        "mode": "markers" if mapbox_access_token else "markers",
-        "marker": go.scattermapbox.Marker(
-            symbol="circle",
-            size=5,
+        "textposition": "top center",
+        "textfont": {"size": 12, "color": "black"},
+        "mode": "markers",
+        "marker": go.scattermap.Marker(
+            size=7,
             opacity=0.8,
             # sizeref=0.5,
             # sizemin=2,
@@ -154,27 +144,24 @@ def draw_map(
         ),
         "showlegend": True,
         "legendgroup": "NODATA",
-        # selectedpoints=pts_nodata,
-        "unselected": {"marker": {"opacity": 0.5, "color": "grey", "size": 5}},
+        "selectedpoints": pts_nodata,
+        "unselected": {"marker": {"opacity": 0.5, "color": "gray", "size": 7}},
         "selected": {"marker": {"opacity": 1.0, "color": "red", "size": 9}},
     }
+
+    mapdata = [pb_nodata, pb_data]
 
     # if selected_rows is None:
     zoom, center = get_plotting_zoom_level_and_center_coordinates(
         df.lon.values, df.lat.values
     )
-
-    mapdata = [pb_nodata, pb_data]
-
     maplayout = {
         # top, bottom, left and right margins
         "margin": {"t": 0, "b": 0, "l": 0, "r": 0},
         "font": {"color": "#000000", "size": 11},
         "paper_bgcolor": "white",
         "clickmode": "event+select",
-        "mapbox": {
-            # here you need the token from Mapbox
-            "accesstoken": mapbox_access_token,
+        "map": {
             "bearing": 0,
             # where we want the map to be centered
             "center": center,
@@ -183,12 +170,11 @@ def draw_map(
             # default level of zoom
             "zoom": zoom,
             # default map style (some options listed, not all support labels)
-            "style": "outdoors" if mapbox_access_token else "open-street-map",
+            "style": "outdoors",
             # public styles
             # style="carto-positron",
             # style="open-street-map",
             # style="stamen-terrain",
-            # mapbox only styles (requires access token):
             # style="basic",
             # style="streets",
             # style="light",
@@ -196,7 +182,7 @@ def draw_map(
             # style="satellite",
             # style="satellite-streets"
         },
-        # relayoutData=mapbox_cfg,
+        # relayoutData=map_cfg,
         "legend": {"x": 0.01, "y": 0.99, "xanchor": "left", "yanchor": "top"},
         "uirevision": False,
         "modebar": {
@@ -208,7 +194,7 @@ def draw_map(
 
 
 def get_plotting_zoom_level_and_center_coordinates(longitudes=None, latitudes=None):
-    """Get zoom level and center coordinate for ScatterMapbox.
+    """Get zoom level and center coordinate for ScatterMap.
 
     Basic framework adopted from Krichardson under the following thread:
     https://community.plotly.com/t/dynamic-zoom-for-mapbox/32658/7

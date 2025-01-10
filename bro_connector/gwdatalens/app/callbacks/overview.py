@@ -222,29 +222,28 @@ def register_overview_callbacks(app, data):
         pts = loc["id"].tolist()
 
         dfm = data.db.gmw_gdf.reset_index().loc[pts].copy()
-        dfm["curveNumber"] = 0
-        mask = dfm.loc[:, "metingen"] == 1
-        dfm.loc[mask, "curveNumber"] = 1
-
+        dfm["curveNumber"] = 1  # all locs plotted in trace 1 for map highlighting
+        mask = dfm.loc[:, "metingen"] > 0
         # update selected points
         mappatch = Patch()
-        mappatch["data"][1]["selectedpoints"] = dfm.loc[mask, "id"].tolist()
+        mappatch["data"][1]["selectedpoints"] = dfm.loc[:, "id"].tolist()
         mappatch["data"][0]["selectedpoints"] = dfm.loc[~mask, "id"].tolist()
 
+        selectedData = {
+            "points": [
+                {
+                    "curveNumber": dfm["curveNumber"].loc[i],
+                    "pointNumber": dfm["id"].loc[i],
+                    "pointIndex": dfm["id"].loc[i],
+                    "lon": dfm["lon"].loc[i],
+                    "lat": dfm["lat"].loc[i],
+                    "text": dfm["name"].loc[i],
+                }
+                for i in loc["id"]
+            ]
+        }
         return (
-            {
-                "points": [
-                    {
-                        "curveNumber": dfm["curveNumber"].iloc[i],
-                        "pointNumber": dfm["id"].iloc[i],
-                        "pointIndex": dfm["id"].iloc[i],
-                        "lon": dfm["lon"].iloc[i],
-                        "lat": dfm["lat"].iloc[i],
-                        "text": dfm["name"].iloc[i],
-                    }
-                    for i in range(loc.index.size)
-                ]
-            },
+            selectedData,
             mappatch,
             (pd.Timestamp.now().isoformat(), True),
         )

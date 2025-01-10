@@ -23,10 +23,7 @@ def render(data, selected_data):
     """
     locs = data.db.list_locations()
 
-    options = [
-        {"label": f"{i} ({data.db.gmw_gdf.at[i, 'nitg_code']})", "value": i}
-        for i in locs
-    ]
+    options = [{"label": f"{i}{data.db.get_nitg_code(i)}", "value": i} for i in locs]
 
     if selected_data is not None and len(selected_data) == 1:
         value = selected_data[0]
