@@ -73,7 +73,22 @@ class Command(BaseCommand):
 
         wells = GroundwaterMonitoringWellStatic.objects.all()
 
-        columns = ["Interne Putcode", "BRO ID", "NITG-code", "Tube nummer", "RD_X", "RD_Y", "Bronhouder", "Meetnetten", "Subgroepen", "Moet naar de BRO", "BRO Compleet", "Lengte stijgbuis [m]", "Diameter buis [mm]", "Bovenkant buis [mNAP]", "Bovenkant filter [mNAP]", "Onderkant filter [mNAP]"]
+        columns = ["Interne Putcode",
+                    "BRO ID",
+                    "NITG-code",
+                    "Tube nummer",
+                    "RD_X",
+                    "RD_Y",
+                    "Bronhouder",
+                    "Meetnetten",
+                    "Subgroepen",
+                    "Moet naar de BRO",
+                    "BRO Compleet",
+                    "Lengte stijgbuis [m]",
+                    "Diameter buis [mm]",
+                    "Bovenkant buis [mNAP]",
+                    "Bovenkant filter [mNAP]",
+                    "Onderkant filter [mNAP]"]
         
         df = pd.DataFrame({}, columns=columns)
 
@@ -152,9 +167,25 @@ class Command(BaseCommand):
                                 subgroup += f" {subgroup_i_name}"
                         
                 
-                    parameters = [well_code, bro_id, nitg_code, tube_number, RD_X, RD_Y, delivery_accountable_party, gmn, subgroup, deliver_gmw_to_bro, complete_bro, plain_tube_part_length, tube_top_diameter, tube_top_position, screen_top_position, screen_bottom_position]
-                    df.loc[len(df)] = parameters
+                    # parameters = [well_code, bro_id, nitg_code, tube_number, RD_X, RD_Y, delivery_accountable_party, gmn, subgroup, deliver_gmw_to_bro, complete_bro, plain_tube_part_length, tube_top_diameter, tube_top_position, screen_top_position, screen_bottom_position]
+                    df_row = pd.DataFrame([{"Interne Putcode": well_code,
+                                            "BRO ID": bro_id,
+                                            "NITG-code": nitg_code,
+                                            "Tube nummer": tube_number,
+                                            "RD_X": RD_X,
+                                            "RD_Y": RD_Y,
+                                            "Bronhouder": delivery_accountable_party,
+                                            "Meetnetten": gmn,
+                                            "Subgroepen": subgroup,
+                                            "Moet naar de BRO": deliver_gmw_to_bro,
+                                            "BRO Compleet": complete_bro,
+                                            "Lengte stijgbuis [m]": plain_tube_part_length,
+                                            "Diameter buis [mm]": tube_top_diameter,
+                                            "Bovenkant buis [mNAP]": tube_top_position,
+                                            "Bovenkant filter [mNAP]": screen_top_position,
+                                            "Onderkant filter [mNAP]": screen_bottom_position}])
 
+                    df = pd.concat([df, df_row], ignore_index=True)
 
         savepath = output_path + f"\putten_overzicht.csv"
         df.to_csv(savepath, index=False)
