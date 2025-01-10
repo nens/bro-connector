@@ -420,7 +420,7 @@ def list_krw_tubes() -> list:
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, krw_list: list, well_org_name: str) -> dict:
     filter_name = tube.__str__()
 
-    filter_state = tube.state.order_by('date_from').last()
+    filter_state = tube.state.order_by('date_from').last() if tube.state.exists() else None
 
     krw = "Nee"
 
@@ -446,6 +446,32 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, kr
                     "Perceel 3": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_3"),
                     "Perceel 4": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_4"),
                     "Perceel 5": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_5"),
+                    "KRW-locatie": krw,
+                    "Eigenaar put": well_org_name,
+                },
+            },
+        }
+    
+    else:
+        if filter_name in krw_list:
+            krw = "Ja"
+
+        str_tube_top_diameter = "Onbekend"
+
+        return {
+            f"{filter_name}": {
+                "inputfields": input_fields_filter_locations,
+                "properties": {
+                    # TO DO: Add perceel & other fields
+                    "Bovenkantbuis [mNAP]": "None",
+                    "Bovenkant filter [mNAP]": "None",
+                    "Onderkant filter [mNAP]": "None",
+                    "Diameter buis [mm]": str_tube_top_diameter,
+                    "Perceel 1": perceel_property(tube, "GAR_2024_Perceel_1"),
+                    "Perceel 2": perceel_property(tube, "GAR_2024_Perceel_2"),
+                    "Perceel 3": perceel_property(tube, "GAR_2024_Perceel_3"),
+                    "Perceel 4": perceel_property(tube, "GAR_2024_Perceel_4"),
+                    "Perceel 5": perceel_property(tube, "GAR_2024_Perceel_5"),
                     "KRW-locatie": krw,
                     "Eigenaar put": well_org_name,
                 },
