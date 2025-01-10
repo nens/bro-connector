@@ -60,7 +60,7 @@ class Command(BaseCommand):
         # well_list = [{'internal_id': well.internal_id, 'put':well.nitg_code, 'x':well.coordinates.x, 'y':well.coordinates.y} for well in wells]
         
         # 2 open excel met DINO putten en filter op basis van coordinaten
-        DINO = pd.read_csv(csv_path + "\Algemene gegevens van putten in DINO (16-5-2024).csv", ignore_errors=True)
+        DINO = pd.read_csv(csv_path + "\Algemene gegevens van putten in DINO (16-5-2024).csv")
 
         # 3 is de put opgeruimd, neem deze dan niet mee
         DINO_1 = DINO[DINO['Opgeruimd'] == 'Nee']
