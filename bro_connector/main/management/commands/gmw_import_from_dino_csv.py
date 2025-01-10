@@ -22,15 +22,23 @@ def find_tube(well: str, tube: str) -> GroundwaterMonitoringTubeStatic:
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
+            "--csv",
+            type=str,
+            help="Het path naar de CSV met informatie over de in te spoelen putten.",
+        )
+        parser.add_argument(
             "--output",
             type=str,
             help="Het path waar de CSV geplaatst wordt met informatie over de ingespoelde putten.",
         )
 
     def handle(self, *args, **options):
+        csv_path = str(options["csv"])
         output_path = str(options["output"])
+        if not os.path.isdir(csv_path):
+            raise ValueError("Invalid path to csv's supplied")
         if not os.path.isdir(output_path):
-            raise ValueError("Invalid path for output file")
+            raise ValueError('Invalid output path supplied')
 
         # full bounding box for Zeeland
         BBOX_SETTINGS = {
@@ -52,7 +60,7 @@ class Command(BaseCommand):
         # well_list = [{'internal_id': well.internal_id, 'put':well.nitg_code, 'x':well.coordinates.x, 'y':well.coordinates.y} for well in wells]
         
         # 2 open excel met DINO putten en filter op basis van coordinaten
-        DINO = pd.read_csv(r"C:\Users\sven.vanos\Documents\bro-connector\data\Algemene gegevens van putten in DINO (16-5-2024).csv")
+        DINO = pd.read_csv(csv_path + "\Algemene gegevens van putten in DINO (16-5-2024).csv", ignore_errors=True)
 
         # 3 is de put opgeruimd, neem deze dan niet mee
         DINO_1 = DINO[DINO['Opgeruimd'] == 'Nee']
