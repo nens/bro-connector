@@ -72,8 +72,8 @@ class WellDynamicInline(admin.TabularInline):
 
 
 class TubeDynamicInline(admin.TabularInline):
-    model = gmw_models.GroundwaterMonitoringWellDynamic
-    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
+    model = gmw_models.GroundwaterMonitoringTubeDynamic
+    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringTubeDynamic)
     fields = (
         "date_from",
         "tube_top_diameter",
