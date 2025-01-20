@@ -8,6 +8,7 @@ class GMWSerializer(serializers.ModelSerializer):
     y = serializers.SerializerMethodField()
     linked_gmns: list = serializers.SerializerMethodField()
     picture = serializers.SerializerMethodField()
+    nitg_code = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
@@ -23,6 +24,7 @@ class GMWSerializer(serializers.ModelSerializer):
             'y',
             'delivery_accountable_party',
             'linked_gmns',
+            'nitg_code'
         ]
 
     def get_x(self, obj):
@@ -37,6 +39,9 @@ class GMWSerializer(serializers.ModelSerializer):
             for mp in tube.measuringpoint_set.all()
         ]
         return list(set(measuring_points))
+    
+    def get_nitg_code(self, obj):
+        return obj.nitg_code
     
     # def get_groundlevel_position(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
     #     last_state = obj.state.last()
