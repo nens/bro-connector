@@ -107,7 +107,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
         remarks = self.state.all().order_by('date_from')
         report = ""
         for remark in remarks:
-            report += f"{remark.date_from.date()}: {remark.remark}\n\n"
+            report += f"{remark.date_from.date()}: {remark.comment}\n\n"
 
         return report
     
@@ -300,7 +300,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         remarks = self.state.all().order_by('date_from')
         report = ""
         for remark in remarks:
-            report += f"{remark.date_from.date()}: {remark.remark}\n\n"
+            report += f"{remark.date_from.date()}: {remark.comment}\n\n"
 
         return report
     
