@@ -65,7 +65,7 @@ class WellDynamicInline(admin.TabularInline):
         "well_head_protector",
         "ground_level_position",
         "ground_level_positioning_method",
-        "remark",
+        "comment",
     )
 
     readonly_fields = ["date_from"]
@@ -80,7 +80,7 @@ class TubeDynamicInline(admin.TabularInline):
         "tube_top_position",
         "tube_top_positioning_method",
         "tube_status",
-        "remark",
+        "comment",
     )
 
     readonly_fields = ["date_from"]
