@@ -219,7 +219,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     collision_protection = models.CharField(
         max_length=254, choices=COLLISION_PROTECTION_TYPES, null=True, blank=True, verbose_name="Bots bescherming"
     )
-    remark = models.CharField(max_length=254, blank=True, null=True, verbose_name="Commentaar")
+    comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
 
     def __str__(self):
         if self.date_till:
@@ -375,7 +375,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         verbose_name="Lengte ingeplaatst deel"
     )  # This field type is a guess.
     inserted_part_material = models.CharField(max_length=200, blank=True, null=True, verbose_name="Materiaal ingeplaatst deel")
-    remark = models.CharField(max_length=254, blank=True, null=True, verbose_name="Commentaar")
+    comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
 
 
     @property
