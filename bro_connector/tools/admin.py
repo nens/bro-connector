@@ -168,7 +168,31 @@ class XMLImportAdmin(admin.ModelAdmin):
                         )
                         object.save()
 
+
+class GLDImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "file",
+        "validated",
+        "executed",
+    )
+
+    list_filter = (
+        "validated",
+        "executed",
+    )
+
+    actions = [
+        "import_gld",
+    ]
+
+    def import_gld(self, request, QuerySet):
+        pass
+
+
 _register(tools_models.BroImporter, BroImporterAdmin)
 _register(tools_models.XMLImport, XMLImportAdmin)
+_register(tools_models.GLDImport, GLDImportAdmin)
 patch_admin(tools_models.BroImporter)
 patch_admin(tools_models.XMLImport)
+patch_admin(tools_models.GLDImport)

@@ -33,6 +33,7 @@ class GroundwaterLevelDossier(models.Model):
         blank=False,
         related_name="groundwaterleveldossier"
     )
+    # quality_regime = models.CharField(max_length=254, null=True, blank=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
@@ -108,19 +109,19 @@ class GroundwaterLevelDossier(models.Model):
 
 class Observation(models.Model):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False)
-    observationperiod = models.DurationField(blank=True, null=True)
-    observation_starttime = models.DateTimeField(blank=True, null=True)
-    result_time = models.DateTimeField(blank=True, null=True)
-    observation_endtime = models.DateTimeField(blank=True, null=True)
+    groundwater_level_dossier = models.ForeignKey(
+        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
+    )
     observation_metadata = models.ForeignKey(
         "ObservationMetadata", on_delete=models.CASCADE, null=True, blank=True
     )
     observation_process = models.ForeignKey(
         "ObservationProcess", on_delete=models.CASCADE, null=True, blank=True
     )
-    groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
-    )
+    observationperiod = models.DurationField(blank=True, null=True)
+    observation_starttime = models.DateTimeField(blank=True, null=True)
+    result_time = models.DateTimeField(blank=True, null=True)
+    observation_endtime = models.DateTimeField(blank=True, null=True)
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
 
     @property
