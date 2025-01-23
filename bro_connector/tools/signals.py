@@ -45,23 +45,6 @@ def process_csv_file(instance):
 def validate_csv(file):
     try:
         reader = csv.DictReader(file.read().decode('utf-8').splitlines())
-        # required_columns = ['filter', # first required to help find the correct tube
-        #                     'bro_id'
-        #                     'nitg',
-        #                     'x',
-        #                     'y',
-        #                     # namen vragen, overgenomen uit GLDImport
-        #                     'organisatie',
-        #                     'observation_type',
-        #                     'status',
-        #                     'process_reference',
-        #                     'measurement_instrument_type',
-        #                     'air_pressure_compensation_type',
-        #                     'process_type',
-        #                     'evaluation_procedure',
-        #                     'validated',
-        #                     'executed',
-        #                     'report']
         required_columns = ['time', 'value']
         missing_columns = [col for col in required_columns if col not in reader.fieldnames]
         if missing_columns:
