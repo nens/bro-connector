@@ -7,9 +7,11 @@ from django.core.exceptions import ValidationError
 from io import BytesIO
 import csv
 import zipfile
+import polars as pl
+from gld.models import Observation, MeasurementTvp, ObservationProcess, ObservationMetadata
 
 @receiver(pre_save, sender=GLDImport)
-def validate_and_process_file(sender, instance, **kwargs):
+def validate_and_process_file(sender, instance: GLDImport, **kwargs):
     # Ensure the file exists
     if not instance.file:
         raise ValidationError("Geen file geupload.")
@@ -21,7 +23,7 @@ def validate_and_process_file(sender, instance, **kwargs):
     else:
         raise ValidationError("Ongeldig bestandstype. Alleen ZIP- of CSV-bestanden zijn toegestaan.")    
     
-def process_zip_file(instance):
+def process_zip_file(instance: GLDImport):
     # Read ZIP file
     zip_buffer = BytesIO(instance.file.read())
     try:
@@ -38,9 +40,20 @@ def process_zip_file(instance):
     finally:
         zip_buffer.close()
 
-def process_csv_file(instance):
+def process_csv_file(instance: GLDImport):
     # Validate CSV file
-    validate_csv(instance.file)
+    validated = validate_csv(instance.file)
+    instance.validated = validated
+
+    # Create Observation
+
+    # Create ObservationProces
+    # Create ObservationMetadata
+
+    # Iter rows
+
+    # Create MeasurementTVP
+    
 
 def validate_csv(file):
     try:

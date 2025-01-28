@@ -70,12 +70,12 @@ class GLDImport(models.Model):
         Organisation, on_delete=models.SET_NULL, null=True, blank=True
     )
     observation_type = models.CharField(
-        choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True
+        choices=OBSERVATIONTYPE, max_length=200, blank=False, null=False
     )
-    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True)
+    status = models.CharField(choices=STATUSCODE, max_length=200, blank=False, null=False)
 
     process_reference = models.CharField(
-        choices=PROCESSREFERENCE, max_length=200, blank=True, null=True
+        choices=PROCESSREFERENCE, max_length=200, blank=False, null=False
     )
     measurement_instrument_type = models.CharField(
         choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False
@@ -84,7 +84,7 @@ class GLDImport(models.Model):
         choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True
     )
     process_type = models.CharField(
-        choices=PROCESSTYPE, max_length=200, blank=True, null=True
+        choices=PROCESSTYPE, max_length=200, blank=False, null=False
     )
     evaluation_procedure = models.CharField(
         choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False
