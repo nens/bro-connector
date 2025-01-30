@@ -165,14 +165,14 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "observation_type",
         "status",
         "validation_status",
-        "responsible_party_id",
+        "responsible_party",
     )
     list_filter = (
         "observation_metadata_id",
         "date_stamp",
         "observation_type",
         "status",
-        "responsible_party_id",
+        "responsible_party",
     )
 
     readonly_fields = ["validation_status"]
