@@ -59,7 +59,8 @@ class XMLImport(models.Model):
 
 
 class GLDImport(models.Model):
-    file = models.FileField(upload_to="bulk", help_text="csv. or zip.", validators=[], blank=True)
+    file = models.FileField(upload_to="bulk", help_text="csv. or zip.", validators=[], null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=False, verbose_name="Naam")
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
@@ -91,16 +92,26 @@ class GLDImport(models.Model):
     )
 
     validated = models.BooleanField(
-        null=True, blank=True, default=False, editable=True
+        null=True, blank=True, default=True, editable=False
     )
     executed = models.BooleanField(
-        null=True, blank=True, default=False, editable=True
+        null=True, blank=True, default=False, editable=False
     )
     report = models.TextField(
-        help_text="process description",
+        help_text="Information on GLD Import",
         blank=True,
         null=True,
     )
+
+    # def __str__(self):
+    #     filename = 'no file'
+    #     date_stamp_str = 'no date'
+    #     if self.file:
+    #         filename = f"{self.file.name}"
+    #     if self.observation_metadata.date_stamp:
+    #         date_stamp_str = self.observation_metadata.date_stamp
+
+    #     return f"{date_stamp_str}-{filename}"
 
     class Meta:
         managed = True
@@ -108,8 +119,17 @@ class GLDImport(models.Model):
         verbose_name = "GLD Import"
         verbose_name_plural = "GLD Imports"
 
+    # def clean(self):
+    #     if not self.validated:
+    #         raise ValidationError("Het importeren is niet gelukt, bekijk het report onderaan de GLD Import.")
+        
     def clean(self):
         if self.file.path.endswith(".zip") or self.file.path.endswith(".csv"):
             return
         else:
             raise ValidationError("File should be of type: [csv, zip]")
+
+    # def save(self, *args, **kwargs):
+    #     if not self.validated:
+    #         raise ValidationError("Het importeren is niet gelukt, bekijk het report onderaan de GLD Import.")
+    
