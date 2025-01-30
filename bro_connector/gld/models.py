@@ -166,8 +166,13 @@ class Observation(models.Model):
         end = "present"
         if self.observation_endtime:
             end = self.observation_endtime.date()
-        return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
-
+            if self.observation_starttime:
+                return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
+            else:
+                return f"{self.groundwater_level_dossier} (Unknown - {end})"
+        else:
+            return f"{self.groundwater_level_dossier} (Unknown - Unknown)"
+        
     def save(self, *args, **kwargs):
         if self.pk == None:
             super().save(*args, **kwargs)
@@ -196,6 +201,10 @@ class Observation(models.Model):
                 observation_metadata=metadata,
                 observation_process=process,
             )
+        
+        if self.observation_endtime and self.observation_starttime:
+            self.observation_process = self.observation_endtime - self.observation_starttime
+
 
     class Meta:
         managed = True
@@ -212,11 +221,14 @@ class ObservationMetadata(models.Model):
     )
     status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True)
     responsible_party = models.ForeignKey(
-        Organisation, on_delete=models.SET_NULL, null=True, blank=True
+        Organisation, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Organisatie"
     )
 
     def __str__(self):
-        return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+        if self.responsible_party:
+            return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+        else:
+            return f"{str(self.status)} ({str(self.date_stamp)})"
 
     @property
     def validation_status(self):
