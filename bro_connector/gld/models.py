@@ -171,10 +171,16 @@ class Observation(models.Model):
         end = "present"
         if self.observation_endtime:
             end = self.observation_endtime.date()
-            if self.observation_starttime:
-                return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
+            if self.groundwater_level_dossier:
+                if self.observation_starttime:
+                    return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
+                else:
+                    return f"{self.groundwater_level_dossier} (Unknown - {end})"
             else:
-                return f"{self.groundwater_level_dossier} (Unknown - {end})"
+                if self.observation_starttime:
+                    return f"No groundwater_level_dossier ({self.observation_starttime.date()} - {end})"
+                else:
+                    return f"No groundwater_level_dossier (Unknown - {end})"
         else:
             return f"{self.groundwater_level_dossier} (Unknown - Unknown)"
         
