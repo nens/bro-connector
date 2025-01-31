@@ -118,7 +118,6 @@ class Observation(models.Model):
     observation_process = models.ForeignKey(
         "ObservationProcess", on_delete=models.CASCADE, null=True, blank=True
     )
-    observationperiod = models.DurationField(blank=True, null=True)
     observation_starttime = models.DateTimeField(blank=True, null=True)
     result_time = models.DateTimeField(blank=True, null=True)
     observation_endtime = models.DateTimeField(blank=True, null=True)
@@ -161,6 +160,12 @@ class Observation(models.Model):
         if self.observation_metadata:
             return self.observation_metadata.status
         return "-"
+    
+    @property
+    def observationperiod(self):
+        if self.observation_starttime and self.observation_endtime:
+            return self.observation_endtime - self.observation_starttime
+        return None
 
     def __str__(self):
         end = "present"
@@ -202,9 +207,6 @@ class Observation(models.Model):
                 observation_process=process,
             )
         
-        if self.observation_endtime and self.observation_starttime:
-            self.observation_process = self.observation_endtime - self.observation_starttime
-
 
     class Meta:
         managed = True
