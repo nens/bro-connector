@@ -92,25 +92,15 @@ def process_csv_file(instance: GLDImport):
             responsible_party = instance.responsible_party,
         )[0]
 
+        first_datetime = reader[time_col].min()
+        last_datetime = reader[time_col].max()
+
         # Create Observation
         Obs = Observation.objects.update_or_create(
             observation_metadata = Obs_Meta,
             observation_process = Obs_Pro,
-            # observation_starttime = , # DateTimeField: first observation
-            # observation_endtime = , # DateTimeField: last observation
-
-            # observationperiod = observation_endtime - observation_starttime, # TimeDelta object: De periode waarover de tijd-meetwaardereeks, die het resultaat is van de observatie, van toepassing is.
-
-            # result_time notes:
-            # Bij een controlemeting, is dit het tijdstip waarop de meting is uitgevoerd.
-            # Bij een reguliere tijd-meetwaardereeks met een mate beoordeling:
-            # voorlopig, is dit het tijdstip van de laatste meting van de reeks.
-            # Bij een volledig beoordeelde meetreeks is dit het tijdstip waarop de beoordeling is afgerond.
-            # Niet bedoeld wordt het tijdstip waarop de resultaten worden aangeboden bij het bronhouderportaal of de LV-BRO.
-            # Dit is in WaterML een verplicht attribuut.
-            # result_time = ,
-            
-            # up_to_date_in_bro = False,
+            observation_starttime = first_datetime,
+            observation_endtime = last_datetime,
         )[0]
 
         # itter over file
@@ -148,8 +138,6 @@ def process_csv_file(instance: GLDImport):
                 field_value_unit = instance.field_value_unit,
                 measurement_point_metadata = mp_meta,
             )
-
-            # update DateFields in Observation
 
 
 
