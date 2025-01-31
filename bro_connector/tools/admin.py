@@ -187,6 +187,7 @@ class GLDImportAdmin(admin.ModelAdmin):
             "groundwater_monitoring_tube",
             "responsible_party",
             "observation_type",
+            "field_value_unit",
             "status",
             "process_reference",
             "measurement_instrument_type",

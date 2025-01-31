@@ -73,6 +73,8 @@ class GLDImport(models.Model):
     observation_type = models.CharField(
         choices=OBSERVATIONTYPE, max_length=200, blank=False, null=False
     )
+    field_value_unit = models.CharField(choices=UNIT_CHOICES, max_length=255, blank=False, null=False, default="m", verbose_name="Veld eenheid")
+    
     status = models.CharField(choices=STATUSCODE, max_length=200, blank=False, null=False)
 
     process_reference = models.CharField(
