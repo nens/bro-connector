@@ -4,7 +4,7 @@ from django.db.models.signals import (
     pre_save,
 )
 from django.dispatch import receiver
-from .models import gld_registration_log, GroundwaterLevelDossier, MeasurementTvp, MeasurementPointMetadata
+from .models import gld_registration_log, GroundwaterLevelDossier, MeasurementTvp, MeasurementPointMetadata, Observation
 from gmw.models import GroundwaterMonitoringTubeStatic
 import reversion
 
@@ -57,6 +57,16 @@ def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     metadata = instance.measurement_point_metadata
     if metadata:
         metadata.delete()
+
+@receiver(post_delete, sender=Observation)
+def on_delete_measurement_tvp(sender, instance: Observation, **kwargs):
+    observation_process = instance.observation_process
+    if observation_process:
+        observation_process.delete()
+
+    observation_metadata = instance.observation_metadata
+    if observation_metadata:
+        observation_metadata.delete()
 
 @receiver(pre_save, sender=MeasurementTvp)
 def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
