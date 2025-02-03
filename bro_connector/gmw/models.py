@@ -157,7 +157,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
         remarks = self.state.all().order_by("date_from")
         report = ""
         for remark in remarks:
-            report += f"{remark.date_from.date()}: {remark.remark}\n\n"
+            report += f"{remark.date_from.date()}: {remark.comment}\n\n"
 
         return report
 
@@ -318,9 +318,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         blank=True,
         verbose_name="Bots bescherming",
     )
-    remark = models.CharField(
-        max_length=254, blank=True, null=True, verbose_name="Commentaar"
-    )
+    comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
 
     def __str__(self):
         if self.date_till:
@@ -407,7 +405,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         remarks = self.state.all().order_by("date_from")
         report = ""
         for remark in remarks:
-            report += f"{remark.date_from.date()}: {remark.remark}\n\n"
+            report += f"{remark.date_from.date()}: {remark.comment}\n\n"
 
         return report
 
@@ -501,9 +499,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     inserted_part_material = models.CharField(
         max_length=200, blank=True, null=True, verbose_name="Materiaal ingeplaatst deel"
     )
-    remark = models.CharField(
-        max_length=254, blank=True, null=True, verbose_name="Commentaar"
-    )
+    comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
 
     @property
     def date_till(self):

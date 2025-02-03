@@ -48,9 +48,10 @@ class EventsInline(admin.TabularInline):
     extra = 0
     max_num = 0
 
+
 class PicturesInline(ImageUploaderInline):
     model = gmw_models.Picture
-    
+
     fields = ["picture"]
 
     extra = 0
@@ -65,7 +66,7 @@ class WellDynamicInline(admin.TabularInline):
         "well_head_protector",
         "ground_level_position",
         "ground_level_positioning_method",
-        "remark",
+        "comment",
     )
 
     readonly_fields = ["date_from"]
@@ -73,14 +74,14 @@ class WellDynamicInline(admin.TabularInline):
 
 class TubeDynamicInline(admin.TabularInline):
     model = gmw_models.GroundwaterMonitoringTubeDynamic
-    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringTubeDynamic)
+    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
     fields = (
         "date_from",
         "tube_top_diameter",
         "tube_top_position",
         "tube_top_positioning_method",
         "tube_status",
-        "remark",
+        "comment",
     )
 
     readonly_fields = ["date_from"]
@@ -110,11 +111,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "well_code",
         "in_management",
     )
-    readonly_fields = (
-        "lat",
-        "lon",
-        "report"
-    )
+    readonly_fields = ("lat", "lon", "report")
 
     fieldsets = [
         (
@@ -161,7 +158,11 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         ),
     ]
 
-    inlines = (PicturesInline, WellDynamicInline, EventsInline,)
+    inlines = (
+        PicturesInline,
+        WellDynamicInline,
+        EventsInline,
+    )
 
     actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
 
@@ -508,7 +509,7 @@ class GmwSyncLogAdmin(admin.ModelAdmin):
     list_filter = (
         "bro_id",
         EventTypeFilter,
-        "process_status", 
+        "process_status",
         "comments",
     )
 

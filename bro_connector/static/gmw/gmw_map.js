@@ -57,12 +57,16 @@ const createPopup = (well) => {
   const popupContent = `
               <div id="popup-content">
                 <a href="${objectPageUrl}" target="_blank"><strong style="font-size: 18px;">${
-                  well.bro_id
+                  well.well_code
                 }</strong></a>
                 <hr width="100%" size="2">
                 <div class="well-item">
-                  <span class="label">Putcode:</span> 
-                  <span class="value">${well.well_code}</span>
+                  <span class="label">BRO-ID:</span> 
+                  <span class="value">${well.bro_id}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">NITG-code:</span> 
+                  <span class="value">${well.nitg_code}</span>
                 </div>
                 <div class="well-item">
                   <span class="label">GMW naar BRO:</span> 
