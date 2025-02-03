@@ -28,7 +28,10 @@ BBOX_SETTINGS = {
     "ymin": 355000,
     "ymax": 420000,
 }
-POLYGON_SHAPEFILE = r"C:\Users\steven.hosper\Desktop\bro-connector-1\data\shapefile\zeeland.shp"
+POLYGON_SHAPEFILE = (
+    r"C:\Users\steven.hosper\Desktop\bro-connector-1\data\shapefile\zeeland.shp"
+)
+KVK_USER = "20168636"
 
 
 ##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
