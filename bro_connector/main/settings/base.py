@@ -28,6 +28,10 @@ BBOX_SETTINGS = {
     "ymin": 355000,
     "ymax": 420000,
 }
+POLYGON_SHAPEFILE = (
+    r"C:\Users\steven.hosper\Desktop\bro-connector-1\data\shapefile\zeeland.shp"
+)
+KVK_USER = "20168636"
 
 
 ##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
@@ -459,5 +463,5 @@ GRAPH_MODELS = {
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # needed for DASH APP
 
 if platform.system() == "Windows":
-    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
+    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"
     GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
