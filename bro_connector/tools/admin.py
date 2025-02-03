@@ -1,6 +1,6 @@
 from reversion_compare.helpers import patch_admin 
 from django.db import models
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
 from zipfile import ZipFile
@@ -168,7 +168,56 @@ class XMLImportAdmin(admin.ModelAdmin):
                         )
                         object.save()
 
+
+class GLDImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "validated",
+        "executed",
+    )
+
+    list_filter = (
+        "validated",
+        "executed",
+    )
+
+    def get_fields(self, request, obj=None):
+        fields = [
+            "file",
+            "groundwater_monitoring_tube",
+            "responsible_party",
+            "observation_type",
+            "field_value_unit",
+            "status",
+            "process_reference",
+            "measurement_instrument_type",
+            "air_pressure_compensation_type",
+            "process_type",
+            "evaluation_procedure",
+        ]
+        
+        # Only show 'report' if it contains something
+        if obj and obj.report and obj.report.strip():
+            fields.append("report")
+        
+        return fields
+    
+    def save_model(self, request, obj, form, change):
+        # Save the object first
+        super().save_model(request, obj, form, change)
+
+        # Check if validated is False, and add a warning message
+        if not obj.validated:
+            messages.warning(request, f"The GLD Import \"{obj}\" was added, but it has not been validated. Please review the report in the model.")
+
+        else:
+            messages.success(request, f"The GLD Import \"{obj}\" was added successfully.")
+
+
+
 _register(tools_models.BroImporter, BroImporterAdmin)
 _register(tools_models.XMLImport, XMLImportAdmin)
+_register(tools_models.GLDImport, GLDImportAdmin)
 patch_admin(tools_models.BroImporter)
 patch_admin(tools_models.XMLImport)
+patch_admin(tools_models.GLDImport)

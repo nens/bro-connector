@@ -33,6 +33,7 @@ class GroundwaterLevelDossier(models.Model):
         blank=False,
         related_name="groundwaterleveldossier"
     )
+    # quality_regime = models.CharField(max_length=254, null=True, blank=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
@@ -108,19 +109,18 @@ class GroundwaterLevelDossier(models.Model):
 
 class Observation(models.Model):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False)
-    observationperiod = models.DurationField(blank=True, null=True)
-    observation_starttime = models.DateTimeField(blank=True, null=True)
-    result_time = models.DateTimeField(blank=True, null=True)
-    observation_endtime = models.DateTimeField(blank=True, null=True)
+    groundwater_level_dossier = models.ForeignKey(
+        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
+    )
     observation_metadata = models.ForeignKey(
         "ObservationMetadata", on_delete=models.CASCADE, null=True, blank=True
     )
     observation_process = models.ForeignKey(
         "ObservationProcess", on_delete=models.CASCADE, null=True, blank=True
     )
-    groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
-    )
+    observation_starttime = models.DateTimeField(blank=True, null=True)
+    result_time = models.DateTimeField(blank=True, null=True)
+    observation_endtime = models.DateTimeField(blank=True, null=True)
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
 
     @property
@@ -160,13 +160,30 @@ class Observation(models.Model):
         if self.observation_metadata:
             return self.observation_metadata.status
         return "-"
+    
+    @property
+    def observationperiod(self):
+        if self.observation_starttime and self.observation_endtime:
+            return self.observation_endtime - self.observation_starttime
+        return None
 
     def __str__(self):
         end = "present"
         if self.observation_endtime:
             end = self.observation_endtime.date()
-        return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
-
+            if self.groundwater_level_dossier:
+                if self.observation_starttime:
+                    return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
+                else:
+                    return f"{self.groundwater_level_dossier} (Unknown - {end})"
+            else:
+                if self.observation_starttime:
+                    return f"No groundwater_level_dossier ({self.observation_starttime.date()} - {end})"
+                else:
+                    return f"No groundwater_level_dossier (Unknown - {end})"
+        else:
+            return f"{self.groundwater_level_dossier} (Unknown - Unknown)"
+        
     def save(self, *args, **kwargs):
         if self.pk == None:
             super().save(*args, **kwargs)
@@ -195,6 +212,7 @@ class Observation(models.Model):
                 observation_metadata=metadata,
                 observation_process=process,
             )
+        
 
     class Meta:
         managed = True
@@ -211,11 +229,14 @@ class ObservationMetadata(models.Model):
     )
     status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True)
     responsible_party = models.ForeignKey(
-        Organisation, on_delete=models.SET_NULL, null=True, blank=True
+        Organisation, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Organisatie"
     )
 
     def __str__(self):
-        return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+        if self.responsible_party:
+            return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+        else:
+            return f"{str(self.status)} ({str(self.date_stamp)})"
 
     @property
     def validation_status(self):
