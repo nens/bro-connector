@@ -1,11 +1,11 @@
-from reversion_compare.helpers import patch_admin 
+from reversion_compare.helpers import patch_admin
 from django.db import models
 from django.contrib import admin, messages
 from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
 from zipfile import ZipFile
 import os
-from reversion_compare.helpers import patch_admin 
+from reversion_compare.helpers import patch_admin
 from . import models as tools_models
 from main.management.tasks import (
     retrieve_historic_gmw,
@@ -16,8 +16,10 @@ from main.management.tasks import (
 )
 import datetime
 
+
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
+
 
 def get_searchable_fields(model_class: models.Model) -> list[str]:
     return [
@@ -26,19 +28,28 @@ def get_searchable_fields(model_class: models.Model) -> list[str]:
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
+
 def format_message(type: str, kvk: int, count: int, imported: int) -> dict:
     if type in ["gar", "gmn", "frd"]:
         return {"message": f"BRO type {type} not yet implemented.", "level": "WARNING"}
     elif count == 0:
         return {"message": f"No {type}-objects found for {kvk}.", "level": "ERROR"}
     elif count == imported:
-        return {"message": f"All {type}-objects imported for {kvk}. ({imported})", "level": "SUCCESS"}
+        return {
+            "message": f"All {type}-objects imported for {kvk}. ({imported})",
+            "level": "SUCCESS",
+        }
     elif imported == 0:
-        return {"message": f"No {type}-objects imported for {kvk}. Found: {count} objects.", "level": "ERROR"}
+        return {
+            "message": f"No {type}-objects imported for {kvk}. Found: {count} objects.",
+            "level": "ERROR",
+        }
     elif count > imported:
-        return {"message": f"Imported {imported} out of {count} {type}-objects for {kvk}.", "level": "WARNING"}
-    
- 
+        return {
+            "message": f"Imported {imported} out of {count} {type}-objects for {kvk}.",
+            "level": "WARNING",
+        }
+
 
 class BroImporterAdmin(admin.ModelAdmin):
     search_fields = get_searchable_fields(tools_models.BroImporter)
@@ -55,7 +66,10 @@ class BroImporterAdmin(admin.ModelAdmin):
         "kvk_number",
     )
 
-    readonly_fields = ('import_date', "created_date",)
+    readonly_fields = (
+        "import_date",
+        "created_date",
+    )
 
     actions = ["update_import"]
 
@@ -70,7 +84,6 @@ class BroImporterAdmin(admin.ModelAdmin):
             "gar": retrieve_historic_gar,
         }
 
-
         import_info = module_to_call[obj.bro_type].run(kvk_number=obj.kvk_number)
         message_info = format_message(
             obj.bro_type,
@@ -78,7 +91,7 @@ class BroImporterAdmin(admin.ModelAdmin):
             import_info["ids_found"],
             import_info["imported"],
         )
-        
+
         obj.import_date = datetime.datetime.now()
         self.message_user(request, message_info["message"], level=message_info["level"])
         obj.save()
@@ -86,6 +99,7 @@ class BroImporterAdmin(admin.ModelAdmin):
     @admin.action(description="Re-import values from the BRO.")
     def update_import(self, request, queryset):
         pass
+
 
 class XMLImportAdmin(admin.ModelAdmin):
     list_display = (
@@ -143,7 +157,6 @@ class XMLImportAdmin(admin.ModelAdmin):
                 file_name = str(object.file)[13:-4]
                 print(file_name)
 
-
                 for file in os.listdir(bulk_dir):
                     if file.endswith("csv"):
                         print(
@@ -195,29 +208,60 @@ class GLDImportAdmin(admin.ModelAdmin):
             "process_type",
             "evaluation_procedure",
         ]
-        
+
         # Only show 'report' if it contains something
         if obj and obj.report and obj.report.strip():
             fields.append("report")
-        
+
         return fields
-    
+
     def save_model(self, request, obj, form, change):
         # Save the object first
         super().save_model(request, obj, form, change)
 
         # Check if validated is False, and add a warning message
         if not obj.validated:
-            messages.warning(request, f"The GLD Import \"{obj}\" was added, but it has not been validated. Please review the report in the model.")
+            messages.warning(
+                request,
+                f'The GLD Import "{obj}" was added, but it has not been validated. Please review the report in the model.',
+            )
 
         else:
-            messages.success(request, f"The GLD Import \"{obj}\" was added successfully.")
+            messages.success(request, f'The GLD Import "{obj}" was added successfully.')
 
+
+class GMNImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "validated",
+        "executed",
+    )
+
+    list_filter = (
+        "validated",
+        "executed",
+    )
+
+    def save_model(self, request, obj, form, change):
+        # Save the object first
+        super().save_model(request, obj, form, change)
+
+        # Check if validated is False, and add a warning message
+        if not obj.validated:
+            messages.warning(
+                request,
+                f'The GMN Import "{obj}" was added, but an error occured. Please review the report in the model.',
+            )
+
+        else:
+            messages.success(request, f'The GLD Import "{obj}" was added successfully.')
 
 
 _register(tools_models.BroImporter, BroImporterAdmin)
 _register(tools_models.XMLImport, XMLImportAdmin)
 _register(tools_models.GLDImport, GLDImportAdmin)
+_register(tools_models.GMNImport, GMNImportAdmin)
 patch_admin(tools_models.BroImporter)
 patch_admin(tools_models.XMLImport)
 patch_admin(tools_models.GLDImport)
+patch_admin(tools_models.GMNImport)
