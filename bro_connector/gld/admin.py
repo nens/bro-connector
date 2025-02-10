@@ -6,9 +6,12 @@ from main.settings.base import gld_SETTINGS
 from main.management.tasks import gld_actions
 from reversion_compare.helpers import patch_admin
 import reversion
-from main.management.commands.gld_sync_to_bro import GldSyncHandler, get_observation_gld_source_document_data
+from main.management.commands.gld_sync_to_bro import (
+    GldSyncHandler,
+    get_observation_gld_source_document_data,
+)
 from .custom_filters import (
-    HasOpenObservationFilter, 
+    HasOpenObservationFilter,
     CompletelyDeliveredFilter,
     TubeFilter,
     GLDFilter,
@@ -18,6 +21,7 @@ import datetime
 from gmw.models import GroundwaterMonitoringWellStatic
 from gld.models import GroundwaterLevelDossier
 
+
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
@@ -25,6 +29,7 @@ def _register(model, admin_class):
 # %% GLD model registration
 
 gld = GldSyncHandler()
+
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -52,19 +57,26 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
     ]
 
-    readonly_fields = ["gld_bro_id", "gmw_bro_id", "tube_number", "most_recent_measurement"]
+    readonly_fields = [
+        "gld_bro_id",
+        "gmw_bro_id",
+        "tube_number",
+        "most_recent_measurement",
+    ]
 
     actions = ["deliver_to_bro", "check_status"]
 
     @admin.display(boolean=True)
     def completely_delivered(self, obj):
         return obj.completely_delivered
-    completely_delivered.short_description = 'Fully Delivered'
+
+    completely_delivered.short_description = "Fully Delivered"
 
     @admin.display(boolean=True)
     def has_open_observation(self, obj):
         return obj.has_open_observation
-    has_open_observation.short_description = 'Active Measurements'
+
+    has_open_observation.short_description = "Active Measurements"
 
     def deliver_to_bro(self, request, queryset):
         for dossier in queryset:
@@ -79,28 +91,21 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 
 
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
+    list_max_show_all = 1000  # Prevents loading all records
+
     search_fields = ["measurement_point_metadata_id", "censor_reason_artesia"]
-    list_display = (
-        "measurement_point_metadata_id",
-        "status_quality_control",
-        "censor_reason",
-        "censor_reason_artesia",
-        "value_limit",
-    )
+    list_display = ("__str__",)
 
     list_filter = (
-        "measurement_point_metadata_id",
         "status_quality_control",
         "censor_reason",
     )
 
 
 class MeasurementTvpAdmin(admin.ModelAdmin):
-    list_display = (
-        "observation",
-        "measurement_time",
-        "calculated_value",
-    )
+    list_max_show_all = 1000  # Prevents loading all records
+
+    list_display = ("__str__",)
     autocomplete_fields = ("measurement_point_metadata",)
     list_filter = (ObservationFilter,)
 
@@ -124,10 +129,16 @@ class ObservationAdmin(admin.ModelAdmin):
         "up_to_date_in_bro",
     )
 
-    search_fields = ["groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
-                     "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id"]
+    search_fields = [
+        "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
+        "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
+    ]
 
-    readonly_fields = ["status", "timestamp_first_measurement", "timestamp_last_measurement"]
+    readonly_fields = [
+        "status",
+        "timestamp_first_measurement",
+        "timestamp_last_measurement",
+    ]
 
     actions = ["close_observation", "change_up_to_date_status"]
 
@@ -141,7 +152,9 @@ class ObservationAdmin(admin.ModelAdmin):
     def close_observation(self, request, queryset):
         for item in queryset.filter(observation_endtime__isnull=True):
             with reversion.create_revision():
-                item.observation_endtime = datetime.datetime.now().astimezone() - datetime.timedelta(seconds=1)
+                item.observation_endtime = (
+                    datetime.datetime.now().astimezone() - datetime.timedelta(seconds=1)
+                )
                 item.result_time = item.timestamp_last_measurement
                 item.save(update_fields=["observation_endtime", "result_time"])
                 reversion.set_comment("Closed the observation with a manual action.")
@@ -154,9 +167,10 @@ class ObservationAdmin(admin.ModelAdmin):
                     item.up_to_date_in_bro = False
                 else:
                     item.up_to_date_in_bro = True
-                
+
                 item.save(update_fields=["up_to_date_in_bro"])
                 reversion.set_comment("Changed up_to_date_in_bro with a manual action.")
+
 
 class ObservationMetadataAdmin(admin.ModelAdmin):
     list_display = (
@@ -210,9 +224,10 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     def regenerate_start_registration_sourcedocument(self, request, queryset):
         gld = GldSyncHandler()
         for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(bro_id=registration_log.gwm_bro_id)
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gwm_bro_id
+            )
             gld._set_bro_info(well)
-
 
             if registration_log.delivery_id is not None:
                 self.message_user(
@@ -222,8 +237,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 )
             else:
                 gld.create_start_registration_sourcedocs(
-                    well,
-                    registration_log.filter_number
+                    well, registration_log.filter_number
                 )
                 self.message_user(
                     request,
@@ -236,7 +250,9 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         gld = GldSyncHandler()
 
         for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(bro_id=registration_log.gwm_bro_id)
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gwm_bro_id
+            )
             gld._set_bro_info(well)
 
             sourcedoc_file = os.path.join(
@@ -274,7 +290,9 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     @admin.action(description="Deliver startregistration sourcedocument")
     def deliver_startregistration_sourcedocument(self, request, queryset):
         for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(bro_id=registration_log.gwm_bro_id)
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gwm_bro_id
+            )
             gld._set_bro_info(well)
 
             if registration_log.delivery_id is not None:
@@ -289,16 +307,17 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     "Can't deliver an invalid document or not yet validated document",
                     messages.ERROR,
                 )
-            elif registration_log.delivery_status in ["AANGELEVERD", "OPGENOM EN_LVBRO"]:
+            elif registration_log.delivery_status in [
+                "AANGELEVERD",
+                "OPGENOM EN_LVBRO",
+            ]:
                 self.message_user(
                     request,
                     "Can't deliver a document that has been already been delivered",
                     messages.ERROR,
                 )
             else:
-                gld.deliver_startregistration_sourcedocuments(
-                    registration_log.id
-                )
+                gld.deliver_startregistration_sourcedocuments(registration_log.id)
 
                 self.message_user(
                     request,
@@ -311,7 +330,9 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         gld = GldSyncHandler()
 
         for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(bro_id=registration_log.gwm_bro_id)
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gwm_bro_id
+            )
             gld._set_bro_info(well)
 
             delivery_id = registration_log.delivery_id
@@ -363,7 +384,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         "timestamp_end_registration",
         "quality_regime",
         "file",
-        "process_status"
+        "process_status",
     )
 
 
@@ -379,7 +400,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "delivery_status",
         "comments",
         "addition_type",
-        "process_status"
+        "process_status",
     )
     list_filter = (
         "broid_registration",
@@ -389,7 +410,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "delivery_type",
         "delivery_status",
         "comments",
-        "addition_type"
+        "addition_type",
     )
 
     # Retry functions
@@ -408,7 +429,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "corrections_applied",
         "file",
         "addition_type",
-        "process_status"
+        "process_status",
     )
 
     actions = [
@@ -424,7 +445,9 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     def regenerate_sourcedocuments(self, request, queryset):
         gld = GldSyncHandler()
         for addition_log in queryset:
-            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(gld_bro_id=addition_log.broid_registration)
+            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
+                gld_bro_id=addition_log.broid_registration
+            )
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
             if addition_log.delivery_id is not None:
@@ -459,10 +482,12 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     def validate_sourcedocuments(self, request, queryset):
         gld = GldSyncHandler()
         for addition_log in queryset:
-            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(gld_bro_id=addition_log.broid_registration)
+            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
+                gld_bro_id=addition_log.broid_registration
+            )
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
-            
+
             additions_dir = gld_SETTINGS["additions_dir"]
 
             filename = addition_log.file
@@ -481,9 +506,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 )
                 # Validate the sourcedocument for this observation
             else:
-                gld.validate_gld_addition_source_document(
-                    addition_log, filename
-                )
+                gld.validate_gld_addition_source_document(addition_log, filename)
                 self.message_user(
                     request, "Succesfully attemped document validation", messages.INFO
                 )
@@ -493,15 +516,15 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     def deliver_sourcedocuments(self, request, queryset):
         gld = GldSyncHandler()
         for addition_log in queryset:
-            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(gld_bro_id=addition_log.broid_registration)
+            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
+                gld_bro_id=addition_log.broid_registration
+            )
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
 
             filename = addition_log.file
 
-            if (
-                addition_log.validation_status is None
-            ):
+            if addition_log.validation_status is None:
                 self.message_user(
                     request,
                     "Can't deliver an invalid document or not yet validated document",
@@ -514,9 +537,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.deliver_gld_addition_source_document(
-                    addition_log, filename
-                )
+                gld.deliver_gld_addition_source_document(addition_log, filename)
                 self.message_user(
                     request, "Succesfully attemped document delivery", messages.INFO
                 )
@@ -526,7 +547,9 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     def check_status_delivery(self, request, queryset):
         gld = GldSyncHandler()
         for addition_log in queryset:
-            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(gld_bro_id=addition_log.broid_registration)
+            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
+                gld_bro_id=addition_log.broid_registration
+            )
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
 
@@ -537,9 +560,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.check_status_gld_addition(
-                    addition_log
-                )
+                gld.check_status_gld_addition(addition_log)
                 self.message_user(
                     request, "Succesfully attemped status check", messages.INFO
                 )

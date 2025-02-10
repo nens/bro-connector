@@ -2,18 +2,50 @@ from django.db import models
 from django.db.models import Manager
 import django.contrib.gis.db.models as geo_models
 from django.utils.html import format_html
-from .choices import *  # noqa: F403
+from gmw.choices import (
+    WELLHEADPROTECTOR_SUBTYPES,
+    WELLHEADPROTECTOR,
+    WELLSTABILITY,
+    WELLSTATUS,
+    GLUE,
+    GROUNDLEVELPOSITIONINGMETHOD,
+    QUALITYREGIME,
+    INITIALFUNCTION,
+    UNDERPRIVILIGE,
+    DELIVERY_TYPE_CHOICES,
+    DELIVERYCONTEXT,
+    HORIZONTALPOSITIONINGMETHOD,
+    VERTICALDATUM,
+    LABELS,
+    LOCKS,
+    LOCALVERTICALREFERENCEPOINT,
+    FOUNDATIONS,
+    TUBEMATERIAL,
+    TUBEPACKINGMATERIAL,
+    TUBESTATUS,
+    TUBETOPPOSITIONINGMETHOD,
+    TUBETYPE,
+    COLLISION_PROTECTION_TYPES,
+    BOOLEAN_CHOICES,
+    SOCKMATERIAL,
+    ELECTRODEPACKINGMATERIAL,
+    ELECTRODESTATUS,
+    EVENTNAME,
+    CONSTRUCTIONSTANDARD,
+)
 import main.utils.validators_models as validators_models
 from bro.models import Organisation, BROProject
 import datetime
-from .utils import generate_put_code
+from gmw.utils import generate_put_code
 
 
 class GroundwaterMonitoringWellStatic(models.Model):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
-    internal_id = models.CharField(max_length=50, verbose_name="Veldnaam")
+    internal_id = models.CharField(
+        max_length=50, verbose_name="Veldnaam", null=True, blank=True
+    )
     bro_id = models.CharField(
-        max_length=15, blank=True, null=True, verbose_name="BRO ID"
+        max_length=15, blank=True, null=True, verbose_name="BRO ID", unique=True
     )
     project = models.ForeignKey(
         BROProject,
@@ -119,7 +151,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
     )
     well_status = models.CharField(
         max_length=50,
-        choices=WELL_STATUS,
+        choices=WELLSTATUS,
         default="inGebruik",
         editable=True,
         verbose_name="Putstatus",
