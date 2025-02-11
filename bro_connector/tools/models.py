@@ -66,7 +66,7 @@ class XMLImport(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'tools"."xml_import'
+        db_table = 'tools"."xml_importer'
         verbose_name = "XML Import"
         verbose_name_plural = "XML Imports"
 
