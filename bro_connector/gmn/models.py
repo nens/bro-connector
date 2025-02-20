@@ -1,6 +1,5 @@
 from django.db import models
 import random
-from django.core.exceptions import ValidationError
 from .choices import (
     KADER_AANLEVERING_GMN,
     MONITORINGDOEL,

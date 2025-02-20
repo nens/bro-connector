@@ -11,10 +11,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def is_demo():
     if env == "production":
         return False
     return True
+
 
 def _get_token(owner: Organisation):
     return {
@@ -22,27 +24,32 @@ def _get_token(owner: Organisation):
         "pass": owner.bro_token,
     }
 
+
 def form_bro_info(gmn: GroundwaterMonitoringNet) -> dict:
-    if gmn.delivery_accountable_party.bro_token is None or gmn.delivery_accountable_party.bro_user is None:
+    if (
+        gmn.delivery_accountable_party.bro_token is None
+        or gmn.delivery_accountable_party.bro_user is None
+    ):
         return {
             "token": _get_token(gmn.delivery_responsible_party),
             "projectnummer": gmn.project.project_number,
         }
     return {
-            "token": _get_token(gmn.delivery_accountable_party),
-            "projectnummer": gmn.project.project_number,
-        }
+        "token": _get_token(gmn.delivery_accountable_party),
+        "projectnummer": gmn.project.project_number,
+    }
+
 
 def bro_info_missing(bro_info: dict, gmn_name: str) -> bool:
-    skip=False
+    skip = False
     if bro_info["projectnummer"] is None:
-        skip=True
-        logger.info(f'No projectnumber for GMN ({gmn_name})')
+        skip = True
+        logger.info(f"No projectnumber for GMN ({gmn_name})")
 
     if bro_info["token"]["user"] is None or bro_info["token"]["pass"] is None:
-        skip=True
-        logger.info(f'No user or pass for GMN ({gmn_name})')
-    
+        skip = True
+        logger.info(f"No user or pass for GMN ({gmn_name})")
+
     return skip
 
 
@@ -50,13 +57,13 @@ def sync_gmn(selected_gmn_qs=None, check_only=False):
     demo = is_demo()
     if selected_gmn_qs:
         events = IntermediateEvent.objects.filter(
-                    synced_to_bro=False, deliver_to_bro=True, gmn__in=selected_gmn_qs
-                )
+            synced_to_bro=False, deliver_to_bro=True, gmn__in=selected_gmn_qs
+        )
     else:
         events = IntermediateEvent.objects.filter(
-                    synced_to_bro=False, deliver_to_bro=True
-                )
-    
+            synced_to_bro=False, deliver_to_bro=True
+        )
+
     for event in events:
         print(event)
         bro_info = form_bro_info(event.gmn)
@@ -66,9 +73,9 @@ def sync_gmn(selected_gmn_qs=None, check_only=False):
 
         event.refresh_from_db()
         # Synced_to_bro might be updated during the handling of another event.
-        if event.synced_to_bro == True:
+        if event.synced_to_bro:
             continue
-        
+
         print(event.event_type)
         if event.event_type == "GMN_StartRegistration":
             print(

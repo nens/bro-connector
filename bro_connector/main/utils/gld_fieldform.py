@@ -13,44 +13,29 @@ from gmn import models as gmn_models
 
 input_field_options = {
     "opneembaarheid": {
-      "name": "Grondwaterstand niet opneembaar?",
+        "name": "Grondwaterstand niet opneembaar?",
         "type": "choice",
         "options": [
-          "Nee, filter staat droog",
-          "Nee, beschadiging, reparatie benodigd",
-          "Nee, overig (geef infomatie via opmerking)"
-        ]
+            "Nee, filter staat droog",
+            "Nee, beschadiging, reparatie benodigd",
+            "Nee, overig (geef infomatie via opmerking)",
+        ],
     },
     "grondwaterstand": {
-      "name": "Grondwaterstand tov bovenkant buis",
-      "type": "number",
-      "hint": "cm tov bovenkant peilfilter/stijgbuis"
+        "name": "Grondwaterstand tov bovenkant buis",
+        "type": "number",
+        "hint": "cm tov bovenkant peilfilter/stijgbuis",
     },
     "opmerking": {
-      "type": "text",
-      "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
-      },
-    "foto 1": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 2": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 3": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 4": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 5": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      }
-  }
+        "type": "text",
+        "hint": "Informatie over niet kunnen opnemen bijv. beschadiging",
+    },
+    "foto 1": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 2": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 3": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 4": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 5": {"type": "photo", "hint": "Foto ter ondersteuning"},
+}
 
 input_fields_filter = [
     "opneembaarheid",
@@ -67,17 +52,20 @@ input_fields_well = [
     "foto 5",
 ]
 
+
 def convert_epsg28992_to_epsg4326(x, y):
     # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
     transformer = Transformer.from_crs("EPSG:28992", "EPSG:4326", always_xy=True)
-   
+
     # Perform the transformation
     lon, lat = transformer.transform(x, y)
-   
+
     return lon, lat
+
 
 def generate_random_color():
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+
 
 # From the FieldForm Github
 def write_location_file(data, filename):
@@ -100,9 +88,10 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
+
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
-    filter_state = tube.state.order_by('date_from').last()
+    filter_state = tube.state.order_by("date_from").last()
     return {
         f"{filter_name}": {
             "inputfields": input_fields_filter,
@@ -114,6 +103,7 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
             },
         },
     }
+
 
 class FieldFormGenerator:
     inputfields: List[dict] = input_field_options
@@ -129,47 +119,61 @@ class FieldFormGenerator:
         if self.ftp_path:
             self.monitoringnetworks = [self._get_monitoring_network_for_path()]
 
-    def _get_monitoring_network_for_path(self) -> gmn_models.GroundwaterMonitoringNet | None:
+    def _get_monitoring_network_for_path(
+        self,
+    ) -> gmn_models.GroundwaterMonitoringNet | None:
         if self.ftp_path == "/GLD_HMN":
             gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
-                name = 'terreinbeheerders'
+                name="terreinbeheerders"
             )
         elif self.ftp_path == "/GLD_PMG":
             gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
-                name = 'Meetrondes Kantonniers'
+                name="Meetrondes Kantonniers"
             )
         else:
             raise ValueError(f"Unknown Path: {self.ftp_path}.")
-        
+
         return gmn
 
     def write_file_to_ftp(self, file: str, remote_filename: str):
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
-        with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+        with pysftp.Connection(
+            ls.ftp_ip,
+            username=ls.ftp_username,
+            password=ls.ftp_password,
+            port=22,
+            cnopts=cnopts,
+        ) as sftp:
             with sftp.cd(self.ftp_path):
                 sftp.put(localpath=file, remotepath=remote_filename)
 
     def delete_old_files_from_ftp(self):
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
-        with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+        with pysftp.Connection(
+            ls.ftp_ip,
+            username=ls.ftp_username,
+            password=ls.ftp_password,
+            port=22,
+            cnopts=cnopts,
+        ) as sftp:
             with sftp.cd(self.ftp_path):
                 # Get current date and time
                 now = datetime.datetime.now()
-                
+
                 # list files in the current directory
                 files = sftp.listdir()
                 for file in files:
-                    if not str(file).startswith('locations'):
+                    if not str(file).startswith("locations"):
                         continue
 
-                    file_date = str(file).split('_')[1][0:8]
+                    file_date = str(file).split("_")[1][0:8]
                     file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
-                    
+
                     # Calculate the age of the file
                     file_age = now - file_time
-                    
+
                     # Check if the file is older than a month
                     if file_age > datetime.timedelta(days=30):
                         # Delete the file
@@ -178,14 +182,13 @@ class FieldFormGenerator:
 
     def create_location_dict(self) -> None:
         locations = {}
-        for well in self.wells:  
+        for well in self.wells:
             tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
-                groundwater_monitoring_well_static = well
+                groundwater_monitoring_well_static=well
             )
 
             lon, lat = convert_epsg28992_to_epsg4326(
-                x=well.coordinates.x,
-                y=well.coordinates.y    
+                x=well.coordinates.x, y=well.coordinates.y
             )
 
             well_name = well.__str__()
@@ -208,7 +211,7 @@ class FieldFormGenerator:
                 well_location[f"{well_name}"]["sublocations"].update(sublocation)
 
             locations.update(well_location)
-        
+
         return locations
 
     def _set_current_group(self, group_name: str):
@@ -222,12 +225,14 @@ class FieldFormGenerator:
         for monitoring_network in gmn_models.GroundwaterMonitoringNet.objects.all():
             groups[monitoring_network.name] = {
                 "name": monitoring_network.name,
-                "color": monitoring_network.color
+                "color": monitoring_network.color,
             }
-        
+
         return groups
-    
-    def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
+
+    def write_subgroups_to_dict(
+        self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet
+    ) -> dict:
         groups = {}
         print(monitoringnetwork.subgroups.all())
         print(monitoringnetwork.name)
@@ -240,24 +245,30 @@ class FieldFormGenerator:
                 "name": subgroup.name,
                 "color": subgroup.color,
             }
-        
+
         print(groups)
 
         return groups
 
-    def write_measuringpoints_to_wells(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> None:
+    def write_measuringpoints_to_wells(
+        self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet
+    ) -> None:
         measuringpoints = gmn_models.MeasuringPoint.objects.filter(
-            gmn = monitoringnetwork
+            gmn=monitoringnetwork
         )
         for measuringpoint in measuringpoints:
-            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            self.wells.append(
+                measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
 
-    def write_measuringpoints_to_wells_subgroup(self, subgroup: gmn_models.Subgroup) -> None:
-        measuringpoints = gmn_models.MeasuringPoint.objects.filter(
-            subgroup = subgroup
-        )
+    def write_measuringpoints_to_wells_subgroup(
+        self, subgroup: gmn_models.Subgroup
+    ) -> None:
+        measuringpoints = gmn_models.MeasuringPoint.objects.filter(subgroup=subgroup)
         for measuringpoint in measuringpoints:
-            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            self.wells.append(
+                measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
 
     def _write_data(self, data: dict):
         cur_date = datetime.datetime.now().date()
@@ -269,10 +280,15 @@ class FieldFormGenerator:
 
         print(data)
         # Store the file locally
-        write_location_file(data=data, filename=f"../fieldforms/gld/locations_{date_string}.json")
+        write_location_file(
+            data=data, filename=f"../fieldforms/gld/locations_{date_string}.json"
+        )
 
         # Write local file to FTP
-        self.write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
+        self.write_file_to_ftp(
+            file=f"../fieldforms/gld/locations_{date_string}.json",
+            remote_filename=f"locations_{date_string}.json",
+        )
 
     def generate(self):
         data = {
@@ -295,7 +311,6 @@ class FieldFormGenerator:
                 #     wells_pk_list = [obj.pk for obj in self.wells]
                 #     wells_in_file += wells_pk_list
 
-
                 # self._flush_wells()
                 # self._set_current_group(None)
 
@@ -310,7 +325,6 @@ class FieldFormGenerator:
                 # self._write_data(data)
                 return
 
-
         if hasattr(self, "monitoringnetworks"):
             if len(self.monitoringnetworks) == 1:
                 # Use subgroups of network if available.
@@ -323,7 +337,7 @@ class FieldFormGenerator:
                     self._set_current_group(subgroup.name)
                     self.write_measuringpoints_to_wells_subgroup(subgroup)
                     locations.update(self.create_location_dict())
-                
+
                 data["locations"] = locations
                 self._write_data(data)
             else:
@@ -334,7 +348,7 @@ class FieldFormGenerator:
                     self._set_current_group(str(monitoringnetwork.name))
                     self.write_measuringpoints_to_wells(monitoringnetwork)
                     locations.update(self.create_location_dict())
-                
+
                 data["locations"] = locations
                 self._write_data(data)
 

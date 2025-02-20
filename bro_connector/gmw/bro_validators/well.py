@@ -1,13 +1,4 @@
 from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellDynamic
-from gmw.choices import (
-    GROUNDLEVELPOSITIONINGMETHOD,
-    WELLSTATUS,
-    WELLHEADPROTECTOR,
-    WELLSTABILITY,
-    INITIALFUNCTION,
-    QUALITYREGIME,
-    DELIVERYCONTEXT,
-)
 
 
 def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, str]:

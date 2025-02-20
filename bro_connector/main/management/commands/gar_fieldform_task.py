@@ -12,7 +12,7 @@ class Command(BaseCommand):
         try:
             generator1 = FieldFormGenerator()
             generator1.monitoringnetworks = GroundwaterMonitoringNet.objects.filter(
-                name = 'GAR_2024'
+                name="GAR_2024"
             )
             generator1.generate()
             # generator2.delete_old_files_from_ftp()

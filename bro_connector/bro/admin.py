@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import fields
-from reversion_compare.helpers import patch_admin 
+from reversion_compare.helpers import patch_admin
 import logging
 from . import forms as bro_forms
 from . import models as bro_models
@@ -35,6 +35,7 @@ class CompanyAdmin(admin.ModelAdmin):
         "company_number",
     )
 
+
 class BROProjectAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -46,6 +47,7 @@ class BROProjectAdmin(admin.ModelAdmin):
         "owner",
         "project_number",
     )
+
 
 _register(bro_models.Organisation, CompanyAdmin)
 _register(bro_models.BROProject, BROProjectAdmin)

@@ -86,10 +86,10 @@
 
                                     <div id="visualisatie-meetopstelling" class="panel-collapse in collapse show" style>
                                         <div class="card-body">
-                                            {% with groundwater_monitoring_well_static_id=original|truncatewords:"18" %}               
+                                            {% with groundwater_monitoring_well_static_id=original|truncatewords:"18" %}
                                             {% with '{"groundwater-monitoring-well-static-id": {"children": "'|add:groundwater_monitoring_well_static_id|add:'"}}' as template %}
                                             {% plotly_app name="VisualisatieMeetopstelling" ratio=0.5 initial_arguments=template %}
-                        
+
                                             {% endwith %}
                                             {% endwith %}
 
@@ -142,7 +142,7 @@
 
 {% block extrajs %}
     {{  block.super }}
-       
+
 
     <script type="text/javascript" src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'jazzmin/js/change_form.js' %}"></script>

@@ -4,7 +4,7 @@
 # ClassDiagram voor Groundwatermonitoring Meetnetten (GMN) #
 ```mermaid
 classDiagram
-    
+
     class GroundwaterMonitoringNet{
         int id
         BROProject project
@@ -67,7 +67,7 @@ classDiagram
     }
     IntermediateEvent ..> "gmn" GroundwaterMonitoringNet
     IntermediateEvent ..> "measuring_point" MeasuringPoint
-    
+
     class gmn_bro_sync_log{
         date date_modified
         str event_type
@@ -87,7 +87,7 @@ classDiagram
         str process_status
         MeasuringPoint measuringpoint
     }
-    
+
     class Organisation{
         str name
         int company_number

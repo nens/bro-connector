@@ -14,147 +14,128 @@ from gmn import models as gmn_models
 maximum_difference_ratio = 0.2
 
 input_field_options = {
-    "positie_bovenkantbuis":{
-      "name": "Positie bovenkantbuis",
-      "type": "number",
+    "positie_bovenkantbuis": {
+        "name": "Positie bovenkantbuis",
+        "type": "number",
     },
-    "methode_positiebepaling_bovenkantbuis":{
-      "name": "Buisstatus",
-      "type": "choice",
-      "options": [
-          "afgeleidSbl",
-          "AHN1",
-          "AHN2",
-          "AHN3",
-          "AHN4",
-          "GPSOnbekend",
-          "kaartOnbekend",
-          "onbekend",
-          "RTKGPS0tot4cm",
-          "RTKGPS10tot20cm",
-          "RTKGPS20tot100cm",
-          "RTKGPS4tot10cm",
-          "tachymetrie0tot10cm",
-          "tachymetrie10tot50cm",
-          "waterpassing0tot2cm",
-          "waterpassing2tot4cm",
-          "waterpassing4tot10cm",
-        ]
+    "methode_positiebepaling_bovenkantbuis": {
+        "name": "Buisstatus",
+        "type": "choice",
+        "options": [
+            "afgeleidSbl",
+            "AHN1",
+            "AHN2",
+            "AHN3",
+            "AHN4",
+            "GPSOnbekend",
+            "kaartOnbekend",
+            "onbekend",
+            "RTKGPS0tot4cm",
+            "RTKGPS10tot20cm",
+            "RTKGPS20tot100cm",
+            "RTKGPS4tot10cm",
+            "tachymetrie0tot10cm",
+            "tachymetrie10tot50cm",
+            "waterpassing0tot2cm",
+            "waterpassing2tot4cm",
+            "waterpassing4tot10cm",
+        ],
     },
-    "buisstatus":{
-      "name": "Buisstatus",
-      "type": "choice",
-      "options": [
-          "gebruiksklaar",
-          "nietGebruiksklaar",
-          "onbekend",
-          "onbruikbaar",
-      ]
+    "buisstatus": {
+        "name": "Buisstatus",
+        "type": "choice",
+        "options": [
+            "gebruiksklaar",
+            "nietGebruiksklaar",
+            "onbekend",
+            "onbruikbaar",
+        ],
     },
     "buisdiameter": {
-      "name": "Buisdiameter",
-      "type": "number",
+        "name": "Buisdiameter",
+        "type": "number",
     },
     "buismateriaal": {
-      "name": "Buismateriaal",
-      "type": "choice",
-      "options": [
-          "asbest",
-          "beton",
-          "gres",
-          "hout",
-          "houtStaal",
-          "ijzer",
-          "koper",
-          "koperStaal",
-          "messing",
-          "onbekend",
-          "pe",
-          "peHighDensity",
-          "peHighDensityPvc",
-          "peLowDensity",
-          "pePvc",
-          "pvc",
-          "pvcStaal",
-          "staal",
-          "staalGegalvaniseerd",
-          "staalRoestvrij",
-          "teflon",
-      ]
+        "name": "Buismateriaal",
+        "type": "choice",
+        "options": [
+            "asbest",
+            "beton",
+            "gres",
+            "hout",
+            "houtStaal",
+            "ijzer",
+            "koper",
+            "koperStaal",
+            "messing",
+            "onbekend",
+            "pe",
+            "peHighDensity",
+            "peHighDensityPvc",
+            "peLowDensity",
+            "pePvc",
+            "pvc",
+            "pvcStaal",
+            "staal",
+            "staalGegalvaniseerd",
+            "staalRoestvrij",
+            "teflon",
+        ],
     },
     "buislengte": {
-      "name": "Maaiveldhoogte",
-      "type": "number",
+        "name": "Maaiveldhoogte",
+        "type": "number",
     },
-    "maaiveldhoogte": {
-      "name": "Maaiveldhoogte",
-      "type": "number",
-      "hint": "in mNAP"
-    },
+    "maaiveldhoogte": {"name": "Maaiveldhoogte", "type": "number", "hint": "in mNAP"},
     "methode_positiebepaling_maaiveld": {
-      "name": "Methode positiebepaling maaiveld",
-      "type": "choice",
-      "options": [
-          "afgeleidBovenkantBuis",
-          "AHN1",
-          "AHN2",
-          "AHN3",
-          "AHN4",
-          "geen",
-          "GPSOnbekend",
-          "kaartOnbekend",
-          "onbekend",
-          "RTKGPS0tot4cm",
-          "RTKGPS10tot20cm",
-          "RTKGPS20tot100cm",
-          "RTKGPS4tot10cm",
-          "tachymetrie0tot10cm",
-          "tachymetrie10tot50cm",
-          "waterpassing0tot2cm",
-          "waterpassing2tot4cm",
-          "waterpassing4tot10cm",
-        ]
+        "name": "Methode positiebepaling maaiveld",
+        "type": "choice",
+        "options": [
+            "afgeleidBovenkantBuis",
+            "AHN1",
+            "AHN2",
+            "AHN3",
+            "AHN4",
+            "geen",
+            "GPSOnbekend",
+            "kaartOnbekend",
+            "onbekend",
+            "RTKGPS0tot4cm",
+            "RTKGPS10tot20cm",
+            "RTKGPS20tot100cm",
+            "RTKGPS4tot10cm",
+            "tachymetrie0tot10cm",
+            "tachymetrie10tot50cm",
+            "waterpassing0tot2cm",
+            "waterpassing2tot4cm",
+            "waterpassing4tot10cm",
+        ],
     },
     "beschermconstructie": {
-      "name": "Beschermconstructie",
-      "type": "choice",
-      "options": [
-          "geen",
-          "koker",
-          "kokerDeelsMetaal",
-          "kokerMetaal",
-          "kokerNietMetaal",
-          "onbekend",
-          "pot",
-          "potNietWaterdicht",
-          "potWaterdicht",
-        ]
+        "name": "Beschermconstructie",
+        "type": "choice",
+        "options": [
+            "geen",
+            "koker",
+            "kokerDeelsMetaal",
+            "kokerMetaal",
+            "kokerNietMetaal",
+            "onbekend",
+            "pot",
+            "potNietWaterdicht",
+            "potWaterdicht",
+        ],
     },
     "opmerking": {
-      "type": "text",
-      "hint": "Informatie over niet kunnen opnemen bijv. beschadiging"
-      },
-    "foto 1": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 2": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 3": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 4": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      },
-    "foto 5": {
-      "type": "photo",
-      "hint": "Foto ter ondersteuning"
-      }
-  }
+        "type": "text",
+        "hint": "Informatie over niet kunnen opnemen bijv. beschadiging",
+    },
+    "foto 1": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 2": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 3": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 4": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "foto 5": {"type": "photo", "hint": "Foto ter ondersteuning"},
+}
 
 input_fields_filter = [
     "opmerking",
@@ -178,17 +159,20 @@ input_fields_well = [
     "foto 5",
 ]
 
+
 def convert_epsg28992_to_epsg4326(x, y):
     # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
     transformer = Transformer.from_crs("EPSG:28992", "EPSG:4326", always_xy=True)
-   
+
     # Perform the transformation
     lon, lat = transformer.transform(x, y)
-   
+
     return lon, lat
+
 
 def generate_random_color():
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+
 
 # From the FieldForm Github
 def write_location_file(data, filename):
@@ -211,42 +195,69 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
+
 def write_file_to_ftp(file: str, remote_filename: str):
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
-    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+    with pysftp.Connection(
+        ls.ftp_ip,
+        username=ls.ftp_username,
+        password=ls.ftp_password,
+        port=22,
+        cnopts=cnopts,
+    ) as sftp:
         with sftp.cd(ls.ftp_gmw_path):
             sftp.put(localpath=file, remotepath=remote_filename)
+
 
 def delete_old_files_from_ftp():
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
-    with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+    with pysftp.Connection(
+        ls.ftp_ip,
+        username=ls.ftp_username,
+        password=ls.ftp_password,
+        port=22,
+        cnopts=cnopts,
+    ) as sftp:
         with sftp.cd(ls.ftp_frd_path):
             # Get current date and time
             now = datetime.datetime.now()
-            
+
             # list files in the current directory
             files = sftp.listdir()
             for file in files:
-                if not str(file).startswith('locations'):
+                if not str(file).startswith("locations"):
                     continue
 
-                file_date = str(file).split('_')[1][0:8]
+                file_date = str(file).split("_")[1][0:8]
                 file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
-                
+
                 # Calculate the age of the file
                 file_age = now - file_time
-                
+
                 # Check if the file is older than a month
                 if file_age > datetime.timedelta(days=30):
                     # Delete the file
                     sftp.remove(file)
                     print(f"Deleted {file} (age: {file_age.days} days)")
 
+
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
-    filter_state = tube.state.order_by('date_from').last()
+    filter_state = tube.state.order_by("date_from").last()
+    if not filter_state:
+        return {
+            f"{filter_name}": {
+                "inputfields": input_fields_filter,
+                "properties": {
+                    "Bovenkantbuis hoogte ": "unknown",
+                    "Diameter": "unknown",
+                    "Bovenkant filter hoogte ": "unknown",
+                    "Onderkant filter hoogte ": "unknown",
+                },
+            },
+        }
     return {
         f"{filter_name}": {
             "inputfields": input_fields_filter,
@@ -259,6 +270,7 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
         },
     }
 
+
 class FieldFormGenerator:
     inputfields: Optional[List[dict]] = input_field_options
 
@@ -266,7 +278,6 @@ class FieldFormGenerator:
     monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
     wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
     optimal: Optional[bool]
-
 
     def update_postfix(self, config: frd_models.MeasurementConfiguration) -> None:
         self.post_fix = config.configuration_name
@@ -278,9 +289,9 @@ class FieldFormGenerator:
             for field in self.inputfields:
                 if field not in input_field_options.keys():
                     raise ValueError("Unknown input field.")
-                
+
                 input_field[f"{field}_{self.post_fix}"] = input_field_options[field]
-        
+
         return input_field
 
     def generate_inputfield_groups(self) -> dict:
@@ -289,7 +300,7 @@ class FieldFormGenerator:
             f"{self.post_fix}": {
                 "inputfields": [
                     f"weerstand_{self.post_fix}",
-                    f"opmerking_{self.post_fix}"
+                    f"opmerking_{self.post_fix}",
                 ],
                 "name": name,
             }
@@ -297,14 +308,13 @@ class FieldFormGenerator:
 
     def create_location_dict(self) -> None:
         locations = {}
-        for well in self.wells:  
+        for well in self.wells:
             tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
-                groundwater_monitoring_well_static = well
+                groundwater_monitoring_well_static=well
             )
 
             lon, lat = convert_epsg28992_to_epsg4326(
-                x=well.coordinates.x,
-                y=well.coordinates.y    
+                x=well.coordinates.x, y=well.coordinates.y
             )
 
             well_name = well.__str__()
@@ -317,7 +327,9 @@ class FieldFormGenerator:
                         f"{well_name}": {
                             "inputfields": input_fields_well,
                             "properties": {
-                                "Maaiveldhoogte": well_state.ground_level_position,
+                                "Maaiveldhoogte": well_state.ground_level_position
+                                if well_state
+                                else "unknown",
                             },
                         }
                     },
@@ -329,9 +341,9 @@ class FieldFormGenerator:
             for tube in tubes:
                 sublocation = create_sublocation_dict(tube)
                 well_location[f"{well_name}"]["sublocations"].update(sublocation)
-            
+
             locations.update(well_location)
-        
+
         return locations
 
     def _set_current_group(self, group_name: str):
@@ -345,17 +357,21 @@ class FieldFormGenerator:
         for monitoring_network in gmn_models.GroundwaterMonitoringNet.objects.all():
             groups[monitoring_network.name] = {
                 "name": monitoring_network.name,
-                "color": generate_random_color()
+                "color": generate_random_color(),
             }
-        
+
         return groups
 
-    def write_measuringpoints_to_wells(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> None:
+    def write_measuringpoints_to_wells(
+        self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet
+    ) -> None:
         measuringpoints = gmn_models.MeasuringPoint.objects.filter(
-            gmn = monitoringnetwork
+            gmn=monitoringnetwork
         )
         for measuringpoint in measuringpoints:
-            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            self.wells.append(
+                measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
 
     def _write_data(self, data: dict):
         cur_date = datetime.datetime.now().date()
@@ -366,12 +382,19 @@ class FieldFormGenerator:
             os.mkdir("../fieldforms")
 
         # Store the file locally
-        write_location_file(data=data, filename=f"../fieldforms/gmw/locations_{date_string}.json")
+        write_location_file(
+            data=data, filename=f"../fieldforms/gmw/locations_{date_string}.json"
+        )
 
         # Write local file to FTP
-        write_file_to_ftp(file=f"../fieldforms/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
+        write_file_to_ftp(
+            file=f"../fieldforms/gmw/locations_{date_string}.json",
+            remote_filename=f"locations_{date_string}.json",
+        )
 
-    def write_subgroups_to_dict(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> dict:
+    def write_subgroups_to_dict(
+        self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet
+    ) -> dict:
         groups = {}
         for subgroup in monitoringnetwork.subgroups.all():
             groups[subgroup.code] = {
@@ -381,12 +404,14 @@ class FieldFormGenerator:
 
         return groups
 
-    def write_measuringpoints_to_wells_subgroup(self, subgroup: gmn_models.Subgroup) -> None:
-        measuringpoints = gmn_models.MeasuringPoint.objects.filter(
-            subgroup = subgroup
-        )
+    def write_measuringpoints_to_wells_subgroup(
+        self, subgroup: gmn_models.Subgroup
+    ) -> None:
+        measuringpoints = gmn_models.MeasuringPoint.objects.filter(subgroup=subgroup)
         for measuringpoint in measuringpoints:
-            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            self.wells.append(
+                measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
 
     def generate(self):
         data = {
@@ -409,7 +434,6 @@ class FieldFormGenerator:
                 #     wells_pk_list = [obj.pk for obj in self.wells]
                 #     wells_in_file += wells_pk_list
 
-
                 # self._flush_wells()
                 # self._set_current_group(None)
 
@@ -424,7 +448,6 @@ class FieldFormGenerator:
                 # self._write_data(data)
                 return
 
-
         if hasattr(self, "monitoringnetworks"):
             if len(self.monitoringnetworks) == 1:
                 # Use subgroups of network if available.
@@ -436,7 +459,7 @@ class FieldFormGenerator:
                     self._set_current_group(str(subgroup.name))
                     self.write_measuringpoints_to_wells_subgroup(subgroup)
                     locations.update(self.create_location_dict())
-                
+
                 data["locations"] = locations
                 self._write_data(data)
             else:
@@ -447,7 +470,7 @@ class FieldFormGenerator:
                     self._set_current_group(str(monitoringnetwork.name))
                     self.write_measuringpoints_to_wells(monitoringnetwork)
                     locations.update(self.create_location_dict())
-                
+
                 data["locations"] = locations
                 self._write_data(data)
 

@@ -425,7 +425,7 @@ def register_qc_callbacks(app, data):
         Raises
         ------
         PreventUpdate
-            If `n_clicks` is None.
+            If `n_clicks`  is None.
         """
         if n_clicks is not None:
             form_components = []
@@ -459,7 +459,7 @@ def register_qc_callbacks(app, data):
         Returns
         -------
         bool
-            False if the value is not None, otherwise True.
+            False if the value  is not None, otherwise True.
         """
         if value is not None:
             return False

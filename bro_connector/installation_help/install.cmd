@@ -162,7 +162,7 @@ pause
 
 echo (2) Creating a superuser
 
-echo Run the following code from the bro_connector folder. (with in it all the app folders: gmw, gld and so on...) 
+echo Run the following code from the bro_connector folder. (with in it all the app folders: gmw, gld and so on...)
 
 echo ..\.venv\Scripts\activate
 
@@ -174,7 +174,7 @@ echo Then you are instructed on how to create an user.
 
 echo If anything fails make sure you are in the right folder, and have the virtual environment activated.
 
-echo You can start the app by running: 
+echo You can start the app by running:
 
 echo python manage.py runserver
 

@@ -1,25 +1,29 @@
-from django.db import models
-
 import bro_exchange as brx
 import os
 import datetime
 import bisect
 import reversion
 from bro.models import Organisation
-brx.gmw_replace_request
 from main.settings.base import env
 from gmw import models
-from main.management.tasks.django_tools_bro import *
+from main.management.tasks.django_tools_bro import (
+    GetEvents,
+    GetDjangoObjects,
+    DjangoTableToDict,
+)
 import logging
+
 
 logger = logging.getLogger(__name__)
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
+
 def _is_demo():
     if env == "production":
         return False
     return True
+
 
 def _get_token(owner: Organisation):
     return {
@@ -27,23 +31,26 @@ def _get_token(owner: Organisation):
         "pass": owner.bro_token,
     }
 
+
 def form_bro_info(well: models.GroundwaterMonitoringWellStatic) -> dict:
     return {
         "token": _get_token(well.delivery_accountable_party),
         "projectnummer": well.project_number,
     }
 
+
 def bro_info_missing(bro_info: dict, gmn_name: str) -> bool:
-    skip=False
+    skip = False
     if bro_info["projectnummer"] is None:
-        skip=True
-        logger.info(f'No projectnumber for GMN ({gmn_name})')
+        skip = True
+        logger.info(f"No projectnumber for GMN ({gmn_name})")
 
     if bro_info["token"]["user"] is None or bro_info["token"]["pass"] is None:
-        skip=True
-        logger.info(f'No user or pass for GMN ({gmn_name})')
-    
+        skip = True
+        logger.info(f"No user or pass for GMN ({gmn_name})")
+
     return skip
+
 
 def records_in_registrations(bro_id) -> int:
     return len(models.gmw_registration_log.objects.filter(bro_id=bro_id))
@@ -61,12 +68,10 @@ def check_if_object_id_in_database(object_id: str) -> bool:
 
 
 def get_event_date(event: models.Event) -> str:
-    try:
-        date = event.event_date.strftime("%Y-%m-%d")
-    except:
-        date = None
+    if not event or not event.event_date:
+        return None
 
-    return date
+    return event.event_date.strftime("%Y-%m-%d")
 
 
 def generate_object_id(well: models.GroundwaterMonitoringWellStatic) -> dict:
@@ -84,7 +89,7 @@ def get_object_id_accountable_party(
 ) -> dict:
     object_id = {"objectIdAccountableParty": well.nitg_code}
     count = 0
-    if object_id["objectIdAccountableParty"] == None:
+    if object_id["objectIdAccountableParty"] is None:
         object_id = generate_object_id(well)
 
     while check_if_object_id_in_database(object_id):
@@ -264,9 +269,7 @@ class GetSourceDocData:
             geo_ohm_cable.groundwater_monitoring_tube_static
         ]["geoOhmCables"][geo_ohm_cable.geo_ohm_cable_id]["electrodes"][
             electrode_dynamic.electrode_static
-        ].update(
-            dynamic_electrode_data
-        )
+        ].update(dynamic_electrode_data)
 
     def execute_for_type(self, source_doc_type, event: models.Event) -> None:
         if source_doc_type == "Construction":
@@ -419,9 +422,7 @@ class GetSourceDocData:
             event.groundwater_monitoring_well_tube_dynamic, 0, "shortening"
         )
 
-        tube_static = (
-            event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
-        )
+        tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
 
         material_used = self.create_material_used_dict(
             tube_static=tube_static,
@@ -454,9 +455,7 @@ class GetSourceDocData:
             event.groundwater_monitoring_well_tube_dynamic, 0, "lengthening"
         )
 
-        tube_static = (
-            event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
-        )
+        tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
 
         material_used = self.create_material_used_dict(
             tube_static=tube_static,
@@ -491,7 +490,8 @@ class GetSourceDocData:
                 tube_number=0,
                 sourcedoctype="positions_measuring",
             )
-        except:
+        except Exception as e:
+            logger.exception(e)
             self.datafile.update({"numberOfMonitoringTubes": 0})
 
     def positions_measuring_tube(self, event: models.Event) -> None:
@@ -521,7 +521,8 @@ class GetSourceDocData:
             )
 
             self.datafile.update(delivered_vertical_position)
-        except:
+        except Exception as e:
+            logger.exception(e)
             pass
 
     def positions_measuring(self, event: models.Event) -> None:
@@ -541,10 +542,10 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        if event.groundwater_monitoring_well_dynamic != None:
+        if event.groundwater_monitoring_well_dynamic is not None:
             self.positions_measuring_well(event)
 
-        if event.groundwater_monitoring_well_tube_dynamic != None:
+        if event.groundwater_monitoring_well_tube_dynamic is not None:
             self.positions_measuring_tube(event)
 
     def well_head_protector(self, event: models.Event) -> None:
@@ -586,10 +587,10 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        if event.groundwater_monitoring_well_dynamic != None:
+        if event.groundwater_monitoring_well_dynamic is not None:
             self.positions_measuring_well
 
-        if event.groundwater_monitoring_well_tube_dynamic != None:
+        if event.groundwater_monitoring_well_tube_dynamic is not None:
             self.positions_measuring_tube
 
     def ground_level_measuring(self, event: models.Event) -> None:
@@ -634,7 +635,7 @@ class GetSourceDocData:
         self.datafile.update(delivered_location)
 
         # If the id is given get the information directly
-        if event.groundwater_monitoring_well_dynamic != None:
+        if event.groundwater_monitoring_well_dynamic is not None:
             self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
 
             delivered_vertical_position = self.create_delivered_vertical_position_dict(
@@ -675,17 +676,18 @@ def validate_source_doc_type(source_doc_type):
 def set_delivery_accountable_party(
     well: models.GroundwaterMonitoringWellStatic, demo: bool
 ) -> int:
-    if demo == True:
+    if demo:
         delivery_accountable_party = 27376655
     else:
         delivery_accountable_party = well.delivery_accountable_party.company_number
 
     return delivery_accountable_party
 
+
 def create_sourcedocs(
     event: models.Event,
     registrations_dir,
-    source_doc_type: str
+    source_doc_type: str,
     # Might want to add a variable for with or without history
 ):
     """
@@ -700,9 +702,7 @@ def create_sourcedocs(
     )
     quality_regime = well.quality_regime
 
-    delivery_accountable_party = set_delivery_accountable_party(
-        well, demo
-    )
+    delivery_accountable_party = set_delivery_accountable_party(well, demo)
 
     # Retrieve general static information of the well
     get_srcdoc_data = GetSourceDocData()
@@ -780,9 +780,7 @@ def create_construction_sourcedocs(
     demo = _is_demo()
     well = event.groundwater_monitoring_well_static
 
-    delivery_accountable_party = set_delivery_accountable_party(
-        well, demo
-    )
+    delivery_accountable_party = set_delivery_accountable_party(well, demo)
 
     # Retrieve general static information of the well
     get_srcdoc_data = GetSourceDocData()
@@ -800,7 +798,7 @@ def create_construction_sourcedocs(
     # How many records are already registered -> change the reference
     records_in_register = records_in_registrations(srcdocdata["broId"])
 
-    if srcdocdata['broId'] is None:
+    if srcdocdata["broId"] is None:
         request_reference = f"{srcdocdata['id']}_Construction_{records_in_register}"
     else:
         request_reference = f"{srcdocdata['broId']}_Construction_{records_in_register}"
@@ -851,7 +849,6 @@ def create_construction_sourcedocs(
         )
 
 
-
 def handle_not_valid_or_error(registration_id, validation_info):
     defaults = dict(
         validation_status=validation_info["status"],
@@ -884,9 +881,7 @@ def handle_not_valid_or_error(registration_id, validation_info):
         )
 
 
-def validate_gmw_registration_request(
-    registration_id, registrations_dir, bro_info
-):
+def validate_gmw_registration_request(registration_id, registrations_dir, bro_info):
     """
     Validate generated registration sourcedocuments
     """
@@ -945,7 +940,7 @@ def deliver_sourcedocuments(registration_id, registrations_dir, bro_info):
             password=bro_info["token"]["pass"],
             project_id=bro_info["projectnummer"],
             demo=demo,
-            api='v2',
+            api="v2",
         )
 
         if upload_info == "Error":
@@ -1092,12 +1087,9 @@ def get_registration_validation_status(registration_id):
 
 
 def delete_existing_failed_registrations(event: models.Event, quality_regime: str):
-    if (
-        models.gmw_registration_log.objects.filter(
-            event_id=event.change_id, quality_regime=quality_regime
-        ).exists()
-        == True
-    ):
+    if models.gmw_registration_log.objects.filter(
+        event_id=event.change_id, quality_regime=quality_regime
+    ).exists():
         reg = models.gmw_registration_log.objects.get(
             event_id=event.change_id, quality_regime=quality_regime
         )
@@ -1281,21 +1273,21 @@ def gmw_check_existing_registrations(registrations_dir):
 
         bro_info = form_bro_info(event.groundwater_monitoring_well_static)
         print(bro_info)
-        if bro_info_missing(bro_info, event.groundwater_monitoring_well_static.__str__()):
+        if bro_info_missing(
+            bro_info, event.groundwater_monitoring_well_static.__str__()
+        ):
             continue
 
         if delivered_but_not_approved(registration):
             # The registration has been delivered, but not yet approved
-            status = check_delivery_status_levering(
-                registration_id, registrations_dir, bro_info
-            )
+            check_delivery_status_levering(registration_id, registrations_dir, bro_info)
             continue
 
         if (
             get_registration_process_status(registration_id)
             == f"succesfully_generated_{source_doc_type}_request"
         ):
-            validation_status = validate_gmw_registration_request(
+            validate_gmw_registration_request(
                 registration_id,
                 registrations_dir,
                 bro_info,
@@ -1312,7 +1304,7 @@ def gmw_check_existing_registrations(registrations_dir):
         ):
             # If we failed to validate the sourcedocument, try again
             # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
-            validation_status = validate_gmw_registration_request(
+            validate_gmw_registration_request(
                 registration_id,
                 registrations_dir,
                 bro_info,
@@ -1324,7 +1316,7 @@ def gmw_check_existing_registrations(registrations_dir):
             == "source_document_validation_succesful"
             and get_registration_validation_status(registration_id) == "VALIDE"
         ):
-            delivery_status = deliver_sourcedocuments(
+            deliver_sourcedocuments(
                 registration_id,
                 registrations_dir,
                 bro_info,
@@ -1338,7 +1330,7 @@ def gmw_check_existing_registrations(registrations_dir):
             and registration.delivery_id is not None
         ):
             # The registration has been delivered, but not yet approved
-            status = check_delivery_status_levering(
+            check_delivery_status_levering(
                 registration_id,
                 registrations_dir,
                 bro_info,
@@ -1354,7 +1346,7 @@ def gmw_check_existing_registrations(registrations_dir):
                 # TODO report with mail?
                 continue
             else:
-                delivery_status = deliver_sourcedocuments(
+                deliver_sourcedocuments(
                     registration_id,
                     registrations_dir,
                     bro_info,

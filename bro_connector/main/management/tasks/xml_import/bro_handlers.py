@@ -193,7 +193,8 @@ class GLDHandler(BROHandler):
                     try:
                         units.append(element.attrib["uom"])
                         values.append(units)
-                    except:
+                    except AttributeError as e:
+                        print(e)
                         print(element.attrib, element.text)
 
                 if tag == f"{number_of_observations}_point_qualifier_value":

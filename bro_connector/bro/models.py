@@ -20,6 +20,7 @@ def get_color_value():
 
     return color_code
 
+
 class SecureCharField(CharField):
     """
     Safe string field that gets encrypted before being stored in the database, and
@@ -28,24 +29,22 @@ class SecureCharField(CharField):
     """
 
     def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = 512
-        kwargs['null'] = True
-        kwargs['blank'] = True
+        kwargs["max_length"] = 512
+        kwargs["null"] = True
+        kwargs["blank"] = True
         super().__init__(*args, **kwargs)
 
-    salt = bytes(ls.SALT_STRING, 'utf-8')
+    salt = bytes(ls.SALT_STRING, "utf-8")
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
         salt=salt,
         iterations=100000,
-        backend=default_backend()
+        backend=default_backend(),
     )
 
     # Encode the FERNET encryption key
-    key = base64.urlsafe_b64encode(kdf.derive(
-        bytes(ls.FERNET_ENCRYPTION_KEY, 'utf-8')
-    ))
+    key = base64.urlsafe_b64encode(kdf.derive(bytes(ls.FERNET_ENCRYPTION_KEY, "utf-8")))
 
     # Create a "fernet" object using the key stored in the .env file
     f = Fernet(key)
@@ -56,7 +55,7 @@ class SecureCharField(CharField):
         """
         if not isinstance(value, str):
             return value
-        value = str(self.f.decrypt(bytes(value, 'cp1252')), encoding='utf-8')
+        value = str(self.f.decrypt(bytes(value, "cp1252")), encoding="utf-8")
         return value
 
     def get_prep_value(self, value: str) -> str:
@@ -65,8 +64,9 @@ class SecureCharField(CharField):
         """
         if not isinstance(value, str):
             return value
-        value = str(self.f.encrypt(bytes(value, 'utf-8')), 'cp1252')
+        value = str(self.f.encrypt(bytes(value, "utf-8")), "cp1252")
         return value
+
 
 class Organisation(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Naam")
@@ -74,7 +74,6 @@ class Organisation(models.Model):
     color = models.CharField(max_length=50, null=True, blank=True)
     bro_user = SecureCharField()
     bro_token = SecureCharField()
-
 
     class Meta:
         managed = True
@@ -96,11 +95,20 @@ class Organisation(models.Model):
             self.color = get_color_value()
         super().save(*args, **kwargs)
 
+
 class BROProject(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     project_number = models.IntegerField(null=False, blank=False)
-    owner = models.ForeignKey(Organisation,on_delete=models.SET_NULL, null=True, blank=False, related_name='owner')
-    authorized = models.ManyToManyField(Organisation, blank=True, related_name='authorized_company')
+    owner = models.ForeignKey(
+        Organisation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=False,
+        related_name="owner",
+    )
+    authorized = models.ManyToManyField(
+        Organisation, blank=True, related_name="authorized_company"
+    )
 
     class Meta:
         managed = True

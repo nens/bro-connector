@@ -136,8 +136,10 @@ class GLDHandler(BROHandler):
             f = "JA"
         else:
             f = "NEE"
-            
-        gmw_verzoek = requests.get(f"{basis_url}{id}?requestReference=BRO-Import-script-{now}&observationPeriodBeginDate=1900-01-01&observationPeriodEndDate={now}&filtered={f}")
+
+        gmw_verzoek = requests.get(
+            f"{basis_url}{id}?requestReference=BRO-Import-script-{now}&observationPeriodBeginDate=1900-01-01&observationPeriodEndDate={now}&filtered={f}"
+        )
         print(gmw_verzoek)
         self.root = ET.fromstring(gmw_verzoek.content)
 
@@ -163,9 +165,9 @@ class GLDHandler(BROHandler):
             if split[1] == "observation":
                 if self.number_of_observations != 0:
                     if self.number_of_observations == 1:
-                        self.count_dictionary[
-                            self.number_of_observations
-                        ] = self.number_of_points
+                        self.count_dictionary[self.number_of_observations] = (
+                            self.number_of_points
+                        )
 
                     else:
                         self.count_dictionary[self.number_of_observations] = (
@@ -265,9 +267,9 @@ class GLDHandler(BROHandler):
                     censor_reason = element.attrib[
                         "{http://www.w3.org/1999/xlink}href"
                     ].split("/")[-1]
-                    self.censoring_limit_reason[
-                        self.number_of_points - 1
-                    ] = censor_reason
+                    self.censoring_limit_reason[self.number_of_points - 1] = (
+                        censor_reason
+                    )
                     values_value = self.censoring_limit_reason
 
             self.dict.update({tag: values_value})

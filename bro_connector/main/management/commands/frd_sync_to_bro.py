@@ -35,11 +35,13 @@ def _get_token(owner: Organisation):
         "pass": owner.bro_token,
     }
 
+
 def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
     return {
         "token": _get_token(well.delivery_accountable_party),
         "projectnummer": well.project_number,
     }
+
 
 def get_xml_payload(xml_filepath):
     """
@@ -54,9 +56,7 @@ def get_xml_payload(xml_filepath):
 
 def get_unsynced_dossiers(frd_queryset):
     if frd_queryset:
-        return frd_queryset.filter(
-            frd_bro_id=None, closed_in_bro=False
-        )
+        return frd_queryset.filter(frd_bro_id=None, closed_in_bro=False)
     else:
         return FormationResistanceDossier.objects.filter(
             frd_bro_id=None, closed_in_bro=False
@@ -64,30 +64,38 @@ def get_unsynced_dossiers(frd_queryset):
 
 
 def get_relevant_configurations(frd_queryset):
-    return MeasurementConfiguration.objects.filter(formation_resistance_dossier__in=frd_queryset)
+    return MeasurementConfiguration.objects.filter(
+        formation_resistance_dossier__in=frd_queryset
+    )
 
 
 def get_closed_dossiers(frd_queryset):
     if frd_queryset:
         return frd_queryset.filter(
-        closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
-    )
+            closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
+        )
     else:
         return FormationResistanceDossier.objects.filter(
-        closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
-    )
+            closure_date__isnull=False, frd_bro_id__isnull=False, closed_in_bro=False
+        )
 
 
 def get_relevant_gem_measurement_methods(frd_queryset):
-    return GeoOhmMeasurementMethod.objects.filter(formation_resistance_dossier__in=frd_queryset)
+    return GeoOhmMeasurementMethod.objects.filter(
+        formation_resistance_dossier__in=frd_queryset
+    )
 
 
 def get_relevant_emm_methods(frd_queryset):
-    return ElectromagneticMeasurementMethod.objects.filter(formation_resistance_dossier__in=frd_queryset)
+    return ElectromagneticMeasurementMethod.objects.filter(
+        formation_resistance_dossier__in=frd_queryset
+    )
 
 
 def get_relevant_emm_configurations(frd_queryset):
-    return InstrumentConfiguration.objects.filter(formation_resistance_dossier__in=frd_queryset)
+    return InstrumentConfiguration.objects.filter(
+        formation_resistance_dossier__in=frd_queryset
+    )
 
 
 class Command(BaseCommand):
@@ -101,6 +109,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         FRDSync.handle()
 
+
 class FRDSync:
     def handle(self, frd_queryset=None, check_only=False):
         self.handle_frd_registrations(frd_queryset, check_only)
@@ -109,7 +118,6 @@ class FRDSync:
         self.handle_gem_measurement_registrations(frd_queryset, check_only)
         self.handle_emm_configurations(frd_queryset, check_only)
         self.handle_emm_measurements(frd_queryset, check_only)
-
 
     def handle_frd_registrations(self, frd_queryset, check_only):
         """
@@ -137,7 +145,7 @@ class FRDSync:
             configuration_registration = GEMConfigurationRegistration(values)
             configuration_registration.sync(check_only)
 
-    def handle_emm_configurations(self, frd_queryset,check_only):
+    def handle_emm_configurations(self, frd_queryset, check_only):
         """
         Handles the emm instrument configurations
         """
@@ -147,7 +155,7 @@ class FRDSync:
             emm_configuration_registration = EMMConfigurationRegistration(configuration)
             emm_configuration_registration.sync(check_only)
 
-    def handle_frd_closures(self,frd_queryset, check_only):
+    def handle_frd_closures(self, frd_queryset, check_only):
         """
         Closes all FRDs with a closure date.
         Checks if any FRD have a closure date.
@@ -162,7 +170,9 @@ class FRDSync:
         """
         Handles measurements, this is based on the measurement method, without a bro_id.
         """
-        relevant_measurements_methods = get_relevant_gem_measurement_methods(frd_queryset)
+        relevant_measurements_methods = get_relevant_gem_measurement_methods(
+            frd_queryset
+        )
 
         for method in relevant_measurements_methods:
             measurement_registration = GEMMeasurementRegistration(method)
@@ -177,6 +187,7 @@ class FRDSync:
         for method in relevant_emm_methods:
             emm_measurement_registration = EMMMeasurementRegistration(method)
             emm_measurement_registration.sync(check_only)
+
 
 class Registration(ABC):
     log = FrdSyncLog
@@ -205,7 +216,7 @@ class Registration(ABC):
         If not, creates one and handles the complete startregistrations.
         If so, checks the status, and picks up the startregistration process where it was left.
         """
-        
+
         self._set_bro_info(self.log.frd)
 
         if check_only:
@@ -266,7 +277,9 @@ class Registration(ABC):
 
     def _set_bro_info(self, obj):
         if isinstance(obj, FormationResistanceDossier):
-            self.bro_info = form_bro_info(obj.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            self.bro_info = form_bro_info(
+                obj.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
         elif isinstance(obj, GroundwaterMonitoringWellStatic):
             self.bro_info = form_bro_info(obj)
         elif isinstance(obj, GroundwaterMonitoringTubeStatic):
@@ -467,7 +480,7 @@ class FrdStartRegistration(Registration):
         self._set_folder_dir("frd")
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime 
+        quality_regime = self.frd_obj.quality_regime
         if not quality_regime:
             quality_regime = "IMBRO/A"
 
@@ -492,7 +505,9 @@ class FrdStartRegistration(Registration):
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
+            "delivery_accountable_party": str(
+                self.frd_obj.delivery_accountable_party.company_number
+            ),
             "quality_regime": quality_regime,
         }
         srcdocdata = {
@@ -568,13 +583,15 @@ class GEMConfigurationRegistration(Registration):
         return configurations_list
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime 
+        quality_regime = self.frd_obj.quality_regime
         if not quality_regime:
             quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": str(self.formation_resistance_dossier.delivery_accountable_party.company_number),
+            "delivery_accountable_party": str(
+                self.formation_resistance_dossier.delivery_accountable_party.company_number
+            ),
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -605,13 +622,15 @@ class ClosureRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime 
+        quality_regime = self.frd_obj.quality_regime
         if not quality_regime:
             quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
+            "delivery_accountable_party": str(
+                self.frd_obj.delivery_accountable_party.company_number
+            ),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -644,13 +663,15 @@ class GEMMeasurementRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime 
+        quality_regime = self.frd_obj.quality_regime
         if not quality_regime:
             quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
+            "delivery_accountable_party": str(
+                self.frd_obj.delivery_accountable_party.company_number
+            ),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -692,8 +713,10 @@ class GEMMeasurementRegistration(Registration):
 
     def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
         """Queries the related CalculatedFormationresistanceMethod"""
-        return CalculatedFormationresistanceMethod.objects.filter(geo_ohm_measurement_method=self.method_obj).first()
-    
+        return CalculatedFormationresistanceMethod.objects.filter(
+            geo_ohm_measurement_method=self.method_obj
+        ).first()
+
     def _create_calculated_values_string(self, calculated_method) -> str:
         """Looks up all calulated apperent fromation resistance values.
 
@@ -716,14 +739,15 @@ class GEMMeasurementRegistration(Registration):
 
     def _get_series(self, calculated_method) -> Type[FormationresistanceSeries]:
         """Looks up the series related to calculated formation method"""
-        return FormationresistanceSeries.objects.filter(calculated_formationresistance=calculated_method).first()
+        return FormationresistanceSeries.objects.filter(
+            calculated_formationresistance=calculated_method
+        ).first()
 
     def _get_calculated_resistance_values(
         self, series
     ) -> QuerySet[FormationresistanceRecord]:
         """Looks up the  calculated formation resistance values, based on a series"""
         return FormationresistanceRecord.objects.filter(series=series)
-
 
 
 class EMMConfigurationRegistration(Registration):
@@ -752,13 +776,15 @@ class EMMConfigurationRegistration(Registration):
         self.filename = f"configuration_registration_{naming}_{date.today()}.xml"
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime 
+        quality_regime = self.frd_obj.quality_regime
         if not quality_regime:
             quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.instrument_configuration.configuration_name,
-            "delivery_accountable_party": str(self.formation_resistance_dossier.delivery_accountable_party.company_number),
+            "delivery_accountable_party": str(
+                self.formation_resistance_dossier.delivery_accountable_party.company_number
+            ),
             "bro_id": self.formation_resistance_dossier.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -773,9 +799,9 @@ class EMMConfigurationRegistration(Registration):
         }
 
         if self.instrument_configuration.secondary_receive_coil == "ja":
-            srcdocdata[
-                "relative_position_secondary_receiver_coil"
-            ] = self.instrument_configuration.relative_position_secondary_coil
+            srcdocdata["relative_position_secondary_receiver_coil"] = (
+                self.instrument_configuration.relative_position_secondary_coil
+            )
 
         if self.instrument_configuration.coilfrequency_known == "ja":
             srcdocdata["coilfrequency"] = self.instrument_configuration.coilfrequency
@@ -784,7 +810,6 @@ class EMMConfigurationRegistration(Registration):
             metadata, srcdocdata, "registration"
         )
         self.xml_file = configuration_registration_tool.generate_xml_file()
-
 
 
 class EMMMeasurementRegistration(Registration):
@@ -805,13 +830,15 @@ class EMMMeasurementRegistration(Registration):
         )
 
     def construct_xml_tree(self):
-        quality_regime = self.frd_obj.quality_regime 
+        quality_regime = self.frd_obj.quality_regime
         if not quality_regime:
             quality_regime = "IMBRO/A"
 
         metadata = {
             "request_reference": self.filename,
-            "delivery_accountable_party": str(self.frd_obj.delivery_accountable_party.company_number),
+            "delivery_accountable_party": str(
+                self.frd_obj.delivery_accountable_party.company_number
+            ),
             "bro_id": self.frd_obj.frd_bro_id,
             "quality_regime": quality_regime,
         }
@@ -829,14 +856,13 @@ class EMMMeasurementRegistration(Registration):
             "measuring_responsible_party": self.method_obj.measuring_responsible_party,
             "measuring_procedure": self.method_obj.measuring_procedure,
             "evaluation_procedure": self.method_obj.assessment_procedure,
-            "element_count":measurement_records_count,
-            "measurement_data":measurement_records,
-            "related_instrument_config":instrument_config.configuration_name,
-            "calculated_measurement_operator":calculated_method.responsible_party,
-            "calculated_determination_procedure":calculated_method.assessment_procedure,
-            "formation_measurement_data_count":calculated_records_count,
-            "formation_measurement_data":calculated_records,
-
+            "element_count": measurement_records_count,
+            "measurement_data": measurement_records,
+            "related_instrument_config": instrument_config.configuration_name,
+            "calculated_measurement_operator": calculated_method.responsible_party,
+            "calculated_determination_procedure": calculated_method.assessment_procedure,
+            "formation_measurement_data_count": calculated_records_count,
+            "formation_measurement_data": calculated_records,
         }
 
         emm_measurment_registration_tool = brx.EMMMeasurementTool(
@@ -845,7 +871,9 @@ class EMMMeasurementRegistration(Registration):
         self.xml_file = emm_measurment_registration_tool.generate_xml_file()
 
     def _get_config(self):
-        return InstrumentConfiguration.objects.filter(formation_resistance_dossier=self.frd_obj).first()
+        return InstrumentConfiguration.objects.filter(
+            formation_resistance_dossier=self.frd_obj
+        ).first()
 
     def _get_measurement_data(self):
         series = self._get_related_series()
@@ -863,14 +891,18 @@ class EMMMeasurementRegistration(Registration):
         return string, count
 
     def _get_related_series(self):
-        return ElectromagneticSeries.objects.filter(electromagnetic_measurement_method=self.method_obj).first()
-    
-    def _get_records(self,series):
+        return ElectromagneticSeries.objects.filter(
+            electromagnetic_measurement_method=self.method_obj
+        ).first()
+
+    def _get_records(self, series):
         return ElectromagneticRecord.objects.filter(series=series)
 
     def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
         """Queries the related CalculatedFormationresistanceMethod"""
-        return CalculatedFormationresistanceMethod.objects.filter(electromagnetic_measurement_method=self.method_obj).first()  
+        return CalculatedFormationresistanceMethod.objects.filter(
+            electromagnetic_measurement_method=self.method_obj
+        ).first()
 
     def _get_calculated_data(self, calculated_method):
         series = self._get_related_formation_series(calculated_method)
@@ -888,7 +920,9 @@ class EMMMeasurementRegistration(Registration):
         return string, count
 
     def _get_related_formation_series(self, calculated_method):
-        return FormationresistanceSeries.objects.filter(calculated_formationresistance=calculated_method).first()
-    
-    def _get_formation_records(self,series):
+        return FormationresistanceSeries.objects.filter(
+            calculated_formationresistance=calculated_method
+        ).first()
+
+    def _get_formation_records(self, series):
         return FormationresistanceRecord.objects.filter(series=series)
