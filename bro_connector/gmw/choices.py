@@ -76,8 +76,8 @@ COORDINATETRANSFORMATION = (
     ("nietGetransformeerd", "nietGetransformeerd"),
     ("RDNAPTRANS2008", "RDNAPTRANS2008"),
     ("RDNAPTRANS2018", "RDNAPTRANS2018"),
-    ("RDNAPTRANS2008MV0", "RDNAPTRANS2008MV0"), # IMBRO/A
-    ("RDNAPTRANS2018MV0", "RDNAPTRANS2018MV0"), # IMBRO/A
+    ("RDNAPTRANS2008MV0", "RDNAPTRANS2008MV0"),  # IMBRO/A
+    ("RDNAPTRANS2018MV0", "RDNAPTRANS2018MV0"),  # IMBRO/A
 )
 
 ELECTRODESTATUS = (
@@ -258,7 +258,7 @@ QUALITYREGIME = (
 
 VERTICALDATUM = (("NAP", "NAP"),)
 
-WELL_STATUS = (
+WELLSTATUS = (
     ("inGebruik", "In gebruik"),
     ("inAanleg", "In aanleg"),
     ("gedempt", "Gedempt"),
@@ -278,7 +278,6 @@ WELLHEADPROTECTOR_SUBTYPES = (
     ("VRMBlWhDiv", "VRMBlWhDiv"),
     ("VRMBlWhUnk", "VRMBlWhUnk"),
     ("onbekend", "onbekend"),
-
 )
 
 LOCKS = (

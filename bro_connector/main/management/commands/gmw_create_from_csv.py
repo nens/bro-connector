@@ -69,7 +69,7 @@ def create_monitoring_well(df: pl.DataFrame):
             opgeruimd += 1
             continue
         else:
-            nitg_code = row['NITG_nr']
+            nitg_code = row['NITG-Nr']
             # select buis-nr, but missing in "Peilbuizen natuur.csv", so if not available, assume buis-nr = 1
             try:
                 tube_nr = int(row['Buis-Nr'])
@@ -82,12 +82,12 @@ def create_monitoring_well(df: pl.DataFrame):
 
             well = find_well(point, nitg_code)
 
-            if well and row["NITG_nr"] is not None:
-                print(f"{x:.2f}\t{y:.2f}\t exists, NITG is:\t {row['NITG_nr']}")
+            if well and row["NITG-Nr"] is not None:
+                print(f"{x:.2f}\t{y:.2f}\t exists, NITG is:\t {row['NITG-Nr']}")
             elif well:
                 print(f"{x:.2f}\t{y:.2f}\t exists, NITG is:\t None")
             else:
-                print(f"{x:.2f}\t{y:.2f}\t does not exist for NITG:\t {row['NITG_nr']}")
+                print(f"{x:.2f}\t{y:.2f}\t does not exist for NITG:\t {row['NITG-Nr']}")
 
             # if the nitg code is empty add it to new DINO gmn.
             if (nitg_code == None) and (well == None):

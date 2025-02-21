@@ -19,6 +19,7 @@ def s2d(string: str):
         return f"{string[0:3]}...{string[-3:]}"
     return string
 
+
 class GroundwaterLevelDossier(models.Model):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
     groundwater_monitoring_net = models.ManyToManyField(
@@ -31,9 +32,10 @@ class GroundwaterLevelDossier(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=False,
-        related_name="groundwaterleveldossier"
+        related_name="groundwaterleveldossier",
     )
-    gld_bro_id = models.CharField(max_length=255, blank=True, null=True)
+    # quality_regime = models.CharField(max_length=254, null=True, blank=True)
+    gld_bro_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
     research_last_correction = models.DateTimeField(blank=True, null=True)
@@ -50,35 +52,43 @@ class GroundwaterLevelDossier(models.Model):
 
     @property
     def first_measurement(self):
-        first_measurement = Observation.objects.filter(
-            groundwater_level_dossier = self
-        ).order_by("observation_starttime").first()
-        first_measurement_date= getattr(first_measurement, 'observation_starttime', None)
+        first_measurement = (
+            Observation.objects.filter(groundwater_level_dossier=self)
+            .order_by("observation_starttime")
+            .first()
+        )
+        first_measurement_date = getattr(
+            first_measurement, "observation_starttime", None
+        )
 
         return first_measurement_date
-    
+
     @property
     def most_recent_measurement(self):
         observations_groundwaterleveldossier = Observation.objects.filter(
-            groundwater_level_dossier = self
+            groundwater_level_dossier=self
         ).order_by("-observation_starttime")
         for observation_groundwaterleveldossier in observations_groundwaterleveldossier:
             # last_measurementTVP
-            most_recent_measurement = MeasurementTvp.objects.filter(
-            observation_id = observation_groundwaterleveldossier.observation_id
-            ).order_by("-measurement_time").first()
+            most_recent_measurement = (
+                MeasurementTvp.objects.filter(
+                    observation_id=observation_groundwaterleveldossier.observation_id
+                )
+                .order_by("-measurement_time")
+                .first()
+            )
 
             if most_recent_measurement is not None:
                 return most_recent_measurement.measurement_time
-            
-        return None    
+
+        return None
 
     @property
     def completely_delivered(self):
         nr_of_observations_groundwaterleveldossier = Observation.objects.filter(
-            groundwater_level_dossier = self,
-            up_to_date_in_bro = False,
-            observation_endtime__isnull = False,
+            groundwater_level_dossier=self,
+            up_to_date_in_bro=False,
+            observation_endtime__isnull=False,
         ).count()
 
         if nr_of_observations_groundwaterleveldossier == 0:
@@ -88,10 +98,10 @@ class GroundwaterLevelDossier(models.Model):
     @property
     def has_open_observation(self):
         nr_of_observations_groundwaterleveldossier = Observation.objects.filter(
-            groundwater_level_dossier = self,
-            observation_endtime__isnull = True,
+            groundwater_level_dossier=self,
+            observation_endtime__isnull=True,
         ).count()
-        
+
         if nr_of_observations_groundwaterleveldossier == 0:
             return False
         return True
@@ -108,26 +118,27 @@ class GroundwaterLevelDossier(models.Model):
 
 class Observation(models.Model):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False)
-    observationperiod = models.DurationField(blank=True, null=True)
-    observation_starttime = models.DateTimeField(blank=True, null=True)
-    result_time = models.DateTimeField(blank=True, null=True)
-    observation_endtime = models.DateTimeField(blank=True, null=True)
+    groundwater_level_dossier = models.ForeignKey(
+        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
+    )
     observation_metadata = models.ForeignKey(
         "ObservationMetadata", on_delete=models.CASCADE, null=True, blank=True
     )
     observation_process = models.ForeignKey(
         "ObservationProcess", on_delete=models.CASCADE, null=True, blank=True
     )
-    groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
-    )
+    observation_starttime = models.DateTimeField(blank=True, null=True)
+    result_time = models.DateTimeField(blank=True, null=True)
+    observation_endtime = models.DateTimeField(blank=True, null=True)
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
 
     @property
     def timestamp_first_measurement(self):
-        mtvp = MeasurementTvp.objects.filter(
-            observation = self
-        ).order_by("measurement_time").first()
+        mtvp = (
+            MeasurementTvp.objects.filter(observation=self)
+            .order_by("measurement_time")
+            .first()
+        )
 
         if mtvp is not None:
             return mtvp.measurement_time
@@ -135,9 +146,11 @@ class Observation(models.Model):
 
     @property
     def timestamp_last_measurement(self):
-        mtvp = MeasurementTvp.objects.filter(
-            observation = self
-        ).order_by("measurement_time").last()
+        mtvp = (
+            MeasurementTvp.objects.filter(observation=self)
+            .order_by("measurement_time")
+            .last()
+        )
 
         if mtvp is not None:
             return mtvp.measurement_time
@@ -161,11 +174,28 @@ class Observation(models.Model):
             return self.observation_metadata.status
         return "-"
 
+    @property
+    def observationperiod(self):
+        if self.observation_starttime and self.observation_endtime:
+            return self.observation_endtime - self.observation_starttime
+        return None
+
     def __str__(self):
         end = "present"
         if self.observation_endtime:
             end = self.observation_endtime.date()
-        return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
+            if self.groundwater_level_dossier:
+                if self.observation_starttime:
+                    return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
+                else:
+                    return f"{self.groundwater_level_dossier} (Unknown - {end})"
+            else:
+                if self.observation_starttime:
+                    return f"No groundwater_level_dossier ({self.observation_starttime.date()} - {end})"
+                else:
+                    return f"No groundwater_level_dossier (Unknown - {end})"
+        else:
+            return f"{self.groundwater_level_dossier} (Unknown - Unknown)"
 
     def save(self, *args, **kwargs):
         if self.pk == None:
@@ -211,25 +241,37 @@ class ObservationMetadata(models.Model):
     )
     status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True)
     responsible_party = models.ForeignKey(
-        Organisation, on_delete=models.SET_NULL, null=True, blank=True
+        Organisation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Organisatie",
     )
 
     def __str__(self):
-        return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+        if self.responsible_party:
+            return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+        else:
+            return f"{str(self.status)} ({str(self.date_stamp)})"
 
     @property
     def validation_status(self):
         if self.observation_type == "controlemeting":
             return None
         try:
-            observation = Observation.objects.get(observation_metadata = self)
+            observation = Observation.objects.get(observation_metadata=self)
         except Exception as e:
             return f"{e}"
-        
-        nr_of_unvalidated = len(MeasurementTvp.objects.filter(
-            observation = observation,
-            measurement_point_metadata__status_quality_control__in = ["nogNietBeoordeeld", "onbekend"]
-        ))
+
+        nr_of_unvalidated = len(
+            MeasurementTvp.objects.filter(
+                observation=observation,
+                measurement_point_metadata__status_quality_control__in=[
+                    "nogNietBeoordeeld",
+                    "onbekend",
+                ],
+            )
+        )
         if nr_of_unvalidated > 0:
             return "voorlopig"
         elif nr_of_unvalidated == 0:
@@ -269,7 +311,6 @@ class ObservationProcess(models.Model):
             return f"{s2d(self.evaluation_procedure)} {s2d(self.measurement_instrument_type)} {s2d(self.process_reference)}"
         except:
             return str(self.observation_process_id)
-        
 
     class Meta:
         managed = True
@@ -282,23 +323,59 @@ class ObservationProcess(models.Model):
 class MeasurementTvp(models.Model):
     measurement_tvp_id = models.AutoField(primary_key=True)
     observation = models.ForeignKey(
-        Observation, on_delete=models.CASCADE, null=True, blank=True
+        Observation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Observatie",
     )
-    measurement_time = models.DateTimeField(blank=True, null=True)
+    measurement_time = models.DateTimeField(
+        blank=True, null=True, verbose_name="Tijd meting"
+    )
     field_value = models.DecimalField(
-        max_digits=25, decimal_places=3, blank=True, null=True
+        max_digits=25,
+        decimal_places=3,
+        blank=True,
+        null=True,
+        verbose_name="Veldmeting",
     )
-    field_value_unit = models.CharField(choices=UNIT_CHOICES, max_length=255, blank=False, null=False, default="m")
+    field_value_unit = models.CharField(
+        choices=UNIT_CHOICES,
+        max_length=255,
+        blank=False,
+        null=False,
+        default="m",
+        verbose_name="Veld eenheid",
+    )
     calculated_value = models.DecimalField(
-        max_digits=25, decimal_places=5, blank=True, null=True
+        max_digits=25,
+        decimal_places=5,
+        blank=True,
+        null=True,
+        verbose_name="Berekende waarde",
     )
     value_to_be_corrected = models.DecimalField(
-        max_digits=25, decimal_places=5, blank=True, null=True
+        max_digits=25,
+        decimal_places=5,
+        blank=True,
+        null=True,
+        verbose_name="Te corrigeren waarde",
     )
-    correction_time = models.DateTimeField(blank=True, null=True)
-    correction_reason = models.CharField(max_length=255, blank=True, null=True)
+    correction_time = models.DateTimeField(
+        blank=True, null=True, verbose_name="Correctie tijd"
+    )
+    correction_reason = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name="Correctie reden"
+    )
     measurement_point_metadata = models.ForeignKey(
-        "MeasurementPointMetadata", on_delete=models.CASCADE, null=True, blank=True
+        "MeasurementPointMetadata",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Meting metadata",
+    )
+    comment = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Commentaar"
     )
 
     class Meta:
@@ -307,23 +384,32 @@ class MeasurementTvp(models.Model):
         verbose_name = "Metingen Tijd-Waarde Paren"
         verbose_name_plural = "Metingen Tijd-Waarde Paren"
 
+    def __str__(self) -> str:
+        return f"{self.observation} {self.measurement_time} {self.calculated_value}"
+
 
 class MeasurementPointMetadata(models.Model):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
     status_quality_control = models.CharField(
-        choices=STATUSQUALITYCONTROL, max_length=200, blank=True, null=True, default = "nogNietBeoordeeld"
+        choices=STATUSQUALITYCONTROL,
+        max_length=200,
+        blank=True,
+        null=True,
+        default="nogNietBeoordeeld",
     )
     censor_reason = models.CharField(
         choices=CENSORREASON, max_length=200, blank=True, null=True
     )
-    censor_reason_artesia = models.CharField(
-        max_length=200, blank=True, null=True
-    )
+    censor_reason_artesia = models.CharField(max_length=200, blank=True, null=True)
     value_limit = models.DecimalField(
         max_digits=100, decimal_places=10, blank=True, null=True
     )
     interpolation_code = models.CharField(
-        choices=INTERPOLATIONTYPE, max_length=200, blank=True, null=True, default = "discontinu"
+        choices=INTERPOLATIONTYPE,
+        max_length=200,
+        blank=True,
+        null=True,
+        default="discontinu",
     )
 
     class Meta:
@@ -333,12 +419,12 @@ class MeasurementPointMetadata(models.Model):
         verbose_name = "Meetpunt Metadata"
         verbose_name_plural = "Meetpunt Metadata"
         indexes = [
-            models.Index(fields=['status_quality_control']),
-            models.Index(fields=['censor_reason']),
+            models.Index(fields=["status_quality_control"]),
+            models.Index(fields=["censor_reason"]),
         ]
 
     def __str__(self):
-        return str(self.measurement_point_metadata_id)
+        return f"{self.measurement_point_metadata_id} {self.status_quality_control}"
 
 
 # %% Aanlevering models
@@ -391,7 +477,6 @@ class gld_addition_log(models.Model):
     file = models.CharField(max_length=254, null=True, blank=True)
     addition_type = models.CharField(max_length=254, null=True, blank=True)
     process_status = models.CharField(max_length=254, null=True, blank=True)
-
 
     class Meta:
         db_table = 'aanlevering"."gld_addition_log'

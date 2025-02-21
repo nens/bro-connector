@@ -63,7 +63,6 @@ python-dateutil==2.9.0.post0
 python-utils==3.8.2
 pytz==2024.1
 requests==2.31.0
-reversion==0.2
 rich==13.7.1
 six==1.16.0
 sqlparse==0.5.1

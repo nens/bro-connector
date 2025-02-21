@@ -10,10 +10,24 @@ class GMWSerializer(serializers.ModelSerializer):
     groundlevel_position = serializers.SerializerMethodField()
     well_head_protector = serializers.SerializerMethodField()
     picture = serializers.SerializerMethodField()
+    nitg_code = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
-        fields = '__all__'
+        fields = [
+            'groundwater_monitoring_well_static_id',
+            'bro_id',
+            'well_code',
+            'deliver_gmw_to_bro',
+            'complete_bro',
+            'in_management',
+            'picture',
+            'x',
+            'y',
+            'delivery_accountable_party',
+            'linked_gmns',
+            'nitg_code'
+        ]
 
     def get_x(self, obj):
         return obj.lat
@@ -27,13 +41,17 @@ class GMWSerializer(serializers.ModelSerializer):
             for mp in tube.measuringpoint_set.all()
         ]
         return list(set(measuring_points))
-    
+   
     def get_groundlevel_position(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         last_state = obj.state.last()
+        if not last_state:
+             return None
         return last_state.ground_level_position
     
     def get_well_head_protector(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         last_state = obj.state.last()
+        if not last_state:
+             return None
         return last_state.well_head_protector
     
     def get_picture(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
@@ -42,6 +60,9 @@ class GMWSerializer(serializers.ModelSerializer):
             return picture.image_tag
         else:
             return "..."
+          
+    def get_nitg_code(self, obj):
+        return obj.nitg_code
 
 class GLDSerializer(serializers.ModelSerializer):
     class Meta:

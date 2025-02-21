@@ -1,7 +1,13 @@
 from django.db import models
 import random
 from django.core.exceptions import ValidationError
-from .choices import KADER_AANLEVERING_GMN, MONITORINGDOEL, DELIVERY_TYPE_CHOICES, LEVERINGSTATUS_CHOICES, EVENT_TYPE_CHOICES
+from .choices import (
+    KADER_AANLEVERING_GMN,
+    MONITORINGDOEL,
+    DELIVERY_TYPE_CHOICES,
+    LEVERINGSTATUS_CHOICES,
+    EVENT_TYPE_CHOICES,
+)
 from gmw.models import GroundwaterMonitoringTubeStatic
 from bro.models import Organisation, BROProject
 
@@ -17,6 +23,7 @@ def get_color_value():
 
     return color_code
 
+
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
     id = models.AutoField(primary_key=True)
@@ -26,9 +33,16 @@ class GroundwaterMonitoringNet(models.Model):
         null=True,
         blank=True,
     )
-    deliver_to_bro = models.BooleanField(blank=False, null=True, verbose_name="Leveren aan BRO?")
+    deliver_to_bro = models.BooleanField(
+        blank=False, null=True, verbose_name="Leveren aan BRO?"
+    )
     gmn_bro_id = models.CharField(
-        max_length=255, null=True, blank=True, editable=False, verbose_name="BRO-ID GMN"
+        max_length=255,
+        null=True,
+        blank=True,
+        editable=False,
+        verbose_name="BRO-ID GMN",
+        unique=True,
     )
     delivery_accountable_party = models.ForeignKey(
         Organisation,
@@ -52,13 +66,10 @@ class GroundwaterMonitoringNet(models.Model):
         max_length=255,
         null=True,
         blank=False,
-        verbose_name='Kwaliteitsregime'
+        verbose_name="Kwaliteitsregime",
     )
     object_id_accountable_party = models.CharField(
-        max_length=255,
-        null=True,
-        blank=False,
-        verbose_name='Intern ID'
+        max_length=255, null=True, blank=False, verbose_name="Intern ID"
     )
     name = models.CharField(max_length=255, null=True, blank=False, verbose_name="Naam")
     delivery_context = models.CharField(
@@ -86,13 +97,17 @@ class GroundwaterMonitoringNet(models.Model):
     end_date_monitoring = models.DateField(
         blank=True,
         null=True,
-        verbose_name='Stopdatum monitoring',
+        verbose_name="Stopdatum monitoring",
         help_text="Als een Meetnet verwijderd moet worden uit de BRO, verwijder het dan NIET uit de BRO-Connector. Vul dit veld in om de verwijdering uit de BRO te realiseren.",
     )
     removed_from_BRO = models.BooleanField(
-        blank=False, null=True, default=False, editable=False, verbose_name='Verwijderd uit de BRO?'
+        blank=False,
+        null=True,
+        default=False,
+        editable=False,
+        verbose_name="Verwijderd uit de BRO?",
     )
-    description = models.TextField(null=True, blank=True, verbose_name='Beschrijving')
+    description = models.TextField(null=True, blank=True, verbose_name="Beschrijving")
     color = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
@@ -150,9 +165,17 @@ class GroundwaterMonitoringNet(models.Model):
         verbose_name_plural = "Grondwatermonitoring Meetnetten"
         ordering = ("name",)
 
+
 class Subgroup(models.Model):
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='subgroups', on_delete=models.CASCADE, verbose_name="GMN")
-    name = models.CharField(max_length=100, null=False, blank=False, verbose_name="Naam")
+    gmn = models.ForeignKey(
+        GroundwaterMonitoringNet,
+        related_name="subgroups",
+        on_delete=models.CASCADE,
+        verbose_name="GMN",
+    )
+    name = models.CharField(
+        max_length=100, null=False, blank=False, verbose_name="Naam"
+    )
     code = models.CharField(max_length=25, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     color = models.CharField(max_length=50, null=True, blank=True)
@@ -177,20 +200,26 @@ class Subgroup(models.Model):
         verbose_name_plural = "Subgroups"
         ordering = ("name",)
 
+
 class MeasuringPoint(models.Model):
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, related_name='measuring_points', on_delete=models.CASCADE, verbose_name='Meetnet')
+    gmn = models.ForeignKey(
+        GroundwaterMonitoringNet,
+        related_name="measuring_points",
+        on_delete=models.CASCADE,
+        verbose_name="Meetnet",
+    )
     subgroup = models.ManyToManyField(
-        Subgroup, 
-        related_name='measuring_points',
+        Subgroup,
+        related_name="measuring_points",
         blank=True,
-        help_text='Optional value to define smaller groups within a network.'
+        help_text="Optional value to define smaller groups within a network.",
     )
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=False,
-        verbose_name="Grondwatermonitoring buis"
+        verbose_name="Grondwatermonitoring buis",
     )
     code = models.CharField(
         max_length=255,
@@ -200,17 +229,27 @@ class MeasuringPoint(models.Model):
         editable=False,
     )
     synced_to_bro = models.BooleanField(
-        blank=False, null=True, default=False, editable=False, verbose_name="Opgestuurd naar de BRO"
+        blank=False,
+        null=True,
+        default=False,
+        editable=False,
+        verbose_name="Opgestuurd naar de BRO",
     )
-    added_to_gmn_date = models.DateField(blank=True, null=True, verbose_name='Datum toegevoegd aan meetnet')
+    added_to_gmn_date = models.DateField(
+        blank=True, null=True, verbose_name="Datum toegevoegd aan meetnet"
+    )
     deleted_from_gmn_date = models.DateField(
         blank=True,
         null=True,
         help_text="Als een Meetpunt van een meetnet verwijderd moet worden, verwijder het object dan NIET uit de BRO-Connector, maar vul dit veld in!",
-        verbose_name='Datum uit meetnet gehaald'
+        verbose_name="Datum uit meetnet gehaald",
     )
     removed_from_BRO_gmn = models.BooleanField(
-        blank=False, null=True, default=False, editable=False, verbose_name='Verwijderd uit de BRO?'
+        blank=False,
+        null=True,
+        default=False,
+        editable=False,
+        verbose_name="Verwijderd uit de BRO?",
     )
 
     def __str__(self):
@@ -222,7 +261,10 @@ class MeasuringPoint(models.Model):
             return "New monitoring point"
 
     def save(self, *args, **kwargs):
-        if self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code is None:
+        if (
+            self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code
+            is None
+        ):
             self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id}_{self.groundwater_monitoring_tube.tube_number}"
         else:
             self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code}_{self.groundwater_monitoring_tube.tube_number}"
@@ -242,7 +284,10 @@ class MeasuringPoint(models.Model):
             )
 
         # Create GMN_MeasuringPointEndDate event if MP is deleted
-        if self.deleted_from_gmn_date is not None and self.removed_from_BRO_gmn is not True:
+        if (
+            self.deleted_from_gmn_date is not None
+            and self.removed_from_BRO_gmn is not True
+        ):
             IntermediateEvent.objects.create(
                 gmn=self.gmn,
                 event_type="GMN_MeasuringPointEndDate",
@@ -252,14 +297,8 @@ class MeasuringPoint(models.Model):
                 deliver_to_bro=self.gmn.deliver_to_bro,
             )
 
-    def clean(self, *args, **kwargs):
-        for subgroup in self.subgroup.all():
-            if subgroup.gmn != self.gmn:
-                raise ValidationError("Subgroup is deel van een ander Meetnet dan het geselecteerde Meetpunt.")
-            
     def list_subgroups(self):
         return ", ".join([subgroup.name for subgroup in self.subgroup.all()])
-
 
     class Meta:
         managed = True
@@ -267,6 +306,7 @@ class MeasuringPoint(models.Model):
         verbose_name = "Meetpunt"
         verbose_name_plural = "Meetpunten"
         ordering = ("code",)
+
 
 class MeasuringPointSubgroup(models.Model):
     measuring_point = models.ForeignKey(
@@ -276,24 +316,37 @@ class MeasuringPointSubgroup(models.Model):
     subgroup = models.ForeignKey(
         Subgroup,
         on_delete=models.SET_NULL,
-        null = True,
+        null=True,
     )
-    
+
+
 class IntermediateEvent(models.Model):
-    gmn = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, verbose_name='Meetnet')
+    gmn = models.ForeignKey(
+        GroundwaterMonitoringNet, on_delete=models.CASCADE, verbose_name="Meetnet"
+    )
     measuring_point = models.ForeignKey(
-        MeasuringPoint, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Meetpunt"
+        MeasuringPoint,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name="Meetpunt",
     )
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
         null=True,
         max_length=25,
-        verbose_name="Bericht type"
+        verbose_name="Bericht type",
     )
-    event_date = models.DateField(blank=False, null=True, verbose_name="Datum gebeurtenis")
-    deliver_to_bro = models.BooleanField(blank=False, null=True, default=True, verbose_name="Leverplichtig BRO")
-    synced_to_bro = models.BooleanField(blank=False, null=True, default=False, verbose_name="Opgestuurd naar de BRO")
+    event_date = models.DateField(
+        blank=False, null=True, verbose_name="Datum gebeurtenis"
+    )
+    deliver_to_bro = models.BooleanField(
+        blank=False, null=True, default=True, verbose_name="Leverplichtig BRO"
+    )
+    synced_to_bro = models.BooleanField(
+        blank=False, null=True, default=False, verbose_name="Opgestuurd naar de BRO"
+    )
 
     def __str__(self):
         return f"{self.gmn} - {self.event_type} - {self.event_date}"
@@ -305,6 +358,7 @@ class IntermediateEvent(models.Model):
         verbose_name_plural = "Tussentijdse Gebeurtenissen"
         ordering = ("event_date",)
 
+
 class gmn_bro_sync_log(models.Model):
     date_modified = models.DateField(null=True, blank=True)
     event_type = models.CharField(
@@ -313,7 +367,9 @@ class gmn_bro_sync_log(models.Model):
         null=True,
         max_length=25,
     )
-    gmn_bro_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="BRO-ID GMN")
+    gmn_bro_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="BRO-ID GMN"
+    )
     object_id_accountable_party = models.CharField(
         max_length=255, null=True, blank=True
     )
