@@ -12,6 +12,11 @@ from gmw import models as gmw_models
 from gmn import models as gmn_models
 
 input_field_options = {
+    "grondwaterstand": {
+        "name": "Grondwaterstand [cm tov bkb]",
+        "type": "number",
+        "hint": "cm tov bovenkant buis",
+    },
     "opneembaarheid": {
         "name": "Grondwaterstand niet opneembaar?",
         "type": "choice",
@@ -21,14 +26,9 @@ input_field_options = {
             "Nee, overig (geef infomatie via opmerking)",
         ],
     },
-    "grondwaterstand": {
-        "name": "Grondwaterstand tov bovenkant buis",
-        "type": "number",
-        "hint": "cm tov bovenkant peilfilter/stijgbuis",
-    },
     "opmerking": {
         "type": "text",
-        "hint": "Informatie over niet kunnen opnemen bijv. beschadiging",
+        "hint": "mbt filter beschadiging",
     },
     "foto 1": {"type": "photo", "hint": "Foto ter ondersteuning"},
     "foto 2": {"type": "photo", "hint": "Foto ter ondersteuning"},
@@ -38,9 +38,9 @@ input_field_options = {
 }
 
 input_fields_filter = [
+    "grondwaterstand",
     "opneembaarheid",
     "opmerking",
-    "grondwaterstand",
 ]
 
 input_fields_well = [
@@ -89,17 +89,50 @@ def write_location_file(data, filename):
         json.dump(data, outfile, indent=2)
 
 
+def in_gmn(gmn_name: str, tube: gmw_models.GroundwaterMonitoringTubeStatic) -> bool:
+    return gmn_models.GroundwaterMonitoringNet.objects.filter(
+        name=gmn_name, measuring_point__groundwater_monitoring_tube=tube
+    ).exists()
+
+
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
     filter_state = tube.state.order_by("date_from").last()
+    if not filter_state:
+        {
+            f"{filter_name}": {
+                "inputfields": input_fields_filter,
+                "properties": {
+                    "Bovenkant buis [mNAP] ": "Onbekend",
+                    "Diameter": "Onbekend",
+                    "Bovenkant filter [mNAP] ": "Onbekend",
+                    "Onderkant filter [mNAP] ": "Onbekend",
+                    "PMG": "Ja"
+                    if in_gmn("pmg", tube)
+                    else "Nee",  # Adjust to actual name
+                    "HMN": "Ja"
+                    if in_gmn("hmn", tube)
+                    else "Nee",  # Adjust to actual name
+                    "KRW-Kwantiteit": "Ja"
+                    if in_gmn("krw_kwal", tube)
+                    else "Nee",  # Adjust to actual name
+                },
+            },
+        }
+
     return {
         f"{filter_name}": {
             "inputfields": input_fields_filter,
             "properties": {
-                "Bovenkantbuis hoogte ": filter_state.tube_top_position,
+                "Bovenkant buis [mNAP] ": filter_state.tube_top_position,
                 "Diameter": filter_state.tube_top_diameter,
-                "Bovenkant filter hoogte ": filter_state.screen_top_position,
-                "Onderkant filter hoogte ": filter_state.screen_bottom_position,
+                "Bovenkant filter [mNAP] ": filter_state.screen_top_position,
+                "Onderkant filter [mNAP] ": filter_state.screen_bottom_position,
+                "PMG": "Ja" if in_gmn("pmg", tube) else "Nee",  # Adjust to actual name
+                "HMN": "Ja" if in_gmn("hmn", tube) else "Nee",  # Adjust to actual name
+                "KRW-Kwantiteit": "Ja"
+                if in_gmn("krw_kwal", tube)
+                else "Nee",  # Adjust to actual name
             },
         },
     }

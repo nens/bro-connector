@@ -14,6 +14,20 @@ from gmn import models as gmn_models
 maximum_difference_ratio = 0.2
 
 input_field_options = {
+    "grondwaterstand": {
+        "name": "Grondwaterstand [cm tov bkb]",
+        "type": "number",
+        "hint": "cm tov bovenkant buis",
+    },
+    "opneembaarheid": {
+        "name": "Grondwaterstand niet opneembaar?",
+        "type": "choice",
+        "options": [
+            "Nee, filter staat droog",
+            "Nee, beschadiging, reparatie benodigd",
+            "Nee, overig (geef infomatie via opmerking)",
+        ],
+    },
     "positie_bovenkantbuis": {
         "name": "Positie bovenkantbuis",
         "type": "number",
@@ -126,32 +140,39 @@ input_field_options = {
             "potWaterdicht",
         ],
     },
-    "opmerking": {
+    "opmerking_put": {
+        "name": "Opmerking",
         "type": "text",
-        "hint": "Informatie over niet kunnen opnemen bijv. beschadiging",
+        "hint": "m.b.t. put",
     },
-    "foto 1": {"type": "photo", "hint": "Foto ter ondersteuning"},
-    "foto 2": {"type": "photo", "hint": "Foto ter ondersteuning"},
-    "foto 3": {"type": "photo", "hint": "Foto ter ondersteuning"},
-    "foto 4": {"type": "photo", "hint": "Foto ter ondersteuning"},
-    "foto 5": {"type": "photo", "hint": "Foto ter ondersteuning"},
+    "opmerking_filter": {
+        "name": "Opmerking",
+        "type": "text",
+        "hint": "m.b.t. filter",
+    },
+    "foto 1": {"type": "photo", "hint": "Locatie"},
+    "foto 2": {"type": "photo", "hint": "Afwerking put"},
+    "foto 3": {"type": "photo", "hint": "Filterstelling"},
+    "foto 4": {"type": "photo", "hint": "Detail"},
+    "foto 5": {"type": "photo", "hint": "Extra"},
+    "foto F": {"type": "photo", "hint": "Foto van het filter"},
 }
 
 input_fields_filter = [
-    "opmerking",
+    "grondwaterstand",
+    "opneembaarheid",
+    "opmerking_filter",
     "positie_bovenkantbuis",
     "methode_positiebepaling_bovenkantbuis",
     "buisstatus",
     "buisdiameter",
     "buismateriaal",
     "buislengte",
+    "foto F",
 ]
 
 input_fields_well = [
-    "opmerking",
-    "maaiveldhoogte",
-    "methode_positiebepaling_maaiveld",
-    "beschermconstructie",
+    "opmerking_put",
     "foto 1",
     "foto 2",
     "foto 3",
@@ -246,26 +267,31 @@ def delete_old_files_from_ftp():
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
     filter_state = tube.state.order_by("date_from").last()
-    if not filter_state:
-        return {
-            f"{filter_name}": {
-                "inputfields": input_fields_filter,
-                "properties": {
-                    "Bovenkantbuis hoogte ": "unknown",
-                    "Diameter": "unknown",
-                    "Bovenkant filter hoogte ": "unknown",
-                    "Onderkant filter hoogte ": "unknown",
-                },
-            },
-        }
+    well_state = tube.groundwater_monitoring_well_static.state.order_by(
+        "date_from"
+    ).last()
     return {
         f"{filter_name}": {
             "inputfields": input_fields_filter,
             "properties": {
-                "Bovenkantbuis hoogte ": filter_state.tube_top_position,
-                "Diameter": filter_state.tube_top_diameter,
-                "Bovenkant filter hoogte ": filter_state.screen_top_position,
-                "Onderkant filter hoogte ": filter_state.screen_bottom_position,
+                "Maaiveldhoogte [mNAP]": well_state.ground_level_position
+                if well_state
+                else "Onbekend",
+                "Bovenkantbuis hoogte[mNAP] ": filter_state.tube_top_position
+                if filter_state
+                else "Onbekend",
+                "Bovenkant filter hoogte [mNAP]": filter_state.screen_top_position
+                if filter_state
+                else "Onbekend",
+                "Onderkant filter hoogte [mNAP]": filter_state.screen_bottom_position
+                if filter_state
+                else "Onbekend",
+                "Zandvang [m]": tube.sediment_sump_length,
+                "Diameter [mm]": filter_state.tube_top_diameter
+                if filter_state
+                else "Onbekend",
+                "Buismateriaal": tube.tube_material,
+                "Buisstatus": filter_state.tube_status if filter_state else "Onbekend",
             },
         },
     }
@@ -327,9 +353,25 @@ class FieldFormGenerator:
                         f"{well_name}": {
                             "inputfields": input_fields_well,
                             "properties": {
-                                "Maaiveldhoogte": well_state.ground_level_position
+                                "Eigenaar": well_state.owner,
+                                "Waarnemende instantie": well_state.maintenance_responsible_party,
+                                "Status put": well.well_status,
+                                "X": well.x,
+                                "Y": well.y,
+                                "Maaiveldhoogte [mNAP]": well_state.ground_level_position
                                 if well_state
-                                else "unknown",
+                                else "Onbekend",
+                                "Positiebepaling maaiveld": well_state.ground_level_positioning_method
+                                if well_state
+                                else "Onbekend",
+                                "Beschermconstructie": well_state.well_head_protector
+                                if well_state
+                                else "Onbekend",
+                                "Diameter beschermconstructie [mm]": "?",
+                                "Betonvoet": "?",
+                                "Type afwerking": well_state.well_head_protector_subtype
+                                if well_state
+                                else "Onbekend",
                             },
                         }
                     },
