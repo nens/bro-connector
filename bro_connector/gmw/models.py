@@ -212,7 +212,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
             return self.project.project_number
         else:
             None
-
+            
     project_number.fget.short_description = "Projectnummer"
 
     def cx(self):
