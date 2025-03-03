@@ -23,6 +23,7 @@ from gmw.models import (
 
 logger = logging.getLogger(__name__)
 
+
 def gen_gebeurtenis(event):
     if event["constructie"]:
         return "Inrichting"
@@ -156,7 +157,6 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                 "positie meetinstrument"
             ].round(3)
 
-
             try:
                 selection_electrode["positie"] = (
                     selection_electrode["positie"]
@@ -201,9 +201,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         maaiveld_y = [selection["maaiveldhoogte"].values[0] for _ in maaiveld_x]
 
         if referentie == "m t.o.v. mv":
-            name = 'Maaiveld (als referentiehoogte)'
+            name = "Maaiveld (als referentiehoogte)"
         else:
-            name="Maaiveld - t.o.v. mNAP"
+            name = "Maaiveld - t.o.v. mNAP"
 
         mv = go.Scatter(
             x=maaiveld_x,
@@ -237,9 +237,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                 ]
             ),
         )
-        
-        print("NOT BUIS")
 
+        print("NOT BUIS")
 
         filter = go.Bar(
             x=list(range(1, len(startpunten) + 3)),
@@ -293,9 +292,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             logger.exception("Bare except, hierdoor bestaat ingeplaatst_deel niet")
             ingeplaatst_deel = None
             pass
-        
+
         print("NOT INGEPLAATST DEEL")
-        
 
         # Maak een lijst met de traces
         barchart = make_subplots(
@@ -333,7 +331,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                         x=subselection["x"],
                         y=subselection["positie"],
                         mode="markers",
-                        name=f"elektr. kabel {str(i+1)}",
+                        name=f"elektr. kabel {str(i + 1)}",
                         customdata=np.transpose(
                             [
                                 subselection["elektrode"].values,
@@ -353,7 +351,6 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
 
         print("NOT TRACES 1")
 
-
         barchart.update_traces(
             marker=dict(
                 size=8,
@@ -364,7 +361,6 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         )
 
         print("NOT TRACES 2")
-
 
         # Voeg een gekleurd vak op de achtergrond toe
         y_position = selection["maaiveldhoogte"].values[
@@ -422,7 +418,6 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
 
         print("NOT SHAPES")
 
-
         # n
         columns = [
             "filternummer",
@@ -445,9 +440,9 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         )
         positions_dict = {}
         for i in range(len(selection_with_column_names_row)):
-            positions_dict[
-                selection_with_column_names_row.iloc[i]["filternummer"]
-            ] = selection_with_column_names_row.iloc[i].to_dict()
+            positions_dict[selection_with_column_names_row.iloc[i]["filternummer"]] = (
+                selection_with_column_names_row.iloc[i].to_dict()
+            )
         position_table = pd.DataFrame(positions_dict)
         position_table.index = range(len(position_table))
         position_table.drop(0, inplace=True)
@@ -463,7 +458,6 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         ]
 
         print("NOT TABLE")
-
 
         barchart.add_trace(
             go.Table(
@@ -486,7 +480,6 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         )
 
         print("NOT TRACES 3")
-
 
         # Update de layout van de grafiek
         barchart.update_layout(
@@ -517,12 +510,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
 
         print("NOT LAYOUT")
 
-
         # Update the x-axis layout to set the tick positions and labels
-        barchart.update_xaxes(
-            showticklabels=False 
-        )
-        
+        barchart.update_xaxes(showticklabels=False)
 
     except Exception as e:
         print("EXCEPTION: ", e)
@@ -544,7 +533,11 @@ app.layout = html.Div(
         dcc.Store(id="event-electrodes-view"),
         html.Div(
             [
-                html.Div(id="groundwater-monitoring-well-static-id", children="", style={"display": "none"}),
+                html.Div(
+                    id="groundwater-monitoring-well-static-id",
+                    children="",
+                    style={"display": "none"},
+                ),
                 html.Div(
                     children=[
                         html.Br(),
@@ -606,16 +599,20 @@ def update_output_div(data_tube, data_electrodes, event, options, referentie):
 )
 def get_dropdown_events(groundwater_monitoring_well_static_id):
     if str(groundwater_monitoring_well_static_id).isdigit():
-        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, groundwater_monitoring_well_static_id=groundwater_monitoring_well_static_id)
+        monitoring_well = get_object_or_404(
+            GroundwaterMonitoringWellStatic,
+            groundwater_monitoring_well_static_id=groundwater_monitoring_well_static_id,
+        )
     else:
-        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, well_code=groundwater_monitoring_well_static_id)
+        monitoring_well = get_object_or_404(
+            GroundwaterMonitoringWellStatic,
+            well_code=groundwater_monitoring_well_static_id,
+        )
 
     events = []
 
-    def format_event(event_datetime:datetime.date, event: Event) -> dict:
-        label = (
-            f"{event.event_name} ({event_datetime})"
-        )
+    def format_event(event_datetime: datetime.date, event: Event) -> dict:
+        label = f"{event.event_name} ({event_datetime})"
         return {
             "datumtijd": str(event_datetime),
             "label": label,
@@ -636,18 +633,27 @@ def get_dropdown_events(groundwater_monitoring_well_static_id):
     events = events.sort_values(by=["strptime"])
     events = events.to_dict(orient="records")
     value = len(events) - 1
-    options = [{"label": event["label"], "value": i, "event": event} for i, event in enumerate(events)]
+    options = [
+        {"label": event["label"], "value": i, "event": event}
+        for i, event in enumerate(events)
+    ]
     return options, value
+
 
 def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
     if event.groundwater_monitoring_well_dynamic:
         return event.groundwater_monitoring_well_dynamic
-    
+
     datetime_event = event.event_date
-    return GroundwaterMonitoringWellDynamic.objects.filter(
-        groundwater_monitoring_well_static = event.groundwater_monitoring_well_static,
-        date_from__lte =  datetime_event,
-    ).order_by("date_from").last()
+    return (
+        GroundwaterMonitoringWellDynamic.objects.filter(
+            groundwater_monitoring_well_static=event.groundwater_monitoring_well_static,
+            date_from__lte=datetime_event,
+        )
+        .order_by("date_from")
+        .last()
+    )
+
 
 @app.callback(
     [Output("event-tubes-view", "data"), Output("event-electrodes-view", "data")],
@@ -661,14 +667,19 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
     eventframe = pd.DataFrame(eventlist)
     event_id = eventframe["event"][eventframe["value"] == event].values[0]["event_id"]
     if str(groundwater_monitoring_well_static_id).isdigit():
-        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, groundwater_monitoring_well_static_id=groundwater_monitoring_well_static_id)
+        monitoring_well = get_object_or_404(
+            GroundwaterMonitoringWellStatic,
+            groundwater_monitoring_well_static_id=groundwater_monitoring_well_static_id,
+        )
     else:
-        monitoring_well = get_object_or_404(GroundwaterMonitoringWellStatic, well_code=groundwater_monitoring_well_static_id)
+        monitoring_well = get_object_or_404(
+            GroundwaterMonitoringWellStatic,
+            well_code=groundwater_monitoring_well_static_id,
+        )
     event = get_object_or_404(Event, change_id=event_id)
     well_dynamic = get_well_dynamic(event)
     datetime_event = event.event_date
     well_head_protector = well_dynamic.well_head_protector
-
 
     putdata = {
         "date": datetime_event,
@@ -681,12 +692,18 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
     }
     elektrode_data = []
 
-    filters = GroundwaterMonitoringTubeStatic.objects.filter(groundwater_monitoring_well_static=monitoring_well)
+    filters = GroundwaterMonitoringTubeStatic.objects.filter(
+        groundwater_monitoring_well_static=monitoring_well
+    )
     for filtr in filters:
-        filtr_history = GroundwaterMonitoringTubeDynamic.objects.filter(
-            groundwater_monitoring_tube_static=filtr, date_from__lte=datetime_event
-        ).order_by("date_from").last()
-        
+        filtr_history = (
+            GroundwaterMonitoringTubeDynamic.objects.filter(
+                groundwater_monitoring_tube_static=filtr, date_from__lte=datetime_event
+            )
+            .order_by("date_from")
+            .last()
+        )
+
         filt_dict = (
             {
                 "nummer": filtr.tube_number,
@@ -694,11 +711,9 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
                 "bovenkant filter": filtr_history.screen_top_position,
                 "onderkant filter": filtr_history.screen_bottom_position,
                 # Onderkant buis wordt niet geregistreerd, daarom neem ik aan dat de onderkant van het filter de onderkant van de buis is.
-                "onderkant buis": filtr_history.screen_bottom_position, 
-
+                "onderkant buis": filtr_history.screen_bottom_position,
                 # Meet instrument diepte wordt op het moment ook nog niet geregistreerd (dummy waarde)
                 "diepte meetinstrument": filtr_history.screen_top_position,
-
                 # Zandvang wordt op het moment nog niks mee gedaan
                 "zandvang": filtr.sediment_sump_present,
                 "zandvang lengte": filtr.sediment_sump_length,
@@ -718,7 +733,9 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
 
         putdata["filters"] += filt_dict
 
-        geo_ohmkabels = GeoOhmCable.objects.filter(groundwater_monitoring_tube_static=filtr)
+        geo_ohmkabels = GeoOhmCable.objects.filter(
+            groundwater_monitoring_tube_static=filtr
+        )
         for kabel in geo_ohmkabels:
             elektrodes = ElectrodeStatic.objects.filter(geo_ohm_cable=kabel)
             for elektrode in elektrodes:
@@ -730,14 +747,15 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
                         "positie": elektrode.electrode_position,
                     }
                 ]
-    
+
     try:
         putdataframe = transform_putdata_to_df(putdata)
-    except:
+    except Exception as e:
+        logger.exception(e)
         putdataframe = pd.DataFrame()
 
     electrodedataframe = transform_electrodedata_to_df(elektrode_data)
-    
+
     event_dates = list(putdataframe["datum"].unique())
 
     event = event_dates[0]
@@ -778,8 +796,9 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
 
     selection["ingeplaatst deel"] = selection["lengte ingeplaatst deel"]
 
-
-    selection["meetinstrumentsdiepte"] = selection["bovenkant buis"] - selection["positie meetinstrument"]
+    selection["meetinstrumentsdiepte"] = (
+        selection["bovenkant buis"] - selection["positie meetinstrument"]
+    )
     selection["meetinstrumentsdiepte"] = selection["meetinstrumentsdiepte"].round(3)
 
     selection_electrode = electrodedataframe.copy()

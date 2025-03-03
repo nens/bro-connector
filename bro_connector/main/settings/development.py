@@ -39,4 +39,3 @@ LIZARD_SETTINGS = {
     "organisation_uuid": "e7d66583-43b2-4c90-b118-f2093798885a",
     "site_url": "https://nens.lizard.net",
 }
-

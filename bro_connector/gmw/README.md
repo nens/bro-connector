@@ -130,7 +130,7 @@ classDiagram
     Event ..> "changes" GroundwaterMonitoringWellDynamic
     Event ..> "changes" GroundwaterMonitoringTubeDynamic
     Event ..> "changes" ElectrodeDynamic
-    
+
     class gmw_registration_log{
         str date_modified
         str bro_id

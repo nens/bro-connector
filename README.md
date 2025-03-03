@@ -3,7 +3,7 @@
 # BRO-connector
 De BRO-connector is een maatwerk Django applicatie voor de aanlevering van grondwatergegevens naar de BRO, ontwikkeld in samenwerking met de Provincie Zeeland. Daarbij bevat de applicatie ook een validatiemodule DataLens voor het beoordelen van de tijdreeksen volgens het QC Protocol. De BRO-connector ondersteunt de geautomatiseerde periodieke datalevering. Het berichtenverkeer is beschikbaar voor de BRO-registratieobjecten GMW (meetput), GMN (meetnet) en FRD (formatieweerstandonderzoek). De BRO-connector is voor de Provincie Zeeland aangesloten op een PostgreSQL database waarin het datamodel van de BRO op hoofdlijnen overgenomen is. De BRO-connector is in principe ook toepasbaar op andere databases. Deze beschrijving bevat informatie over de technische architectuur, de installatie en initialisatie van de applicatie binnen je eigen organisatie, en natuurlijk het gebruik van deze beheeromgeving voor je grondwatergegevens.
 
-### Inhoudsopgave 
+### Inhoudsopgave
 Deze ReadMe bevat de volgende beschrijvingen:
 - [Architectuuur](https://github.com/nens/bro-connector/?tab=readme-ov-file#architectuur)
 - [Installatie](https://github.com/nens/bro-connector/?tab=readme-ov-file#installeren-van-django-applicatie-op-server)
@@ -29,10 +29,10 @@ Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard
     - Maak een database aan met postgis extensie (minimaal Postgresql 13 met PostGIS 3.4)
     - Maak een schema 'django_admin' in de postgres database aan, hierin komen de admin-tabellen.
     - Specifieke instellingen staan in de main/localsecret.py. Hiervoor is een template toegevoegd (main/localsecret_template.py) Daarin staat gedefiniëerd of het een productieomgeving, stagingomgeving of development omgeving betreft incl. settings en aanvullende keys. Voor het aanmaken van een Fernet en Salt key kunnen de scripts in bro_connector\installation_help\python_scripts uitgevoerd worden.
-    - Initialiseer de admin tabellen voor django door vanuit de folder bro_connector met de volgende commando's te draaien: 
+    - Initialiseer de admin tabellen voor django door vanuit de folder bro_connector met de volgende commando's te draaien:
     ```
     python manage.py makemigrations bro tools gmw gld gmn frd
-    python manage.py migrate 
+    python manage.py migrate
     ```
     - De overige tabellen staan al in de database, maar moeten nog gesynchroniseerd worden met de django applicatie.
     - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate' (of python manage.py migrate --fake wanneer stap 3 is uitgevoerd).
@@ -89,9 +89,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 *Als je een .pfx bestand hebt kan je OpenSSL gebruiken om deze te splitsen (https://stackoverflow.com/questions/15413646/converting-pfx-to-pem-using-openssl).
 
    `openssl pkcs12 -in file.pfx -out file.pem -nodes`
-   
+
    `openssl pkcs12 -in file.pfx -out file.withkey.pem`
-   
+
    `openssl rsa -in file.withkey.pem -out file.key`
 
    file.pem en file.key gebruiken we uit dit voorbeeld.
@@ -114,7 +114,7 @@ Zodra de actie is uitgevoerd, is de voortgang van het versturen van berichten te
 
 ## Instellen van BRO Tokens voor meerdere organisaties
 Het is noodzakelijk om gebruik te maken van de BRO authenticatie tokens wanneer er gegevens opgestuurd moeten worden naar de BRO. De BRO-Connector bied de mogelijkheid om BRO tokens op te slaan onder de relevante partij.
-De tokens worden versleuteld opgeslagen in de database en na de eerste invoer verborgen. 
+De tokens worden versleuteld opgeslagen in de database en na de eerste invoer verborgen.
 Op deze manier kan niemand met toegang tot de app of database eenvoudig de tokens inzien, terwijl de app wel blijft functioneren.
 
 Om dit te bereiken maakt de BRO-Connector gebruik van salting en Fernet-encryptie. Daarom moeten tijdens de installatie twee omgevingsvariabelen worden aangemaakt: FERNET_ENCRYPTION_KEY en SECURE_STRING_SALT. De waarden van deze variabelen kun je zelf genereren, maar ze worden ook automatisch gegenereerd door de Python-scripts die worden uitgevoerd tijdens install.cmd.
@@ -124,7 +124,7 @@ Hieronder staan enkele processtappen in detail toegelicht voor het registreren v
 
 ### Registreren van een put
 Voor de registratie van een nieuwe put en synchronisatie naar de BRO verloopt het proces via de volgende stappen:
-1. Ga in de linkertab naar "GMW" en selecteer de tabel "Grondwatermonitoring Putten - Statisch". 
+1. Ga in de linkertab naar "GMW" en selecteer de tabel "Grondwatermonitoring Putten - Statisch".
 2. Klik op "Add Grondwatermonitoring Put - Statisch" en vul de benodigde kenmerken in. Voor de aanlevering naar de BRO selecteer ook de optie "Deliver gmw to bro", anders is de put enkel beheerd binnen de lokale omgeving van de BRO-connector
 3. Vul eventueel ook dynamische informatie over de put in via de tabel "Grondwatermonitoring Putten - Dynamisch" en informatie over de filters op een identieke wijze in de overige tabellen van het "GMW" domein. Al deze tabellen zijn gerelateerd aan elkaar en de relatie met andere tabel (bijv. put) is zichtbaar in het bovenste veld van de tabellen.
 
@@ -141,8 +141,6 @@ De aanlevering van tijdseries van zowel logger als handmetingen verloopt via Obs
 
 ### Synchronisatie van de metingen naar de BRO
 Voor de aanlevering van een reeks aan waarnemingen aan de BRO dien je de volgende stappen uit te voeren.
-1. Sluit de Observatie behorend bij de reeks aan waarnemingen (tijdmeetwaardeparen) via de actie "Close Observation" door binnen de GLD in het menu "Observatie" de gewenste te selecteren en daarna de actie te starten. 
+1. Sluit de Observatie behorend bij de reeks aan waarnemingen (tijdmeetwaardeparen) via de actie "Close Observation" door binnen de GLD in het menu "Observatie" de gewenste te selecteren en daarna de actie te starten.
 2. Synchroniseer de data via "Grondwaterstand Dossier" door de betreffende GLD aan te klikken en de actie "Deliver GLD to BRO" uit te voeren.
 3. Voor het toevoegen van nieuwe waarnemingen kun je een nieuwe observatie aanmaken en daarvoor tijdmeetwaardeparen toevoegen. Deze actie wordt bij de provincie Zeeland automatisch uitgevoerd bij het sluiten van een Observatie zodat de dagelijkse leveringen van nieuwe waarnemingen automatisch op een nieuwe Observatie plaatsvindt.
-
-

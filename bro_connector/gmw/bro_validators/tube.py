@@ -1,12 +1,4 @@
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubeDynamic
-from gmw.choices import (
-    QUALITYREGIME,
-    TUBEMATERIAL,
-    TUBEPACKINGMATERIAL,
-    TUBESTATUS,
-    TUBETOPPOSITIONINGMETHOD,
-    TUBETYPE,
-)
 
 
 def validate_tube_static(tube: GroundwaterMonitoringTubeStatic) -> tuple[bool, str]:

@@ -159,7 +159,7 @@ def draw_map(
         "selected": {"marker": {"opacity": 1.0, "color": "red", "size": 9}},
     }
 
-    # if selected_rows is None:
+    # if selected_rows  is None:
     zoom, center = get_plotting_zoom_level_and_center_coordinates(
         df.lon.values, df.lat.values
     )

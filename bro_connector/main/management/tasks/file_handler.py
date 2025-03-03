@@ -15,7 +15,7 @@ class DataRetrieverFile:
         if "bro_id" in df.columns:
             print("Using BRO IDs")
             gmw_ids = df["bro_id"].to_list()
-            gmw_ids_ini_count = len(gmw_ids)
+            _gmw_ids_ini_count = len(gmw_ids)
 
         elif "nitg" and ("eigenaar" or "kvk_nummer") in df.columns:
             print("Using NITG Codes")

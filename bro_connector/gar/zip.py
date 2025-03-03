@@ -27,7 +27,7 @@ def zip_output_main():
     output_zips = "output_zips"
 
     for zip_name in zips_list:
-        with ZipFile(f"{os.path.join(output_zips,zip_name)}.zip", "w") as zip:
+        with ZipFile(f"{os.path.join(output_zips, zip_name)}.zip", "w") as zip:
             for file in file_paths:
                 if file.split(".")[0][-2:] == zip_name:
                     zip.write(file)

@@ -1,17 +1,16 @@
-
 import datetime as dt
 from django.core.exceptions import ValidationError
 
 
-
 #### GMW models validators
+
 
 def tube_number_validation(value):
     if value >= 1:
         return
     else:
         raise ValidationError("Filternummer moet groter of gelijk zijn aan 1.")
-    
+
 
 def date_validation(value):
     if value is None:
@@ -30,6 +29,7 @@ def maaiveldhoogte_validation(value):
             "Maaiveldhoogte boven 325 mNAP en onder -10 mNAP niet toegestaan"
         )
 
+
 def referentiehoogte_validation(value):
     if value is None:
         return
@@ -38,11 +38,13 @@ def referentiehoogte_validation(value):
             "Referentiehoogte boven 325 mNAP en onder -10 mNAP niet toegestaan"
         )
 
+
 def lengte_ingeplaatst_deel_validation(value):
     if value is None:
         return
     if value < 1 or value > 200:
         raise ValidationError("Lengte ingeplaatst deel buiten de marges (1 m - 200 m)")
+
 
 def diameter_bovenkant_ingeplaatst_deel_validation(value):
     if value is None:
@@ -51,6 +53,7 @@ def diameter_bovenkant_ingeplaatst_deel_validation(value):
         raise ValidationError(
             "Diameter ingeplaatst deel buiten de marges (20 mm - 50 mm)"
         )
+
 
 def elektrodepositie_validator(value):
     value = float(value)
@@ -61,6 +64,7 @@ def elektrodepositie_validator(value):
         raise ValidationError(
             "Elektrodepositie buiten de marges -750 m en 50 m t.o.v. bovenkant buis niet toegestaan"
         )
+
 
 def aantal_elektrodes_validator(value):
     if value < 2:
@@ -80,10 +84,10 @@ def zandvanglengte_validator(value):
 def datetime_validation(value):
     if value is None:
         return
-    
-    if type(value) == dt.datetime:
+
+    if isinstance(value, dt.datetime):
         date = value.date()
-    elif type(value) == dt.date:
+    elif isinstance(value, dt.date):
         date = value
 
     if date > dt.datetime.now().date():

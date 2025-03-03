@@ -60,12 +60,14 @@ class StartRegistrationGMN:
         )
 
         if not check_only:
-
             # Create startregistration xml file if required
             if (
                 not gmn_bro_sync_log_qs.exists()
                 or gmn_bro_sync_log_qs.first().process_status
-                in ["failed_to_generate_source_documents", "failed_to_validate_sourcedocument"]
+                in [
+                    "failed_to_generate_source_documents",
+                    "failed_to_validate_sourcedocument",
+                ]
             ):
                 print(
                     f"Geen succesvolle registratie gevonden voor {self.monitoring_network}. Er wordt nu een registratie bestand aangemaakt."
@@ -127,7 +129,7 @@ class StartRegistrationGMN:
         """
         try:
             # Set default quality regime IMBRO if value is not filled in in GMN instance
-            if self.monitoring_network.quality_regime == None:
+            if self.monitoring_network.quality_regime is None:
                 quality_regime = "IMBRO"
             else:
                 quality_regime = self.monitoring_network.quality_regime
@@ -146,9 +148,7 @@ class StartRegistrationGMN:
             measuringpoints = []
 
             for measuringpoint_obj in measuringpoint_objs:
-                well_code = (
-                    measuringpoint_obj.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id
-                )
+                well_code = measuringpoint_obj.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id
                 measuringpoint = {
                     "measuringPointCode": measuringpoint_obj.code,
                     "monitoringTube": {
@@ -176,7 +176,9 @@ class StartRegistrationGMN:
             gmn_startregistration_request = brx.gmn_registration_request(
                 srcdoc="GMN_StartRegistration",
                 requestReference=f"register {self.monitoring_network.name}",
-                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
+                deliveryAccountableParty=str(
+                    self.monitoring_network.delivery_accountable_party.company_number
+                ),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -234,7 +236,7 @@ class StartRegistrationGMN:
             filename = self.gmn_bro_register_log_obj.file
             filepath = os.path.join(gmn_SETTINGS["registrations_dir"], filename)
             payload = open(filepath)
-            
+
             print(payload)
             print(self.acces_token_bro_portal)
 
@@ -300,7 +302,11 @@ class StartRegistrationGMN:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo, project_id=self.acces_token_bro_portal["projectnummer"], api="v2"
+                request,
+                token=self.acces_token_bro_portal["token"],
+                demo=self.demo,
+                project_id=self.acces_token_bro_portal["projectnummer"],
+                api="v2",
             )
 
             # Log the result
@@ -371,7 +377,7 @@ class StartRegistrationGMN:
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
                 api="v2",
-                project_id=self.acces_token_bro_portal["projectnummer"]
+                project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
@@ -515,7 +521,6 @@ class MeasuringPointAddition:
         )
 
         if not check_only:
-
             # Create addition xml file if required
             if (
                 not gmn_bro_sync_log_qs.exists()
@@ -586,7 +591,7 @@ class MeasuringPointAddition:
         """
         try:
             # Set default quality regime IMBRO if value is not filled in in GMN instance
-            if self.monitoring_network.quality_regime == None:
+            if self.monitoring_network.quality_regime is None:
                 quality_regime = "IMBRO"
             else:
                 quality_regime = self.monitoring_network.quality_regime
@@ -613,7 +618,9 @@ class MeasuringPointAddition:
                 srcdoc="GMN_MeasuringPoint",
                 broId=self.monitoring_network.gmn_bro_id,
                 requestReference=f"add {self.measuringpoint} to {self.monitoring_network.name}",
-                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
+                deliveryAccountableParty=str(
+                    self.monitoring_network.delivery_accountable_party.company_number
+                ),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -735,7 +742,11 @@ class MeasuringPointAddition:
             request = {filename: payload}
             print(self.acces_token_bro_portal["token"])
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo, api="v2", project_id=self.acces_token_bro_portal["projectnummer"]
+                request,
+                token=self.acces_token_bro_portal["token"],
+                demo=self.demo,
+                api="v2",
+                project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
             # Log the result
@@ -809,7 +820,7 @@ class MeasuringPointAddition:
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
                 api="v2",
-                project_id=self.acces_token_bro_portal["projectnummer"]
+                project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
@@ -1009,7 +1020,7 @@ class MeasuringPointRemoval:
         """
         try:
             # Set default quality regime IMBRO if value is not filled in in GMN instance
-            if self.monitoring_network.quality_regime == None:
+            if self.monitoring_network.quality_regime is None:
                 quality_regime = "IMBRO"
             else:
                 quality_regime = self.monitoring_network.quality_regime
@@ -1028,7 +1039,9 @@ class MeasuringPointRemoval:
                 srcdoc="GMN_MeasuringPointEndDate",
                 broId=self.monitoring_network.gmn_bro_id,
                 requestReference=f"remove {self.measuringpoint} from {self.monitoring_network.name}",
-                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
+                deliveryAccountableParty=str(
+                    self.monitoring_network.delivery_accountable_party.company_number
+                ),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -1150,7 +1163,11 @@ class MeasuringPointRemoval:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo, api="v2", project_id=self.acces_token_bro_portal["projectnummer"]
+                request,
+                token=self.acces_token_bro_portal["token"],
+                demo=self.demo,
+                api="v2",
+                project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
             # Log the result
@@ -1223,7 +1240,7 @@ class MeasuringPointRemoval:
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
                 api="v2",
-                project_id=self.acces_token_bro_portal["projectnummer"]
+                project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]
@@ -1322,7 +1339,7 @@ class ClosureGMN:
         self.measuringpoint = event.measuring_point
         self.gmn_bro_closure_log_obj = None
 
-    def handle(self,check_only):
+    def handle(self, check_only):
         """
         Main function to handle the Closure of a GMN.
         The status of the delivery is registered in a GMN_sync_log instance.
@@ -1342,7 +1359,6 @@ class ClosureGMN:
         )
 
         if not check_only:
-                
             # Create closure xml file if required
             if (
                 not gmn_bro_sync_log_qs.exists()
@@ -1409,7 +1425,7 @@ class ClosureGMN:
         """
         try:
             # Set default quality regime IMBRO if value is not filled in in GMN instance
-            if self.monitoring_network.quality_regime == None:
+            if self.monitoring_network.quality_regime is None:
                 quality_regime = "IMBRO"
             else:
                 quality_regime = self.monitoring_network.quality_regime
@@ -1427,7 +1443,9 @@ class ClosureGMN:
                 srcdoc="GMN_Closure",
                 broId=self.monitoring_network.gmn_bro_id,
                 requestReference=f"close {self.monitoring_network.name}",
-                deliveryAccountableParty=str(self.monitoring_network.delivery_accountable_party.company_number),
+                deliveryAccountableParty=str(
+                    self.monitoring_network.delivery_accountable_party.company_number
+                ),
                 qualityRegime=quality_regime,
                 srcdocdata=srcdocdata,
             )
@@ -1547,7 +1565,11 @@ class ClosureGMN:
             request = {filename: payload}
 
             upload_info = brx.upload_sourcedocs_from_dict(
-                request, token=self.acces_token_bro_portal["token"], demo=self.demo, api="v2", project_id=self.acces_token_bro_portal["projectnummer"]
+                request,
+                token=self.acces_token_bro_portal["token"],
+                demo=self.demo,
+                api="v2",
+                project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
             # Log the result
@@ -1618,7 +1640,7 @@ class ClosureGMN:
                 token=self.acces_token_bro_portal,
                 demo=self.demo,
                 api="v2",
-                project_id=self.acces_token_bro_portal["projectnummer"]
+                project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
             delivery_errors = delivery_status_info.json()["brondocuments"][0]["errors"]

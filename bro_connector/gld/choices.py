@@ -17,6 +17,7 @@ UNIT_CHOICES = (
     ("cm t.o.v. bkb", "cm t.o.v. bkb"),
     ("mm t.o.v. bkb", "mm t.o.v. bkb"),
     ("bar", "bar"),
+    ("mbar", "mbar"),
 )
 
 PROCESSREFERENCE = (

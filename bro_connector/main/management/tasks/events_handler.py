@@ -1,5 +1,5 @@
 import datetime
-from django.utils import timezone
+import pytz
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
     GroundwaterMonitoringWellDynamic,
@@ -103,13 +103,12 @@ def electrode_dynamic(eled, updates_dict):
     return eled
 
 
-def get_mytimezone_date(original_datetime):
-    try:
-        new_datetime = datetime.strptime(original_datetime, "%Y-%m-%d")
-        tz = timezone.get_current_timezone()
-        timezone_datetime = timezone.make_aware(new_datetime, tz, True)
-    except:
-        timezone_datetime = None
+def get_mytimezone_date(original_datetime: str):
+    new_datetime = datetime.datetime.strptime(original_datetime, "%Y-%m-%d")
+    tz = pytz.timezone(
+        "Europe/Amsterdam",
+    )
+    timezone_datetime = new_datetime.astimezone(tz)
     return timezone_datetime
 
 
@@ -125,29 +124,19 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
     else:
         date = None
 
-    try:
-        event = Event.objects.update_or_create(
-            event_name="constructie",
-            groundwater_monitoring_well_static=groundwater_monitoring_well_static,
-            defaults={
-                "event_date": date,
-                "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
-                    groundwater_monitoring_well_static=groundwater_monitoring_well_static
-                ).first(),
-                "delivered_to_bro": True,
-            },
-        )[0]
-    except:
-        events = Event.objects.filter(
-            event_name="constructie",
-            groundwater_monitoring_well_static=groundwater_monitoring_well_static,
-        )
-        event = events.first()
-        if event:
-            # Delete all events except the one with the primary key of the first event
-            events.exclude(pk=event.pk).delete()
+    event = Event.objects.update_or_create(
+        event_name="constructie",
+        groundwater_monitoring_well_static=groundwater_monitoring_well_static,
+        defaults={
+            "event_date": date,
+            "groundwater_monitoring_well_dynamic": GroundwaterMonitoringWellDynamic.objects.filter(
+                groundwater_monitoring_well_static=groundwater_monitoring_well_static
+            ).first(),
+            "delivered_to_bro": True,
+        },
+    )[0]
 
-    log = gmw_registration_log.objects.update_or_create(
+    gmw_registration_log.objects.update_or_create(
         delivery_type="register",
         event_id=event.change_id,
         bro_id=event.groundwater_monitoring_well_static.bro_id,
@@ -174,7 +163,8 @@ def get_electrode_static(groundwater_monitoring_well, tube_number):
                 )
             )
         )
-    except:
+    except Exception as e:
+        logger.exception(e)
         print(groundwater_monitoring_well, tube_number)
 
     return eles_id
@@ -240,12 +230,12 @@ class Updater:
         if event:
             self.event = event
         else:
-            self.event = Event.objects.create(
+            self.event = Event.objects.update_or_create(
                 event_name=self.event_updates["eventName"],
                 event_date=date,
                 groundwater_monitoring_well_static=self.groundwater_monitoring_well_static,
                 delivered_to_bro=True,
-            )
+            )[0]
 
             gmw_registration_log.objects.update_or_create(
                 delivery_type="register",
@@ -406,7 +396,7 @@ class TableUpdater(Updater):
 
 
 def get_removal_event(gmw_dict, groundwater_monitoring_well_static):
-    event = Event.objects.create(
+    event = Event.objects.update_or_create(
         event_name="removal",
         event_date=get_mytimezone_date(
             gmw_dict.get("removal_date", None),
@@ -416,5 +406,5 @@ def get_removal_event(gmw_dict, groundwater_monitoring_well_static):
             groundwater_monitoring_well=groundwater_monitoring_well_static
         ).first(),
         delivered_to_bro=True,
-    )
+    )[0]
     event.save()

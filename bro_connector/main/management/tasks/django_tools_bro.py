@@ -63,17 +63,17 @@ class DjangoTableToDict:
     def update_static_tube(self, tube: models.GroundwaterMonitoringTubeStatic) -> dict:
         cap_present = "onbekend"
         if tube.artesian_well_cap_present:
-            if tube.artesian_well_cap_present == True:
+            if tube.artesian_well_cap_present:
                 cap_present = "ja"
-            elif tube.artesian_well_cap_present == False:
+            elif tube.artesian_well_cap_present is False:
                 cap_present = "nee"
 
         sump_present = "onbekend"
 
         if tube.sediment_sump_present:
-            if tube.sediment_sump_present == True:
+            if tube.sediment_sump_present:
                 cap_present = "ja"
-            elif tube.sediment_sump_present == False:
+            elif tube.sediment_sump_present is False:
                 cap_present = "nee"
 
         static_tube_data = {
@@ -104,9 +104,9 @@ class DjangoTableToDict:
             for geo_ohm_cable in geo_ohm_cables:
                 geo_ohm_cable_data = self.update_static_geo_ohm_cable(geo_ohm_cable)
 
-                static_tube_data["geoOhmCables"][
-                    geo_ohm_cable_number
-                ] = geo_ohm_cable_data
+                static_tube_data["geoOhmCables"][geo_ohm_cable_number] = (
+                    geo_ohm_cable_data
+                )
 
                 electrodes = GetDjangoObjects.get_all_electrodes(
                     geo_ohm_cable.geo_ohm_cable_id
@@ -157,7 +157,7 @@ class DjangoTableToDict:
         if dynamic_well_data["groundLevelStable"] != "ja":
             dynamic_well_data.update({"wellStability": dynamic_well.well_stability})
 
-        if dynamic_well.maintenance_responsible_party != None:
+        if dynamic_well.maintenance_responsible_party is not None:
             dynamic_well_data.update(
                 {
                     "maintenanceResponsibleParty": dynamic_well.maintenance_responsible_party

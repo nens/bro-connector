@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.urls import path
 from gmw.views import gmw_map_context
 from main.dash import visualisatie_meetopstelling
@@ -20,7 +21,7 @@ from django.contrib import admin
 
 # Some initialisation/discovery stuff
 admin.autodiscover()
-visualisatie_meetopstelling # noqa
+visualisatie_meetopstelling  # noqa
 
 urlpatterns = [
     path("map/", gmw_map_context, name="gmw_map"),

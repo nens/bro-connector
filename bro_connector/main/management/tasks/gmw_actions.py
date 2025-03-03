@@ -10,17 +10,20 @@ from main.management.commands.gmw_sync_to_bro import _get_registrations_dir
 
 from bro.models import Organisation
 
+
 def _get_token(owner: Organisation):
     return {
         "user": owner.bro_user,
         "pass": owner.bro_token,
     }
 
+
 def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
     return {
         "token": _get_token(well.delivery_accountable_party),
         "projectnummer": well.project_number,
     }
+
 
 folder_name = _get_registrations_dir("gmw")
 
@@ -261,9 +264,11 @@ def check_status(well: GroundwaterMonitoringWellStatic) -> None:
         )
         gmw_check_registrations(registration)
 
+
 def get_well_from_event_id(event_id: int):
     event = Event.objects.get(change_id=event_id)
     return event.groundwater_monitoring_well_static
+
 
 def gmw_check_registrations(registration: gmw_registration_log):
     """
@@ -293,15 +298,13 @@ def gmw_check_registrations(registration: gmw_registration_log):
 
     if gmw_sync.delivered_but_not_approved(registration):
         # The registration has been delivered, but not yet approved
-        status = gmw_sync.check_delivery_status_levering(
-            registration_id, folder_name, bro_info
-        )
+        gmw_sync.check_delivery_status_levering(registration_id, folder_name, bro_info)
 
     if (
         gmw_sync.get_registration_process_status(registration_id)
         == f"succesfully_generated_{source_doc_type}_request"
     ):
-        validation_status = gmw_sync.validate_gmw_registration_request(
+        gmw_sync.validate_gmw_registration_request(
             registration_id,
             folder_name,
             bro_info,
@@ -318,7 +321,7 @@ def gmw_check_registrations(registration: gmw_registration_log):
     ):
         # If we failed to validate the sourcedocument, try again
         # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
-        validation_status = gmw_sync.validate_gmw_registration_request(
+        gmw_sync.validate_gmw_registration_request(
             registration_id,
             folder_name,
             bro_info,
@@ -330,11 +333,7 @@ def gmw_check_registrations(registration: gmw_registration_log):
         == "source_document_validation_succesful"
         and gmw_sync.get_registration_validation_status(registration_id) == "VALIDE"
     ):
-        delivery_status = gmw_sync.deliver_sourcedocuments(
-            registration_id,
-            folder_name,
-            bro_info
-        )
+        gmw_sync.deliver_sourcedocuments(registration_id, folder_name, bro_info)
 
     # If delivery is succesful, check the status of the delivery
     if (
@@ -344,7 +343,7 @@ def gmw_check_registrations(registration: gmw_registration_log):
         and registration.delivery_id is not None
     ):
         # The registration has been delivered, but not yet approved
-        status = gmw_sync.check_delivery_status_levering(
+        gmw_sync.check_delivery_status_levering(
             registration_id,
             folder_name,
             bro_info,
@@ -360,7 +359,7 @@ def gmw_check_registrations(registration: gmw_registration_log):
             # TODO report with mail?
             pass
         else:
-            delivery_status = gmw_sync.deliver_sourcedocuments(
+            gmw_sync.deliver_sourcedocuments(
                 registration_id,
                 folder_name,
                 bro_info,

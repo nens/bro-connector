@@ -1,9 +1,7 @@
 from django.core.management.base import BaseCommand
-from django.contrib.gis.geos import Point
 from gmw.models import GroundwaterMonitoringWellStatic
-import polars as pl
-import os
 from bro.models import Organisation
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -15,10 +13,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         kvk_nr = int(options["kvk"])
-        
+
         org = Organisation.objects.all().filter(company_number=kvk_nr).first()
 
-        for well in GroundwaterMonitoringWellStatic.objects.all().filter(delivery_accountable_party=None):
+        for well in GroundwaterMonitoringWellStatic.objects.all().filter(
+            delivery_accountable_party=None
+        ):
             well.delivery_accountable_party = org
             well.in_management = False
             well.save()

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from gmw import models as gmw_models
 from gld import models as gld_models
-from gmn import models as gmn_models
+
 
 class GMWSerializer(serializers.ModelSerializer):
     x = serializers.SerializerMethodField()
@@ -15,29 +15,30 @@ class GMWSerializer(serializers.ModelSerializer):
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
         fields = [
-            'groundwater_monitoring_well_static_id',
-            'bro_id',
-            'well_code',
-            'deliver_gmw_to_bro',
-            'complete_bro',
-            'in_management',
-            'picture',
-            'x',
-            'y',
-            'delivery_accountable_party',
-            'linked_gmns',
-            'nitg_code'
+            "groundwater_monitoring_well_static_id",
+            "bro_id",
+            "well_code",
+            "deliver_gmw_to_bro",
+            "complete_bro",
+            "in_management",
+            "picture",
+            "x",
+            "y",
+            "delivery_accountable_party",
+            "linked_gmns",
+            "nitg_code",
         ]
 
     def get_x(self, obj):
         return obj.lat
-    
+
     def get_y(self, obj):
         return obj.lon
-    
+
     def get_linked_gmns(self, obj: gmw_models.GroundwaterMonitoringWellStatic) -> list:
         measuring_points = [
-            mp.gmn.name for tube in obj.tube.all()
+            mp.gmn.name
+            for tube in obj.tube.all()
             for mp in tube.measuringpoint_set.all()
         ]
         return list(set(measuring_points))
@@ -67,4 +68,4 @@ class GMWSerializer(serializers.ModelSerializer):
 class GLDSerializer(serializers.ModelSerializer):
     class Meta:
         model = gld_models.GroundwaterLevelDossier
-        fields = '__all__'
+        fields = "__all__"
