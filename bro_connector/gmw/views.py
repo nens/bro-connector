@@ -14,7 +14,7 @@ def gmw_map_context(request):
     # Pre-fetch related data to reduce database hits
     gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
         Prefetch(
-            "tube__measuringpoint_set",  # Adjust the related field names
+            "tube__measuring_point",  # Adjust the related field names
             queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
         )
     )

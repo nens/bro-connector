@@ -124,16 +124,7 @@ class GLDImport(models.Model):
         blank=True,
         null=True,
     )
-
-    def __str__(self):
-        filename = "no file"
-        date_stamp_str = "no date"
-        if self.file:
-            filename = f"{self.file.name}"
-        if self.observation_metadata.date_stamp:
-            date_stamp_str = self.observation_metadata.date_stamp
-
-        return f"{date_stamp_str}-{filename}"
+    
 
     class Meta:
         managed = True

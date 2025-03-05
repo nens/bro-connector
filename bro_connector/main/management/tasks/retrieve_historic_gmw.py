@@ -213,7 +213,6 @@ class InitializeData:
                         "registrationStatus", None
                     ),
                     "request_reference": self.gmw_dict.get("requestReference", None),
-                    "under_privilege": self.gmw_dict.get("underReview", None),
                     "vertical_datum": self.gmw_dict.get("verticalDatum", None),
                     "well_code": self.gmw_dict.get("wellCode", None),
                     "deliver_gmw_to_bro": True,

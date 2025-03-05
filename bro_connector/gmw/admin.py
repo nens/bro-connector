@@ -124,7 +124,6 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "delivery_accountable_party",
                     "delivery_responsible_party",
                     "quality_regime",
-                    "under_privilege",
                     "delivery_context",
                     "construction_standard",
                     "initial_function",

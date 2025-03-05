@@ -183,10 +183,6 @@ class GroundwaterMonitoringWellStatic(models.Model):
     delivery_accountable_party: Manager["Organisation"]
 
     @property
-    def under_privilege(self):
-        return "ja" if self.quality_regime == "IMBRO/A" else "nee"
-
-    @property
     def is_surface(self):
         return self.internal_id.lower().startswith("p")
 

@@ -148,7 +148,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
         wellValueKeys.find(
           (valueKey) =>
             (visibleMap.wellValue[valueKey] === true && !well[valueKey]) ||
-            (visibleMap.wellValue[valueKey] =is False && well[valueKey])
+            (visibleMap.wellValue[valueKey] === false && well[valueKey])
         )
       )
         return;
@@ -232,7 +232,7 @@ const handleWellValue = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
   const { wellValue } = visibleMap;
   // Well value can either be false, true or null
-  if (wellValue[id] =is False) {
+  if (wellValue[id] === false) {
     wellValue[id] = null;
     checkbox.checked = false;
     checkbox.indeterminate = true;

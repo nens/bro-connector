@@ -730,7 +730,6 @@ def create_sourcedocs(
             deliveryAccountableParty=str(delivery_accountable_party),
             qualityRegime=quality_regime,
             broId=srcdocdata["broId"],
-            underPrivilege=well.under_privilege,
             srcdocdata=srcdocdata,
         )
 
@@ -811,7 +810,6 @@ def create_construction_sourcedocs(
             deliveryAccountableParty=str(delivery_accountable_party),
             qualityRegime=well.quality_regime,
             srcdocdata=srcdocdata,
-            underPrivilege=well.under_privilege,
         )
 
         filename = request_reference + ".xml"

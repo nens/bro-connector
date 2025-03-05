@@ -27,6 +27,8 @@ class GMWSerializer(serializers.ModelSerializer):
             "delivery_accountable_party",
             "linked_gmns",
             "nitg_code",
+            "groundlevel_position",
+            "well_head_protector",
         ]
 
     def get_x(self, obj):
@@ -39,7 +41,7 @@ class GMWSerializer(serializers.ModelSerializer):
         measuring_points = [
             mp.gmn.name
             for tube in obj.tube.all()
-            for mp in tube.measuringpoint_set.all()
+            for mp in tube.measuring_point.all()
         ]
         return list(set(measuring_points))
 

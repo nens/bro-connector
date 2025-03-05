@@ -43,7 +43,6 @@ class DjangoTableToDict:
             "deliveryAccountableParty": well.delivery_accountable_party,
             "deliveryResponsibleParty": well.delivery_responsible_party,
             "qualityRegime": well.quality_regime,
-            "underPrivilige": well.under_privilege,
             "deliveryContext": well.delivery_context,
             "constructionStandard": well.construction_standard,
             "initialFunction": well.initial_function,

@@ -222,7 +222,7 @@ class MeasuringPoint(models.Model):
         null=True,
         blank=False,
         verbose_name="Grondwatermonitoring buis",
-        related_name="tube",
+        related_name="measuring_point",
     )
     code = models.CharField(
         max_length=255,
