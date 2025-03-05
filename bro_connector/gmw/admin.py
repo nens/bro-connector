@@ -19,7 +19,7 @@ from gmw.custom_filters import (
 import main.utils.validators_admin as validators_admin
 from main.utils.frd_fieldform import FieldFormGenerator
 
-from .bro_validators.well import validate_well_static, validate_well_dynamic
+from .bro_validators.well import validate_well_dynamic
 
 
 logger = logging.getLogger(__name__)
@@ -303,8 +303,10 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
         # If not valid, show a warning in the admin interface
         if not is_valid:
-            messages.warning(request, "Er zijn nog acties vereist om het BRO Compleet te maken")
-            
+            messages.warning(
+                request, "Er zijn nog acties vereist om het BRO Compleet te maken"
+            )
+
         obj.save()
 
 

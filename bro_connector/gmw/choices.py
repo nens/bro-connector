@@ -133,7 +133,7 @@ COORDINATETRANSFORMATION = (
 )
 
 ELECTRODESTATUS = (
-    ("onbruikbaar", "onbruikbaar"), # not mentioned as option on https://broprogramma.github.io/GMW/#detail_class_Model_Elektrodestatus
+    ("onbruikbaar", "onbruikbaar"),  # not mentioned as option
     ("gebruiksklaar", "gebruiksklaar"),
     ("nietGebruiksklaar", "nietGebruiksklaar"),
     ("onbekend", "onbekend"),  # IMBRO/A
