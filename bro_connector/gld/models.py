@@ -6,11 +6,28 @@
 #   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
-from .choices import *
+from logging import getLogger
+from .choices import (
+    QUALITYREGIME,
+    AIRPRESSURECOMPENSATIONTYPE,
+    CENSORREASON,
+    UNIT_CHOICES,
+    DELIVERY_TYPE_CHOICES,
+    EVALUATIONPROCEDURE,
+    INTERPOLATIONTYPE,
+    MEASUREMENTINSTRUMENTTYPE,
+    OBSERVATIONTYPE,
+    PROCESSREFERENCE,
+    PROCESSTYPE,
+    STATUSCODE,
+    STATUSQUALITYCONTROL,
+)
 from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringTubeStatic
 from gmn.models import GroundwaterMonitoringNet
 import datetime
+
+logger = getLogger(__file__)
 
 
 # %% GLD Models
@@ -198,7 +215,7 @@ class Observation(models.Model):
             return f"{self.groundwater_level_dossier} (Unknown - Unknown)"
 
     def save(self, *args, **kwargs):
-        if self.pk == None:
+        if self.pk is None:
             super().save(*args, **kwargs)
             return
 
@@ -219,7 +236,7 @@ class Observation(models.Model):
             process.observation_process_id = None
             process.save()
 
-            obs = Observation.objects.create(
+            Observation.objects.create(
                 observation_starttime=self.observation_endtime,
                 groundwater_level_dossier=self.groundwater_level_dossier,
                 observation_metadata=metadata,
@@ -309,7 +326,8 @@ class ObservationProcess(models.Model):
             if not self.air_pressure_compensation_type:
                 return f"{self.evaluation_procedure} {self.measurement_instrument_type}"
             return f"{s2d(self.evaluation_procedure)} {s2d(self.measurement_instrument_type)} {s2d(self.process_reference)}"
-        except:
+        except Exception as e:
+            logger.exception(e)
             return str(self.observation_process_id)
 
     class Meta:

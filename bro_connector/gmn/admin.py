@@ -4,7 +4,7 @@ from .models import (
     Subgroup,
     MeasuringPoint,
     IntermediateEvent,
-    gmn_bro_sync_log
+    gmn_bro_sync_log,
 )
 from main.management.tasks.gmn_sync import sync_gmn
 from reversion_compare.helpers import patch_admin
@@ -32,7 +32,11 @@ class MeasuringPointsInline(admin.TabularInline):
 
     extra = 0
     max_num = 0
-    ordering = ("subgroup", "groundwater_monitoring_tube",)
+    ordering = (
+        "subgroup",
+        "groundwater_monitoring_tube",
+    )
+
 
 class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
     form = GroundwaterMonitoringNetForm
@@ -56,8 +60,12 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
 
     inlines = (MeasuringPointsInline,)
 
-
-    actions = ["deliver_to_bro", "check_status", "generate_frd_fieldform", "generate_gld_fieldform"]
+    actions = [
+        "deliver_to_bro",
+        "check_status",
+        "generate_frd_fieldform",
+        "generate_gld_fieldform",
+    ]
 
     @admin.action(description="Deliver GMN to BRO")
     def deliver_to_bro(self, request, queryset):
@@ -71,13 +79,13 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
     def generate_frd_fieldform(self, request, queryset):
         generator = FRD_FieldFormGenerator()
         generator.inputfields = ["weerstand", "opmerking"]
-        generator.monitoringnetworks=queryset
+        generator.monitoringnetworks = queryset
         generator.generate()
 
     @admin.action(description="Generate GLD FieldForm")
     def generate_gld_fieldform(self, request, queryset):
         generator = GLD_FieldFormGenerator()
-        generator.monitoringnetworks=queryset
+        generator.monitoringnetworks = queryset
         generator.generate()
 
 
@@ -93,6 +101,7 @@ class SubgroupAdmin(admin.ModelAdmin):
         "name",
     )
 
+
 class MeasuringPointAdmin(admin.ModelAdmin):
     list_display = (
         "code",
@@ -106,6 +115,7 @@ class MeasuringPointAdmin(admin.ModelAdmin):
         "subgroup",
         "code",
     )
+
 
 class IntermediateEventAdmin(admin.ModelAdmin):
     list_display = (
@@ -158,7 +168,7 @@ class gmn_bro_sync_logAdmin(admin.ModelAdmin):
         "quality_regime",
         "file",
         "process_status",
-        "measuringpoint"
+        "measuringpoint",
     )
 
 

@@ -3,7 +3,10 @@ from gld.models import (
     GroundwaterLevelDossier,
     Observation,
 )
+from logging import getLogger
 import datetime
+
+logger = getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -36,7 +39,8 @@ class Command(BaseCommand):
                     previous_observation_process_id = (
                         previous_gld_observation.observation_process_id
                     )
-                except:
+                except Exception as e:
+                    logger.exception(e)
                     print(
                         "No observations exist yet for GLD {}, please create an observation".format(
                             gld_id

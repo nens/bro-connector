@@ -1,4 +1,3 @@
-
 # Create your views here.
 # (c) Nelen & Schuurmans. GPL licensed, see LICENSE.rst.
 # -*- coding: utf-8 -*-

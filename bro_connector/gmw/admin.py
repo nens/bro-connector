@@ -1,13 +1,11 @@
 from django.contrib import admin, messages
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
-from django.utils.html import format_html
 from image_uploader_widget.admin import ImageUploaderInline
 import reversion
 from reversion_compare.helpers import patch_admin
 import logging
 
-from django.db import models
 
 from . import models as gmw_models
 import main.management.tasks.gmw_actions as gmw_actions

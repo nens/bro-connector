@@ -46,22 +46,17 @@ def import_xml(file: str, path: str) -> tuple:
         ini.filter()
         ini.filter_dynamic()
 
-        try:
-            for geo_ohm_cable in range(int(gmw.number_of_geo_ohm_cables)):
-                ini.increment_geo_ohm_number()
-                ini.geo_ohm()
+        for geo_ohm_cable in range(int(gmw.number_of_geo_ohm_cables)):
+            ini.increment_geo_ohm_number()
+            ini.geo_ohm()
 
-                for electrode in range(int(gmw.number_of_electrodes)):
-                    ini.increment_electrode_number()
-                    ini.electrode_static()
-                    ini.electrode_dynamic()
+            for electrode in range(int(gmw.number_of_electrodes)):
+                ini.increment_electrode_number()
+                ini.electrode_static()
+                ini.electrode_dynamic()
 
-                ini.reset_electrode_number()
-            ini.reset_geo_ohm_number()
-        except:
-            raise Exception(
-                f"Failed while trying to create geo_ohm_cable or electrode objects, {gmw_dict}"
-            )
+            ini.reset_electrode_number()
+        ini.reset_geo_ohm_number()
 
     # Dan het onderhoudsmoment, want die zit in de geschiedenissen.
     ini.event()
@@ -126,15 +121,19 @@ def get_artesian_well_cap_present(dict: dict, prefix: str) -> bool | None:
     else:
         return None
 
+
 def get_float_item_or_none(item):
     if item is not None:
         return float(item)
     return item
 
+
 class InitializeData:
     """
     Function that allow you to create initial data when reading data from the BRO.
     The xml converted to dictionary is read into the database.
+
+    Should redesign this with XML.Etree
     """
 
     tube_number = 0
@@ -168,12 +167,10 @@ class InitializeData:
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
     def get_accountable_party(self) -> bro_models.Organisation:
-        kvk_nummer = self.gmw_dict.get(
-            "deliveryAccountableParty", None
-        )
+        kvk_nummer = self.gmw_dict.get("deliveryAccountableParty", None)
         if kvk_nummer is not None:
             party, created = bro_models.Organisation.objects.get_or_create(
-                company_number = kvk_nummer,
+                company_number=kvk_nummer,
             )
         else:
             party = None
@@ -185,7 +182,7 @@ class InitializeData:
         if position is not None:
             positions = position.split(" ")
             coords_field = Point(float(positions[0]), float(positions[1]))
-        
+
         else:
             coords_field = Point()
 
@@ -199,30 +196,32 @@ class InitializeData:
             construction_date = datetime.datetime.strptime(
                 construction_date, "%Y-%m-%d"
             )
-        
-        self.meetpunt_instance = gmw_models.GroundwaterMonitoringWellStatic.objects.create(
-            bro_id=self.gmw_dict.get("broId", None),
-            request_reference=self.gmw_dict.get("requestReference", None),
-            delivery_accountable_party=self.get_accountable_party(),
-            construction_standard=self.gmw_dict.get("constructionStandard", None),
-            coordinates=self.get_coordinates(),
-            delivery_context=self.gmw_dict.get("deliveryContext", None),
-            horizontal_positioning_method=self.gmw_dict.get(
-                "horizontalPositioningMethod", None
-            ),
-            initial_function=self.gmw_dict.get("initialFunction", None),
-            nitg_code=self.gmw_dict.get("nitgCode", None),
-            olga_code=self.gmw_dict.get("olgaCode", None),
-            quality_regime=kwaliteits,
-            reference_system=self.gmw_dict.get("CRS", "rd"),
-            well_offset=self.gmw_dict.get("offset", None),
-            local_vertical_reference_point=self.gmw_dict.get(
-                "localVerticalReferencePoint", None
-            ),
-            well_code=self.gmw_dict.get("wellCode", None),
-            vertical_datum=self.gmw_dict.get("verticalDatum", None),
-            last_horizontal_positioning_date=construction_date,
-            construction_coordinates=self.get_coordinates(),
+
+        self.meetpunt_instance = (
+            gmw_models.GroundwaterMonitoringWellStatic.objects.create(
+                bro_id=self.gmw_dict.get("broId", None),
+                request_reference=self.gmw_dict.get("requestReference", None),
+                delivery_accountable_party=self.get_accountable_party(),
+                construction_standard=self.gmw_dict.get("constructionStandard", None),
+                coordinates=self.get_coordinates(),
+                delivery_context=self.gmw_dict.get("deliveryContext", None),
+                horizontal_positioning_method=self.gmw_dict.get(
+                    "horizontalPositioningMethod", None
+                ),
+                initial_function=self.gmw_dict.get("initialFunction", None),
+                nitg_code=self.gmw_dict.get("nitgCode", None),
+                olga_code=self.gmw_dict.get("olgaCode", None),
+                quality_regime=kwaliteits,
+                reference_system=self.gmw_dict.get("CRS", "rd"),
+                well_offset=self.gmw_dict.get("offset", None),
+                local_vertical_reference_point=self.gmw_dict.get(
+                    "localVerticalReferencePoint", None
+                ),
+                well_code=self.gmw_dict.get("wellCode", None),
+                vertical_datum=self.gmw_dict.get("verticalDatum", None),
+                last_horizontal_positioning_date=construction_date,
+                construction_coordinates=self.get_coordinates(),
+            )
         )
 
         self.meetpunt_instance.save()
@@ -299,9 +298,9 @@ class InitializeData:
                     self.prefix + "plainTubePartLength", None
                 ),
                 tube_status=self.gmw_dict.get(self.prefix + "tubeStatus", None),
-                tube_top_diameter=get_float_item_or_none(self.gmw_dict.get(
-                    self.prefix + "tubeTopDiameter", None
-                )),
+                tube_top_diameter=get_float_item_or_none(
+                    self.gmw_dict.get(self.prefix + "tubeTopDiameter", None)
+                ),
                 tube_top_position=self.gmw_dict.get(
                     self.prefix + "tubeTopPosition", None
                 ),

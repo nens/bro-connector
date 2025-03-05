@@ -13,57 +13,39 @@ from gmn import models as gmn_models
 
 ipfo_w = {
     "opmerking": {
-      "type": "text",
-      "name": "Opmerking",
-      "hint": "Onderhoud / bereikbaarheid"
-      },
-    "foto 1": {
-      "type": "photo",
-      "name": "Foto 1",
-      "hint": "Locatie"
-      },
-    "foto 2": {
-      "type": "photo",
-      "name": "Foto 2",
-      "hint": "Afwerking put"
-      },
-    "foto 3": {
-      "type": "photo",
-      "name": "Foto 3",
-      "hint": "Filterstelling"
-      },
-    "foto 4": {
-      "type": "photo",
-      "name": "Foto 4",
-      "hint": "Detail"
-      },
-    "foto 5": {
-      "type": "photo",
-      "Name": "Foto 5",
-      "hint": "Enz."
-      },
+        "type": "text",
+        "name": "Opmerking",
+        "hint": "Onderhoud / bereikbaarheid",
+    },
+    "foto 1": {"type": "photo", "name": "Foto 1", "hint": "Locatie"},
+    "foto 2": {"type": "photo", "name": "Foto 2", "hint": "Afwerking put"},
+    "foto 3": {"type": "photo", "name": "Foto 3", "hint": "Filterstelling"},
+    "foto 4": {"type": "photo", "name": "Foto 4", "hint": "Detail"},
+    "foto 5": {"type": "photo", "Name": "Foto 5", "hint": "Enz."},
 }
 ipfo_f = {
     "landgebruik": {
-        'name': 'Dominant landgebruik',
-        'type': 'choice',
+        "name": "Dominant landgebruik",
+        "type": "choice",
         # 'hint': 'max 2 selecteren',
-        'options': ['Grasland',
-                    'Akkerbouw',
-                    'Glastuinbouw, bomen-&bollenteelt',
-                    'Bos, natuur en water',
-                    'Bebouwd',
-                    'Industrie']
+        "options": [
+            "Grasland",
+            "Akkerbouw",
+            "Glastuinbouw, bomen-&bollenteelt",
+            "Bos, natuur en water",
+            "Bebouwd",
+            "Industrie",
+        ],
     },
-    "beschadiging":  {
-        'name': 'Beschadiging put en filter?',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
+    "beschadiging": {
+        "name": "Beschadiging put en filter?",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
     "afdekking": {
-        'name': 'Correcte afdekking put?',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
+        "name": "Correcte afdekking put?",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
     # "grondwaterstand": {
     #   "name": "Grondwaterstand tov bovenkant buis",
@@ -71,220 +53,200 @@ ipfo_f = {
     #   "hint": "cm tov bovenkant peilfilter/stijgbuis"
     # },
     "gws_voor_pompen": {
-        'name': 'Grondwaterstand voor het voorpompen [cm] *',
-        'type': 'number',
-        'hint': 'cm tov bovenkant peilfilter/stijgbuis'
+        "name": "Grondwaterstand voor het voorpompen [cm] *",
+        "type": "number",
+        "hint": "cm tov bovenkant peilfilter/stijgbuis",
     },
     "gws_na_pompen": {
-        'name': 'Grondwaterstand na het voorpompen [cm] *',
-        'type': 'number',
-        'hint': 'cm tov bovenkant peilfilter/stijgbuis'
+        "name": "Grondwaterstand na het voorpompen [cm] *",
+        "type": "number",
+        "hint": "cm tov bovenkant peilfilter/stijgbuis",
     },
     "bovenkant_peilfilter": {
-        'name': 'Bovenkant peilfilter [cm]',
-        'type': 'number',
-        'hint': 'cm+mv'
+        "name": "Bovenkant peilfilter [cm]",
+        "type": "number",
+        "hint": "cm+mv",
     },
     "onderkant_peilfilter": {
-        'name': 'Onderkant peilfilter [cm]',
-        'type': 'number',
-        'hint': 'cm tov bovenkant peilfilter/stijgbuis'
+        "name": "Onderkant peilfilter [cm]",
+        "type": "number",
+        "hint": "cm tov bovenkant peilfilter/stijgbuis",
     },
     "pomptype": {
-        'name': 'Pomptype *',
-        'type': 'choice',
-        'options': ['onderwaterpomp', 'peristaltischePomp',
-                    'vacuümpomp', 'anders', 'onbekend']
+        "name": "Pomptype *",
+        "type": "choice",
+        "options": [
+            "onderwaterpomp",
+            "peristaltischePomp",
+            "vacuümpomp",
+            "anders",
+            "onbekend",
+        ],
     },
     "lengte_waterkolom": {
-        'name': 'Lengte waterkolom [cm]',
-        'type': 'number',
-        'hint': 'cm'
+        "name": "Lengte waterkolom [cm]",
+        "type": "number",
+        "hint": "cm",
     },
     "inwendige_diameter_filter": {
-        'name': 'Inwendige diameter filter [mm]',
-        'type': 'number',
-        'hint': 'mm'
+        "name": "Inwendige diameter filter [mm]",
+        "type": "number",
+        "hint": "mm",
     },
-    "voorpompvolume": {
-        'name': 'Voorpompvolume',
-        'type': 'number',
-        'hint': 'l'
-    },
+    "voorpompvolume": {"name": "Voorpompvolume", "type": "number", "hint": "l"},
     "voorpompdebiet": {
-        'name': 'Voorpompdebiet [l/min]',
-        'type': 'number',
-        'hint': 'l/min; maximaal 8 l/min'
+        "name": "Voorpompdebiet [l/min]",
+        "type": "number",
+        "hint": "l/min; maximaal 8 l/min",
     },
     "bemonsteringsdebiet": {
-        'name': 'Bemonsteringsdebiet [l/min]',
-        'type': 'number',
-        'hint': 'l/min'
+        "name": "Bemonsteringsdebiet [l/min]",
+        "type": "number",
+        "hint": "l/min",
     },
     "toestroming_filter": {
-        'name': 'Toestroming filter',
-        'type': 'choice',
-        'options': ['Goed', 'Matig', 'Slecht']
+        "name": "Toestroming filter",
+        "type": "choice",
+        "options": ["Goed", "Matig", "Slecht"],
     },
     "zuurgraad_0": {
-        'name': 'Zuurgraad na 0 minuten [pH]',
-        'type': 'number',
-        'hint': 'pH'
+        "name": "Zuurgraad na 0 minuten [pH]",
+        "type": "number",
+        "hint": "pH",
     },
     "zuurgraad_3": {
-        'name': 'Zuurgraad na 3 minuten [pH]',
-        'type': 'number',
-        'hint': 'pH'
+        "name": "Zuurgraad na 3 minuten [pH]",
+        "type": "number",
+        "hint": "pH",
     },
     "zuurgraad_6": {
-        'name': 'Zuurgraad na 6 minuten [pH]',
-        'type': 'number',
-        'hint': 'pH'
+        "name": "Zuurgraad na 6 minuten [pH]",
+        "type": "number",
+        "hint": "pH",
     },
     "geleidbaarheid_0": {
-        'name': 'Geleidbaarheid na 0 minuten [µS/cm]',
-        'type': 'number',
-        'hint': 'µS/cm'
+        "name": "Geleidbaarheid na 0 minuten [µS/cm]",
+        "type": "number",
+        "hint": "µS/cm",
     },
     "geleidbaarheid_3": {
-        'name': 'Geleidbaarheid na 3 minuten [µS/cm]',
-        'type': 'number',
-        'hint': 'µS/cm'
+        "name": "Geleidbaarheid na 3 minuten [µS/cm]",
+        "type": "number",
+        "hint": "µS/cm",
     },
     "geleidbaarheid_6": {
-        'name': 'Geleidbaarheid na 6 minuten [µS/cm]',
-        'type': 'number',
-        'hint': 'µS/cm'
+        "name": "Geleidbaarheid na 6 minuten [µS/cm]",
+        "type": "number",
+        "hint": "µS/cm",
     },
-    'zuurstof': {
-        'name': 'Zuurstof (O2) [mg/l] *',
-        'type': 'number',
-        'hint': 'mg/l'
+    "zuurstof": {"name": "Zuurstof (O2) [mg/l] *", "type": "number", "hint": "mg/l"},
+    "temperatuur": {"name": "Temperatuur [ºC] *", "type": "number", "hint": "ºC"},
+    "temperatuur_moeilijk": {
+        "name": "Temperatuur moeilijk te bepalen *",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
-    'temperatuur': {
-        'name': 'Temperatuur [ºC] *',
-        'type': 'number',
-        'hint': 'ºC'
+    "waterstofcarbonaat": {
+        "name": "Waterstofcarbonaat (HCO3) [mg/l] *",
+        "type": "number",
+        "hint": "mg/l",
     },
-    'temperatuur_moeilijk': {
-        'name': 'Temperatuur moeilijk te bepalen *',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
+    "troebelheid": {"name": "Troebelheid [NTU] *", "type": "number", "hint": "NTU"},
+    "bicarbonaat": {"name": "Bicarbonaat [mg/l] *", "type": "number", "hint": "mg/l"},
+    "afwijking_meetapparatuur": {
+        "name": "Afwijking meetapparatuur *",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
-    'waterstofcarbonaat': {
-        'name': 'Waterstofcarbonaat (HCO3) [mg/l] *',
-        'type': 'number',
-        'hint': 'mg/l'
+    "contaminatie_door_verbrandingsmotor": {
+        "name": "Contaminatie door verbrandingsmotor *",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
-    'troebelheid': {
-        'name': 'Troebelheid [NTU] *',
-        'type': 'number',
-        'hint': 'NTU'
+    "bemonsteringsprocedure": {
+        "name": "Bemonsteringsprocedure *",
+        "type": "choice",
+        "options": [
+            "NEN5744v1991",
+            "NEN5744v2011-A1v2013",
+            "NEN5745v1997",
+            "NTA8017v2008",
+            "NTA8017v2016",
+            "SIKBProtocol2002vanafV4",
+            "onbekend",
+        ],
     },
-    'bicarbonaat': {
-        'name': 'Bicarbonaat [mg/l] *',
-        'type': 'number',
-        'hint': 'mg/l'
+    "inline_filter_afwijkend": {
+        "name": "Inline filter afwijkend *",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
-    'afwijking_meetapparatuur': {
-        'name': 'Afwijking meetapparatuur *',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
+    "slang_hergebruikt": {
+        "name": "Slang hergebruikt *",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
-    'contaminatie_door_verbrandingsmotor': {
-        'name': 'Contaminatie door verbrandingsmotor *',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
+    "monster_belucht": {
+        "name": "Monster belucht *",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
-    'bemonsteringsprocedure': {
-        'name': 'Bemonsteringsprocedure *',
-        'type': 'choice',
-        'options': [
-            'NEN5744v1991',
-            'NEN5744v2011-A1v2013',
-            'NEN5745v1997',
-            'NTA8017v2008',
-            'NTA8017v2016',
-            'SIKBProtocol2002vanafV4',
-            'onbekend',
-        ]
-    },
-    'inline_filter_afwijkend': {
-        'name': 'Inline filter afwijkend *',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
-    },
-    'slang_hergebruikt': {
-        'name': 'Slang hergebruikt *',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
-    },
-    'monster_belucht': {
-        'name': 'Monster belucht *',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
-    },
-    'afwijkend_gekoeld': {
-        'name': 'Afwijkend gekoeld *',
-        'type': 'choice',
-        'options': ['Ja', 'Nee', 'Onbekend']
+    "afwijkend_gekoeld": {
+        "name": "Afwijkend gekoeld *",
+        "type": "choice",
+        "options": ["Ja", "Nee", "Onbekend"],
     },
     "kleur": {
-        'name': 'Kleur *',
-        'type': 'choice',
-        'options': [
-            'kleurloos',
-            'wit',
-            'grijs',
-            'zwart',
-            'rood',
-            'oranje',
-            'geel',
-            'groen',
-            'blauw',
-            'paars',
-            'bruin',
-            'roestbruin',
-            'beige',
-            'creme',
-        ]
+        "name": "Kleur *",
+        "type": "choice",
+        "options": [
+            "kleurloos",
+            "wit",
+            "grijs",
+            "zwart",
+            "rood",
+            "oranje",
+            "geel",
+            "groen",
+            "blauw",
+            "paars",
+            "bruin",
+            "roestbruin",
+            "beige",
+            "creme",
+        ],
     },
     "bijkleur": {
-        'name': 'Bijkleur *',
-        'type': 'choice',
-        'options': [
-            'kleurloos',
-            'wit',
-            'grijs',
-            'zwart',
-            'rood',
-            'oranje',
-            'geel',
-            'groen',
-            'blauw',
-            'paars',
-            'bruin',
-            'roestbruin',
-            'beige',
-            'creme',
-        ]
+        "name": "Bijkleur *",
+        "type": "choice",
+        "options": [
+            "kleurloos",
+            "wit",
+            "grijs",
+            "zwart",
+            "rood",
+            "oranje",
+            "geel",
+            "groen",
+            "blauw",
+            "paars",
+            "bruin",
+            "roestbruin",
+            "beige",
+            "creme",
+        ],
     },
     "kleursterkte": {
-        'name': 'Kleursterkte *',
-        'type': 'choice',
-        'options': ['zeer licht', 'licht', 'neutraal', 'donker',
-                    'zeer donker']
+        "name": "Kleursterkte *",
+        "type": "choice",
+        "options": ["zeer licht", "licht", "neutraal", "donker", "zeer donker"],
     },
-    "foto": {
-      "type": "photo",
-      "name": "Foto",
-      "hint": "m.b.t. filter / bemonstering"
-      },
+    "foto": {"type": "photo", "name": "Foto", "hint": "m.b.t. filter / bemonstering"},
     "bijzonderheden": {
-        'name': 'Bijzonderheden',
-        'type': 'text',
-        'hint': 'Overige informatie'
-    }
+        "name": "Bijzonderheden",
+        "type": "text",
+        "hint": "Overige informatie",
+    },
 }
 
 input_fields_well_locations = [
@@ -300,8 +262,7 @@ input_fields_filter_locations = [
     "landgebruik",
     "beschadiging",
     "afdekking",
-    "gws_voor_pompen"
-    "gws_na_pompen",
+    "gws_voor_pompengws_na_pompen",
     "bovenkant_peilfilter",
     "onderkant_peilfilter",
     "pomptype",
@@ -317,19 +278,19 @@ input_fields_filter_locations = [
     "geleidbaarheid_0",
     "geleidbaarheid_3",
     "geleidbaarheid_6",
-    'zuurstof',
-    'temperatuur',
-    'temperatuur_moeilijk',
-    'waterstofcarbonaat',
-    'troebelheid',
-    'bicarbonaat',
-    'afwijking_meetapparatuur',
-    'contaminatie_door_verbrandingsmotor',
-    'bemonsteringsprocedure',
-    'inline_filter_afwijkend',
-    'slang_hergebruikt',
-    'monster_belucht',
-    'afwijkend_gekoeld',
+    "zuurstof",
+    "temperatuur",
+    "temperatuur_moeilijk",
+    "waterstofcarbonaat",
+    "troebelheid",
+    "bicarbonaat",
+    "afwijking_meetapparatuur",
+    "contaminatie_door_verbrandingsmotor",
+    "bemonsteringsprocedure",
+    "inline_filter_afwijkend",
+    "slang_hergebruikt",
+    "monster_belucht",
+    "afwijkend_gekoeld",
     "kleur",
     "bijkleur",
     "kleursterkte",
@@ -337,7 +298,7 @@ input_fields_filter_locations = [
     "foto",
 ]
 
-input_field_options = ipfo_w.copy() # to avoid modifying the original
+input_field_options = ipfo_w.copy()  # to avoid modifying the original
 input_field_options.update(ipfo_f)
 
 
@@ -345,17 +306,20 @@ input_fields_filter = ipfo_f
 
 input_fields_well = ipfo_w
 
+
 def convert_epsg28992_to_epsg4326(x, y):
     # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
     transformer = Transformer.from_crs("EPSG:28992", "EPSG:4326", always_xy=True)
-   
+
     # Perform the transformation
     lon, lat = transformer.transform(x, y)
-   
+
     return lon, lat
+
 
 def generate_random_color():
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+
 
 # From the FieldForm Github
 def write_location_file(data, filename):
@@ -378,8 +342,13 @@ def write_location_file(data, filename):
     with open(filename, "w") as outfile:
         json.dump(data, outfile, indent=2)
 
-def perceel_property(tube: gmw_models.GroundwaterMonitoringTubeStatic, perceel_check: str) -> str:
-    measuring_point = gmn_models.MeasuringPoint.objects.filter(groundwater_monitoring_tube=tube).all()
+
+def perceel_property(
+    tube: gmw_models.GroundwaterMonitoringTubeStatic, perceel_check: str
+) -> str:
+    measuring_point = gmn_models.MeasuringPoint.objects.filter(
+        groundwater_monitoring_tube=tube
+    ).all()
     if measuring_point:
         check = 0
         for measuring_point_i in measuring_point:
@@ -395,7 +364,8 @@ def perceel_property(tube: gmw_models.GroundwaterMonitoringTubeStatic, perceel_c
             return "Nee"
     else:
         return "Nee"
-    
+
+
 def format_integer(num):
     if num < 10:
         return f"00{num}"
@@ -403,24 +373,34 @@ def format_integer(num):
         return f"0{num}"
     else:
         return str(num)
-    
+
+
 def list_krw_tubes() -> list:
-    substring = 'krw'
+    substring = "krw"
     # select all nets containing 'krw' in their name
-    filtered_nets = gmn_models.GroundwaterMonitoringNet.objects.filter(name__icontains=substring)
+    filtered_nets = gmn_models.GroundwaterMonitoringNet.objects.filter(
+        name__icontains=substring
+    )
 
     # get all MeasuringPoints from these nets
     measuring_points = gmn_models.MeasuringPoint.objects.filter(gmn__in=filtered_nets)
 
     # construct the tube name in the same format as the tube code
-    tube_name_formated = [f"{item.code.split('_')[0]}-{format_integer(int(item.code.split('_')[1] ))}" for item in measuring_points]
+    tube_name_formated = [
+        f"{item.code.split('_')[0]}-{format_integer(int(item.code.split('_')[1]))}"
+        for item in measuring_points
+    ]
     return tube_name_formated
-    
 
-def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, krw_list: list, well_org_name: str) -> dict:
+
+def create_sublocation_dict(
+    tube: gmw_models.GroundwaterMonitoringTubeStatic, krw_list: list, well_org_name: str
+) -> dict:
     filter_name = tube.__str__()
 
-    filter_state = tube.state.order_by('date_from').last() if tube.state.exists() else None
+    filter_state = (
+        tube.state.order_by("date_from").last() if tube.state.exists() else None
+    )
 
     krw = "Nee"
 
@@ -441,17 +421,32 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, kr
                     "Bovenkant filter [mNAP]": str(filter_state.screen_top_position),
                     "Onderkant filter [mNAP]": str(filter_state.screen_bottom_position),
                     "Diameter buis [mm]": str_tube_top_diameter,
-                    "Perceel 1": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_1"),
-                    "Perceel 2": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_2"),
-                    "Perceel 3": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_3"),
-                    "Perceel 4": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_4"),
-                    "Perceel 5": perceel_property(filter_state.groundwater_monitoring_tube_static, "GAR_2024_Perceel_5"),
+                    "Perceel 1": perceel_property(
+                        filter_state.groundwater_monitoring_tube_static,
+                        "GAR_2024_Perceel_1",
+                    ),
+                    "Perceel 2": perceel_property(
+                        filter_state.groundwater_monitoring_tube_static,
+                        "GAR_2024_Perceel_2",
+                    ),
+                    "Perceel 3": perceel_property(
+                        filter_state.groundwater_monitoring_tube_static,
+                        "GAR_2024_Perceel_3",
+                    ),
+                    "Perceel 4": perceel_property(
+                        filter_state.groundwater_monitoring_tube_static,
+                        "GAR_2024_Perceel_4",
+                    ),
+                    "Perceel 5": perceel_property(
+                        filter_state.groundwater_monitoring_tube_static,
+                        "GAR_2024_Perceel_5",
+                    ),
                     "KRW-locatie": krw,
                     "Eigenaar put": well_org_name,
                 },
             },
         }
-    
+
     else:
         if filter_name in krw_list:
             krw = "Ja"
@@ -478,6 +473,7 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic, kr
             },
         }
 
+
 class FieldFormGenerator:
     inputfields: Optional[List[dict]] = input_field_options
 
@@ -493,30 +489,42 @@ class FieldFormGenerator:
     def write_file_to_ftp(self, file: str, remote_filename: str):
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
-        with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+        with pysftp.Connection(
+            ls.ftp_ip,
+            username=ls.ftp_username,
+            password=ls.ftp_password,
+            port=22,
+            cnopts=cnopts,
+        ) as sftp:
             with sftp.cd(self.ftp_path):
                 sftp.put(localpath=file, remotepath=remote_filename)
 
     def delete_old_files_from_ftp(self):
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
-        with pysftp.Connection(ls.ftp_ip, username=ls.ftp_username, password=ls.ftp_password, port=22, cnopts=cnopts) as sftp:
+        with pysftp.Connection(
+            ls.ftp_ip,
+            username=ls.ftp_username,
+            password=ls.ftp_password,
+            port=22,
+            cnopts=cnopts,
+        ) as sftp:
             with sftp.cd(self.ftp_path):
                 # Get current date and time
                 now = datetime.datetime.now()
-                
+
                 # list files in the current directory
                 files = sftp.listdir()
                 for file in files:
-                    if not str(file).startswith('locations'):
+                    if not str(file).startswith("locations"):
                         continue
 
-                    file_date = str(file).split('_')[1][0:8]
+                    file_date = str(file).split("_")[1][0:8]
                     file_time = datetime.datetime.strptime(file_date, "%Y%m%d")
-                    
+
                     # Calculate the age of the file
                     file_age = now - file_time
-                    
+
                     # Check if the file is older than a month
                     if file_age > datetime.timedelta(days=30):
                         # Delete the file
@@ -525,18 +533,17 @@ class FieldFormGenerator:
 
     def create_location_dict(self, krw_list: list) -> None:
         locations = {}
-        for well in self.wells:  
+        for well in self.wells:
             tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
-                groundwater_monitoring_well_static = well
+                groundwater_monitoring_well_static=well
             )
 
             lon, lat = convert_epsg28992_to_epsg4326(
-                x=well.coordinates.x,
-                y=well.coordinates.y    
+                x=well.coordinates.x, y=well.coordinates.y
             )
 
             well_org_name = well.delivery_accountable_party.name
-            
+
             well_name = well.__str__()
             well_location = {
                 f"{well_name}": {
@@ -560,7 +567,7 @@ class FieldFormGenerator:
                 well_location[f"{well_name}"]["sublocations"].update(sublocation)
 
             locations.update(well_location)
-        
+
         return locations
 
     def _set_current_group(self, group_name: str):
@@ -574,34 +581,40 @@ class FieldFormGenerator:
         for monitoring_network in gmn_models.GroundwaterMonitoringNet.objects.all():
             groups[monitoring_network.name] = {
                 "name": monitoring_network.name,
-                "color": monitoring_network.color
+                "color": monitoring_network.color,
             }
-        
+
         return groups
-    
+
     def write_subgroups_to_dict(self) -> dict:
-            groups = {}
+        groups = {}
 
-            groups["GAR"] = {
-                "name": "GAR",
-                "color": "#a9034a",
-            }
+        groups["GAR"] = {
+            "name": "GAR",
+            "color": "#a9034a",
+        }
 
-            return groups
+        return groups
 
-    def write_measuringpoints_to_wells(self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet) -> None:
+    def write_measuringpoints_to_wells(
+        self, monitoringnetwork: gmn_models.GroundwaterMonitoringNet
+    ) -> None:
         measuringpoints = gmn_models.MeasuringPoint.objects.filter(
-            gmn = monitoringnetwork
+            gmn=monitoringnetwork
         )
         for measuringpoint in measuringpoints:
-            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            self.wells.append(
+                measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
 
-    def write_measuringpoints_to_wells_subgroup(self, subgroup: gmn_models.Subgroup) -> None:
-        measuringpoints = gmn_models.MeasuringPoint.objects.filter(
-            subgroup = subgroup
-        )
+    def write_measuringpoints_to_wells_subgroup(
+        self, subgroup: gmn_models.Subgroup
+    ) -> None:
+        measuringpoints = gmn_models.MeasuringPoint.objects.filter(subgroup=subgroup)
         for measuringpoint in measuringpoints:
-            self.wells.append(measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            self.wells.append(
+                measuringpoint.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
 
     def _write_data(self, data: dict):
         cur_date = datetime.datetime.now().date()
@@ -612,10 +625,15 @@ class FieldFormGenerator:
             os.mkdir("../fieldforms")
 
         # Store the file locally
-        write_location_file(data=data, filename=f"../fieldforms/gar/locations_{date_string}.json")
+        write_location_file(
+            data=data, filename=f"../fieldforms/gar/locations_{date_string}.json"
+        )
 
         # Write local file to FTP
-        self.write_file_to_ftp(file=f"../fieldforms/gar/locations_{date_string}.json", remote_filename=f"locations_{date_string}.json")
+        self.write_file_to_ftp(
+            file=f"../fieldforms/gar/locations_{date_string}.json",
+            remote_filename=f"locations_{date_string}.json",
+        )
 
     def generate(self):
         data = {
@@ -638,7 +656,6 @@ class FieldFormGenerator:
                 #     wells_pk_list = [obj.pk for obj in self.wells]
                 #     wells_in_file += wells_pk_list
 
-
                 # self._flush_wells()
                 # self._set_current_group(None)
 
@@ -653,7 +670,6 @@ class FieldFormGenerator:
                 # self._write_data(data)
                 return
 
-
         if hasattr(self, "monitoringnetworks"):
             if len(self.monitoringnetworks) == 1:
                 # Use subgroups of network if available.
@@ -667,7 +683,7 @@ class FieldFormGenerator:
                     self._set_current_group("GAR")
                     self.write_measuringpoints_to_wells_subgroup(subgroup)
                     locations.update(self.create_location_dict(krw_tubes))
-                
+
                 data["locations"] = locations
 
                 self._write_data(data)
@@ -679,7 +695,7 @@ class FieldFormGenerator:
                     self._set_current_group(str(monitoringnetwork.name))
                     self.write_measuringpoints_to_wells(monitoringnetwork)
                     locations.update(self.create_location_dict())
-                
+
                 data["locations"] = locations
                 self._write_data(data)
 

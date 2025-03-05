@@ -1,32 +1,42 @@
 # FERNET_ENCRYPTION_KEY = ""
 # SALT_STRING = ""
 
-# FTP server details
-# ftp_ip = 'ftp.example.com'
-# ftp_username = 'your_username'
-# ftp_password = 'your_password'
-# ftp_path = '/path/to/ftp/directory'
+# env = ""
+
+# # FTP server details
+# ftp_ip = ""
+# ftp_username = ""
+# ftp_password = ""
+
+# # Paths
+# ftp_frd_path = "/"
+# ftp_gld_pmg_path = "/"
+# ftp_gld_hnm_path = "/"
+# ftp_gld_path = "/"
+# ftp_gmw_path = "/"
+# ftp_gar_path = "/"
 
 # # Datbasename
 # database = ""
 
-# # Production db settings
-# p_user = ""
-# p_password = ""
-# p_host = ""
-# p_port = ""
+# if env == "production":
+#     # Production db settings
+#     user = ""
+#     password = ""
+#     host = ""
+#     port = ""
+# elif env == "staging":
+#     # Test db settings
+#     user = ""
+#     password = ""
+#     host = ""
+#     port = ""
+# else:
+#     # Development db settings
+#     user = ""
+#     password = ""
+#     host = ""
+#     port = ""
 
-# # Test db settings
-# t_user = ""
-# t_password = ""
-# t_host = ""
-# t_port = ""
-
-# # Staging db settings
-# s_user = ""
-# s_password = ""
-# s_host = ""
-# s_port = ""
-
-# Lizard keys
+# # Lizard keys
 # validation_key = ""

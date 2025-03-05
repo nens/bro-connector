@@ -28,7 +28,7 @@ def run(kvk_number: str = None, csv_file: str = None, bro_type: str = "gld"):
     progressor = Progress()
     gmn = GMNHandler()
 
-    if kvk_number != None:
+    if kvk_number is not None:
         DR = DataRetrieverKVK(kvk_number)
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()

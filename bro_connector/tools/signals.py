@@ -160,7 +160,7 @@ def process_csv_file(instance: GLDImport):
             mp_meta.save()
 
             # create time-value pair
-            tvp = MeasurementTvp.objects.update_or_create(
+            MeasurementTvp.objects.create(
                 observation=Obs,
                 measurement_time=time,
                 field_value=value,

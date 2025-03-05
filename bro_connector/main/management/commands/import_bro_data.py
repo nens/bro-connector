@@ -20,17 +20,11 @@ class Command(BaseCommand):
             help="Gebruik een KVK-nummer om de data in te spoelen",
         )
         parser.add_argument(
-            "--csv_file",
-            type=str,
-            help="Gebruik een csv bestand met putinformatie om data in te spoelen",
-        )
-        parser.add_argument(
             "--type", type=str, help="Type BRO bericht: gmw, gld, gar, gmn, frd"
         )
 
     def handle(self, *args, **options):
         kvk_number = options["kvk_number"]
-        csv_file = options["csv_file"]
         bro_type = options["type"]
 
         if bro_type == "gmw":

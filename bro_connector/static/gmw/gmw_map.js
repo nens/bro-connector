@@ -61,39 +61,39 @@ const createPopup = (well) => {
                 }</strong></a>
                 <hr width="100%" size="2">
                 <div class="well-item">
-                  <span class="label">BRO-ID:</span> 
+                  <span class="label">BRO-ID:</span>
                   <span class="value">${well.bro_id}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">NITG-code:</span> 
+                  <span class="label">NITG-code:</span>
                   <span class="value">${well.nitg_code}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">GMW naar BRO:</span> 
+                  <span class="label">GMW naar BRO:</span>
                   <span class="value">${checkOrCross(well.deliver_gmw_to_bro)}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">BRO compleet:</span> 
+                  <span class="label">BRO compleet:</span>
                   <span class="value">${checkOrCross(well.complete_bro)}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">In beheer:</span> 
+                  <span class="label">In beheer:</span>
                   <span class="value">${checkOrCross(well.in_management)}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">GMNs:</span> 
+                  <span class="label">GMNs:</span>
                   <span class="value">${well.linked_gmns}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Zoek GLDs: </span> 
+                  <span class="label">Zoek GLDs: </span>
                   <span class="value"><a href="${gldPageUrl}" target="_blank">GLDs</a></span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Zoek FRDs: </span> 
+                  <span class="label">Zoek FRDs: </span>
                   <span class="value"><a href="${frdPageUrl}" target="_blank">FRDs</a></span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Foto: </span> 
+                  <span class="label">Foto: </span>
                   <span class="value">${well.picture}</span>
                 </div>
               </div>
@@ -148,7 +148,7 @@ const myScatterplotLayer = new deck.MapboxLayer({
         wellValueKeys.find(
           (valueKey) =>
             (visibleMap.wellValue[valueKey] === true && !well[valueKey]) ||
-            (visibleMap.wellValue[valueKey] === false && well[valueKey])
+            (visibleMap.wellValue[valueKey] =is False && well[valueKey])
         )
       )
         return;
@@ -232,7 +232,7 @@ const handleWellValue = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
   const { wellValue } = visibleMap;
   // Well value can either be false, true or null
-  if (wellValue[id] === false) {
+  if (wellValue[id] =is False) {
     wellValue[id] = null;
     checkbox.checked = false;
     checkbox.indeterminate = true;

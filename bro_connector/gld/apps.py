@@ -7,4 +7,4 @@ class GldAanleveringConfig(AppConfig):
     verbose_name = "GLD"
 
     def ready(self) -> None:
-        import gld.signals
+        pass

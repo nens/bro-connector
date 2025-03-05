@@ -1,6 +1,6 @@
 from django.db import models
+from django.db.models import Manager
 import random
-from django.core.exceptions import ValidationError
 from .choices import (
     KADER_AANLEVERING_GMN,
     MONITORINGDOEL,
@@ -110,6 +110,8 @@ class GroundwaterMonitoringNet(models.Model):
     description = models.TextField(null=True, blank=True, verbose_name="Beschrijving")
     color = models.CharField(max_length=50, null=True, blank=True)
 
+    measuring_point: Manager["MeasuringPoint"]
+
     def __str__(self):
         if self.name:
             return self.name
@@ -204,13 +206,13 @@ class Subgroup(models.Model):
 class MeasuringPoint(models.Model):
     gmn = models.ForeignKey(
         GroundwaterMonitoringNet,
-        related_name="measuring_points",
+        related_name="measuring_point",
         on_delete=models.CASCADE,
         verbose_name="Meetnet",
     )
     subgroup = models.ManyToManyField(
         Subgroup,
-        related_name="measuring_points",
+        related_name="measuring_point",
         blank=True,
         help_text="Optional value to define smaller groups within a network.",
     )
@@ -220,6 +222,7 @@ class MeasuringPoint(models.Model):
         null=True,
         blank=False,
         verbose_name="Grondwatermonitoring buis",
+        related_name="tube",
     )
     code = models.CharField(
         max_length=255,

@@ -10,7 +10,7 @@ class Progress:
 
     def progress(self):
         if self.timer % self.update_interval == 0:
-            print(f"{round((self.timer / self.end)*100, 2)}% completed.")
+            print(f"{round((self.timer / self.end) * 100, 2)}% completed.")
 
     def next(self):
         self.timer = self.timer + 1

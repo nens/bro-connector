@@ -11,7 +11,6 @@ from gmw.choices import (
     GROUNDLEVELPOSITIONINGMETHOD,
     QUALITYREGIME,
     INITIALFUNCTION,
-    UNDERPRIVILIGE,
     DELIVERY_TYPE_CHOICES,
     DELIVERYCONTEXT,
     HORIZONTALPOSITIONINGMETHOD,
@@ -76,14 +75,6 @@ class GroundwaterMonitoringWellStatic(models.Model):
         blank=True,
         null=True,
         verbose_name="Kwaliteitsregime",
-    )
-    under_privilege = models.CharField(
-        choices=UNDERPRIVILIGE,
-        max_length=256,
-        blank=True,
-        null=True,
-        verbose_name="Onder voorrecht",
-        help_text="Ja wanneer kwaliteitsregime is IMBRO/A.",
     )
     delivery_context = models.CharField(
         choices=DELIVERYCONTEXT,
@@ -178,6 +169,10 @@ class GroundwaterMonitoringWellStatic(models.Model):
     event: Manager["Event"]
     maintenance: Manager["Maintenance"]
     delivery_accountable_party: Manager["Organisation"]
+
+    @property
+    def under_privilege(self):
+        return "ja" if self.quality_regime == "IMBRO/A" else "nee"
 
     @property
     def is_surface(self):

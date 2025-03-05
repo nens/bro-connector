@@ -70,16 +70,18 @@ class Command(BaseCommand):
         tube_data_list = []
         for tube in well.tube.all():
             tube_data = self.get_tube_data(tube)
-            tube_data.update({
-                "Interne Putcode": well_code,
-                "BRO ID": bro_id,
-                "NITG-code": nitg_code,
-                "RD_X": RD_X,
-                "RD_Y": RD_Y,
-                "Bronhouder": delivery_accountable_party,
-                "Moet naar de BRO": deliver_gmw_to_bro,
-                "BRO Compleet": complete_bro,
-            })
+            tube_data.update(
+                {
+                    "Interne Putcode": well_code,
+                    "BRO ID": bro_id,
+                    "NITG-code": nitg_code,
+                    "RD_X": RD_X,
+                    "RD_Y": RD_Y,
+                    "Bronhouder": delivery_accountable_party,
+                    "Moet naar de BRO": deliver_gmw_to_bro,
+                    "BRO Compleet": complete_bro,
+                }
+            )
             tube_data_list.append(tube_data)
 
         return tube_data_list
@@ -92,19 +94,33 @@ class Command(BaseCommand):
         # Extract attributes from the tube state
         tube_data = {
             "Tube nummer": str(tube_number),
-            "Lengte stijgbuis [m]": self.round_value(getattr(tube_state, "plain_tube_part_length", None)),
-            "Diameter buis [mm]": self.round_value(getattr(tube_state, "tube_top_diameter", None)),
-            "Bovenkant buis [mNAP]": self.round_value(getattr(tube_state, "tube_top_position", None)),
-            "Bovenkant filter [mNAP]": self.round_value(getattr(tube_state, "screen_top_position", None)),
-            "Onderkant filter [mNAP]": self.round_value(getattr(tube_state, "screen_bottom_position", None)),
+            "Lengte stijgbuis [m]": self.round_value(
+                getattr(tube_state, "plain_tube_part_length", None)
+            ),
+            "Diameter buis [mm]": self.round_value(
+                getattr(tube_state, "tube_top_diameter", None)
+            ),
+            "Bovenkant buis [mNAP]": self.round_value(
+                getattr(tube_state, "tube_top_position", None)
+            ),
+            "Bovenkant filter [mNAP]": self.round_value(
+                getattr(tube_state, "screen_top_position", None)
+            ),
+            "Onderkant filter [mNAP]": self.round_value(
+                getattr(tube_state, "screen_bottom_position", None)
+            ),
         }
 
         # Process related MeasuringPoints
-        measuring_points = MeasuringPoint.objects.filter(groundwater_monitoring_tube=tube)
-        tube_data.update({
-            "Meetnetten": self.collect_names(measuring_points, "gmn"),
-            "Subgroepen": self.collect_names(measuring_points, "subgroup"),
-        })
+        measuring_points = MeasuringPoint.objects.filter(
+            groundwater_monitoring_tube=tube
+        )
+        tube_data.update(
+            {
+                "Meetnetten": self.collect_names(measuring_points, "gmn"),
+                "Subgroepen": self.collect_names(measuring_points, "subgroup"),
+            }
+        )
 
         return tube_data
 
@@ -112,7 +128,7 @@ class Command(BaseCommand):
         names = []
         for obj in objects:
             field = getattr(obj, field_name, None)
-            
+
             if field:  # Only proceed if the field exists
                 if hasattr(field, "all"):  # Handle ManyToMany relationships
                     for related in field.all():
@@ -120,7 +136,11 @@ class Command(BaseCommand):
                         if name and name not in names:
                             names.append(str(name))  # Ensure it's a string
                 else:  # For non-ManyToMany fields
-                    name = getattr(field, "name", field) if hasattr(field, "name") else field
+                    name = (
+                        getattr(field, "name", field)
+                        if hasattr(field, "name")
+                        else field
+                    )
                     if name and name not in names:
                         names.append(str(name))  # Ensure it's a string
 

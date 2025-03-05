@@ -7,11 +7,11 @@ class DataInterface:
     Parameters
     ----------
     db : object, optional
-        Database connection handler. Default is None.
+        Database connection handler. Default  is None.
     pstore : object, optional
-        Pastastore for time series models. Default is None.
+        Pastastore for time series models. Default  is None.
     traval : object, optional
-        Traval object for handling error detection. Default is None.
+        Traval object for handling error detection. Default  is None.
     **kwargs : dict, optional
         Additional keyword arguments. Supported keys:
         - update_knmi : bool

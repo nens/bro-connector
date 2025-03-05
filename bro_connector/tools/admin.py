@@ -5,7 +5,6 @@ from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
 from zipfile import ZipFile
 import os
-from reversion_compare.helpers import patch_admin
 from . import models as tools_models
 from main.management.tasks import (
     retrieve_historic_gmw,
