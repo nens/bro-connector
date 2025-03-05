@@ -31,13 +31,18 @@ def get_ahn_from_lizard(obj) -> float:
 
     geom = f"SRID=28992;POINT({meetpunt.coordinates[0]} {meetpunt.coordinates[1]})"
 
-    res = requests.get(
-        url=url,
-        headers=settings.LIZARD_SETTINGS["headers"],
-        params={"geom": geom},
-    )
+    try:
+        res = requests.get(
+            url=url,
+            headers=settings.LIZARD_SETTINGS["headers"],
+            params={"geom": geom},
+        )
+        res.raise_for_status()
+    except requests.exceptions.HTTPError:
+        return -9999
 
     print(res.json(), settings.LIZARD_SETTINGS["headers"])
+    print(res.json()["results"][0]["value"])
 
     return res.json()["results"][0]["value"]
 
@@ -304,7 +309,11 @@ def validate_surface_height_ahn(obj: gmw_models.GroundwaterMonitoringWellDynamic
 
     ahn = get_ahn_from_lizard(obj)
 
-    if obj.ground_level_position > (ahn + 0.50):
+    if not obj.ground_level_position:
+        valid = False
+        message = f"LET OP: Er is geen ingevulde maaiveldhoogte voor de meetpuntgeschiedenis van {obj}."
+
+    elif obj.ground_level_position > (ahn + 0.50):
         valid = False
         message = f"LET OP: De ingevulde maaiveld hoogte voor meetpuntgeschiedenis {obj} is hoger dan de AHN2 + 50 cm ({round(ahn, 2)})."
 

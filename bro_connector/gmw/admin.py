@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
 from django.utils.html import format_html
@@ -20,6 +20,8 @@ from gmw.custom_filters import (
 )
 import main.utils.validators_admin as validators_admin
 from main.utils.frd_fieldform import FieldFormGenerator
+
+from .bro_validators.well import validate_well_static, validate_well_dynamic
 
 
 logger = logging.getLogger(__name__)
@@ -141,6 +143,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "deliver_gmw_to_bro",
                     "complete_bro",
                     "report",
+                    "bro_actions",
                 ],
             },
         ),
@@ -217,6 +220,18 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 self.message_user(request, message, level="ERROR")
                 obj.coordinates[1] = originele_put.coordinates[1]
 
+        # # test if object is bro_complete
+        # is_valid, report = validate_well_static(obj)
+
+        # # Update complete_bro and bro_actions in the static object based on validation
+        # static_obj = obj.groundwater_monitoring_well_static
+        # static_obj.complete_bro = is_valid
+        # static_obj.bro_actions += report
+
+        # # If not valid, show a warning in the admin interface
+        # if not is_valid:
+        #     messages.warning(request, "Er zijn nog acties vereist om het BRO Compleet te maken")
+
         # Sla het model op
         obj.save()
 
@@ -281,6 +296,17 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
                     originele_meetpuntgeschiedenis.ground_level_position
                 )
 
+        # test if object is bro_complete
+        is_valid, report = validate_well_dynamic(obj)
+
+        # Update complete_bro and bro_actions based on validation
+        obj.complete_bro = is_valid
+        obj.bro_actions = report
+
+        # If not valid, show a warning in the admin interface
+        if not is_valid:
+            messages.warning(request, "Er zijn nog acties vereist om het BRO Compleet te maken")
+            
         obj.save()
 
 

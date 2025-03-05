@@ -138,11 +138,11 @@ class GroundwaterMonitoringWellStatic(models.Model):
         verbose_name="Methode horizontale locatiebepaling",
     )
     local_vertical_reference_point = models.CharField(
-        choices=LOCALVERTICALREFERENCEPOINT, max_length=200, blank=True, null=True
+        choices=LOCALVERTICALREFERENCEPOINT, default="NAP", max_length=200, blank=True, null=True, verbose_name="Lokaal verticaal referentiepunt"
     )
-    well_offset = models.FloatField(blank=True, null=True)
+    well_offset = models.FloatField(blank=True, null=True, verbose_name="Well offset")
     vertical_datum = models.CharField(
-        choices=VERTICALDATUM, max_length=200, blank=True, null=True
+        choices=VERTICALDATUM, default="NAP", max_length=200, blank=True, null=True, verbose_name="Verticaal referentievlak"
     )
 
     # Added for additional wells that are not owned by the user
@@ -156,6 +156,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
         editable=True,
         verbose_name="Putstatus",
     )
+    bro_actions = models.TextField(blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken")
 
     # Added for GMW delivery
     deliver_gmw_to_bro = models.BooleanField(
@@ -351,6 +352,10 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         verbose_name="Bots bescherming",
     )
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
+    bro_actions = models.TextField(blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken")
+    complete_bro = models.BooleanField(
+        blank=True, default=False, verbose_name="BRO Compleet"
+    )  # Is the data in the table complete as required for the BRO
 
     def __str__(self):
         if self.date_till:
@@ -408,27 +413,29 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     )
     deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
     tube_number = models.IntegerField(
-        blank=True, null=True, validators=[validators_models.tube_number_validation]
+        blank=True, null=True, validators=[validators_models.tube_number_validation], verbose_name="Buisnummer"
     )
     tube_type = models.CharField(
-        choices=TUBETYPE, max_length=200, blank=True, null=True
+        choices=TUBETYPE, max_length=200, blank=True, null=True, verbose_name="Buistype"
     )
     artesian_well_cap_present = models.CharField(
-        choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True
+        choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True, verbose_name="Voorzien van drukdop"
     )
     sediment_sump_present = models.CharField(
-        choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True
+        choices=BOOLEAN_CHOICES, max_length=200, blank=True, null=True, verbose_name="Voorzien van zandvang"
     )
     tube_material = models.CharField(
-        choices=TUBEMATERIAL, max_length=200, blank=True, null=True
+        choices=TUBEMATERIAL, max_length=200, blank=True, null=True, verbose_name="Buismateriaal"
     )
-    screen_length = models.FloatField(blank=True, null=True)
+    screen_length = models.FloatField(blank=True, null=True, verbose_name="Filterlengte")
     sock_material = models.CharField(
-        choices=SOCKMATERIAL, max_length=200, blank=True, null=True
+        choices=SOCKMATERIAL, max_length=200, blank=True, null=True, verbose_name="Kousmateriaal"
     )
     sediment_sump_length = models.FloatField(
-        blank=True, null=True, validators=[validators_models.zandvanglengte_validator]
+        blank=True, null=True, validators=[validators_models.zandvanglengte_validator], verbose_name="Zandvanglengte"
     )
+    bro_actions = models.TextField(blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken")
+    #bro_complete
 
     state: Manager["GroundwaterMonitoringTubeDynamic"]
 
@@ -497,6 +504,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         null=True,
         validators=[validators_models.referentiehoogte_validation],
         help_text="Hoogte bovenkant buis. Eenheid: mNAP",
+        verbose_name="Positie bovenkant buis"
     )
     tube_top_positioning_method = models.CharField(
         choices=TUBETOPPOSITIONINGMETHOD,
@@ -512,7 +520,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         null=True,
         verbose_name="Aanvul materiaal buis",
     )
-    glue = models.CharField(choices=GLUE, max_length=200, blank=True, null=True)
+    glue = models.CharField(choices=GLUE, max_length=200, blank=True, null=True, verbose_name="Lijm")
     plain_tube_part_length = models.FloatField(
         blank=True, null=True, verbose_name="Lengte stijgbuis"
     )  # Lengte stijbuisdeel
@@ -532,6 +540,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         max_length=200, blank=True, null=True, verbose_name="Materiaal ingeplaatst deel"
     )
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
+    bro_actions = models.TextField(blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken")
 
     @property
     def date_till(self):
@@ -617,8 +626,9 @@ class GeoOhmCable(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        verbose_name="Buis",
     )
-    cable_number = models.IntegerField(blank=True, null=True)
+    cable_number = models.IntegerField(blank=True, null=True, verbose_name="Kabelnummer")
 
     def __str__(self):
         return f"{self.groundwater_monitoring_tube_static}-K{self.cable_number}"
@@ -647,13 +657,14 @@ class ElectrodeStatic(models.Model):
         GeoOhmCable, on_delete=models.CASCADE, null=True, blank=True
     )
     electrode_packing_material = models.CharField(
-        choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True
+        choices=ELECTRODEPACKINGMATERIAL, max_length=200, blank=True, null=True, verbose_name="Aanvulmateriaal elektrode",
     )
     electrode_position = models.CharField(
         max_length=200,
         blank=True,
         null=True,
         validators=[validators_models.elektrodepositie_validator],
+        verbose_name="Elektrodepositie",
     )
     electrode_number = models.IntegerField(blank=True, null=True)
 
