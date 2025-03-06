@@ -3,7 +3,6 @@ from django.conf import settings
 from django.dispatch import receiver
 from .models import gmw_registration_log, Event, GroundwaterMonitoringWellStatic
 import reversion
-from .bro_validators.well import *
 
 
 @receiver(post_save, sender=gmw_registration_log)
@@ -32,19 +31,3 @@ def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwa
         and instance.delivery_accountable_party.company_number == settings.KVK_USER
     ):
         instance.in_management = True
-
-
-# @receiver(pre_save, sender=GroundwaterMonitoringWellStatic)
-# def validate_well_before_save(sender, instance: GroundwaterMonitoringWellStatic, **kwargs):
-#     is_valid, report = validate_well_static(instance)
-
-#     # Update complete_bro based on validation result
-#     instance.complete_bro = is_valid
-
-#     # Store validation report in bro_actions
-#     instance.bro_actions = report
-
-#     # Display a warning message to the user if invalid
-#     if not is_valid:
-#         # If this is being triggered in the admin, add a warning message
-#         messages.warning("hallo")

@@ -463,5 +463,5 @@ GRAPH_MODELS = {
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # needed for DASH APP
 
 if platform.system() == "Windows":
-    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal307.dll"
+    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"
     GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"

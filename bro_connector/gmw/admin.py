@@ -19,7 +19,7 @@ from gmw.custom_filters import (
 import main.utils.validators_admin as validators_admin
 from main.utils.frd_fieldform import FieldFormGenerator
 
-from .bro_validators.well import validate_well_dynamic
+from .bro_validators.well import validate_well_static, validate_well_dynamic
 
 
 logger = logging.getLogger(__name__)
@@ -166,7 +166,9 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
 
-    def save_model(self, request, obj, form, change):
+    def save_model(
+        self, request, obj: gmw_models.GroundwaterMonitoringWellStatic, form, change
+    ):
         # Haal de waarden van de afgeleide attributen op uit het formulier
 
         x = form.cleaned_data["x"]
@@ -217,17 +219,18 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 self.message_user(request, message, level="ERROR")
                 obj.coordinates[1] = originele_put.coordinates[1]
 
-        # # test if object is bro_complete
-        # is_valid, report = validate_well_static(obj)
+        # test if object is bro_complete
+        is_valid, report = validate_well_static(obj)
 
-        # # Update complete_bro and bro_actions in the static object based on validation
-        # static_obj = obj.groundwater_monitoring_well_static
-        # static_obj.complete_bro = is_valid
-        # static_obj.bro_actions += report
+        # Update complete_bro and bro_actions in the static object based on validation
+        obj.complete_bro = is_valid
+        obj.bro_actions = report
 
-        # # If not valid, show a warning in the admin interface
-        # if not is_valid:
-        #     messages.warning(request, "Er zijn nog acties vereist om het BRO Compleet te maken")
+        # If not valid, show a warning in the admin interface
+        if not is_valid:
+            messages.warning(
+                request, "Er zijn nog acties vereist om het BRO Compleet te maken"
+            )
 
         # Sla het model op
         obj.save()
@@ -276,10 +279,12 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
 
-    def save_model(self, request, obj, form, change):
+    def save_model(
+        self, request, obj: gmw_models.GroundwaterMonitoringWellDynamic, form, change
+    ):
         try:
             originele_meetpuntgeschiedenis = gmw_models.GroundwaterMonitoringWellDynamic.objects.get(
-                groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
+                groundwater_monitoring_well_dynamic_id=obj.groundwater_monitoring_well_dynamic_id
             )
         except:  # noqa: E722
             logger.exception("Bare except")

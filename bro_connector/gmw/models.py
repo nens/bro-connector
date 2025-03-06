@@ -71,6 +71,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
     )
     quality_regime = models.CharField(
         choices=QUALITYREGIME,
+        default="IMBRO",
         max_length=256,
         blank=True,
         null=True,
@@ -273,6 +274,19 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     date_from = models.DateTimeField(
         help_text="formaat: YYYY-MM-DD", verbose_name="Geldig vanaf"
     )
+    ground_level_position = models.FloatField(
+        blank=True,
+        null=True,
+        validators=[validators_models.maaiveldhoogte_validation],
+        verbose_name="Maaiveld hoogte",
+    )
+    ground_level_positioning_method = models.CharField(
+        choices=GROUNDLEVELPOSITIONINGMETHOD,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Methode positiebepaling maaiveld",
+    )
     ground_level_stable = models.CharField(
         choices=BOOLEAN_CHOICES,
         max_length=254,
@@ -300,27 +314,13 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         null=True,
         verbose_name="Beschermconstructie",
     )
-    ground_level_position = models.FloatField(
-        blank=True,
-        null=True,
-        validators=[validators_models.maaiveldhoogte_validation],
-        verbose_name="Maaiveld hoogte",
-    )
-    ground_level_positioning_method = models.CharField(
-        choices=GROUNDLEVELPOSITIONINGMETHOD,
-        max_length=200,
-        blank=True,
-        null=True,
-        verbose_name="Methode positiebepaling maaiveld",
-    )
-
     # CUSTOMIZATION FIELDS
     well_head_protector_subtype = models.CharField(
         max_length=254,
         choices=WELLHEADPROTECTOR_SUBTYPES,
         null=True,
         blank=True,
-        verbose_name="Beschermconstructie",
+        verbose_name="Beschermconstructie subtype",
     )
     lock = models.CharField(
         max_length=254, choices=LOCKS, null=True, blank=True, verbose_name="Slot"

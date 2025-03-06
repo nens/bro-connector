@@ -352,13 +352,13 @@ DELIVERY_TYPE_CHOICES = (
 )
 
 BOOLEAN_CHOICES = (
-    ("ja", "Ja"),
-    ("nee", "Nee"),
-    ("onbekend", "Onbekend"),
+    ("ja", "ja"),
+    ("nee", "nee"),
+    ("onbekend", "onbekend"),
 )
 BOOLEAN_CHOICES_IMBRO = (
-    ("ja", "Ja"),
-    ("nee", "Nee"),
+    ("ja", "ja"),
+    ("nee", "nee"),
 )
 
 EVENTNAME = (
