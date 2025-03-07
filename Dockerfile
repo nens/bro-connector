@@ -47,4 +47,4 @@ RUN cd /app/
 RUN pwd
 
 # Run Django’s development server
-CMD ["uv", "run", "manage.py", "runserver"  ]
+CMD ["uv", "run", "manage.py", "runserver"]

@@ -19,7 +19,14 @@ from gmw.custom_filters import (
 import main.utils.validators_admin as validators_admin
 from main.utils.frd_fieldform import FieldFormGenerator
 
-from .bro_validators.well import validate_well_static, validate_well_dynamic
+from .bro_validators import (
+    validate_well_static,
+    validate_well_dynamic,
+    validate_tube_static,
+    validate_tube_dynamic,
+    validate_geo_ohm_cable,
+    validate_electrode_dynamic,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -361,6 +368,26 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
 
     deliver_gld_to_true.short_description = "Deliver GLD to True"
 
+    def save_model(
+        self, request, obj: gmw_models.GroundwaterMonitoringTubeStatic, form, change
+    ):
+        # test if object is bro_complete
+        is_valid, report = validate_tube_static(obj)
+        obj.bro_actions = report
+
+        # If not valid, show a warning in the admin interface
+        if not is_valid:
+            messages.warning(
+                request, "Er zijn nog acties vereist om het BRO Compleet te maken"
+            )
+
+        obj.save()
+
+        # Update complete_bro and bro_actions based on validation
+        well = obj.groundwater_monitoring_well_static
+        well.complete_bro = is_valid
+        well.save()
+
 
 class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeDynamicForm
@@ -387,7 +414,9 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
 
     readonly_fields = ["screen_top_position", "screen_bottom_position"]
 
-    def save_model(self, request, obj, form, change):
+    def save_model(
+        self, request, obj: gmw_models.GroundwaterMonitoringTubeDynamic, form, change
+    ):
         try:
             originele_filtergeschiedenis = gmw_models.GroundwaterMonitoringTubeDynamic.objects.get(
                 groundwater_monitoring_tube_dynamic_id=obj.groundwater_monitoring_tube_dynamic_id
@@ -411,6 +440,14 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
         if valid is False:
             self.message_user(request, message, level="ERROR")
 
+        is_valid, report = validate_tube_dynamic(obj)
+        obj.bro_actions = report
+
+        # If not valid, show a warning in the admin interface
+        if not is_valid:
+            messages.warning(
+                request, "Er zijn nog acties vereist om het BRO Compleet te maken"
+            )
         obj.save()
 
 
@@ -427,6 +464,17 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
     readonly_fields = ["electrode_count"]
 
     list_filter = (TubeFilter,)
+
+    def save_model(self, request, obj: gmw_models.GeoOhmCable, form, change):
+        is_valid, report = validate_geo_ohm_cable(obj)
+        obj.bro_actions = report
+
+        # If not valid, show a warning in the admin interface
+        if not is_valid:
+            messages.warning(
+                request, "Er zijn nog acties vereist om het BRO Compleet te maken"
+            )
+        obj.save()
 
 
 class ElectrodeStaticAdmin(admin.ModelAdmin):
@@ -485,6 +533,46 @@ class EventAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube_dynamic",
         "electrode_dynamic",
     )
+
+    def save_model(self, request, obj: gmw_models.Event, form, change):
+        valid = True
+        if obj.event_name == "constructie":
+            if obj.electrode_dynamic:
+                valid_e, report_e = validate_electrode_dynamic(obj.electrode_dynamic)
+            else:
+                valid_e, report_e = True, "Valid\n"
+
+            valid_td, report_td = validate_tube_dynamic(
+                obj.groundwater_monitoring_tube_dynamic
+            )
+            valid_ts, report_ts = validate_tube_static(
+                obj.groundwater_monitoring_tube_dynamic.groundwater_monitoring_tube_static
+            )
+            valid_wd, report_wd = validate_well_dynamic(
+                obj.groundwater_monitoring_well_dynamic
+            )
+            valid_ws, report_ws = validate_well_static(
+                obj.groundwater_monitoring_well_static
+            )
+            if (
+                not valid_e
+                or not valid_td
+                or not valid_ts
+                or not valid_wd
+                or not valid_ws
+            ):
+                valid = False
+                report = f"Electrode:\n{report_e}\nTube Dynamic:\n{report_td}\nTube Static:\n{report_ts}\nWell Dynamic:\n{report_wd}\nWell Static:\n{report_ws}"
+
+        obj.bro_actions = report
+        obj.complete_bro = valid
+
+        # If not valid, show a warning in the admin interface
+        if not valid:
+            messages.warning(
+                request, "Er zijn nog acties vereist om het BRO Compleet te maken"
+            )
+        obj.save()
 
 
 class PictureAdmin(admin.ModelAdmin):

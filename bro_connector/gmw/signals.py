@@ -31,3 +31,12 @@ def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwa
         and instance.delivery_accountable_party.company_number == settings.KVK_USER
     ):
         instance.in_management = True
+
+    if instance.bro_id is None:
+        Event.objects.get_or_create(
+            groundwater_monitoring_well_static=instance,
+            event_name="constructie",
+            defaults={
+                "event_date": instance.construction_date,
+            },
+        )
