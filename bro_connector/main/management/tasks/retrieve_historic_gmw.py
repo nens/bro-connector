@@ -178,6 +178,19 @@ class InitializeData:
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
     def well_static(self):
+        if "construction_date" in self.gmw_dict:
+            construction_date = self.gmw_dict["construction_date"]
+            construction_date = datetime.datetime.strptime(
+                construction_date, "%Y-%m-%d"
+            )
+
+        elif "construction_year" in self.gmw_dict:
+            construction_date = self.gmw_dict["construction_year"]
+            construction_date = datetime.datetime.strptime(construction_date, "%Y")
+
+        else:
+            construction_date = None
+
         with reversion.create_revision():
             (
                 self.gmws,
@@ -214,6 +227,7 @@ class InitializeData:
                     ),
                     "request_reference": self.gmw_dict.get("requestReference", None),
                     "vertical_datum": self.gmw_dict.get("verticalDatum", None),
+                    "construction_date": construction_date,
                     "well_code": self.gmw_dict.get("wellCode", None),
                     "deliver_gmw_to_bro": True,
                     "complete_bro": True,
