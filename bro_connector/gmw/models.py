@@ -146,7 +146,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
         null=True,
         verbose_name="Verticaal referentievlak",
     )
-
+    construction_date = models.DateField(
+        blank=True, null=True, verbose_name="Inrichtingsdatum"
+    )
     # Added for additional wells that are not owned by the user
     in_management = models.BooleanField(
         null=True, blank=True, default=True, editable=True, verbose_name="In beheer"
@@ -161,7 +163,6 @@ class GroundwaterMonitoringWellStatic(models.Model):
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
-
     # Added for GMW delivery
     deliver_gmw_to_bro = models.BooleanField(
         blank=True, default=False, verbose_name="Moet naar de BRO"
@@ -266,8 +267,6 @@ class GroundwaterMonitoringWellDynamic(models.Model):
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="state",
         verbose_name="Put",
     )
@@ -411,8 +410,6 @@ class GroundwaterMonitoringTubeStatic(models.Model):
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="tube",
         verbose_name="Put",
     )
@@ -505,8 +502,6 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     groundwater_monitoring_tube_static = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="state",
         verbose_name="Buis",
     )
@@ -576,6 +571,8 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
+
+    event: Manager["Event"]
 
     @property
     def date_till(self):
@@ -659,12 +656,13 @@ class GeoOhmCable(models.Model):
     groundwater_monitoring_tube_static = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         verbose_name="Buis",
     )
     cable_number = models.IntegerField(
         blank=True, null=True, verbose_name="Kabelnummer"
+    )
+    bro_actions = models.TextField(
+        blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
 
     def __str__(self):
@@ -690,9 +688,7 @@ class GeoOhmCable(models.Model):
 
 class ElectrodeStatic(models.Model):
     electrode_static_id = models.AutoField(primary_key=True)
-    geo_ohm_cable = models.ForeignKey(
-        GeoOhmCable, on_delete=models.CASCADE, null=True, blank=True
-    )
+    geo_ohm_cable = models.ForeignKey(GeoOhmCable, on_delete=models.CASCADE)
     electrode_packing_material = models.CharField(
         choices=ELECTRODEPACKINGMATERIAL,
         max_length=200,
@@ -708,6 +704,9 @@ class ElectrodeStatic(models.Model):
         verbose_name="Elektrodepositie",
     )
     electrode_number = models.IntegerField(blank=True, null=True)
+    bro_actions = models.TextField(
+        blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
+    )
 
     def __str__(self):
         return f"{self.geo_ohm_cable.groundwater_monitoring_tube_static}-K{self.geo_ohm_cable.cable_number}E{self.electrode_number}"
@@ -721,12 +720,13 @@ class ElectrodeStatic(models.Model):
 
 class ElectrodeDynamic(models.Model):
     electrode_dynamic_id = models.AutoField(primary_key=True)
-    electrode_static = models.ForeignKey(
-        ElectrodeStatic, on_delete=models.CASCADE, null=True, blank=True
-    )
+    electrode_static = models.ForeignKey(ElectrodeStatic, on_delete=models.CASCADE)
     date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
     electrode_status = models.CharField(
         choices=ELECTRODESTATUS, max_length=200, blank=True, null=True
+    )
+    bro_actions = models.TextField(
+        blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
 
     def __str__(self):
@@ -759,19 +759,20 @@ class ElectrodeDynamic(models.Model):
 class Event(models.Model):
     change_id = models.AutoField(primary_key=True)
     event_name = models.CharField(
-        choices=EVENTNAME, max_length=200, blank=True, null=True
+        choices=EVENTNAME,
+        max_length=200,
+        verbose_name="Naam gebeurtenis",
     )
     event_date = models.DateField(
         null=True,
         blank=True,
         help_text="Formaat: YYYY-MM-DD",
         validators=[validators_models.datetime_validation],
+        verbose_name="Datum gebeurtenis",
     )
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="event",
         verbose_name="Put",
     )
@@ -780,17 +781,32 @@ class Event(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="event",
+        verbose_name="Put-Dynamisch",
     )
     groundwater_monitoring_tube_dynamic = models.ForeignKey(
         GroundwaterMonitoringTubeDynamic,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        verbose_name="Buis-Dynamisch",
+        related_name="event",
     )
     electrode_dynamic = models.ForeignKey(
-        ElectrodeDynamic, on_delete=models.CASCADE, null=True, blank=True
+        ElectrodeDynamic,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Electrode-Dynamisch",
+        related_name="event",
     )
     delivered_to_bro = models.BooleanField(blank=True, default=False)
+    bro_actions = models.TextField(
+        blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
+    )
+    complete_bro = models.BooleanField(
+        blank=True, default=False, verbose_name="BRO Compleet"
+    )  # Is the data in the table complete as required for the BRO
 
     def __str__(self):
         return str(self.change_id)
