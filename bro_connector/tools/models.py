@@ -23,13 +23,7 @@ class BroImporter(models.Model):
         choices=BRO_TYPES,
         null=False,
     )
-    kvk_number = models.IntegerField(null=False)
-    bro_id = models.CharField(
-        max_length=25,
-        help_text="Use this if you want to import an individual ID.",
-        null=True,
-        blank=True,
-    )
+    kvk_number = models.CharField(max_length=8, null=False)
     import_date = models.DateTimeField(editable=False, default=datetime.datetime.now())
     created_date = models.DateTimeField(editable=False, default=datetime.datetime.now())
 
@@ -124,7 +118,6 @@ class GLDImport(models.Model):
         blank=True,
         null=True,
     )
-    
 
     class Meta:
         managed = True

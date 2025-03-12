@@ -1,7 +1,7 @@
-
 <img src=../static/img/broconnector.png width="140">
 
-# Klassendiagram voor Grondwatermonitoringsput (GMW) #
+# Klassendiagram voor Grondwatermonitoringsput (GMW)
+
 ```mermaid
 classDiagram
     class GroundwaterMonitoringWellStatic{
@@ -12,7 +12,6 @@ classDiagram
         Organisation delivery_accountable_party
         Organisation delivery_responsible_party
         str quality_regime
-        str under_privilege
         str delivery_context
         str construction_standard
         str initial_function
@@ -204,15 +203,16 @@ classDiagram
     BROProject ..> "owner" Organisation
     BROProject ..> "authorized" Organisation
 ```
+
 # GMW - Grondwatermonitoringsput
 
 De Grondwatermonitoringsput is één van de meest belangrijke, en complexe, objecten binnen de BRO.
 Eén of meerdere putten zijn nodig voor alle andere object-types binnen het grondwaterdomein van de BRO.
 
 Binnen de BRO-Connector zijn alle relevante objecten die vallen binnen het GMW domein opgenomen.
-Voor de attributen die door de tijd heen kunnen verschillen zijn aparte objecten aangemaakt: "statisch" voor de constante* variabelen en "dynamisch" voor flexibele variabelen.
+Voor de attributen die door de tijd heen kunnen verschillen zijn aparte objecten aangemaakt: "statisch" voor de constante\* variabelen en "dynamisch" voor flexibele variabelen.
 
-*Er zijn een aantal attributen die op het moment onder de statische sub-groep vallen, die potentieel wel kunnen veranderen. Deze veranderingen gaan gepaard met berichten die op het moment nog niet worden ondersteund in de applicatie, vandaar hun indeling in de app. (Eigenaar, coordinaten -> Dit zijn gegevens die wel mogelijk veranderen of bijgesteld worden.)
+\*Er zijn een aantal attributen die op het moment onder de statische sub-groep vallen, die potentieel wel kunnen veranderen. Deze veranderingen gaan gepaard met berichten die op het moment nog niet worden ondersteund in de applicatie, vandaar hun indeling in de app. (Eigenaar, coordinaten -> Dit zijn gegevens die wel mogelijk veranderen of bijgesteld worden.)
 
 ## Grondwatermonitorings Put - Statisch
 

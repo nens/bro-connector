@@ -222,10 +222,6 @@ class InitializeData:
                     "olga_code": self.gmw_dict.get("olgaCode", None),
                     "quality_regime": self.gmw_dict.get("qualityRegime", None),
                     "reference_system": self.gmw_dict.get("referenceSystem", None),
-                    "registration_object_type": self.gmw_dict.get(
-                        "registrationStatus", None
-                    ),
-                    "request_reference": self.gmw_dict.get("requestReference", None),
                     "vertical_datum": self.gmw_dict.get("verticalDatum", None),
                     "construction_date": construction_date,
                     "well_code": self.gmw_dict.get("wellCode", None),
