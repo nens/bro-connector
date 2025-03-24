@@ -6,6 +6,7 @@ nl:
   tab_model: Tijdreeksmodel
   tab_qc: Foutdetectie
   tab_qc_result: Handmatige Beoordeling
+  monitoring_wells: "Peilbuizen"
   no_data: Geen data
   no_data_selection: Geen data in geselecteerde tijdreeks.
   no_selection: Geen tijdreeks geselecteerd.
@@ -34,7 +35,7 @@ nl:
   comment: Opmerking
   qc_label: QC label
   show_all: Toon alle metingen
-  show_all_tooltip: "Klik hier om alle OF alleen verdachte metingen weer te geven."
+  show_all_tooltip: "Klik hier om ALLE of ALLEEN VERDACHTE metingen weer te geven."
   export_csv: Exporteer CSV
   export_db: Exporteer naar DB
   accept: Accepteer suggestie

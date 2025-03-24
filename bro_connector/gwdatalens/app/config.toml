@@ -8,7 +8,7 @@ PORT = 8050                  # default port for the Dash app
 BACKGROUND_CALLBACKS = false # false is recommended at this moment
 
 [pastastore]
-name = "zeeland_bro"
-path = "./gwdatalens/pastasdb/"                 # path to pastas model database
-connector = "pas"                               # database connector
-update_knmi = false                             # update knmi data in pastas database on startup
+name = "zeeland_bro"            # name of the pastastore database
+path = "./gwdatalens/pastasdb/" # path to pastastore database
+connector = "pas"               # database connector
+update_knmi = true              # update knmi data in pastas database on startup

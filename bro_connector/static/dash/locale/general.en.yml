@@ -6,6 +6,7 @@ en:
   tab_model: Time Series Model
   tab_qc: Error Detection
   tab_qc_result: Manual Review
+  monitoring_wells: "Observation wells"
   no_data: No data
   no_data_selection: No data in selected time series.
   no_selection: No series selected.
@@ -35,7 +36,7 @@ en:
   comment: Comment
   qc_label: QC label
   show_all: Show all observations
-  show_all_tooltip: "Toggle to show all OR only suspect measurements."
+  show_all_tooltip: "Toggle to show ALL or ONLY SUSPECT measurements."
   export_csv: Export CSV
   export_db: Export to DB
   category: "Select an appropriate code/label according to QC Protocol."
