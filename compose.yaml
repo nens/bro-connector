@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgis/postgis:14-3.4
+    environment:
+      POSTGRES_USER: "grondwatermeetnet"
+      POSTGRES_PASSWORD: "grondwatermeetnet"
+      POSTGRES_DB: "grondwatermeetnet"
+      POSTGRES_HOST: "db"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grondwatermeetnet"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  example:
+    build: .
+    environment:
+      # # Can be set in .env, we'll pass them on. settings.py has some defaults.
+      - ENV
+      - SALT_STRING
+      - FERNET_ENCRYPTION_KEY
+      - validation_key
+      # FTP
+      - FTP_IP
+      - FTP_PATH
+
+    develop:
+      # Create a `watch` configuration to update the app
+      #
+      watch:
+        # Sync the working directory with the `/bro_conector` directory in the container
+        - action: sync
+          path: ./bro_conector
+          # Exclude the project virtual environment
+          ignore:
+            - .venv/
+
+        # Rebuild the image on changes to the `pyproject.toml`
+        - action: rebuild
+          path: ./pyproject.toml
+
+volumes:
+  pgdata:

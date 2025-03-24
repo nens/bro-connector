@@ -4,7 +4,7 @@
 # ClassDiagram voor de overkoepelende BRO objecten #
 ```mermaid
 classDiagram
-    
+
     class Organisation{
         str name
         int company_number
@@ -23,9 +23,9 @@ classDiagram
 
 ```
 
-# BRO 
+# BRO
 
-Voor de BRO zijn een aantal objecten overkoepelend. 
+Voor de BRO zijn een aantal objecten overkoepelend.
 Deze zijn dus relevant voor meer dan één object type.
 Op dit moment onderscheiden we twee objecten:
 

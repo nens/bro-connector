@@ -54,7 +54,12 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     actions = ["deliver_to_bro", "check_status"]
 
-    readonly_fields = ["frd_bro_id", "first_measurement", "most_recent_measurement", "closure_date"]
+    readonly_fields = [
+        "frd_bro_id",
+        "first_measurement",
+        "most_recent_measurement",
+        "closure_date",
+    ]
 
     search_fields = [
         "frd_bro_id",
@@ -67,7 +72,7 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
     def deliver_to_bro(self, request, queryset):
         syncer = FRDSync()
         syncer.handle(queryset)
-    
+
     @admin.action(description="Check FRD status from BRO")
     def check_status(self, request, queryset):
         syncer = FRDSync()
@@ -230,7 +235,7 @@ class FrdSyncLogAdmin(admin.ModelAdmin):
         "delivery_status",
         "delivery_status_info",
         "delivery_id",
-        "delivery_type"
+        "delivery_type",
     )
 
 

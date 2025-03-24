@@ -20,7 +20,7 @@ def register_result_callbacks(app, data):
     # )
     # def multi_edit_qc_results_table(filtered_data, selected_cells):
     #     # if no selection do nothing
-    #     if selected_cells is None or selected_cells == []:
+    #     if selected_cells  is None or selected_cells == []:
     #         raise PreventUpdate
 
     #     # check columns

@@ -21,6 +21,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def within_bbox(coordinates) -> bool:
     print(f"x: {coordinates.x}, y: {coordinates.y}")
     if (
@@ -47,7 +48,7 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
     if gmw_ids_ini_count == 0:
         print(f"No IDs found for kvk: {kvk_number}.")
         return {"ids_found": gmw_ids_ini_count, "imported": gmw_ids_ini_count}
-    
+
     print(f"{gmw_ids_ini_count} bro ids found for organisation.")
     imported = 0
     gmw_ids_count = len(gmw_ids)
@@ -78,7 +79,7 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
                 progressor.next()
                 progressor.progress()
                 continue
-        
+
         print(f"In bbox for {gmws}")
         ini.well_dynamic()
 
@@ -113,7 +114,6 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
         progressor.next()
         progressor.progress()
 
-
     info = {
         "ids_found": gmw_ids_count,
         "imported": imported,
@@ -132,13 +132,14 @@ def get_or_create_instantie(instantie: str):
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime:
     try:
-        date = datetime.datetime.strptime(event_date,'%Y-%m-%d')
+        date = datetime.datetime.strptime(event_date, "%Y-%m-%d")
     except ValueError:
-        date = datetime.datetime.strptime(event_date,'%Y')
+        date = datetime.datetime.strptime(event_date, "%Y")
     except TypeError:
-        date = datetime.datetime.strptime("1900-01-01",'%Y-%m-%d')
+        date = datetime.datetime.strptime("1900-01-01", "%Y-%m-%d")
 
     return date
+
 
 class InitializeData:
     """
@@ -177,6 +178,19 @@ class InitializeData:
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
 
     def well_static(self):
+        if "construction_date" in self.gmw_dict:
+            construction_date = self.gmw_dict["construction_date"]
+            construction_date = datetime.datetime.strptime(
+                construction_date, "%Y-%m-%d"
+            )
+
+        elif "construction_year" in self.gmw_dict:
+            construction_date = self.gmw_dict["construction_year"]
+            construction_date = datetime.datetime.strptime(construction_date, "%Y")
+
+        else:
+            construction_date = None
+
         with reversion.create_revision():
             (
                 self.gmws,
@@ -208,12 +222,8 @@ class InitializeData:
                     "olga_code": self.gmw_dict.get("olgaCode", None),
                     "quality_regime": self.gmw_dict.get("qualityRegime", None),
                     "reference_system": self.gmw_dict.get("referenceSystem", None),
-                    "registration_object_type": self.gmw_dict.get(
-                        "registrationStatus", None
-                    ),
-                    "request_reference": self.gmw_dict.get("requestReference", None),
-                    "under_privilege": self.gmw_dict.get("underReview", None),
                     "vertical_datum": self.gmw_dict.get("verticalDatum", None),
+                    "construction_date": construction_date,
                     "well_code": self.gmw_dict.get("wellCode", None),
                     "deliver_gmw_to_bro": True,
                     "complete_bro": True,
@@ -224,7 +234,10 @@ class InitializeData:
                 f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
             )
 
-        if str(self.gmws.delivery_accountable_party.company_number) == "20168636":
+        if (
+            str(self.gmws.delivery_accountable_party.company_number)
+            == settings.KVK_USER
+        ):
             self.gmws.in_management = True
         else:
             self.gmws.in_management = False
@@ -242,14 +255,12 @@ class InitializeData:
             date = None
 
         date = convert_event_date_str_to_datetime(date)
-        
+
         self.gmwd, created = GroundwaterMonitoringWellDynamic.objects.update_or_create(
             groundwater_monitoring_well_static=self.gmws,
-            date_from = date,
+            date_from=date,
             defaults={
-                "ground_level_position": self.gmw_dict.get(
-                    "groundLevelPosition", None
-                ),
+                "ground_level_position": self.gmw_dict.get("groundLevelPosition", None),
                 "ground_level_positioning_method": self.gmw_dict.get(
                     "groundLevelPositioningMethod", None
                 ),

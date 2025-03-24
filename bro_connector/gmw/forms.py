@@ -2,7 +2,6 @@ import django.forms as forms
 from . import models
 
 
-
 class BinaryFileInput(forms.ClearableFileInput):
     def is_initial(self, value):
         """
@@ -25,8 +24,8 @@ class BinaryFileInput(forms.ClearableFileInput):
         if upload:
             return upload.read()
 
+
 class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
-    
     x = forms.CharField(required=True)
     y = forms.CharField(required=True)
     cx = forms.CharField(required=False)
@@ -39,7 +38,7 @@ class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.in_management == False:
+        if self.instance.in_management is False:
             for name, field in self.fields.items():
                 if name == "in_management":
                     continue
@@ -63,11 +62,10 @@ class GroundwaterMonitoringWellDynamicForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        if self.instance.groundwater_monitoring_well_static == None:
+        if self.instance.groundwater_monitoring_well_dynamic_id is None:
             pass
 
-        elif self.instance.groundwater_monitoring_well_static.in_management == False:
+        elif self.instance.groundwater_monitoring_well_static.in_management is False:
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
                 field.disabled = True
@@ -81,10 +79,10 @@ class GroundwaterMonitoringTubeStaticForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_well_static == None:
+        if self.instance.groundwater_monitoring_tube_static_id is None:
             pass
 
-        elif self.instance.groundwater_monitoring_well_static.in_management == False:
+        elif self.instance.groundwater_monitoring_well_static.in_management is False:
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
                 field.disabled = True
@@ -98,12 +96,12 @@ class GroundwaterMonitoringTubeDynamicForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_tube_static == None:
+        if self.instance.groundwater_monitoring_tube_dynamic_id is None:
             pass
 
         elif (
             self.instance.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.in_management
-            == False
+            is False
         ):
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
@@ -118,12 +116,12 @@ class GeoOhmCableForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_tube_static == None:
+        if self.instance.geo_ohm_cable_id is None:
             pass
 
         elif (
             self.instance.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.in_management
-            == False
+            is False
         ):
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
@@ -138,12 +136,12 @@ class ElectrodeStaticForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.geo_ohm_cable == None:
+        if self.instance.electrode_static_id is None:
             pass
 
         elif (
             self.instance.geo_ohm_cable.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.in_management
-            == False
+            is False
         ):
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
@@ -158,12 +156,12 @@ class ElectrodeDynamicForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.electrode_static == None:
+        if self.instance.electrode_dynamic_id is None:
             pass
 
         elif (
             self.instance.electrode_static.geo_ohm_cable.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.in_management
-            == False
+            is False
         ):
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
@@ -178,10 +176,10 @@ class EventForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_well_static == None:
+        if self.instance.change_id is None:
             pass
 
-        elif self.instance.groundwater_monitoring_well_static.in_management == False:
+        elif self.instance.groundwater_monitoring_well_static.in_management is False:
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
                 field.disabled = True

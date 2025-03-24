@@ -1,4 +1,4 @@
-Label,TARGET_FID,NITG_nr,werk_ID,Xcoord RD,Ycoord RD,beheerder,GBD_NM
+Label,TARGET_FID,NITG-Nr,werk_ID,Xcoord RD,Ycoord RD,beheerder,GBD_NM
 Grondwater (bestaand),1,B43C0369,B43C0369,60970,411010,SBB,Dijkwater
 Grondwater (bestaand),2,B43C0391,B43C0391,60922,410957,SBB,Dijkwater
 Grondwater (bestaand),3,B43C0368,B43C0368,60080,411160,SBB,Dijkwater

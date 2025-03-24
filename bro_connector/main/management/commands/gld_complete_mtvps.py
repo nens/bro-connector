@@ -3,17 +3,16 @@ from gld.models import MeasurementTvp
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
         measurement_tvps = MeasurementTvp.objects.filter(
-            measurement_point_metadata__isnull = True,
+            measurement_point_metadata__isnull=True,
         )
 
         for measurement in measurement_tvps:
             measurement.save()
 
         measurement_tvps = MeasurementTvp.objects.filter(
-            calculated_value__isnull = True,
+            calculated_value__isnull=True,
         )
 
         for measurement in measurement_tvps:

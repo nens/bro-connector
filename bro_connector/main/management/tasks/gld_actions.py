@@ -1,4 +1,9 @@
-from gld.models import GroundwaterLevelDossier, gld_registration_log, gld_addition_log, Observation
+from gld.models import (
+    GroundwaterLevelDossier,
+    gld_registration_log,
+    gld_addition_log,
+    Observation,
+)
 from gmw.models import GroundwaterMonitoringWellStatic
 import os
 import logging
@@ -11,10 +16,12 @@ logger = logging.getLogger(__name__)
 
 folders = ["./additions/", "./startregistrations/"]
 
+
 def is_demo():
     if env == "production":
         return False
     return True
+
 
 def create_registrations_folder():
     for folder in folders:
@@ -29,11 +36,11 @@ def create_registrations_folder():
         else:
             print(f"Folder '{folder}' already exists.")
 
+
 def handle_start_registrations(
     dossier: GroundwaterLevelDossier,
     deliver: bool,
 ) -> None:
-    
     well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
     # Handle start registrations
     tube_number = dossier.groundwater_monitoring_tube.tube_number
@@ -62,87 +69,93 @@ def handle_start_registrations(
             )
         elif dossier.gld_bro_id:
             gld_registration_log.objects.update_or_create(
-                gwm_bro_id = dossier.gmw_bro_id,
-                gld_bro_id = dossier.gld_bro_id,
-                filter_number = dossier.tube_number,
-                validation_status = "VALID",
-                delivery_id = None,
-                delivery_type = "register",
-                delivery_status = "OPGENOMEN_LVBRO",
-                comments = "Imported into BRO-Connector.",
-                quality_regime = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+                gwm_bro_id=dossier.gmw_bro_id,
+                gld_bro_id=dossier.gld_bro_id,
+                filter_number=dossier.tube_number,
+                validation_status="VALID",
+                delivery_id=None,
+                delivery_type="register",
+                delivery_status="OPGENOMEN_LVBRO",
+                comments="Imported into BRO-Connector.",
+                quality_regime=dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
             )
 
     for log in gld_registration_logs:
         gld.check_existing_startregistrations(log)
 
+
 def form_addition_type(observation: Observation) -> str:
     if observation.observation_type == "controlemeting":
         return "controlemeting"
-    
+
     if observation.observation_metadata.validation_status == "voorlopig":
         return f"regulier_{observation.observation_metadata.validation_status}"
     return f"regulier_{observation.observation_metadata.validation_status}"
 
-def handle_additions(
-        dossier: GroundwaterLevelDossier, 
-        deliver: bool
-    ):
+
+def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
     # Get observations
     observations = Observation.objects.filter(
-        groundwater_level_dossier = dossier,
-        observation_endtime__isnull = False,
+        groundwater_level_dossier=dossier,
+        observation_endtime__isnull=False,
     )
 
     gld = gld_sync_to_bro.GldSyncHandler()
 
     for observation in observations:
-        print(f"Observation: {observation}; End_date: {observation.observation_endtime}")
+        print(
+            f"Observation: {observation}; End_date: {observation.observation_endtime}"
+        )
         addition_log = gld_addition_log.objects.filter(
-            observation_id = observation.observation_id,
-            addition_type =  form_addition_type(observation)
+            observation_id=observation.observation_id,
+            addition_type=form_addition_type(observation),
         ).first()
 
         print(observation)
         print(addition_log)
 
-        well = GroundwaterMonitoringWellStatic.objects.get(bro_id=observation.groundwater_level_dossier.gmw_bro_id)
+        well = GroundwaterMonitoringWellStatic.objects.get(
+            bro_id=observation.groundwater_level_dossier.gmw_bro_id
+        )
         gld._set_bro_info(well)
 
         if deliver:
             if not addition_log:
-                (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
+                (addition_log, created) = (
+                    gld.create_addition_sourcedocuments_for_observation(observation)
+                )
 
             elif (
                 addition_log.process_status == "failed_to_create_source_document"
                 or addition_log.process_status == "source_document_validation_failed"
             ):
                 # If the previous failed to create, or if the validation failed, try to regenerate.
-                (addition_log, created) = gld.create_addition_sourcedocuments_for_observation(observation)
-            
-            elif (
-                observation.up_to_date_in_bro == False
-            ):
-                #(addition_log) = gld.create_replace_sourcedocuments(observation)
+                (addition_log, created) = (
+                    gld.create_addition_sourcedocuments_for_observation(observation)
+                )
+
+            elif observation.up_to_date_in_bro is False:
+                # (addition_log) = gld.create_replace_sourcedocuments(observation)
                 pass
-            
+
             gld.gld_validate_and_deliver(addition_log)
 
         if not addition_log:
-            logger.error(f"Tried to check status for Observation ({observation}), but no addition log exists. Generate an addition log first. ")
+            logger.error(
+                f"Tried to check status for Observation ({observation}), but no addition log exists. Generate an addition log first. "
+            )
             continue
-        
+
         if addition_log.process_status == "delivery_approved":
             logger.info(f"Delivery already approved (DOORGELEVERD): {addition_log}")
             continue
-        
-        status = gld.check_status_gld_addition(addition_log)
-    
+
+        gld.check_status_gld_addition(addition_log)
+
     return
 
 
 def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
-
     create_registrations_folder()
 
     tube = dossier.groundwater_monitoring_tube
@@ -150,7 +163,7 @@ def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
     if tube.deliver_gld_to_bro is False:
         print(tube.deliver_gld_to_bro)
         return
-    
+
     handle_start_registrations(dossier, deliver=True)
 
     handle_additions(dossier, deliver=True)
@@ -159,11 +172,10 @@ def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
 def check_status(dossier: GroundwaterLevelDossier) -> None:
     tube = dossier.groundwater_monitoring_tube
     # Ignore filters that should not be delivered to BRO
-    if tube.deliver_gld_to_bro == False:
+    if tube.deliver_gld_to_bro is False:
         print(tube.deliver_gld_to_bro)
         return
-    
+
     handle_start_registrations(dossier, deliver=False)
 
     handle_additions(dossier, deliver=False)
-    

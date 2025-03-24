@@ -65,7 +65,7 @@ def plot_obs(names, data):
 
     Notes
     -----
-    - If `names` is None, returns a layout with a title indicating no plot.
+    - If `names`  is None, returns a layout with a title indicating no plot.
     - If a name is not found in the database, it is skipped.
     - For a single name, plots the timeseries data with different qualifiers and manual
       observations.

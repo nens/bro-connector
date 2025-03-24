@@ -170,10 +170,10 @@ classDiagram
 
 ```
 
-# FRD - Formatieweerstand Dossiers 
+# FRD - Formatieweerstand Dossiers
 
 Binnen deze groep vallen de dossiers, en alle benodigde objecten voor de samenstelling hiervan, die gaan over zoutwachter metingen.
-Hieronder 
+Hieronder
 
 
 ## Organisaties

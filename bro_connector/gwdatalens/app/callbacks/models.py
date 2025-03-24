@@ -66,7 +66,7 @@ def register_model_callbacks(app, data):
         Raises
         ------
         PreventUpdate
-            If `n_clicks` is None or `value` is None.
+            If `n_clicks`  is None or `value`  is None.
         """
         if n_clicks is not None:
             if value is not None:
@@ -177,7 +177,7 @@ def register_model_callbacks(app, data):
         Raises
         ------
         PreventUpdate
-            If `n_clicks` is None or `mljson` is None.
+            If `n_clicks`  is None or `mljson`  is None.
         """
         if n_clicks is None:
             raise PreventUpdate

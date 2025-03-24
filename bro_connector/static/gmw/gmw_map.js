@@ -57,59 +57,43 @@ const createPopup = (well) => {
   const popupContent = `
               <div id="popup-content">
                 <a href="${objectPageUrl}" target="_blank"><strong style="font-size: 18px;">${
-                  well.bro_id
+                  well.well_code
                 }</strong></a>
                 <hr width="100%" size="2">
                 <div class="well-item">
-                  <span class="label">Putcode:</span> 
-                  <span class="value">${well.well_code}</span>
+                  <span class="label">BRO-ID:</span>
+                  <span class="value">${well.bro_id}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Kwaliteitsregime:</span> 
-                  <span class="value">${well.quality_regime}</span>
+                  <span class="label">NITG-code:</span>
+                  <span class="value">${well.nitg_code}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Maaiveld hoogte:</span> 
-                  <span class="value">${well.groundlevel_position}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Beschermconstructie:</span> 
-                  <span class="value">${well.well_head_protector}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Constructie standaard:</span> 
-                  <span class="value">${well.construction_standard}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Initiele functie:</span> 
-                  <span class="value">${well.initial_function}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Methode locatiebepaling:</span> 
-                  <span class="value">${well.horizontal_positioning_method}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">GMW naar BRO:</span> 
+                  <span class="label">GMW naar BRO:</span>
                   <span class="value">${checkOrCross(well.deliver_gmw_to_bro)}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">BRO compleet:</span> 
+                  <span class="label">BRO compleet:</span>
                   <span class="value">${checkOrCross(well.complete_bro)}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">In beheer:</span> 
+                  <span class="label">In beheer:</span>
                   <span class="value">${checkOrCross(well.in_management)}</span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Zoek GLDs: </span> 
+                  <span class="label">GMNs:</span>
+                  <span class="value">${well.linked_gmns}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">Zoek GLDs: </span>
                   <span class="value"><a href="${gldPageUrl}" target="_blank">GLDs</a></span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Zoek FRDs: </span> 
+                  <span class="label">Zoek FRDs: </span>
                   <span class="value"><a href="${frdPageUrl}" target="_blank">FRDs</a></span>
                 </div>
                 <div class="well-item">
-                  <span class="label">Foto: </span> 
+                  <span class="label">Foto: </span>
                   <span class="value">${well.picture}</span>
                 </div>
               </div>

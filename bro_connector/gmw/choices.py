@@ -13,6 +13,15 @@ TUBEPACKINGMATERIAL = (
     ("volgensGerelateerdeVerkenning", "volgensGerelateerdeVerkenning"),
     ("onbekend", "onbekend"),
 )
+TUBEPACKINGMATERIAL_IMBRO = (
+    ("bentoniet", "bentoniet"),
+    ("bentonietFiltergrind", "bentonietFiltergrind"),
+    ("boorgatmateriaal", "boorgatmateriaal"),
+    ("filtergrind", "filtergrind"),
+    ("grind", "grind"),
+    ("grout", "grout"),
+    ("volgensGerelateerdeVerkenning", "volgensGerelateerdeVerkenning"),
+)
 
 ELECTRODEPACKINGMATERIAL = (
     ("filtergrind", "filtergrind"),
@@ -20,6 +29,12 @@ ELECTRODEPACKINGMATERIAL = (
     ("volgensGerelateerdeVerkenning", "volgensGerelateerdeVerkenning"),
     ("zand", "zand"),
     ("onbekend", "onbekend"),
+)
+ELECTRODEPACKINGMATERIAL_IMBRO = (
+    ("filtergrind", "filtergrind"),
+    ("klei", "klei"),
+    ("volgensGerelateerdeVerkenning", "volgensGerelateerdeVerkenning"),
+    ("zand", "zand"),
 )
 
 WELLHEADPROTECTOR = (
@@ -33,6 +48,15 @@ WELLHEADPROTECTOR = (
     ("onbekend", "onbekend"),
     ("pot", "pot"),
 )
+WELLHEADPROTECTOR_IMBRO = (
+    ("geen", "geen"),
+    ("kokerDeelsMetaal", "kokerDeelsMetaal"),
+    ("kokerMetaal", "kokerMetaal"),
+    ("kokerNietMetaal", "kokerNietMetaal"),
+    ("potNietWaterdicht", "potNietWaterdicht"),
+    ("potWaterdicht", "potWaterdicht"),
+)
+
 
 TUBEMATERIAL = (
     ("beton", "beton"),
@@ -57,12 +81,35 @@ TUBEMATERIAL = (
     ("onbekend", "onbekend"),
     ("pvcStaal", "pvcStaal"),
 )
+TUBEMATERIAL_IMBRO = (
+    ("beton", "beton"),
+    ("gres", "gres"),
+    ("hout", "hout"),
+    ("ijzer", "ijzer"),
+    ("koper", "koper"),
+    ("messing", "messing"),
+    ("pe", "pe"),
+    ("peHighDensity", "peHighDensity"),
+    ("peLowDensity", "peLowDensity"),
+    ("peHighDensityPvc", "peHighDensityPvc"),
+    ("pePvc", "pePvc"),
+    ("pvc", "pvc"),
+    ("staal", "staal"),
+    ("staalGegalvaniseerd", "staalGegalvaniseerd"),
+    ("staalRoestvrij", "staalRoestvrij"),
+    ("teflon", "teflon"),
+)
 
 TUBESTATUS = (
     ("onbruikbaar", "onbruikbaar"),
     ("gebruiksklaar", "gebruiksklaar"),
     ("nietGebruiksklaar", "nietGebruiksklaar"),
     ("onbekend", "onbekend"),  # IMBRO/A
+)
+TUBESTATUS_IMBRO = (
+    ("onbruikbaar", "onbruikbaar"),
+    ("gebruiksklaar", "gebruiksklaar"),
+    ("nietGebruiksklaar", "nietGebruiksklaar"),
 )
 
 TUBETYPE = (
@@ -71,20 +118,29 @@ TUBETYPE = (
     ("volledigFilter", "volledigFilter"),
     ("filterlozeBuis", "filterlozeBuis"),
 )
+TUBETYPE_IMBRO = (
+    ("minifilter", "minifilter"),
+    ("standaardbuis", "standaardbuis"),
+    ("volledigFilter", "volledigFilter"),
+)
 
 COORDINATETRANSFORMATION = (
     ("nietGetransformeerd", "nietGetransformeerd"),
     ("RDNAPTRANS2008", "RDNAPTRANS2008"),
     ("RDNAPTRANS2018", "RDNAPTRANS2018"),
-    ("RDNAPTRANS2008MV0", "RDNAPTRANS2008MV0"), # IMBRO/A
-    ("RDNAPTRANS2018MV0", "RDNAPTRANS2018MV0"), # IMBRO/A
+    ("RDNAPTRANS2008MV0", "RDNAPTRANS2008MV0"),  # IMBRO/A
+    ("RDNAPTRANS2018MV0", "RDNAPTRANS2018MV0"),  # IMBRO/A
 )
 
 ELECTRODESTATUS = (
-    ("onbruikbaar", "onbruikbaar"),
+    ("onbruikbaar", "onbruikbaar"),  # not mentioned as option
     ("gebruiksklaar", "gebruiksklaar"),
     ("nietGebruiksklaar", "nietGebruiksklaar"),
     ("onbekend", "onbekend"),  # IMBRO/A
+)
+ELECTRODESTATUS_IMBRO = (
+    ("gebruiksklaar", "gebruiksklaar"),
+    ("nietGebruiksklaar", "nietGebruiksklaar"),
 )
 
 SCREENPROTECTION = (
@@ -105,6 +161,14 @@ INITIALFUNCTION = (
     ("onbekend", "onbekend"),
 )
 
+INITIALFUNCTION_IMBRO = (
+    ("brandput", "brandput"),
+    ("kwaliteit", "kwaliteit"),
+    ("kwaliteitStand", "kwaliteitStand"),
+    ("onttrekking", "onttrekking"),
+    ("stand", "stand"),
+)
+
 DELIVERYCONTEXT = (
     ("GBM", "GBM"),
     ("KRW", "KRW"),
@@ -118,12 +182,30 @@ DELIVERYCONTEXT = (
     ("archiefoverdracht", "archiefoverdracht"),
 )
 
+DELIVERYCONTEXT_IMBRO = (
+    ("GBM", "GBM"),
+    ("KRW", "KRW"),
+    ("monitoringBijDrinkwaterwinning", "monitoringBijDrinkwaterwinning"),
+    ("NBW", "NBW"),
+    ("NR", "NR"),
+    ("OGW", "OGW"),
+    ("OG", "OW"),
+    ("publiekeTaak", "publiekeTaak"),
+    ("WW", "WW"),
+)
+
 SOCKMATERIAL = (
     ("geen", "geen"),
     ("kopergaas", "kopergaas"),
     ("nylon", "nylon"),
     ("pp", "pp"),
     ("onbekend", "onbekend"),
+)
+SOCKMATERIAL_IMBRO = (
+    ("geen", "geen"),
+    ("kopergaas", "kopergaas"),
+    ("nylon", "nylon"),
+    ("pp", "pp"),
 )
 
 CONSTRUCTIONSTANDARD = (
@@ -139,11 +221,27 @@ CONSTRUCTIONSTANDARD = (
     ("VKB2001", "VKB2001"),
     ("onbekend", "onbekend"),
 )
+CONSTRUCTIONSTANDARD_IMBRO = (
+    ("BWsb", "BWsb"),
+    ("geen", "geen"),
+    ("IBR", "IBR"),
+    ("NEN5104", "NEN5104"),
+    ("NEN5744", "NEN5744"),
+    ("NEN5766", "NEN5766"),
+    ("RWSgwmon", "RWSgwmon"),
+    ("SIKB2001v6.0", "SIKB2001v6.0"),
+    ("STOWAgwst", "STOWAgwst"),
+    ("VKB2001", "VKB2001"),
+)
 
 GLUE = (
     ("geen", "geen"),
     ("ongespecificeerd", "ongespecificeerd"),
     ("onbekend", "onbekend"),
+)
+GLUE_IMBRO = (
+    ("geen", "geen"),
+    ("ongespecificeerd", "ongespecificeerd"),
 )
 
 LOCALVERTICALREFERENCEPOINT = (("NAP", "NAP"),)
@@ -162,6 +260,21 @@ HORIZONTALPOSITIONINGMETHOD = (
     ("kaartOnbekend", "kaartOnbekend"),
     ("onbekend", "onbekend"),
 )
+HORIZONTALPOSITIONINGMETHOD_IMBRO = (
+    ("DGPS50tot200cm", "DGPS50tot200cm"),
+    ("GPS200tot1000cm", "GPS200tot1000cm"),
+    ("RTKGPS0tot2cm", "RTKGPS0tot2cm"),
+    ("RTKGPS2tot5cm", "RTKGPS2tot5cm"),
+    ("RTKGPS5tot10cm", "RTKGPS5tot10cm"),
+    ("RTKGPS10tot50cm", "RTKGPS10tot50cm"),
+    ("tachymetrie0tot10cm", "tachymetrie0tot10cm"),
+    ("tachymetrie10tot50cm", "tachymetrie10tot50cm"),
+    ("GBKNOnbekend", "GBKNOnbekend"),
+    ("GPSOnbekend", "GPSOnbekend"),
+    ("kaartOnbekend", "kaartOnbekend"),
+    ("onbekend", "onbekend"),
+)
+
 
 TUBETOPPOSITIONINGMETHOD = (
     ("afgeleidSbl", "afgeleidSbl"),
@@ -180,6 +293,20 @@ TUBETOPPOSITIONINGMETHOD = (
     ("GPSOnbekend", "GPSOnbekend"),
     ("kaartOnbekend", "kaartOnbekend"),
     ("onbekend", "onbekend"),
+)
+TUBETOPPOSITIONINGMETHOD_IMBRO = (
+    ("afgeleidSbl", "afgeleidSbl"),
+    ("AHN2", "AHN2"),
+    ("AHN3", "AHN3"),
+    ("RTKGPS0tot4cm", "RTKGPS0tot4cm"),
+    ("RTKGPS4tot10cm", "RTKGPS4tot10cm"),
+    ("RTKGPS10tot20cm", "RTKGPS10tot20cm"),
+    ("RTKGPS20tot100cm", "RTKGPS20tot100cm"),
+    ("tachymetrie0tot10cm", "tachymetrie0tot10cm"),
+    ("tachymetrie10tot50cm", "tachymetrie10tot50cm"),
+    ("waterpassing0tot2cm", "waterpassing0tot2cm"),
+    ("waterpassing2tot4cm", "waterpassing2tot4cm"),
+    ("waterpassing4tot10cm", "waterpassing4tot10cm"),
 )
 
 GROUNDLEVELPOSITIONINGMETHOD = (
@@ -201,6 +328,20 @@ GROUNDLEVELPOSITIONINGMETHOD = (
     ("kaartOnbekend", "kaartOnbekend"),
     ("onbekend", "onbekend"),
 )
+GROUNDLEVELPOSITIONINGMETHOD_IMBRO = (
+    ("afgeleidBovenkantBuis", "afgeleidBovenkantBuis"),
+    ("AHN2", "AHN2"),
+    ("AHN3", "AHN3"),
+    ("RTKGPS0tot4cm", "RTKGPS0tot4cm"),
+    ("RTKGPS4tot10cm", "RTKGPS4tot10cm"),
+    ("RTKGPS10tot20cm", "RTKGPS10tot20cm"),
+    ("RTKGPS20tot100cm", "RTKGPS20tot100cm"),
+    ("tachymetrie0tot10cm", "tachymetrie0tot10cm"),
+    ("tachymetrie10tot50cm", "tachymetrie10tot50cm"),
+    ("waterpassing0tot2cm", "waterpassing0tot2cm"),
+    ("waterpassing2tot4cm", "waterpassing2tot4cm"),
+    ("waterpassing4tot10cm", "waterpassing4tot10cm"),
+)
 
 DELIVERY_TYPE_CHOICES = (
     ("register", "register"),
@@ -211,9 +352,13 @@ DELIVERY_TYPE_CHOICES = (
 )
 
 BOOLEAN_CHOICES = (
-    ("ja", "Ja"),
-    ("nee", "Nee"),
-    ("onbekend", "Onbekend"),
+    ("ja", "ja"),
+    ("nee", "nee"),
+    ("onbekend", "onbekend"),
+)
+BOOLEAN_CHOICES_IMBRO = (
+    ("ja", "ja"),
+    ("nee", "nee"),
 )
 
 EVENTNAME = (
@@ -258,7 +403,7 @@ QUALITYREGIME = (
 
 VERTICALDATUM = (("NAP", "NAP"),)
 
-WELL_STATUS = (
+WELLSTATUS = (
     ("inGebruik", "In gebruik"),
     ("inAanleg", "In aanleg"),
     ("gedempt", "Gedempt"),
@@ -278,7 +423,6 @@ WELLHEADPROTECTOR_SUBTYPES = (
     ("VRMBlWhDiv", "VRMBlWhDiv"),
     ("VRMBlWhUnk", "VRMBlWhUnk"),
     ("onbekend", "onbekend"),
-
 )
 
 LOCKS = (

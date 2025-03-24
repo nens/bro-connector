@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-""" Decorator print_timer and it's helper functions to print ellapsed time of a function call in the console."""
+"""Decorator print_timer and it's helper functions to print ellapsed time of a function call in the console."""
 
 __author__ = "Paul Duveage, Sweco Nederland B.V."
 __copyright__ = "Copyright 2022"

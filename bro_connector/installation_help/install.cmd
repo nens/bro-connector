@@ -113,38 +113,51 @@ if /I "%confirm%" EQU "yes" (
 
 copy %CUR_DIR%\..\main\localsecret_template.py %CUR_DIR%\..\main\localsecret.py
 
-REM Replace placeholders in the copied file with the actual values
+REM Write the new contents with placeholders replaced
 (
+    echo # FERNET_ENCRYPTION_KEY = ""
+    echo # SALT_STRING = ""
+    echo.
+    echo # env = "development"
+    echo.
     echo # FTP server details
-    echo ftp_ip = ''
-    echo ftp_username = ''
-    echo ftp_password = ''
-    echo ftp_path = ''
+    echo ftp_ip = "%FTP_IP%"
+    echo ftp_username = "%FTP_USER%"
+    echo ftp_password = "%FTP_PASSWORD%"
+    echo.
+    echo # Paths
+    echo ftp_frd_path = "/"
+    echo ftp_gld_pmg_path = "/"
+    echo ftp_gld_hnm_path = "/"
+    echo ftp_gld_path = "/"
+    echo ftp_gmw_path = "/"
+    echo ftp_gar_path = "/"
     echo.
     echo # Datbasename
     echo database = "%PGDATABASE%"
     echo.
-    echo # Production db settings
-    echo p_user = "%PGUSER%"
-    echo p_password = "%PGPASSWORD%"
-    echo p_host = "%PGHOST%"
-    echo p_port = "%PGPORT%"
-    echo.
-    echo # Test db settings
-    echo t_user = "%PGUSER%"
-    echo t_password = "%PGPASSWORD%"
-    echo t_host = "%PGHOST%"
-    echo t_port = "%PGPORT%"
-    echo.
-    echo # Staging db settings
-    echo s_user = "%PGUSER%"
-    echo s_password = "%PGPASSWORD%"
-    echo s_host = "%PGHOST%"
-    echo s_port = "%PGPORT%"
+    echo if env == "production":
+    echo     # Production db settings
+    echo     user = "%PGUSER%"
+    echo     password = "%PGPASSWORD%"
+    echo     host = "%PGHOST%"
+    echo     port = "%PGPORT%"
+    echo elif env == "staging":
+    echo     # Staging db settings
+    echo     user = "%PGUSER%"
+    echo     password = "%PGPASSWORD%"
+    echo     host = "%PGHOST%"
+    echo     port = "%PGPORT%"
+    echo else:
+    echo     # Development db settings
+    echo     user = "%PGUSER%"
+    echo     password = "%PGPASSWORD%"
+    echo     host = "%PGHOST%"
+    echo     port = "%PGPORT%"
     echo.
     echo # Lizard keys
     echo validation_key = "%VALIDATION_KEY%"
-) > %CUR_DIR%\..\main\localsecret.py
+) > "%CUR_DIR%\..\main\localsecret.py"
 
 echo Warning! Currently all settings [production, staging and test] point to the same database. Correct this if wanted in the folder bro_connector/main/localsecret.py
 
@@ -162,7 +175,7 @@ pause
 
 echo (2) Creating a superuser
 
-echo Run the following code from the bro_connector folder. (with in it all the app folders: gmw, gld and so on...) 
+echo Run the following code from the bro_connector folder. (with in it all the app folders: gmw, gld and so on...)
 
 echo ..\.venv\Scripts\activate
 
@@ -174,7 +187,7 @@ echo Then you are instructed on how to create an user.
 
 echo If anything fails make sure you are in the right folder, and have the virtual environment activated.
 
-echo You can start the app by running: 
+echo You can start the app by running:
 
 echo python manage.py runserver
 
