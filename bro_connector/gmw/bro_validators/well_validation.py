@@ -21,7 +21,10 @@ class WellValidation:
             )
             if not com_bro_el_dyn:
                 self.bro_act += (
-                    "\n" + "Electrode - Dynamisch: " + str(electrode_dynamic) + "\n"
+                    "------------------------------------------------------------------------------------------------\n"
+                    + "Electrode - Dynamisch: "
+                    + str(electrode_dynamic)
+                    + "\n"
                 )
             self.add_to_report(com_bro_el_dyn, bro_act_el_dyn)
 
@@ -35,7 +38,10 @@ class WellValidation:
             )
             if not com_bro_el_stat:
                 self.bro_act += (
-                    "\n" + "Electrode - Statisch: " + str(electrode_static) + "\n"
+                    "------------------------------------------------------------------------------------------------\n"
+                    + "Electrode - Statisch: "
+                    + str(electrode_static)
+                    + "\n"
                 )
             self.add_to_report(com_bro_el_stat, bro_act_el_stat)
 
@@ -51,7 +57,12 @@ class WellValidation:
                 geo_ohm_cable
             )
             if not com_bro_geo_ohm:
-                self.bro_act += "\n" + "Geo Ohm Kabel: " + str(geo_ohm_cable) + "\n"
+                self.bro_act += (
+                    "------------------------------------------------------------------------------------------------\n"
+                    + "Geo Ohm Kabel: "
+                    + str(geo_ohm_cable)
+                    + "\n"
+                )
             self.add_to_report(com_bro_geo_ohm, bro_act_geo_ohm)
 
             # electrode static check
@@ -67,7 +78,7 @@ class WellValidation:
             )
             if not com_bro_tube_dyn:
                 self.bro_act += (
-                    "\n"
+                    "------------------------------------------------------------------------------------------------\n"
                     + "Grondwatermonitoring Filter - Dynamisch: "
                     + str(tube_dynamic)
                     + "\n"
@@ -84,7 +95,7 @@ class WellValidation:
             )
             if not com_bro_tube_stat:
                 self.bro_act += (
-                    "\n"
+                    "------------------------------------------------------------------------------------------------\n"
                     + "Grondwatermonitoring Filter - Statisch: "
                     + str(tube_static)
                     + "\n"
@@ -106,7 +117,7 @@ class WellValidation:
             )
             if not com_bro_well_dyn:
                 self.bro_act += (
-                    "\n"
+                    "------------------------------------------------------------------------------------------------\n"
                     + "Grondwatermonitoring Put - Dynamisch: "
                     + str(well_dynamic)
                     + "\n"
