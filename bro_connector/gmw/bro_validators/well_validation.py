@@ -113,7 +113,7 @@ class WellValidation:
                 )
             self.add_to_report(com_bro_well_dyn, bro_act_well_dyn)
 
-    def well_static(self, well_static):
+    def well_complete(self, well_static):
         # well static validation
         com_bro_well_stat, bro_act_well_stat = well.validate_well_static(well_static)
 

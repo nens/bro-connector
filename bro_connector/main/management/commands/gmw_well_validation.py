@@ -14,7 +14,7 @@ class Command(BaseCommand):
             well_validation_state = (
                 WellValidation()
             )  # initialize the well validation state
-            complete, actions = well_validation_state.well_static(well_static)
+            complete, actions = well_validation_state.well_complete(well_static)
 
             well_static.complete_bro = complete
             well_static.bro_actions = actions

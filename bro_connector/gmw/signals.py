@@ -43,6 +43,6 @@ def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwa
         )
 
     validator = WellValidation()
-    validator.well_static(instance)
+    validator.well_complete(instance)
     instance.complete_bro = validator.com_bro
     instance.bro_actions = validator.bro_act
