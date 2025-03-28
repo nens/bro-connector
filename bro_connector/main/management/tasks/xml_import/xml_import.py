@@ -328,7 +328,7 @@ class InitializeData:
         """
         Maak een elektrode gebaseerd op de waardes uit de xml.
         """
-        self.eles = gmw_models.ElectrodeStatic.objects.create(
+        self.eles = gmw_models.Electrode.objects.create(
             geo_ohmkabel=self.geoc,
             electrode_packing_material=self.gmw_dict.get(
                 self.prefix + "electrodePackingMaterial", None

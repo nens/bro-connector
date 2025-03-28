@@ -13,7 +13,7 @@ from .choices import (
     DELIVERY_TYPE_CHOICES,
 )
 from django.core.validators import MaxValueValidator, MinValueValidator
-from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, ElectrodeStatic
+from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, Electrode
 from gmn.models import GroundwaterMonitoringNet
 import datetime
 from bro.models import Organisation
@@ -655,7 +655,7 @@ def retrieve_electrode_position(
         groundwater_monitoring_tube_static=monitoring_tube,
     ).first()
 
-    electrode = ElectrodeStatic.objects.filter(
+    electrode = Electrode.objects.filter(
         geo_ohm_cable=geo_ohm_cable,
         electrode_number=electrode_reference.electrode_number,
     ).first()

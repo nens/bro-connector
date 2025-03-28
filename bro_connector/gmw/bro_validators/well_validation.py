@@ -33,7 +33,7 @@ class WellValidation:
         electorde_static_query = geo_ohm_cable.electrodestatic_set.all()
         for electrode_static in electorde_static_query:
             # electrode static validation
-            com_bro_el_stat, bro_act_el_stat = electrode.validate_electrode_static(
+            com_bro_el_stat, bro_act_el_stat = electrode.validate_electrode(
                 electrode_static
             )
             if not com_bro_el_stat:

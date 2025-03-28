@@ -13,15 +13,13 @@ class GetDjangoObjects:
         )
 
     def get_all_electrodes(geo_ohm_cable_id):
-        return models.ElectrodeStatic.objects.filter(geo_ohm_cable=geo_ohm_cable_id)
+        return models.Electrode.objects.filter(geo_ohm_cable=geo_ohm_cable_id)
 
     def get_geo_ohm_cable(geo_ohm_cable_id) -> models.GeoOhmCable:
         return models.GeoOhmCable.objects.get(geo_ohm_cable_id=geo_ohm_cable_id)
 
-    def get_electrode_static(electrode_static_id) -> models.ElectrodeStatic:
-        return models.ElectrodeStatic.objects.get(
-            electrode_static_id=electrode_static_id
-        )
+    def get_electrode_static(electrode_static_id) -> models.Electrode:
+        return models.Electrode.objects.get(electrode_static_id=electrode_static_id)
 
     def get_tube_static(tube_static_id) -> models.GroundwaterMonitoringTubeStatic:
         return models.GroundwaterMonitoringTubeStatic.objects.get(
@@ -132,11 +130,12 @@ class DjangoTableToDict:
         geo_ohm_cable_data = {"cableNumber": geo_ohm_cable.cable_number}
         return geo_ohm_cable_data
 
-    def update_static_electrode(self, electrode: models.ElectrodeStatic) -> dict:
+    def update_static_electrode(self, electrode: models.Electrode) -> dict:
         electrode_static_data = {
             "electrodePackingMaterial": electrode.electrode_packing_material,
             "electrodePosition": float(electrode.electrode_position.replace(",", ".")),
             "electrodeNumber": electrode.electrode_number,
+            "electrodeStatus": electrode.electrode_status,
         }
 
         return electrode_static_data
@@ -206,15 +205,6 @@ class DjangoTableToDict:
             }
 
         return dynamic_tube_data
-
-    def update_dynamic_electrode(
-        self, dynamic_electrode: models.ElectrodeDynamic
-    ) -> dict:
-        dynamic_electrode_data = {
-            "electrodeStatus": dynamic_electrode.electrode_status,
-        }
-
-        return dynamic_electrode_data
 
 
 class GetEvents:

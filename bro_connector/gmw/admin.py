@@ -25,7 +25,7 @@ from .bro_validators import (
     validate_tube_static,
     validate_tube_dynamic,
     validate_geo_ohm_cable,
-    validate_electrode_dynamic,
+    validate_electrode,
 )
 from .bro_validators.well_validation import WellValidation
 
@@ -491,25 +491,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
     )
     list_filter = ("electrode_static_id", "geo_ohm_cable")
 
-
-class ElectrodeDynamicAdmin(admin.ModelAdmin):
-    form = gmw_forms.ElectrodeDynamicForm
-    search_fields = (
-        "electrode_dynamic_id",
-        "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
-        "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id",
-        "date_from",
-        "electrode_static__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code",
-    )
-
-    list_display = (
-        "electrode_dynamic_id",
-        "electrode_static",
-        "date_from",
-        "date_till",
-        "electrode_status",
-    )
-    list_filter = ("electrode_dynamic_id", "electrode_static")
+    search_fields = get_searchable_fields(gmw_models.Electrode)
 
 
 class EventAdmin(admin.ModelAdmin):
@@ -518,10 +500,9 @@ class EventAdmin(admin.ModelAdmin):
     list_display = (
         "change_id",
         "event_name",
+        "event_date",
         "groundwater_monitoring_well_static",
         "groundwater_monitoring_well_dynamic",
-        "groundwater_monitoring_tube_dynamic",
-        "electrode_dynamic",
     )
     list_filter = (
         "change_id",
@@ -533,29 +514,53 @@ class EventAdmin(admin.ModelAdmin):
         "groundwater_monitoring_well_static",
         "groundwater_monitoring_well_dynamic",
         "groundwater_monitoring_tube_dynamic",
-        "electrode_dynamic",
+        "electrodes",
     )
 
     def save_model(self, request, obj: gmw_models.Event, form, change):
         valid = True
-        if obj.event_name == "constructie":
-            if obj.electrode_dynamic:
-                valid_e, report_e = validate_electrode_dynamic(obj.electrode_dynamic)
-            else:
-                valid_e, report_e = True, "Valid\n"
 
-            valid_td, report_td = validate_tube_dynamic(
-                obj.groundwater_monitoring_tube_dynamic
-            )
-            valid_ts, report_ts = validate_tube_static(
-                obj.groundwater_monitoring_tube_dynamic.groundwater_monitoring_tube_static
-            )
+        if obj.event_name == "constructie":
+            print(obj.electrodes)
+            report_e = ""
+            valid_e = True
+            for electrode in obj.electrodes.all():
+                val_e, rep_e = validate_electrode(electrode)
+                if not val_e:
+                    report_e += rep_e
+                    valid_e = val_e
+
+            valid_td, report_td = True, ""
+            valid_ts, report_ts = True, ""
+
+            dynamic = obj.groundwater_monitoring_tube_dynamic.first()
+            if dynamic:
+                val_ts, rep_ts = validate_tube_static(
+                    dynamic.groundwater_monitoring_tube_static
+                )
+                report_ts = ""
+                if not val_ts:
+                    report_ts += rep_ts
+                    valid_ts = val_ts
+
+            else:
+                report_td = "Valid\n"
+                report_ts = "Valid\n"
+
+            for tube in obj.groundwater_monitoring_tube_dynamic.all():
+                val_td, rep_td = validate_tube_dynamic(tube)
+                report_td = ""
+                if not val_td:
+                    report_td += rep_td
+                    valid_td = val_td
+
             valid_wd, report_wd = validate_well_dynamic(
                 obj.groundwater_monitoring_well_dynamic
             )
             valid_ws, report_ws = validate_well_static(
                 obj.groundwater_monitoring_well_static
             )
+
             if (
                 not valid_e
                 or not valid_td
@@ -664,8 +669,7 @@ _register(
     gmw_models.GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubeDynamicAdmin
 )
 _register(gmw_models.GeoOhmCable, GeoOhmCableAdmin)
-_register(gmw_models.ElectrodeStatic, ElectrodeStaticAdmin)
-_register(gmw_models.ElectrodeDynamic, ElectrodeDynamicAdmin)
+_register(gmw_models.Electrode, ElectrodeStaticAdmin)
 _register(gmw_models.Event, EventAdmin)
 _register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
@@ -677,8 +681,7 @@ patch_admin(gmw_models.GroundwaterMonitoringWellDynamic)
 patch_admin(gmw_models.GroundwaterMonitoringTubeStatic)
 patch_admin(gmw_models.GroundwaterMonitoringTubeDynamic)
 patch_admin(gmw_models.GeoOhmCable)
-patch_admin(gmw_models.ElectrodeStatic)
-patch_admin(gmw_models.ElectrodeDynamic)
+patch_admin(gmw_models.Electrode)
 patch_admin(gmw_models.Event)
 patch_admin(gmw_models.Picture)
 patch_admin(gmw_models.MaintenanceParty)

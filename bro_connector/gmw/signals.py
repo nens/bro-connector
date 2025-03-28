@@ -1,7 +1,13 @@
 from django.db.models.signals import post_save, pre_save
 from django.conf import settings
+import datetime
 from django.dispatch import receiver
-from .models import gmw_registration_log, Event, GroundwaterMonitoringWellStatic
+from .models import (
+    gmw_registration_log,
+    Event,
+    GroundwaterMonitoringWellStatic,
+    Electrode,
+)
 from bro_connector.gmw.bro_validators.well_validation import WellValidation
 import reversion
 
@@ -46,3 +52,21 @@ def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwa
     validator.well_complete(instance)
     instance.complete_bro = validator.com_bro
     instance.bro_actions = validator.bro_act
+
+
+@receiver(pre_save, sender=Electrode)
+def pre_save_electrode(sender, instance: Electrode, **kwargs):
+    if not instance.electrode_static_id:
+        return
+
+    old_instance = Electrode.objects.get(
+        electrode_static_id=instance.electrode_static_id
+    )
+
+    if old_instance.electrode_status != instance.electrode_status:
+        Event.objects.update_or_create(
+            event_name="elektrodestatusVeranderd",
+            event_date=datetime.datetime.now().date(),
+            groundwater_monitoring_well_static=instance.geo_ohm_cable.groundwater_monitoring_tube_static.groundwater_monitoring_well_static,
+            electrode_dynamic=instance,
+        )

@@ -1,4 +1,4 @@
-from gmw.models import GeoOhmCable, ElectrodeStatic, ElectrodeDynamic
+from gmw.models import GeoOhmCable, Electrode
 from gmw.choices import (
     ELECTRODEPACKINGMATERIAL,
     ELECTRODESTATUS,
@@ -39,8 +39,8 @@ def validate_geo_ohm_cable(cable: GeoOhmCable) -> tuple[bool, str]:
     return valid, report
 
 
-def validate_electrode_static(
-    electrode: ElectrodeStatic,
+def validate_electrode(
+    electrode: Electrode,
 ) -> tuple[bool, str]:
     valid = True
     report = ""
@@ -84,42 +84,23 @@ def validate_electrode_static(
             valid = False
             report += f"{electrode._meta.get_field('electrode_number').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
 
-    return valid, report
-
-
-def validate_electrode_dynamic(
-    electrode_state: ElectrodeDynamic,
-) -> tuple[bool, str]:
-    valid = True
-    report = ""
-
     if (
-        electrode_state.electrode_static.geo_ohm_cable.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.quality_regime
+        electrode.geo_ohm_cable.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.quality_regime
         == "IMBRO"
     ):
-        # electrode_static
-        if electrode_state.electrode_static is None:
-            valid = False
-            report += f"{electrode_state._meta.get_field('electrode_static').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
-
         # electrode_status
-        if electrode_state.electrode_status not in [
+        if electrode.electrode_status not in [
             item for subtuple in ELECTRODESTATUS_IMBRO for item in subtuple
         ]:
             valid = False
-            report += f"{electrode_state._meta.get_field('electrode_status').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
+            report += f"{electrode._meta.get_field('electrode_status').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
 
     else:
-        # electrode_static
-        if electrode_state.electrode_static is None:
-            valid = False
-            report += f"{electrode_state._meta.get_field('electrode_static').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
-
         # electrode_status
-        if electrode_state.electrode_status not in [
+        if electrode.electrode_status not in [
             item for subtuple in ELECTRODESTATUS for item in subtuple
         ]:
             valid = False
-            report += f"{electrode_state._meta.get_field('electrode_status').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
+            report += f"{electrode._meta.get_field('electrode_status').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
 
     return valid, report

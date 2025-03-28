@@ -39,9 +39,7 @@ class GMWSerializer(serializers.ModelSerializer):
 
     def get_linked_gmns(self, obj: gmw_models.GroundwaterMonitoringWellStatic) -> list:
         measuring_points = [
-            mp.gmn.name
-            for tube in obj.tube.all()
-            for mp in tube.measuring_point.all()
+            mp.gmn.name for tube in obj.tube.all() for mp in tube.measuring_point.all()
         ]
         return list(set(measuring_points))
 

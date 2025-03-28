@@ -130,7 +130,7 @@ class GeoOhmCableForm(forms.ModelForm):
 
 class ElectrodeStaticForm(forms.ModelForm):
     class Meta:
-        model = models.ElectrodeStatic
+        model = models.Electrode
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
@@ -141,26 +141,6 @@ class ElectrodeStaticForm(forms.ModelForm):
 
         elif (
             self.instance.geo_ohm_cable.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.in_management
-            is False
-        ):
-            for name, field in self.fields.items():
-                field.widget.attrs["readonly"] = True
-                field.disabled = True
-
-
-class ElectrodeDynamicForm(forms.ModelForm):
-    class Meta:
-        model = models.ElectrodeDynamic
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.instance.electrode_dynamic_id is None:
-            pass
-
-        elif (
-            self.instance.electrode_static.geo_ohm_cable.groundwater_monitoring_tube_static.groundwater_monitoring_well_static.in_management
             is False
         ):
             for name, field in self.fields.items():

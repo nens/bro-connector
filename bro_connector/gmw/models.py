@@ -670,9 +670,7 @@ class GeoOhmCable(models.Model):
 
     @property
     def electrode_count(self):
-        number_of_electrodes = ElectrodeStatic.objects.filter(
-            geo_ohm_cable=self
-        ).count()
+        number_of_electrodes = Electrode.objects.filter(geo_ohm_cable=self).count()
         # validators_models.aantal_elektrodes_validator(number_of_electrodes)
         if number_of_electrodes < 2:
             return "minimaal aantal elektrodes van 2 nog niet gelinkt aan Geo-ohmkabel"
@@ -686,7 +684,7 @@ class GeoOhmCable(models.Model):
         verbose_name_plural = "Geo Ohm Kabels"
 
 
-class ElectrodeStatic(models.Model):
+class Electrode(models.Model):
     electrode_static_id = models.AutoField(primary_key=True)
     geo_ohm_cable = models.ForeignKey(GeoOhmCable, on_delete=models.CASCADE)
     electrode_packing_material = models.CharField(
@@ -704,6 +702,13 @@ class ElectrodeStatic(models.Model):
         verbose_name="Elektrodepositie",
     )
     electrode_number = models.IntegerField(blank=True, null=True)
+    electrode_status = models.CharField(
+        choices=ELECTRODESTATUS,
+        max_length=50,
+        blank=True,
+        null=True,
+        default="gebruiksklaar",
+    )
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
@@ -713,47 +718,9 @@ class ElectrodeStatic(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'gmw"."electrode_static'
-        verbose_name = "Electrode - Statisch"
-        verbose_name_plural = "Electrodes - Statisch"
-
-
-class ElectrodeDynamic(models.Model):
-    electrode_dynamic_id = models.AutoField(primary_key=True)
-    electrode_static = models.ForeignKey(ElectrodeStatic, on_delete=models.CASCADE)
-    date_from = models.DateTimeField(help_text="formaat: YYYY-MM-DD")
-    electrode_status = models.CharField(
-        choices=ELECTRODESTATUS, max_length=200, blank=True, null=True
-    )
-    bro_actions = models.TextField(
-        blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
-    )
-
-    def __str__(self):
-        if self.date_till:
-            till = self.date_till.date()
-            return str(f"{self.electrode_static.__str__()} ({self.date_from} - {till})")
-        return str(f"{self.electrode_static.__str__()} ({self.date_from} - Present)")
-
-    @property
-    def date_till(self):
-        next_dynamic = (
-            ElectrodeDynamic.objects.filter(
-                electrode_static=self.electrode_static, date_from__gt=self.date_from
-            )
-            .order_by("date_from")
-            .first()
-        )
-
-        if next_dynamic:
-            return next_dynamic.date_from
-        return None
-
-    class Meta:
-        managed = True
-        db_table = 'gmw"."electrode_dynamic'
-        verbose_name = "Electrode - Dynamisch"
-        verbose_name_plural = "Electrodes - Dynamisch"
+        db_table = 'gmw"."electrode'
+        verbose_name = "Electrode"
+        verbose_name_plural = "Electrodes"
 
 
 class Event(models.Model):
@@ -778,26 +745,22 @@ class Event(models.Model):
     )
     groundwater_monitoring_well_dynamic = models.ForeignKey(
         GroundwaterMonitoringWellDynamic,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="event",
-        verbose_name="Put-Dynamisch",
+        verbose_name="Put - dynamisch",
     )
-    groundwater_monitoring_tube_dynamic = models.ForeignKey(
+    groundwater_monitoring_tube_dynamic = models.ManyToManyField(
         GroundwaterMonitoringTubeDynamic,
-        on_delete=models.CASCADE,
-        null=True,
         blank=True,
-        verbose_name="Buis-Dynamisch",
+        verbose_name="Buizen - dynamisch",
         related_name="event",
     )
-    electrode_dynamic = models.ForeignKey(
-        ElectrodeDynamic,
-        on_delete=models.CASCADE,
-        null=True,
+    electrodes = models.ManyToManyField(
+        Electrode,
         blank=True,
-        verbose_name="Electrode-Dynamisch",
+        verbose_name="Electrodes",
         related_name="event",
     )
     delivered_to_bro = models.BooleanField(blank=True, default=False)

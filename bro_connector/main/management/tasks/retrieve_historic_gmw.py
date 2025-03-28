@@ -12,8 +12,7 @@ from gmw.models import (
     GroundwaterMonitoringTubeDynamic,
     GroundwaterMonitoringTubeStatic,
     GeoOhmCable,
-    ElectrodeDynamic,
-    ElectrodeStatic,
+    Electrode,
 )
 from bro.models import Organisation
 
@@ -342,7 +341,7 @@ class InitializeData:
         )
 
     def electrode_static(self):
-        self.eles, created = ElectrodeStatic.objects.update_or_create(
+        Electrode.objects.update_or_create(
             geo_ohm_cable=self.geoc,
             electrode_number=self.gmw_dict.get(self.prefix + "electrodeNumber", None),
             defaults={
@@ -352,27 +351,8 @@ class InitializeData:
                 "electrode_position": self.gmw_dict.get(
                     self.prefix + "electrodePosition", None
                 ),
+                "electrode_status": self.gmw_dict.get(
+                    self.prefix + "electrodeStatus", None
+                ),
             },
         )
-
-    def electrode_dynamic(self):
-        dynamic = ElectrodeDynamic.objects.filter(electrode_static=self.eles).first()
-
-        if dynamic:
-            with reversion.create_revision():
-                dynamic.electrode_status = self.gmw_dict.get(
-                    self.prefix + "electrodeStatus", None
-                )
-                dynamic.save()
-                reversion.set_comment(
-                    f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
-                )
-        else:
-            self.eled = ElectrodeDynamic.objects.update_or_create(
-                electrode_static=self.eles,
-                defaults={
-                    "electrode_status": self.gmw_dict.get(
-                        self.prefix + "electrodeStatus", None
-                    ),
-                },
-            )

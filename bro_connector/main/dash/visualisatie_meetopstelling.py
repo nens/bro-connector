@@ -12,7 +12,7 @@ from django_plotly_dash import DjangoDash
 from plotly.subplots import make_subplots
 
 from gmw.models import (
-    ElectrodeStatic,
+    Electrode,
     GroundwaterMonitoringTubeDynamic,
     GroundwaterMonitoringTubeStatic,
     GeoOhmCable,
@@ -737,7 +737,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
             groundwater_monitoring_tube_static=filtr
         )
         for kabel in geo_ohmkabels:
-            elektrodes = ElectrodeStatic.objects.filter(geo_ohm_cable=kabel)
+            elektrodes = Electrode.objects.filter(geo_ohm_cable=kabel)
             for elektrode in elektrodes:
                 elektrode_data += [
                     {

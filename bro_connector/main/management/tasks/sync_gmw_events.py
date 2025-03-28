@@ -216,8 +216,7 @@ class GetSourceDocData:
 
     def handle_individual_electrode(
         self,
-        electrode_static: models.ElectrodeStatic,
-        electrode_dynamic: models.ElectrodeDynamic,
+        electrode_static: models.Electrode,
         tube_number,
         geo_ohm_number,
         electrode_number,
@@ -228,48 +227,11 @@ class GetSourceDocData:
             "electrodes"
         ][electrode_number] = static_tube_data
 
-        # Dynamic
-        dynamic_tube_data = self.get_data.update_dynamic_electrode(electrode_dynamic)
-        self.datafile["monitoringTubes"][tube_number]["geoOhmCables"][geo_ohm_number][
-            "electrodes"
-        ][electrode_number].update(dynamic_tube_data)
-
     def handle_dynamic_well(
         self, well_dynamic: models.GroundwaterMonitoringWellDynamic
     ):
         dynamic_well_data = self.get_data.update_dynamic_well(well_dynamic)
         self.datafile.update(dynamic_well_data)
-
-    def handle_dynamic_tube(
-        self, tube_dynamic: models.GroundwaterMonitoringTubeDynamic, tube_number
-    ):
-        tubes_dynamic_data = self.get_data.update_dynamic_tube(tube_dynamic)
-        self.datafile["monitoringTubes"][tube_number].update(tubes_dynamic_data)
-
-    def handle_dynamic_electrode(self, electrode_dynamic: models.ElectrodeDynamic):
-        electrode_static = GetDjangoObjects.get_electrode_static(
-            electrode_dynamic.electrode_static
-        )
-
-        geo_ohm_cable = GetDjangoObjects.get_geo_ohm_cable(
-            electrode_static.geo_ohm_cable
-        )
-
-        tube_static = GetDjangoObjects.get_tube_static(
-            geo_ohm_cable.groundwater_monitoring_tube_static
-        )
-
-        tubes_static_data = self.get_data.update_static_tube(tube_static)
-        self.datafile["monitoringTubes"] = tubes_static_data
-
-        dynamic_electrode_data = self.get_data.update_dynamic_electrode(
-            electrode_dynamic
-        )
-        self.datafile["monitoringTubes"][
-            geo_ohm_cable.groundwater_monitoring_tube_static
-        ]["geoOhmCables"][geo_ohm_cable.geo_ohm_cable_id]["electrodes"][
-            electrode_dynamic.electrode_static
-        ].update(dynamic_electrode_data)
 
     def execute_for_type(self, source_doc_type, event: models.Event) -> None:
         if source_doc_type == "Construction":
@@ -359,19 +321,8 @@ class GetSourceDocData:
                 ]["electrodes"] = {}
 
                 for electrode in electrodes:
-                    try:
-                        electrode_dynamic = models.ElectrodeDynamic.objects.get(
-                            electrode_static_id=electrode.electrode_static_id
-                        )
-                    except models.ElectrodeDynamic.DoesNotExist:
-                        electrode_dynamic = models.ElectrodeDynamic.objects.create(
-                            electrode_static=electrode,
-                            electrode_status="onbekend",
-                        )
-
                     self.handle_individual_electrode(
                         electrode_static=electrode,
-                        electrode_dynamic=electrode_dynamic,
                         tube_number=tube_number,
                         geo_ohm_number=geo_ohm_number,
                         electrode_number=electrode_number,
