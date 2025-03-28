@@ -6,7 +6,6 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 import traval
-from icecream import ic
 from pandas import DataFrame, Series, Timedelta
 
 from gwdatalens.app.settings import settings
@@ -190,8 +189,16 @@ class TravalInterface:
         ValueError
             If all observations have already been checked.
         """
-        name = f"{gmw_id}-{int(tube_id):03g}"
-        ic(f"Running traval for {name}...")
+        if self.db.backend == "hydropandas":
+            if self.db.source == "bro":
+                name = f"{gmw_id}_{int(tube_id)}"
+            elif self.db.source == "dino":
+                name = f"{gmw_id}-{int(tube_id):03g}"
+            else:
+                name = f"{gmw_id}_{int(tube_id):03g}"
+        else:
+            name = f"{gmw_id}-{int(tube_id):03g}"
+        print(f"Running traval for {name}...")
         ts = self.db.get_timeseries(gmw_id, tube_id)
 
         if tmin is not None:
@@ -199,7 +206,7 @@ class TravalInterface:
         if tmax is not None:
             ts = ts.loc[:tmax]
         series = ts.loc[:, self.db.value_column]
-        series.name = f"{gmw_id}-{tube_id}"
+        series.name = name
         detector = traval.Detector(series)
         ruleset = self._ruleset
         detector.apply_ruleset(ruleset)
@@ -224,7 +231,8 @@ class TravalInterface:
         df.loc[comments.index, "comment"] = comments
 
         # rename some stuff
-        df.rename(columns={"base series": "values"}, inplace=True)
+        if self.db.backend == "postgresql":
+            df.rename(columns={"base series": "values"}, inplace=True)
         df.index.name = "datetime"
 
         # set incoming status_quality_control value from database
@@ -286,7 +294,7 @@ class TravalInterface:
             ml = None
 
         # little modification to add NITG code to figure
-        detector.series.name += f" ({self.db.gmw_gdf.at[name, 'nitg_code']})"
+        detector.series.name += self.db.get_nitg_code(name)
 
         manual_obs = self.db.get_timeseries(
             gmw_id, tube_id, observation_type="controlemeting"

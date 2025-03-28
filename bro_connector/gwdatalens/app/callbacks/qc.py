@@ -707,7 +707,15 @@ def register_qc_callbacks(app, data):
 
                 set_props(ids.LOADING_QC_CHART, {"display": "show"})
 
-            gmw_id, tube_id = name.split("-")
+            if "-" in name:
+                gmw_id, tube_id = name.split("-")
+            elif "_" in name:
+                gmw_id, tube_id = name.split("_")
+            else:
+                raise ValueError(
+                    "Error splitting name into monitoring well ID"
+                    f" and tube number: {name}"
+                )
             try:
                 result, figure = data.traval.run_traval(
                     gmw_id,

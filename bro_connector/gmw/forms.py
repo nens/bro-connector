@@ -62,8 +62,7 @@ class GroundwaterMonitoringWellDynamicForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        if self.instance.groundwater_monitoring_well_static is None:
+        if self.instance.groundwater_monitoring_well_dynamic_id is None:
             pass
 
         elif self.instance.groundwater_monitoring_well_static.in_management is False:
@@ -80,7 +79,7 @@ class GroundwaterMonitoringTubeStaticForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_well_static is None:
+        if self.instance.groundwater_monitoring_tube_static_id is None:
             pass
 
         elif self.instance.groundwater_monitoring_well_static.in_management is False:
@@ -97,7 +96,7 @@ class GroundwaterMonitoringTubeDynamicForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_tube_static is None:
+        if self.instance.groundwater_monitoring_tube_dynamic_id is None:
             pass
 
         elif (
@@ -117,7 +116,7 @@ class GeoOhmCableForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_tube_static is None:
+        if self.instance.geo_ohm_cable_id is None:
             pass
 
         elif (
@@ -137,7 +136,7 @@ class ElectrodeStaticForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.geo_ohm_cable is None:
+        if self.instance.electrode_static_id is None:
             pass
 
         elif (
@@ -157,7 +156,7 @@ class ElectrodeDynamicForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.electrode_static is None:
+        if self.instance.electrode_dynamic_id is None:
             pass
 
         elif (
@@ -177,7 +176,7 @@ class EventForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.instance.groundwater_monitoring_well_static is None:
+        if self.instance.change_id is None:
             pass
 
         elif self.instance.groundwater_monitoring_well_static.in_management is False:
