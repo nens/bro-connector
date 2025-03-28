@@ -1,7 +1,7 @@
 from gmw.bro_validators import well, tube, electrode
 
 
-class well_validation:
+class WellValidation:
     def __init__(self):
         self.com_bro = True
         self.bro_act = ""
@@ -11,7 +11,7 @@ class well_validation:
             self.bro_act += bro_act_obj
             self.com_bro = False
 
-    def electrode_dyn_check(self, electrode_static):
+    def electrode_dynamic(self, electrode_static):
         # electrode dynamic query
         electrode_dynamic_query = electrode_static.electrodedynamic_set.all()
         for electrode_dynamic in electrode_dynamic_query:
@@ -25,7 +25,7 @@ class well_validation:
                 )
             self.add_to_report(com_bro_el_dyn, bro_act_el_dyn)
 
-    def electrode_stat_check(self, geo_ohm_cable):
+    def electrode_static(self, geo_ohm_cable):
         # electrode static query
         electorde_static_query = geo_ohm_cable.electrodestatic_set.all()
         for electrode_static in electorde_static_query:
@@ -40,9 +40,9 @@ class well_validation:
             self.add_to_report(com_bro_el_stat, bro_act_el_stat)
 
             # electrode dynamic check
-            self.electrode_dyn_check(electrode_static)
+            self.electrode_dynamic(electrode_static)
 
-    def geo_ohm_check(self, tube_static):
+    def geo_ohm_cable(self, tube_static):
         # geo ohm cable query
         geo_ohm_cable_query = tube_static.geoohmcable_set.all()
         for geo_ohm_cable in geo_ohm_cable_query:
@@ -55,9 +55,9 @@ class well_validation:
             self.add_to_report(com_bro_geo_ohm, bro_act_geo_ohm)
 
             # electrode static check
-            self.electrode_stat_check(geo_ohm_cable)
+            self.electrode_static(geo_ohm_cable)
 
-    def tube_dyn_check(self, tube_static):
+    def tube_dynamic(self, tube_static):
         # tube dynamic query
         tube_dynamic_query = tube_static.state.all()
         for tube_dynamic in tube_dynamic_query:
@@ -74,7 +74,7 @@ class well_validation:
                 )
             self.add_to_report(com_bro_tube_dyn, bro_act_tube_dyn)
 
-    def tube_stat_check(self, well_static):
+    def tube_static(self, well_static):
         # tube static query
         tube_static_query = well_static.tube.all()
         for tube_static in tube_static_query:
@@ -92,11 +92,11 @@ class well_validation:
             self.add_to_report(com_bro_tube_stat, bro_act_tube_stat)
 
             # check tube dynamic
-            self.tube_dyn_check(tube_static)
+            self.tube_dynamic(tube_static)
             # geo ohm cable check
-            self.geo_ohm_check(tube_static)
+            self.geo_ohm_cable(tube_static)
 
-    def well_dyn_check(self, well_static):
+    def well_dynamic(self, well_static):
         # well dynamic query
         well_dynamic_query = well_static.state.all()
         for well_dynamic in well_dynamic_query:
@@ -113,7 +113,7 @@ class well_validation:
                 )
             self.add_to_report(com_bro_well_dyn, bro_act_well_dyn)
 
-    def well_stat_check(self, well_static):
+    def well_static(self, well_static):
         # well static validation
         com_bro_well_stat, bro_act_well_stat = well.validate_well_static(well_static)
 
@@ -124,8 +124,8 @@ class well_validation:
         self.add_to_report(com_bro_well_stat, bro_act_well_stat)
 
         # check well dynamic
-        self.well_dyn_check(well_static)
+        self.well_dynamic(well_static)
         # check tube static
-        self.tube_stat_check(well_static)
+        self.tube_static(well_static)
 
         return self.com_bro, self.bro_act

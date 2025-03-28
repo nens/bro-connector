@@ -2,6 +2,7 @@ from django.db.models.signals import post_save, pre_save
 from django.conf import settings
 from django.dispatch import receiver
 from .models import gmw_registration_log, Event, GroundwaterMonitoringWellStatic
+from bro_connector.gmw.bro_validators.well_validation import WellValidation
 import reversion
 
 
@@ -40,3 +41,8 @@ def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwa
                 "event_date": instance.construction_date,
             },
         )
+
+    validator = WellValidation()
+    validator.well_static(instance)
+    instance.complete_bro = validator.com_bro
+    instance.bro_actions = validator.bro_act
