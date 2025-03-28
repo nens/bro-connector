@@ -27,6 +27,7 @@ from .bro_validators import (
     validate_geo_ohm_cable,
     validate_electrode_dynamic,
 )
+from .bro_validators.well_validation import well_validation
 
 
 logger = logging.getLogger(__name__)
@@ -118,7 +119,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "well_code",
         "in_management",
     )
-    readonly_fields = ("lat", "lon", "report", "complete_bro", "bro_actions")
+    readonly_fields = ("lat", "lon", "report")
 
     fieldsets = [
         (
@@ -227,7 +228,9 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 obj.coordinates[1] = originele_put.coordinates[1]
 
         # test if object is bro_complete
-        is_valid, report = validate_well_static(obj)
+        # is_valid, report = validate_well_static(obj)
+        well_checker = well_validation()
+        is_valid, report = well_checker.well_stat_check(obj)
 
         # Update complete_bro and bro_actions in the static object based on validation
         obj.complete_bro = is_valid
