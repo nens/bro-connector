@@ -29,14 +29,18 @@ def tuple_to_list(tuples: list[tuple]) -> list:
 def report_missing_IMBRO(field: str) -> str:
     return f"{field} moet aangevuld worden om het IMBRO te maken\n"
 
+
 def report_invalid_IMBRO(field: str, valid_values: list) -> str:
     return f"{field} moet een IMBRO waarde hebben: {valid_values}.\n"
+
 
 def report_missing_IMBRO_A(field: str) -> str:
     return f"{field} moet aangevuld worden om het IMBRO/A te maken\n"
 
+
 def report_invalid_IMBRO_A(field: str, valid_values: list) -> str:
     return f"{field} moet een IMBRO/A waarde hebben: {valid_values}.\n"
+
 
 def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, str]:
     valid = True
@@ -81,7 +85,7 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
             valid = False
             report += report_invalid_IMBRO(
                 well._meta.get_field("construction_standard").verbose_name,
-                CONSTRUCTIONSTANDARD_IMBRO,
+                tuple_to_list(CONSTRUCTIONSTANDARD_IMBRO),
             )
 
         # construction_standard
@@ -94,13 +98,15 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
             valid = False
             report += report_invalid_IMBRO(
                 well._meta.get_field("initial_function").verbose_name,
-                INITIALFUNCTION_IMBRO,
+                tuple_to_list(INITIALFUNCTION_IMBRO),
             )
 
         # coordinates
         if well.coordinates is None:
             valid = False
-            report += report_missing_IMBRO(well._meta.get_field("coordinates").verbose_name)
+            report += report_missing_IMBRO(
+                well._meta.get_field("coordinates").verbose_name
+            )
 
         # horizontal_positioning_method
         if well.horizontal_positioning_method is None:
@@ -114,7 +120,7 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
             valid = False
             report += report_invalid_IMBRO(
                 well._meta.get_field("horizontal_positioning_method").verbose_name,
-                HORIZONTALPOSITIONINGMETHOD_IMBRO,
+                tuple_to_list(HORIZONTALPOSITIONINGMETHOD_IMBRO),
             )
 
         # local_vertical_reference_point
@@ -129,13 +135,15 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
             valid = False
             report += report_invalid_IMBRO(
                 well._meta.get_field("local_vertical_reference_point").verbose_name,
-                LOCALVERTICALREFERENCEPOINT,
+                tuple_to_list(LOCALVERTICALREFERENCEPOINT),
             )
 
         # well_offset
         if well.well_offset is None:
             valid = False
-            report += report_missing_IMBRO(well._meta.get_field("well_offset").verbose_name)
+            report += report_missing_IMBRO(
+                well._meta.get_field("well_offset").verbose_name
+            )
 
         # vertical_datum
         if well.vertical_datum is None:
@@ -146,7 +154,8 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
         elif well.vertical_datum not in tuple_to_list(VERTICALDATUM):
             valid = False
             report += report_invalid_IMBRO(
-                well._meta.get_field("vertical_datum").verbose_name, VERTICALDATUM
+                well._meta.get_field("vertical_datum").verbose_name,
+                tuple_to_list(VERTICALDATUM),
             )
 
     else:  # "IMBRO/A"
@@ -173,7 +182,8 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
         elif well.delivery_context not in tuple_to_list(DELIVERYCONTEXT):
             valid = False
             report += report_invalid_IMBRO_A(
-                well._meta.get_field("delivery_context").verbose_name, DELIVERYCONTEXT
+                well._meta.get_field("delivery_context").verbose_name,
+                tuple_to_list(DELIVERYCONTEXT),
             )
 
         # construction_standard
@@ -186,7 +196,7 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
             valid = False
             report += report_invalid_IMBRO_A(
                 well._meta.get_field("construction_standard").verbose_name,
-                CONSTRUCTIONSTANDARD,
+                tuple_to_list(CONSTRUCTIONSTANDARD),
             )
 
         # initial_function
@@ -198,13 +208,16 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
         elif well.initial_function not in tuple_to_list(INITIALFUNCTION):
             valid = False
             report += report_invalid_IMBRO_A(
-                well._meta.get_field("initial_function").verbose_name, INITIALFUNCTION
+                well._meta.get_field("initial_function").verbose_name,
+                tuple_to_list(INITIALFUNCTION),
             )
 
         # coordinates
         if well.coordinates is None:
             valid = False
-            report += report_missing_IMBRO_A(well._meta.get_field("coordinates").verbose_name)
+            report += report_missing_IMBRO_A(
+                well._meta.get_field("coordinates").verbose_name
+            )
 
         # horizontal_positioning_method
         if well.horizontal_positioning_method is None:
@@ -218,7 +231,7 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
             valid = False
             report += report_invalid_IMBRO_A(
                 well._meta.get_field("horizontal_positioning_method").verbose_name,
-                HORIZONTALPOSITIONINGMETHOD,
+                tuple_to_list(HORIZONTALPOSITIONINGMETHOD),
             )
 
         # local_vertical_reference_point
@@ -233,13 +246,15 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
             valid = False
             report += report_invalid_IMBRO_A(
                 well._meta.get_field("local_vertical_reference_point").verbose_name,
-                LOCALVERTICALREFERENCEPOINT,
+                tuple_to_list(LOCALVERTICALREFERENCEPOINT),
             )
 
         # well_offset
         if well.well_offset is None:
             valid = False
-            report += report_missing_IMBRO_A(well._meta.get_field("well_offset").verbose_name)
+            report += report_missing_IMBRO_A(
+                well._meta.get_field("well_offset").verbose_name
+            )
         # vertical_datum
         if well.vertical_datum is None:
             valid = False
@@ -250,11 +265,11 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
         elif well.vertical_datum not in tuple_to_list(VERTICALDATUM):
             valid = False
             report += report_invalid_IMBRO_A(
-                well._meta.get_field("vertical_datum").verbose_name, VERTICALDATUM
+                well._meta.get_field("vertical_datum").verbose_name,
+                tuple_to_list(VERTICALDATUM),
             )
 
     return valid, report
-
 
 
 def validate_well_dynamic(
@@ -294,14 +309,17 @@ def validate_well_dynamic(
         ),
     }
 
-
     for field, value in required_fields.items():
         if value is None:
             valid = False
             if is_imbro:
-                report += report_missing_IMBRO(well_state._meta.get_field(field).verbose_name)
+                report += report_missing_IMBRO(
+                    well_state._meta.get_field(field).verbose_name
+                )
             else:
-                report += report_missing_IMBRO_A(well_state._meta.get_field(field).verbose_name)
+                report += report_missing_IMBRO_A(
+                    well_state._meta.get_field(field).verbose_name
+                )
 
     for field, (value, valid_values) in choice_fields.items():
         if value not in valid_values:
