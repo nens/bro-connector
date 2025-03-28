@@ -118,7 +118,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "well_code",
         "in_management",
     )
-    readonly_fields = ("lat", "lon", "report")
+    readonly_fields = ("lat", "lon", "report", "complete_bro", "bro_actions")
 
     fieldsets = [
         (
