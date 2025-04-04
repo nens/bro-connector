@@ -228,11 +228,14 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 obj.coordinates[1] = originele_put.coordinates[1]
 
         well_checker = WellValidation()
-        is_valid, report = well_checker.well_complete(obj)
+        if obj.groundwater_monitoring_well_static_id:
+            is_valid, report = well_checker.well_complete(obj)
 
-        # Update complete_bro and bro_actions in the static object based on validation
-        obj.complete_bro = is_valid
-        obj.bro_actions = report
+            # Update complete_bro and bro_actions in the static object based on validation
+            obj.complete_bro = is_valid
+            obj.bro_actions = report
+        else:
+            is_valid = True
 
         # If not valid, show a warning in the admin interface
         if not is_valid:
