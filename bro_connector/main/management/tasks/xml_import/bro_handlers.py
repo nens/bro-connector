@@ -80,9 +80,11 @@ class GMWHandler(BROHandler):
                 self.positions = self.positions + 1
                 postfix = f"_{self.positions}"
                 tag = split[1] + postfix
-
-            tags.append(tag)
-            values.append(element.text)
+                tags.append(tag)
+                values.append(element.text)
+            else:
+                tags.append(tag)
+                values.append("".join(element.text.split()))
 
         self.number_of_events = number_of_events
 

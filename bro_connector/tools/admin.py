@@ -135,11 +135,11 @@ class XMLImportAdmin(admin.ModelAdmin):
 
     def update_database(self, request, QuerySet):
         for object in QuerySet:
-            bulk_dir = "./tools/bulk/"
+            app_dir = os.path.abspath(os.path.curdir)
 
             if str(object.file).endswith("xml"):
                 print("Handling XML file")
-                (completed, message) = xml_import.import_xml(object.file, bulk_dir)
+                (completed, message) = xml_import.import_xml(object.file, app_dir)
                 object.checked = True
                 object.imported = completed
                 object.report += message
@@ -150,13 +150,13 @@ class XMLImportAdmin(admin.ModelAdmin):
                 # First unpack the zip
                 with ZipFile(object.file, "r") as zip:
                     zip.printdir()
-                    zip.extractall(path=bulk_dir)
+                    zip.extractall(path=app_dir)
 
                 # Remove constructies/ and .zip from the filename
                 file_name = str(object.file)[13:-4]
                 print(file_name)
 
-                for file in os.listdir(bulk_dir):
+                for file in os.listdir(app_dir):
                     if file.endswith("csv"):
                         print(
                             f"Bulk import of filetype of {file} not yet supported not yet supported."
@@ -168,7 +168,7 @@ class XMLImportAdmin(admin.ModelAdmin):
                         pass
 
                     elif file.endswith("xml"):
-                        (completed, message) = xml_import.import_xml(file, bulk_dir)
+                        (completed, message) = xml_import.import_xml(file, app_dir)
                         object.checked = True
                         object.imported = completed
                         object.report += message

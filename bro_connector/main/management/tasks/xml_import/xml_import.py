@@ -22,9 +22,9 @@ def import_xml(file: str, path: str) -> tuple:
 
     try:
         gmw_models.GroundwaterMonitoringWellStatic.objects.get(
-            request_reference=gmw_dict.get("requestReference", None),
+            internal_id=gmw_dict.get("objectIdAccountableParty", None),
         )
-        message = f"request_reference: {gmw_dict.get('requestReference', None)} is already in database."
+        message = f"objectIdAccountableParty: {gmw_dict.get('objectIdAccountableParty', None)} is already in database."
         completed = True
         print(message)
         return (completed, message)
@@ -40,48 +40,33 @@ def import_xml(file: str, path: str) -> tuple:
 
     # Dan de putgeschiedenis.
     ini.well_dynamic()
+    ini.event()
 
-    for tube_number in range(gmw.number_of_tubes):
+    for _ in range(gmw.number_of_tubes):
         ini.increment_tube_number()
         ini.filter()
         ini.filter_dynamic()
 
-        for geo_ohm_cable in range(int(gmw.number_of_geo_ohm_cables)):
+        for _ in range(int(gmw.number_of_geo_ohm_cables)):
             ini.increment_geo_ohm_number()
             ini.geo_ohm()
 
-            for electrode in range(int(gmw.number_of_electrodes)):
+            for _ in range(int(gmw.number_of_electrodes)):
                 ini.increment_electrode_number()
-                ini.electrode_static()
-                ini.electrode_dynamic()
+                ini.electrode()
 
             ini.reset_electrode_number()
         ini.reset_geo_ohm_number()
 
     # Dan het onderhoudsmoment, want die zit in de geschiedenissen.
-    ini.event()
-
     gmw.reset_values()
     ini.reset_tube_number()
     progressor.next()
     progressor.progress()
 
     completed = True
-    message = f"Put {ini.meetpunt_instance.request_reference} en bijbehorende filters gemaakt aan de hand van XML."
+    message = f"Put {ini.meetpunt_instance.internal_id} en bijbehorende filters gemaakt aan de hand van XML."
     return (completed, message)
-
-
-def get_quality_regime(dict: dict) -> str:
-    qr = dict.get("qualityRegime", None)
-
-    if qr == "IMBRO":
-        return "imbro"
-
-    elif qr == "IMBRO/A":
-        return "imbro_a"
-
-    else:
-        return None
 
 
 def get_sediment_sump_present(dict: dict, prefix: str) -> bool | None:
@@ -189,7 +174,7 @@ class InitializeData:
         return coords_field
 
     def well(self):
-        kwaliteits = get_quality_regime(self.gmw_dict)
+        kwaliteits = self.gmw_dict.get("qualityRegime", None)
 
         construction_date = self.gmw_dict.get("construction_date", None)
         if construction_date is not None:
@@ -200,7 +185,7 @@ class InitializeData:
         self.meetpunt_instance = (
             gmw_models.GroundwaterMonitoringWellStatic.objects.create(
                 bro_id=self.gmw_dict.get("broId", None),
-                request_reference=self.gmw_dict.get("requestReference", None),
+                internal_id=self.gmw_dict.get("objectIdAccountableParty", None),
                 delivery_accountable_party=self.get_accountable_party(),
                 construction_standard=self.gmw_dict.get("constructionStandard", None),
                 coordinates=self.get_coordinates(),
@@ -231,7 +216,6 @@ class InitializeData:
             event_name="constructie",
             groundwater_monitoring_well_static=self.meetpunt_instance,
             groundwater_monitoring_well_dynamic=self.meetpuntgeschiedenis_instance,
-            groundwater_monitoring_tube_dynamic=self.filtergeschiedenis_instance,
             event_date=self.meetpunt_instance.last_horizontal_positioning_date,
             delivered_to_bro=False,
         )
@@ -314,6 +298,10 @@ class InitializeData:
         )
         self.filtergeschiedenis_instance.save()
 
+        self.onderhoudsmoment_instance.groundwater_monitoring_tube_dynamic.add(
+            self.filtergeschiedenis_instance
+        )
+
     def geo_ohm(self):
         """
         Maak een geo ohm kabel vanuit de xml waardes.
@@ -324,26 +312,19 @@ class InitializeData:
         )
         self.geoc.save()
 
-    def electrode_static(self):
+    def electrode(self):
         """
         Maak een elektrode gebaseerd op de waardes uit de xml.
         """
-        self.eles = gmw_models.Electrode.objects.create(
+        electrode = gmw_models.Electrode.objects.create(
             geo_ohmkabel=self.geoc,
+            electrode_number=self.gmw_dict.get(self.prefix + "electrodeNumber", None),
+            electrode_status=self.gmw_dict.get(self.prefix + "electrodeStatus", None),
             electrode_packing_material=self.gmw_dict.get(
                 self.prefix + "electrodePackingMaterial", None
             ),
             elektrodepositie=self.gmw_dict.get(self.prefix + "electrodePosition", None),
         )
-        self.eles.save()
+        electrode.save()
 
-    def electrode_dynamic(self):
-        """
-        Maak een elektrode gebaseerd op de waardes uit de xml.
-        """
-        self.eled = gmw_models.ElectrodeDynamic.objects.create(
-            electrode_static=self.eles,
-            electrode_number=self.gmw_dict.get(self.prefix + "electrodeNumber", None),
-            electrode_status=self.gmw_dict.get(self.prefix + "electrodeStatus", None),
-        )
-        self.eled.save()
+        self.onderhoudsmoment_instance.electrodes.add(electrode)
