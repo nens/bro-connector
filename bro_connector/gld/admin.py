@@ -40,6 +40,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "first_measurement",
         "completely_delivered",
         "has_open_observation",
+        "monitoring_networks",
     )
     list_filter = (
         TubeFilter,
@@ -70,13 +71,21 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     def completely_delivered(self, obj):
         return obj.completely_delivered
 
-    completely_delivered.short_description = "Fully Delivered"
+    completely_delivered.short_description = "Volledig geleverd"
 
     @admin.display(boolean=True)
     def has_open_observation(self, obj):
         return obj.has_open_observation
 
-    has_open_observation.short_description = "Active Measurements"
+    has_open_observation.short_description = "Actief bemeten"
+
+    def monitoring_networks(self, obj):
+        nets = ""
+        for net in obj.groundwater_monitoring_net.all():
+            nets += f"{net.name} "
+        return nets
+
+    monitoring_networks.short_description = "Meetnetten"
 
     def deliver_to_bro(self, request, queryset):
         for dossier in queryset:
