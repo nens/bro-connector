@@ -93,19 +93,16 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
 
                 for electrode in range(int(gmw.number_of_electrodes)):
                     ini.increment_electrode_number()
-                    ini.electrode_static()
-                    ini.electrode_dynamic()
+                    ini.electrode()
 
                 ini.reset_electrode_number()
             ini.reset_geo_ohm_number()
 
-        print("CREATE CONSTRUCTION")
         events_handler.create_construction_event(gmw_dict, gmws)
         imported += 1
         # Update based on the events
         updater = events_handler.Updater(gmw.dict, gmws)
         for nr in range(int(gmw.number_of_events)):
-            print(f"CREATE EVENT {nr}")
             updater.intermediate_events()
 
         gmw.reset_values()
@@ -340,7 +337,7 @@ class InitializeData:
             cable_number=self.gmw_dict.get(self.prefix + "cableNumber", None),
         )
 
-    def electrode_static(self):
+    def electrode(self):
         Electrode.objects.update_or_create(
             geo_ohm_cable=self.geoc,
             electrode_number=self.gmw_dict.get(self.prefix + "electrodeNumber", None),
