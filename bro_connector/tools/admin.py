@@ -193,6 +193,8 @@ class GLDImportAdmin(admin.ModelAdmin):
         "executed",
     )
 
+    readonly_fields = ["report", "validated", "executed"]
+
     def get_fields(self, request, obj=None):
         fields = [
             "file",
@@ -206,11 +208,10 @@ class GLDImportAdmin(admin.ModelAdmin):
             "air_pressure_compensation_type",
             "process_type",
             "evaluation_procedure",
+            "report",
+            "validated",
+            "executed",
         ]
-
-        # Only show 'report' if it contains something
-        if obj and obj.report and obj.report.strip():
-            fields.append("report")
 
         return fields
 
