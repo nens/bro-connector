@@ -51,8 +51,10 @@ class GroundwaterLevelDossier(models.Model):
         blank=False,
         related_name="groundwaterleveldossier",
     )
-    # quality_regime = models.CharField(max_length=254, null=True, blank=True)
     gld_bro_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    quality_regime = models.CharField(
+        choices=QUALITYREGIME, max_length=254, null=True, blank=True
+    )
     research_start_date = models.DateField(blank=True, null=True)
     research_last_date = models.DateField(blank=True, null=True)
     research_last_correction = models.DateTimeField(blank=True, null=True)

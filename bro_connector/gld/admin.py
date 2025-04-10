@@ -36,13 +36,15 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
-        "gld_bro_id",
+        "gld_bro_id",        
+        "quality_regime",
         "first_measurement",
         "completely_delivered",
         "has_open_observation",
     )
     list_filter = (
-        TubeFilter,
+        TubeFilter,        
+        "quality_regime",
         "research_start_date",
         "research_last_date",
         HasOpenObservationFilter,
