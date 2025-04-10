@@ -128,6 +128,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_type",
         "measurement_type",
         "status",
+        "validation_status",
         "up_to_date_in_bro",
     )
     list_filter = (
@@ -145,6 +146,7 @@ class ObservationAdmin(admin.ModelAdmin):
 
     readonly_fields = [
         "status",
+        "validation_status",
         "timestamp_first_measurement",
         "timestamp_last_measurement",
     ]
@@ -184,21 +186,16 @@ class ObservationAdmin(admin.ModelAdmin):
 class ObservationMetadataAdmin(admin.ModelAdmin):
     list_display = (
         "observation_metadata_id",
-        "date_stamp",
         "observation_type",
         "status",
-        "validation_status",
         "responsible_party",
     )
     list_filter = (
         "observation_metadata_id",
-        "date_stamp",
         "observation_type",
         "status",
         "responsible_party",
     )
-
-    readonly_fields = ["validation_status"]
 
 
 class ObservationProcessAdmin(admin.ModelAdmin):

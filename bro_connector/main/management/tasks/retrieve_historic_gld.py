@@ -263,10 +263,7 @@ class InitializeData:
         )
 
     def metadata_observation(self) -> None:
-        self.observation_metadate_instance = ObservationMetadata.objects.create(
-            date_stamp=str_to_date(
-                self.gmw_dict.get(f"{self.observation_number}_Date", None)
-            ),
+        self.observation_metadate_instance, created = ObservationMetadata.objects.get_or_create(
             observation_type=self.gmw_dict.get(
                 f"{self.observation_number}_ObservationType", None
             ),
@@ -275,7 +272,7 @@ class InitializeData:
         )
 
     def observation_process(self) -> None:
-        self.observation_process_instance = ObservationProcess.objects.create(
+        self.observation_process_instance, created = ObservationProcess.objects.get_or_create(
             process_reference=self.gmw_dict.get(
                 f"{self.observation_number}_processReference", None
             ),
