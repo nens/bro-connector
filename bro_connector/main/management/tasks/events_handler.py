@@ -135,11 +135,15 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
     )
 
     # After creating or updating, set the ManyToMany field separately
-    event.groundwater_monitoring_well_dynamic.set(
+    event.groundwater_monitoring_well_dynamic = (
         GroundwaterMonitoringWellDynamic.objects.filter(
             groundwater_monitoring_well_static=groundwater_monitoring_well_static
         )
-    )
+    ).first()
+    for item in GroundwaterMonitoringTubeDynamic.objects.filter(
+        groundwater_monitoring_tube_static__groundwater_monitoring_well_static=groundwater_monitoring_well_static
+    ).values_list("groundwater_monitoring_tube_dynamic_id", flat=True):
+        event.groundwater_monitoring_tube_dynamic.add(item)
 
     gmw_registration_log.objects.update_or_create(
         delivery_type="register",
