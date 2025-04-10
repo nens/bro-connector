@@ -15,17 +15,18 @@ from bro.models import Organisation
 from django.core.exceptions import ValidationError
 from gmw.models import GroundwaterMonitoringTubeStatic
 from gmn.choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
+from main.models import BaseModel
 
 
-class BroImporter(models.Model):
+class BroImporter(BaseModel):
     bro_type = models.CharField(
         max_length=100,
         choices=BRO_TYPES,
         null=False,
     )
     kvk_number = models.CharField(max_length=8, null=False)
-    import_date = models.DateTimeField(editable=False, default=datetime.datetime.now())
-    created_date = models.DateTimeField(editable=False, default=datetime.datetime.now())
+    import_date = models.DateTimeField(editable=False)
+    created_date = models.DateTimeField(editable=False)
 
     class Meta:
         managed = True
@@ -33,8 +34,14 @@ class BroImporter(models.Model):
         verbose_name = "Importer"
         verbose_name_plural = "BRO Importer"
 
+    def save(self, *args, **kwargs) -> None:
+        if not self.pk:
+            self.import_date = datetime.datetime.now()
+            self.created_date = datetime.datetime.now()
+        super().save(*args, **kwargs)
 
-class XMLImport(models.Model):
+
+class XMLImport(BaseModel):
     id = models.AutoField(primary_key=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     file = models.FileField(upload_to="bulk", validators=[])
@@ -65,9 +72,13 @@ class XMLImport(models.Model):
         verbose_name_plural = "XML Imports"
 
 
-class GLDImport(models.Model):
+class GLDImport(BaseModel):
     file = models.FileField(
-        upload_to="bulk", help_text="csv. or zip.", validators=[], null=True, blank=True
+        upload_to="bulk",
+        help_text="columns: [time, value], optional: [status_quality_control, censor_reason, censor_limit]. Filetype: csv or zip.",
+        validators=[],
+        null=True,
+        blank=True,
     )
     name = models.CharField(max_length=255, null=True, blank=False, verbose_name="Naam")
     groundwater_monitoring_tube = models.ForeignKey(
@@ -105,7 +116,11 @@ class GLDImport(models.Model):
         choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True
     )
     process_type = models.CharField(
-        choices=PROCESSTYPE, max_length=200, blank=False, null=False
+        choices=PROCESSTYPE,
+        max_length=200,
+        blank=False,
+        null=False,
+        default="algoritme",
     )
     evaluation_procedure = models.CharField(
         choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False
@@ -125,6 +140,9 @@ class GLDImport(models.Model):
         verbose_name = "GLD Import"
         verbose_name_plural = "GLD Imports"
 
+    def __str__(self) -> str:
+        return f"{self.name} ({self.date_created.date()})"
+
     def clean(self):
         if self.file.path.endswith(".zip") or self.file.path.endswith(".csv"):
             return
@@ -132,7 +150,7 @@ class GLDImport(models.Model):
             raise ValidationError("File should be of type: [csv, zip]")
 
 
-class GMNImport(models.Model):
+class GMNImport(BaseModel):
     file = models.FileField(
         upload_to="gmn",
         help_text="Bestand: .csv, .zip; bevat kolommen: meetpuntcode, gmwBroId, buisNummer, datum, subgroep*; gescheiden met komma.",
@@ -204,7 +222,7 @@ class GMNImport(models.Model):
             raise ValidationError("File should be of type: [csv, zip]")
 
 
-class GMWImport(models.Model):
+class GMWImport(BaseModel):
     file = models.FileField(
         upload_to="gmw",
         help_text="csv. or zip.",

@@ -25,6 +25,7 @@ from .choices import (
 from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringTubeStatic
 from gmn.models import GroundwaterMonitoringNet
+from main.models import BaseModel
 import datetime
 
 logger = getLogger(__file__)
@@ -37,7 +38,7 @@ def s2d(string: str):
     return string
 
 
-class GroundwaterLevelDossier(models.Model):
+class GroundwaterLevelDossier(BaseModel):
     groundwater_level_dossier_id = models.AutoField(primary_key=True)
     groundwater_monitoring_net = models.ManyToManyField(
         GroundwaterMonitoringNet,
@@ -133,7 +134,7 @@ class GroundwaterLevelDossier(models.Model):
         verbose_name_plural = "Grondwaterstand Dossiers"
 
 
-class Observation(models.Model):
+class Observation(BaseModel):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False)
     groundwater_level_dossier = models.ForeignKey(
         "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
@@ -250,7 +251,7 @@ class Observation(models.Model):
         verbose_name_plural = "Observaties"
 
 
-class ObservationMetadata(models.Model):
+class ObservationMetadata(BaseModel):
     observation_metadata_id = models.AutoField(primary_key=True)
     date_stamp = models.DateField(blank=True, null=True)
     observation_type = models.CharField(
@@ -303,7 +304,7 @@ class ObservationMetadata(models.Model):
         verbose_name_plural = "Observatie Metadata"
 
 
-class ObservationProcess(models.Model):
+class ObservationProcess(BaseModel):
     observation_process_id = models.AutoField(primary_key=True)
     process_reference = models.CharField(
         choices=PROCESSREFERENCE, max_length=200, blank=True, null=True
@@ -338,7 +339,7 @@ class ObservationProcess(models.Model):
 
 
 # MEASUREMENT TIME VALUE PAIR
-class MeasurementTvp(models.Model):
+class MeasurementTvp(BaseModel):
     measurement_tvp_id = models.AutoField(primary_key=True)
     observation = models.ForeignKey(
         Observation,
@@ -406,7 +407,7 @@ class MeasurementTvp(models.Model):
         return f"{self.observation} {self.measurement_time} {self.calculated_value}"
 
 
-class MeasurementPointMetadata(models.Model):
+class MeasurementPointMetadata(BaseModel):
     measurement_point_metadata_id = models.AutoField(primary_key=True)
     status_quality_control = models.CharField(
         choices=STATUSQUALITYCONTROL,
@@ -448,12 +449,10 @@ class MeasurementPointMetadata(models.Model):
 # %% Aanlevering models
 
 
-class gld_registration_log(models.Model):
-    id = models.AutoField(primary_key=True)
-    date_modified = models.CharField(max_length=254, null=True, blank=True)
-    gwm_bro_id = models.CharField(max_length=254, null=True, blank=True)
-    gld_bro_id = models.CharField(max_length=254, null=True, blank=True)
-    filter_number = models.CharField(max_length=254, null=True, blank=True)
+class gld_registration_log(BaseModel):
+    gwm_bro_id = models.CharField(max_length=254)
+    gld_bro_id = models.CharField(max_length=254)
+    filter_number = models.CharField(max_length=254)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
     delivery_id = models.CharField(max_length=254, null=True, blank=True)
     delivery_type = models.CharField(
@@ -462,7 +461,7 @@ class gld_registration_log(models.Model):
         max_length=40,
         default="register",
     )
-    delivery_status = models.CharField(max_length=254, null=True, blank=True)
+    delivery_status = models.CharField(max_length=254)
     comments = models.CharField(max_length=10000, null=True, blank=True)
     last_changed = models.CharField(max_length=254, null=True, blank=True)
     corrections_applied = models.BooleanField(blank=True, null=True)
@@ -479,10 +478,9 @@ class gld_registration_log(models.Model):
         verbose_name_plural = "GLD Registratie Logs"
 
 
-class gld_addition_log(models.Model):
-    date_modified = models.CharField(max_length=254, null=True, blank=True)
-    broid_registration = models.CharField(max_length=254, null=True, blank=True)
-    observation_id = models.CharField(max_length=254, null=True, blank=True)
+class gld_addition_log(BaseModel):
+    broid_registration = models.CharField(max_length=254)
+    observation_id = models.CharField(max_length=254)
     start_date = models.DateTimeField(max_length=254, null=True, blank=True)
     end_date = models.DateTimeField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)

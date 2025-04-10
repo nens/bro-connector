@@ -17,12 +17,13 @@ from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, Electrode
 from gmn.models import GroundwaterMonitoringNet
 import datetime
 from bro.models import Organisation
+from main.models import BaseModel
 
 logger = logging.getLogger(__name__)
 
 
 # Create your models here.
-class FormationResistanceDossier(models.Model):
+class FormationResistanceDossier(BaseModel):
     frd_bro_id = models.CharField(
         max_length=200,
         null=True,
@@ -167,7 +168,7 @@ class FormationResistanceDossier(models.Model):
         _admin_name = "BRO Formatieweerstand Dossier"
 
 
-class ElectromagneticMeasurementMethod(models.Model):
+class ElectromagneticMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -191,7 +192,7 @@ class ElectromagneticMeasurementMethod(models.Model):
         verbose_name_plural = "Electromagnetisch Meetmethode"
 
 
-class InstrumentConfiguration(models.Model):
+class InstrumentConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -243,7 +244,7 @@ class InstrumentConfiguration(models.Model):
         verbose_name_plural = "Instrument Configuraties"
 
 
-class GeoOhmMeasurementMethod(models.Model):
+class GeoOhmMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False
     )
@@ -285,7 +286,7 @@ class GeoOhmMeasurementMethod(models.Model):
             )
 
 
-class GMWElectrodeReference(models.Model):
+class GMWElectrodeReference(BaseModel):
     cable_number = models.IntegerField(blank=True, null=True)
     electrode_number = models.IntegerField(blank=True, null=True)
 
@@ -298,7 +299,7 @@ class GMWElectrodeReference(models.Model):
         verbose_name_plural = "GMW Elektrode Referenties"
 
 
-class ElectrodePair(models.Model):
+class ElectrodePair(BaseModel):
     # Static of dynamic electrode -> Ik denk static
     elektrode1 = models.ForeignKey(
         GMWElectrodeReference,
@@ -324,7 +325,7 @@ class ElectrodePair(models.Model):
         verbose_name_plural = "Elektrode Paren"
 
 
-class MeasurementConfiguration(models.Model):
+class MeasurementConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
         FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -358,7 +359,7 @@ class MeasurementConfiguration(models.Model):
         verbose_name_plural = "Meetconfiguraties"
 
 
-class ElectromagneticSeries(models.Model):
+class ElectromagneticSeries(BaseModel):
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod,
         on_delete=models.CASCADE,
@@ -372,7 +373,7 @@ class ElectromagneticSeries(models.Model):
         verbose_name_plural = "Electromagnetische Series"
 
 
-class GeoOhmMeasurementValue(models.Model):
+class GeoOhmMeasurementValue(BaseModel):
     geo_ohm_measurement_method = models.ForeignKey(
         GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -400,7 +401,7 @@ class GeoOhmMeasurementValue(models.Model):
             create_calculated_resistance_from_geo_ohm(self, calculated_method)
 
 
-class ElectromagneticRecord(models.Model):
+class ElectromagneticRecord(BaseModel):
     series = models.ForeignKey(
         ElectromagneticSeries, on_delete=models.CASCADE, null=True, blank=False
     )
@@ -434,7 +435,7 @@ class ElectromagneticRecord(models.Model):
         verbose_name_plural = "Electromagnetisch Waarden"
 
 
-class CalculatedFormationresistanceMethod(models.Model):
+class CalculatedFormationresistanceMethod(BaseModel):
     geo_ohm_measurement_method = models.ForeignKey(
         GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -469,7 +470,7 @@ class CalculatedFormationresistanceMethod(models.Model):
             create_geo_ohm_series(self)
 
 
-class FormationresistanceSeries(models.Model):
+class FormationresistanceSeries(BaseModel):
     calculated_formationresistance = models.ForeignKey(
         CalculatedFormationresistanceMethod,
         on_delete=models.CASCADE,
@@ -483,7 +484,7 @@ class FormationresistanceSeries(models.Model):
         verbose_name_plural = "Formatieweerstand Series"
 
 
-class FormationresistanceRecord(models.Model):
+class FormationresistanceRecord(BaseModel):
     """
     Schijnbare formatieweerstand meetreeks
     """
@@ -510,7 +511,7 @@ class FormationresistanceRecord(models.Model):
         verbose_name_plural = "Formatieweerstand Waarden"
 
 
-class FrdSyncLog(models.Model):
+class FrdSyncLog(BaseModel):
     synced = models.BooleanField(default=False, editable=False)
     date_modified = models.DateTimeField(auto_now=True)
     bro_id = models.CharField(max_length=254, null=True, blank=True)
