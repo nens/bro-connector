@@ -8,7 +8,7 @@ import logging
 
 
 from . import models as gmw_models
-import main.management.tasks.gmw_actions as gmw_actions
+import gmw.management.tasks.gmw_actions as gmw_actions
 from . import forms as gmw_forms
 from gmn.models import MeasuringPoint
 from gmw.custom_filters import (

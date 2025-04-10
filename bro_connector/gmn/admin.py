@@ -6,7 +6,7 @@ from .models import (
     IntermediateEvent,
     gmn_bro_sync_log,
 )
-from main.management.tasks.gmn_sync import sync_gmn
+from gmn.management.tasks.gmn_sync import sync_gmn
 from reversion_compare.helpers import patch_admin
 from .forms import GroundwaterMonitoringNetForm, SubgroupForm
 from main.utils.frd_fieldform import FieldFormGenerator as FRD_FieldFormGenerator

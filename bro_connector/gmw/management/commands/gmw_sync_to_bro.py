@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from ..tasks import sync_gmw_events
+from gmw.management.tasks import sync_gmw_events
 from main.settings.base import env
 from django.apps import apps
 

@@ -3,10 +3,10 @@ from django.contrib import messages
 import os
 from . import models
 from main.settings.base import gld_SETTINGS
-from main.management.tasks import gld_actions
+from gld.management.tasks import gld_actions
 from reversion_compare.helpers import patch_admin
 import reversion
-from main.management.commands.gld_sync_to_bro import (
+from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
     get_observation_gld_source_document_data,
 )

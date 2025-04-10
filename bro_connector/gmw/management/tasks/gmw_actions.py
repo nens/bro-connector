@@ -6,7 +6,7 @@ from gmw.models import (
 )
 import os
 import reversion
-from main.management.commands.gmw_sync_to_bro import _get_registrations_dir
+from gmw.management.commands.gmw_sync_to_bro import _get_registrations_dir
 
 from bro.models import Organisation
 

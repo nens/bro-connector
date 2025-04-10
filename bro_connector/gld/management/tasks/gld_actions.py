@@ -8,7 +8,7 @@ from gmw.models import GroundwaterMonitoringWellStatic
 import os
 import logging
 
-from main.management.commands import gld_sync_to_bro
+from gld.management.commands import gld_sync_to_bro
 
 from main.settings.base import env
 
