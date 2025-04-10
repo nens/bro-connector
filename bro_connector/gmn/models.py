@@ -309,6 +309,12 @@ class MeasuringPoint(models.Model):
         verbose_name = "Meetpunt"
         verbose_name_plural = "Meetpunten"
         ordering = ("code",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["gmn", "groundwater_monitoring_tube"],
+                name="unique_gmn_groundwater_monitoring_tube",
+            )
+        ]
 
 
 class MeasuringPointSubgroup(models.Model):

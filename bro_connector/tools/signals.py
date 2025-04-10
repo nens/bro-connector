@@ -13,6 +13,7 @@ from gmn.models import (
     Subgroup,
     MeasuringPoint,
 )
+from logging import getLogger
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from gld.models import (
     Observation,
@@ -21,7 +22,11 @@ from gld.models import (
     ObservationProcess,
     ObservationMetadata,
 )
-from gld.choices import STATUSQUALITYCONTROL, CENSORREASON, INTERPOLATIONTYPE
+from gld.choices import STATUSQUALITYCONTROL, CENSORREASON
+from .utils import detect_csv_separator
+
+
+logger = getLogger("general")
 
 
 @receiver(pre_save, sender=GLDImport)
@@ -95,13 +100,10 @@ def process_zip_file(instance: GLDImport):
 
 def process_csv_file(instance: GLDImport):
     # Validate CSV file
-    (
-        reader,
-        time_col,
-        status_quality_control_col,
-        censor_reason_col,
-        interpolation_code_col,
-    ) = validate_csv(instance.file, instance.file.name, instance)
+    reader = validate_csv(instance.file, instance.file.name, instance)
+
+    time_col = "time" if "time" in reader.columns else "tijd"
+    value_col = "value" if "value" in reader.columns else "waarde"
 
     if instance.validated:
         # Create ObservationProces
@@ -134,27 +136,24 @@ def process_csv_file(instance: GLDImport):
 
         # itter over file
         for index, row in reader.iterrows():
-            value = row["values"]
+            value = row[value_col]
             time = row[time_col]
 
             # create basic MeasurementPointMetadata
             mp_meta = MeasurementPointMetadata.objects.create()
 
             # Add the present fields to the metadata if they are given in the CSV
-            if status_quality_control_col:
-                st_quality_control_tvp = row.get(status_quality_control_col)
-                if st_quality_control_tvp:
-                    mp_meta.status_quality_control = st_quality_control_tvp
+            st_quality_control_tvp = row.get("status_quality_control", None)
+            if st_quality_control_tvp:
+                mp_meta.status_quality_control = st_quality_control_tvp
 
-            if censor_reason_col:
-                censor_reason_tvp = row.get(censor_reason_col)
-                if censor_reason_tvp:
-                    mp_meta.censor_reason = censor_reason_tvp
+            censor_reason_tvp = row.get("censor_reason", None)
+            if censor_reason_tvp:
+                mp_meta.censor_reason = censor_reason_tvp
 
-            if interpolation_code_col:
-                interpolation_code_tvp = row.get(interpolation_code_col)
-                if interpolation_code_tvp:
-                    mp_meta.interpolation_code = interpolation_code_tvp
+            censor_reason_tvp = row.get("censor_limit", None)
+            if censor_reason_tvp:
+                mp_meta.value_limit = censor_reason_tvp
 
             # Save the metadata after all fields are set
             mp_meta.save()
@@ -169,115 +168,80 @@ def process_csv_file(instance: GLDImport):
             )
 
         instance.executed = True
-        instance.name = (
-            f"({Obs_Meta.date_stamp.strftime('%Y-%m-%d')}) - ({instance.file.name})"
-        )
-    else:
-        instance.name = (
-            f"({datetime.today().strftime('%Y-%m-%d')}) - ({instance.file.name})"
-        )
+        instance.save()
 
 
 def validate_csv(file, filename: str, instance: GLDImport):
+    time_col = None
+    seperator = detect_csv_separator(filename)
+    reader = pd.read_csv(file, header=0, index_col=False, sep=seperator)
+    required_columns = ["time", "value"]
+    missing_columns = [col for col in required_columns if col not in reader.columns]
+    if missing_columns:
+        instance.validated = False
+        instance.report += f"Missende kolommen: {', '.join(missing_columns)}\n\n"
+
+    # Check if CSV has any rows
+    if reader.empty:
+        instance.validated = False
+        instance.report += f"{filename} bevat geen gegevens.\n"
+        return reader
+
+    # Validate the first column format for datetimes
+    time_col = reader.columns[0]
     try:
-        time_col = None
-        status_quality_control_col = None
-        censor_reason_col = None
-        interpolation_code_col = None
-        reader = pd.read_csv(file, header=0, index_col=False)
-        required_columns = ["values"]
-        missing_columns = [col for col in required_columns if col not in reader.columns]
-        if missing_columns:
-            instance.validated = False
-            instance.report += f"Missende verplichte kolommen in {filename}: {', '.join(missing_columns)}\n"
-
-        # Check if CSV has any rows
-        if reader.empty:
-            instance.validated = False
-            instance.report += f"{filename} bevat geen gegevens.\n"
-
-        # Validate the first column format for datetimes
-        else:
-            time_col = reader.columns[0]
-
-            try:
-                reader[time_col] = pd.to_datetime(
-                    reader[time_col], format="%Y-%m-%d %H:%M:%S", errors="raise"
-                )  # This will raise an error if invalid format
-            except Exception as e:
-                instance.validated = False
-                instance.report += (
-                    f"Eerste kolom moet de tijd bevatten van {filename}: {str(e)}\n"
-                )
-
-        # Validate 'values' column format (numeric values)
-        if "values" in reader.columns:
-            if (
-                not pd.to_numeric(reader["values"], errors="coerce").notnull().all()
-            ):  # Check if all values are numeric
-                instance.validated = False
-                instance.report += f"Fout in 'values' kolom van {filename}: Bevat niet-numerieke waarden.\n"
-
-        # validate the status_quality_control column if given in csv
-        if "status_quality_control" in reader.columns:
-            STATUSQUALITYCONTROL_LIST = [status[0] for status in STATUSQUALITYCONTROL]
-            # Validate that all values in the column are in the allowed set
-            status_quality_control_col = "status_quality_control"
-            if (
-                not reader["status_quality_control"]
-                .isin(STATUSQUALITYCONTROL_LIST)
-                .all()
-            ):
-                instance.validated = False
-                instance.report += f"Fout in 'status_quality_control' kolom van {filename}: Ongeldige waarden gevonden.\n"
-                status_quality_control_col = None
-        else:
-            instance.report += f"De kolom 'status_quality_control' kan gegeven worden in {filename} om extra metadata toe te voegen aan elke tijd-waardepaar\n"
-
-        # validate the censor_reason column if given in csv
-        if "censor_reason" in reader.columns:
-            CENSORREASON_LIST = [status[0] for status in CENSORREASON]
-            censor_reason_col = "censor_reason"
-            # Validate that all values in the column are in the allowed set
-            if not reader["censor_reason"].isin(CENSORREASON_LIST).all():
-                instance.validated = False
-                instance.report += f"Fout in 'censor_reason' kolom van {filename}: Ongeldige waarden gevonden.\n"
-                censor_reason_col = None
-        else:
-            instance.report += f"De kolom 'censor_reason' kan gegeven worden in {filename} om extra metadata toe te voegen aan elke tijd-waardepaar\n"
-
-        # validate the interpolation_code column if given in csv
-        if "interpolation_code" in reader.columns:
-            INTERPOLATIONTYPE_LIST = [status[0] for status in INTERPOLATIONTYPE]
-            # Validate that all values in the column are in the allowed set
-            interpolation_code_col = "interpolation_code"
-            if not reader["interpolation_code"].isin(INTERPOLATIONTYPE_LIST).all():
-                instance.validated = False
-                instance.report += f"Fout in 'interpolation_code' kolom van {filename}: Ongeldige waarden gevonden.\n"
-                interpolation_code_col = None
-        else:
-            instance.report += f"De kolom 'interpolation_code' kan gegeven worden in {filename} om extra metadata toe te voegen aan elke tijd-waardepaar\n"
-
+        reader[time_col] = pd.to_datetime(
+            reader[time_col], format="%Y-%m-%d %H:%M:%S", errors="raise"
+        )  # This will raise an error if invalid format
     except Exception as e:
         instance.validated = False
-        instance.report += f"CSV processing error in {filename}: {e}\n"
-        reader = pd.DataFrame({})
-        time_col = None
-        status_quality_control_col = None
-        censor_reason_col = None
-        interpolation_code_col = None
+        instance.report += (
+            f"Eerste kolom moet de tijd bevatten van {filename}: {str(e)}\n\n"
+        )
 
-    instance.report += (
-        f"{status_quality_control_col}, {censor_reason_col}, {interpolation_code_col}\n"
-    )
+    # Validate 'values' column format (numeric values)
+    if "values" in reader.columns:
+        if (
+            not pd.to_numeric(reader["values"], errors="coerce").notnull().all()
+        ):  # Check if all values are numeric
+            instance.validated = False
+            instance.report += f"Fout in 'values' kolom van {filename}: Bevat niet-numerieke waarden.\n\n"
 
-    return (
-        reader,
-        time_col,
-        status_quality_control_col,
-        censor_reason_col,
-        interpolation_code_col,
-    )
+    # validate the status_quality_control column if given in csv
+    if "status_quality_control" in reader.columns:
+        STATUSQUALITYCONTROL_LIST = [status[0] for status in STATUSQUALITYCONTROL]
+        if not reader["status_quality_control"].isin(STATUSQUALITYCONTROL_LIST).all():
+            instance.validated = False
+            instance.report += "Fout in 'status_quality_control' kolom: Ongeldige waarden gevonden.\n\n"
+    else:
+        instance.report += "De kolom 'status_quality_control' kan worden toegevoegd  om te duiden wat de kwaliteit van de meting is.\n\n"
+
+    # validate the censor_reason column if given in csv
+    if "censor_reason" in reader.columns:
+        CENSORREASON_LIST = [status[0] for status in CENSORREASON]
+        # Validate that all values in the column are in the allowed set
+        if not reader["censor_reason"].isin(CENSORREASON_LIST).all():
+            instance.validated = False
+            instance.report += (
+                "Fout in 'censor_reason': Ongeldige waarden gevonden.\n\n"
+            )
+    else:
+        instance.report += "De kolom 'censor_reason' kan worden toegevoegd om de censuur reden aan te geven.\n\n"
+
+    # validate the censor_reason column if given in csv
+    if "censor_limit" in reader.columns:
+        if not (
+            pd.api.types.is_float_dtype(reader["censor_limit"])
+            | pd.api.types.is_integer_dtype(reader["censor_limit"])
+        ):
+            instance.validated = False
+            instance.report += (
+                "Fout in 'censor_limit' kolom: waarden zijn niet int of float.\n\n"
+            )
+    else:
+        instance.report += "De kolom 'censor_limit' kan worden toegevoegd om aan te geven welke limiet waarde is gebruikt\n\n"
+
+    return reader
 
 
 def get_monitoring_tube(

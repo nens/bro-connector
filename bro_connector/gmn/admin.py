@@ -19,15 +19,12 @@ def _register(model, admin_class):
 
 class MeasuringPointsInline(admin.TabularInline):
     model = MeasuringPoint
-    fields = (
-        "subgroup",
-        "groundwater_monitoring_tube",
-        "code",
-    )
+    fields = ("subgroup", "groundwater_monitoring_tube", "code", "monitoring_networks")
     readonly_fields = (
         "subgroup",
         "groundwater_monitoring_tube",
         "code",
+        "monitoring_networks",
     )
 
     extra = 0
@@ -36,6 +33,23 @@ class MeasuringPointsInline(admin.TabularInline):
         "subgroup",
         "groundwater_monitoring_tube",
     )
+
+    def monitoring_networks(self, obj):
+        nets = []
+        for meetpunt in obj.groundwater_monitoring_tube.measuring_point.all().exclude(
+            gmn=obj.gmn
+        ):
+            if meetpunt.gmn.name not in nets:
+                nets.append(meetpunt.gmn.name)
+
+        if nets:
+            meetnet_string = ", ".join(nets)
+        else:
+            meetnet_string = "-"
+
+        return meetnet_string
+
+    monitoring_networks.short_description = "Andere Meetnetten"
 
 
 class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):

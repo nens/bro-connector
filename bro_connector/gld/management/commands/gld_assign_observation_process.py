@@ -1,14 +1,7 @@
 from django.core.management.base import BaseCommand
-from django.contrib.gis.geos import Point
-from django.db.models import Q
-from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 from gld.models import Observation, ObservationProcess
 # import polars as pl
-import csv
-import re
-import os
-from datetime import datetime
-import pandas as pd
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -24,13 +17,17 @@ class Command(BaseCommand):
         # unique_process_ids = []
         for obs in Observation.objects.all():
             obs_process: ObservationProcess = obs.observation_process
-            procedure = ObservationProcess.objects.filter(
-                process_reference=obs_process.process_reference,
-                measurement_instrument_type=obs_process.measurement_instrument_type,
-                air_pressure_compensation_type=obs_process.air_pressure_compensation_type,
-                process_type=obs_process.process_type,
-                evaluation_procedure=obs_process.evaluation_procedure,
-            ).order_by("observation_process_id").first()
+            procedure = (
+                ObservationProcess.objects.filter(
+                    process_reference=obs_process.process_reference,
+                    measurement_instrument_type=obs_process.measurement_instrument_type,
+                    air_pressure_compensation_type=obs_process.air_pressure_compensation_type,
+                    process_type=obs_process.process_type,
+                    evaluation_procedure=obs_process.evaluation_procedure,
+                )
+                .order_by("observation_process_id")
+                .first()
+            )
             # if procedure.observation_process_id not in unique_process_ids:
             #     unique_process_ids.append(procedure.observation_process_id)
             obs.observation_process = procedure

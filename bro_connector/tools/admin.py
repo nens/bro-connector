@@ -195,26 +195,6 @@ class GLDImportAdmin(admin.ModelAdmin):
 
     readonly_fields = ["report", "validated", "executed"]
 
-    def get_fields(self, request, obj=None):
-        fields = [
-            "file",
-            "groundwater_monitoring_tube",
-            "responsible_party",
-            "observation_type",
-            "field_value_unit",
-            "status",
-            "process_reference",
-            "measurement_instrument_type",
-            "air_pressure_compensation_type",
-            "process_type",
-            "evaluation_procedure",
-            "report",
-            "validated",
-            "executed",
-        ]
-
-        return fields
-
     def save_model(self, request, obj, form, change):
         # Save the object first
         super().save_model(request, obj, form, change)
