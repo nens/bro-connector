@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def save_measuring_points(sender, instance: GroundwaterMonitoringNet, **kwargs):
     logger.info(instance.project_number)
 
-    measuring_points = instance.measuring_points.all()
+    measuring_points = instance.measuring_point.all()
     for point in measuring_points:
         gmw = point.groundwater_monitoring_tube.groundwater_monitoring_well_static
         gmw.project = instance.project

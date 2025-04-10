@@ -40,7 +40,7 @@ class GroundwaterMonitoringNet(models.Model):
         max_length=255,
         null=True,
         blank=True,
-        editable=False,
+        editable=True,
         verbose_name="BRO-ID GMN",
         unique=True,
     )
