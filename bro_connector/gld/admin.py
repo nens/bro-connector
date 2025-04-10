@@ -3,10 +3,10 @@ from django.contrib import messages
 import os
 from . import models
 from main.settings.base import gld_SETTINGS
-from main.management.tasks import gld_actions
+from gld.management.tasks import gld_actions
 from reversion_compare.helpers import patch_admin
 import reversion
-from main.management.commands.gld_sync_to_bro import (
+from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
     get_observation_gld_source_document_data,
 )
@@ -41,6 +41,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "first_measurement",
         "completely_delivered",
         "has_open_observation",
+        "monitoring_networks",
     )
     list_filter = (
         TubeFilter,        
@@ -72,13 +73,21 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     def completely_delivered(self, obj):
         return obj.completely_delivered
 
-    completely_delivered.short_description = "Fully Delivered"
+    completely_delivered.short_description = "Volledig geleverd"
 
     @admin.display(boolean=True)
     def has_open_observation(self, obj):
         return obj.has_open_observation
 
-    has_open_observation.short_description = "Active Measurements"
+    has_open_observation.short_description = "Actief bemeten"
+
+    def monitoring_networks(self, obj):
+        nets = ""
+        for net in obj.groundwater_monitoring_net.all():
+            nets += f"{net.name} "
+        return nets
+
+    monitoring_networks.short_description = "Meetnetten"
 
     def deliver_to_bro(self, request, queryset):
         for dossier in queryset:

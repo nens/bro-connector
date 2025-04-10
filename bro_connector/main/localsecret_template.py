@@ -1,6 +1,8 @@
 # FERNET_ENCRYPTION_KEY = ""
 # SALT_STRING = ""
 
+# GDAL_DLL_VERSION = "309"
+
 # env = ""
 
 # # FTP server details
