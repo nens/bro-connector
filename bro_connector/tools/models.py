@@ -24,14 +24,21 @@ class BroImporter(models.Model):
         null=False,
     )
     kvk_number = models.CharField(max_length=8, null=False)
-    import_date = models.DateTimeField(editable=False, default=datetime.datetime.now())
-    created_date = models.DateTimeField(editable=False, default=datetime.datetime.now())
+    import_date = models.DateTimeField(editable=False)
+    created_date = models.DateTimeField(editable=False)
 
     class Meta:
         managed = True
         db_table = 'tools"."bro_importer'
         verbose_name = "Importer"
         verbose_name_plural = "BRO Importer"
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.import_date = datetime.datetime.now()
+            self.created_date = datetime.datetime.now()
+
+        super().save(self, *args, **kwargs)
 
 
 class XMLImport(models.Model):
