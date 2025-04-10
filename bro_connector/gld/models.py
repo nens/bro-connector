@@ -26,7 +26,6 @@ from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringTubeStatic
 from gmn.models import GroundwaterMonitoringNet
 from main.models import BaseModel
-import datetime
 
 logger = getLogger(__file__)
 
@@ -137,13 +136,21 @@ class GroundwaterLevelDossier(BaseModel):
 class Observation(BaseModel):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False)
     groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE, null=True, blank=True
+        "GroundwaterLevelDossier", on_delete=models.CASCADE
     )
     observation_metadata = models.ForeignKey(
-        "ObservationMetadata", on_delete=models.CASCADE, null=True, blank=True
+        "ObservationMetadata",
+        on_delete=models.SET_DEFAULT,
+        default=None,
+        null=True,
+        blank=True,
     )
     observation_process = models.ForeignKey(
-        "ObservationProcess", on_delete=models.CASCADE, null=True, blank=True
+        "ObservationProcess",
+        on_delete=models.SET_DEFAULT,
+        default=None,
+        null=True,
+        blank=True,
     )
     observation_starttime = models.DateTimeField(blank=True, null=True)
     result_time = models.DateTimeField(blank=True, null=True)
@@ -198,6 +205,24 @@ class Observation(BaseModel):
             return self.observation_endtime - self.observation_starttime
         return None
 
+    @property
+    def validation_status(self):
+        nr_of_unvalidated = len(
+            MeasurementTvp.objects.filter(
+                observation=self,
+                measurement_point_metadata__status_quality_control__in=[
+                    "nogNietBeoordeeld",
+                    "onbekend",
+                ],
+            )
+        )
+        if nr_of_unvalidated > 0:
+            return "voorlopig"
+        elif nr_of_unvalidated == 0:
+            return "volledigBeoordeeld"
+        else:
+            return "onbekend"
+
     def __str__(self):
         end = "present"
         if self.observation_endtime:
@@ -215,35 +240,6 @@ class Observation(BaseModel):
         else:
             return f"{self.groundwater_level_dossier} (Unknown - Unknown)"
 
-    def save(self, *args, **kwargs):
-        if self.pk is None:
-            super().save(*args, **kwargs)
-            return
-
-        if self.observation_endtime is None:
-            super().save(*args, **kwargs)
-            return
-
-        if self.observation_endtime <= datetime.datetime.now().astimezone():
-            super().save(*args, **kwargs)
-
-            # Create a duplicate metadata
-            metadata = self.observation_metadata
-            metadata.observation_metadata_id = None
-            metadata.save()
-
-            # Create a duplicate process
-            process = self.observation_process
-            process.observation_process_id = None
-            process.save()
-
-            Observation.objects.create(
-                observation_starttime=self.observation_endtime,
-                groundwater_level_dossier=self.groundwater_level_dossier,
-                observation_metadata=metadata,
-                observation_process=process,
-            )
-
     class Meta:
         managed = True
         db_table = 'gld"."observation'
@@ -253,7 +249,6 @@ class Observation(BaseModel):
 
 class ObservationMetadata(BaseModel):
     observation_metadata_id = models.AutoField(primary_key=True)
-    date_stamp = models.DateField(blank=True, null=True)
     observation_type = models.CharField(
         choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True
     )
@@ -268,40 +263,21 @@ class ObservationMetadata(BaseModel):
 
     def __str__(self):
         if self.responsible_party:
-            return f"{self.responsible_party.name} {str(self.status)} ({str(self.date_stamp)})"
+            return f"{self.responsible_party.name} {str(self.status)}"
         else:
-            return f"{str(self.status)} ({str(self.date_stamp)})"
-
-    @property
-    def validation_status(self):
-        if self.observation_type == "controlemeting":
-            return None
-        try:
-            observation = Observation.objects.get(observation_metadata=self)
-        except Exception as e:
-            return f"{e}"
-
-        nr_of_unvalidated = len(
-            MeasurementTvp.objects.filter(
-                observation=observation,
-                measurement_point_metadata__status_quality_control__in=[
-                    "nogNietBeoordeeld",
-                    "onbekend",
-                ],
-            )
-        )
-        if nr_of_unvalidated > 0:
-            return "voorlopig"
-        elif nr_of_unvalidated == 0:
-            return "volledigBeoordeeld"
-        else:
-            return "onbekend"
+            return f"{str(self.status)}"
 
     class Meta:
         managed = True
         db_table = 'gld"."observation_metadata'
         verbose_name = "Observatie Metadata"
         verbose_name_plural = "Observatie Metadata"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["observation_type", "status", "responsible_party"],
+                name="unique_metadata",
+            )
+        ]
 
 
 class ObservationProcess(BaseModel):
@@ -336,6 +312,18 @@ class ObservationProcess(BaseModel):
         db_table = 'gld"."observation_process'
         verbose_name = "Observatie Proces"
         verbose_name_plural = "Observatie Proces"
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "process_reference",
+                    "measurement_instrument_type",
+                    "air_pressure_compensation_type",
+                    "process_type",
+                    "evaluation_procedure",
+                ],
+                name="unique_observation_process",
+            )
+        ]
 
 
 # MEASUREMENT TIME VALUE PAIR

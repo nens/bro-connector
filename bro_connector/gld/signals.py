@@ -85,6 +85,22 @@ def on_delete_measurement_observation(sender, instance: Observation, **kwargs):
     if observation_metadata:
         observation_metadata.delete()
 
+@receiver(post_save, sender=Observation)
+def on_save_observation(sender, instance: Observation, **kwargs):
+    gld = instance.groundwater_level_dossier
+
+    open_observations = gld.observation_set.filter(
+        observation_endtime__isnull=True
+    )
+    if open_observations.count() == 0:
+        last_observation: Observation = gld.observation_set.all().order_by("observation_starttime").last()
+        Observation.objects.create(
+            observation_starttime = last_observation.observation_endtime,
+            groundwater_level_dossier = last_observation.groundwater_level_dossier,
+            observation_metadata = last_observation.observation_metadata,
+            observation_process = last_observation.observation_process
+        )
+
 
 @receiver(pre_save, sender=MeasurementTvp)
 def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):

@@ -27,6 +27,8 @@ class BroImporter(BaseModel):
     kvk_number = models.CharField(max_length=8, null=False)
     import_date = models.DateTimeField(editable=False)
     created_date = models.DateTimeField(editable=False)
+    import_date = models.DateTimeField(editable=False)
+    created_date = models.DateTimeField(editable=False)
 
     class Meta:
         managed = True
