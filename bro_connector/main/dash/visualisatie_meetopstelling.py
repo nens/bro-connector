@@ -598,6 +598,7 @@ def update_output_div(data_tube, data_electrodes, event, options, referentie):
     [Input("groundwater-monitoring-well-static-id", "children")],
 )
 def get_dropdown_events(groundwater_monitoring_well_static_id):
+    print(groundwater_monitoring_well_static_id)
     if str(groundwater_monitoring_well_static_id).isdigit():
         monitoring_well = get_object_or_404(
             GroundwaterMonitoringWellStatic,
