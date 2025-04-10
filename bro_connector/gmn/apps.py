@@ -7,4 +7,4 @@ class GmnAanleveringConfig(AppConfig):
     verbose_name = "GMN"
 
     def ready(self):
-        pass
+        import gmn.signals  # noqa: F401
