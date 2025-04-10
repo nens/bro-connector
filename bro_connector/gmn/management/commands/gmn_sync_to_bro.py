@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from main.management.tasks.gmn_sync import sync_gmn
+from gmn.management.tasks.gmn_sync import sync_gmn
 
 
 class Command(BaseCommand):
