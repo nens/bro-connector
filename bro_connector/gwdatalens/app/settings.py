@@ -42,3 +42,4 @@ else:
 
 LOCALE_PATH = ASSETS_PATH / "locale"
 CUSTOM_CSS_PATH = str(ASSETS_PATH / "custom.css")
+MAPBOX_ACCESS_TOKEN = str(ASSETS_PATH / ".mapbox_access_token")
