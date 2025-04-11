@@ -7,6 +7,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import random
+from main.models import BaseModel
 
 
 def get_color_value():
@@ -68,7 +69,7 @@ class SecureCharField(CharField):
         return value
 
 
-class Organisation(models.Model):
+class Organisation(BaseModel):
     name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Naam")
     company_number = models.IntegerField(blank=True, verbose_name="KVK")
     color = models.CharField(max_length=50, null=True, blank=True)
@@ -96,7 +97,7 @@ class Organisation(models.Model):
         super().save(*args, **kwargs)
 
 
-class BROProject(models.Model):
+class BROProject(BaseModel):
     name = models.CharField(max_length=50, null=True, blank=True)
     project_number = models.IntegerField(null=False, blank=False)
     owner = models.ForeignKey(

@@ -36,12 +36,13 @@ import main.utils.validators_models as validators_models
 from bro.models import Organisation, BROProject
 import datetime
 from gmw.utils import generate_put_code
+from main.models import BaseModel
 
 
-class GroundwaterMonitoringWellStatic(models.Model):
+class GroundwaterMonitoringWellStatic(BaseModel):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
     internal_id = models.CharField(
-        max_length=50, verbose_name="Veldnaam", null=True, blank=True
+        max_length=50, verbose_name="Veldnaam", null=True, blank=True, unique=True
     )
     bro_id = models.CharField(
         max_length=15, blank=True, null=True, verbose_name="BRO ID", unique=True
@@ -105,13 +106,13 @@ class GroundwaterMonitoringWellStatic(models.Model):
         max_length=256, blank=True, null=True, verbose_name="OLGA-code"
     )
     well_code = models.CharField(
-        max_length=256, blank=True, null=True, verbose_name="Putcode"
+        max_length=256, blank=True, null=True, verbose_name="Putcode", unique=True
     )
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     coordinates = geo_models.PointField(
         srid=28992, blank=True, null=True, editable=False, verbose_name="RD Coordinaten"
     )  # This field type is a guess.
-    coordinates_4236 = geo_models.PointField(
+    coordinates_4326 = geo_models.PointField(
         srid=4326,
         blank=True,
         null=True,
@@ -211,11 +212,11 @@ class GroundwaterMonitoringWellStatic(models.Model):
 
     @property
     def lat(self):
-        return self.coordinates_4236.y
+        return self.coordinates_4326.y
 
     @property
     def lon(self):
-        return self.coordinates_4236.x
+        return self.coordinates_4326.x
 
     @property
     def project_number(self):
@@ -251,9 +252,9 @@ class GroundwaterMonitoringWellStatic(models.Model):
 
         # If coordinates are available, convert and save them to coordinates_4236
         if self.coordinates:
-            self.coordinates_4236 = self.coordinates.transform(4326, clone=True)
+            self.coordinates_4326 = self.coordinates.transform(4326, clone=True)
             # Save the updated instance
-            super().save(update_fields=["coordinates_4236"])
+            super().save(update_fields=["coordinates_4326"])
 
     class Meta:
         managed = True
@@ -262,7 +263,7 @@ class GroundwaterMonitoringWellStatic(models.Model):
         verbose_name_plural = "Grondwatermonitoring Putten - Statisch"
 
 
-class GroundwaterMonitoringWellDynamic(models.Model):
+class GroundwaterMonitoringWellDynamic(BaseModel):
     groundwater_monitoring_well_dynamic_id = models.AutoField(primary_key=True)
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
@@ -405,7 +406,7 @@ class GroundwaterMonitoringWellDynamic(models.Model):
         verbose_name_plural = "Grondwatermonitoring Putten - Dynamisch"
 
 
-class GroundwaterMonitoringTubeStatic(models.Model):
+class GroundwaterMonitoringTubeStatic(BaseModel):
     groundwater_monitoring_tube_static_id = models.AutoField(primary_key=True)
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
@@ -497,7 +498,7 @@ class GroundwaterMonitoringTubeStatic(models.Model):
         verbose_name_plural = "Grondwatermonitoring Filters - Statisch"
 
 
-class GroundwaterMonitoringTubeDynamic(models.Model):
+class GroundwaterMonitoringTubeDynamic(BaseModel):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_static = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
@@ -651,7 +652,7 @@ class GroundwaterMonitoringTubeDynamic(models.Model):
         verbose_name_plural = "Grondwatermonitoring Filters - Dynamisch"
 
 
-class GeoOhmCable(models.Model):
+class GeoOhmCable(BaseModel):
     geo_ohm_cable_id = models.AutoField(primary_key=True)
     groundwater_monitoring_tube_static = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
@@ -684,7 +685,7 @@ class GeoOhmCable(models.Model):
         verbose_name_plural = "Geo Ohm Kabels"
 
 
-class Electrode(models.Model):
+class Electrode(BaseModel):
     electrode_static_id = models.AutoField(primary_key=True)
     geo_ohm_cable = models.ForeignKey(GeoOhmCable, on_delete=models.CASCADE)
     electrode_packing_material = models.CharField(
@@ -723,7 +724,7 @@ class Electrode(models.Model):
         verbose_name_plural = "Electrodes"
 
 
-class Event(models.Model):
+class Event(BaseModel):
     change_id = models.AutoField(primary_key=True)
     event_name = models.CharField(
         choices=EVENTNAME,
@@ -788,8 +789,7 @@ def get_current_values(instance):
     }
 
 
-class gmw_registration_log(models.Model):
-    date_modified = models.CharField(max_length=254, null=True, blank=True)
+class gmw_registration_log(BaseModel):
     bro_id = models.CharField(max_length=254, null=True, blank=True)
     event_id = models.CharField(max_length=254, null=True, blank=True)
     validation_status = models.CharField(max_length=254, null=True, blank=True)
@@ -855,7 +855,7 @@ class gmw_registration_log(models.Model):
         verbose_name_plural = "GMW Synchronisatie Logs"
 
 
-class Picture(models.Model):
+class Picture(BaseModel):
     picture_id = models.AutoField(primary_key=True)
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
@@ -887,7 +887,7 @@ class Picture(models.Model):
         verbose_name_plural = "Fotos"
 
 
-class MaintenanceParty(models.Model):
+class MaintenanceParty(BaseModel):
     maintenance_party_id = models.AutoField(primary_key=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
@@ -909,7 +909,7 @@ class MaintenanceParty(models.Model):
         verbose_name_plural = "Onderhoudsteams"
 
 
-class Maintenance(models.Model):
+class Maintenance(BaseModel):
     maintenance_id = models.AutoField(primary_key=True)
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,

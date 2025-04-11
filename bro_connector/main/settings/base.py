@@ -14,7 +14,7 @@ import os
 import platform
 from pathlib import Path
 import django.db.models.options as options
-from main.localsecret import env
+from main.localsecret import env, GDAL_DLL_VERSION
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
@@ -284,6 +284,58 @@ ADMIN_REORDER = (
     },
 )
 
+
+LOG_DIR = "/var/logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "detailed": {
+            "format": "%(asctime)s: %(name)s %(levelname)s %(message)s",
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {
+        "task_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "task.log"),
+            "formatter": "detailed",
+        },
+        "access_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "access.log"),
+            "formatter": "detailed",
+        },
+        "general_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "general.log"),
+            "formatter": "detailed",
+        },
+    },
+    "loggers": {
+        "task": {
+            "handlers": ["task_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "access": {
+            "handlers": ["access_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "general": {
+            "handlers": ["general_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
 if env == "production":
     demo = False
     welcome_sign = "Inloggen"
@@ -460,5 +512,5 @@ GRAPH_MODELS = {
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10_485_760  # (10MB) needed for DASH APP
 
 if platform.system() == "Windows":
-    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal309.dll"
+    GDAL_LIBRARY_PATH = rf"C:\OSGeo4W\bin\gdal{GDAL_DLL_VERSION}.dll"
     GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"

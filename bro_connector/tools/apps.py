@@ -7,4 +7,4 @@ class ToolsConfig(AppConfig):
     verbose_name = "TOOLS"
 
     def ready(self):
-        pass
+        import tools.signals  # noqa: F401
