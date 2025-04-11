@@ -14,7 +14,7 @@ cachelib==0.9.0
 certifi==2024.7.4
 cffi==1.17.0
 channels==4.0.0
-charset-normalizer==3.3.2
+charset_normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 constantly==15.1.0
@@ -82,13 +82,13 @@ numpy==2.0.1
 packaging==24.2
 pandas==2.2.2
 paramiko==3.4.0
-pastas==1.7.0
+pastas==1.9.0
 pastastore==1.10.0
 pillow==10.4.0
 pip==24.2
 plotly==5.20.0 # Currently required for Visualatie Meetopstelling
 polars==1.26.0
-psycopg2==2.9.9
+# psycopg2==2.9.9
 psycopg2-binary==2.9.9
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
