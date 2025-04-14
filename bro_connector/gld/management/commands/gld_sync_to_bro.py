@@ -174,7 +174,7 @@ def get_observation_gld_source_document_data(observation: models.Observation):
 
     # Get the observation metadata and procedure data
     observation_metadata_instance = observation.observation_metadata
-    observation_status = observation_metadata_instance.validation_status
+    observation_status = observation.validation_status
 
     observation_metadata = {
         "observationType": observation_metadata_instance.observation_type,
@@ -352,7 +352,7 @@ class GldSyncHandler:
         Startregistration requests are saved to .xml file in startregistrations folder
         """
         bro_id_gmw = well.bro_id
-        location_code = well.nitg_code
+        internal_id = well.internal_id
         quality_regime = well.quality_regime
         delivery_accountable_party = set_delivery_accountable_party(
             well, self._is_demo()
@@ -363,12 +363,12 @@ class GldSyncHandler:
 
             if self.monitoringnetworks is None:
                 srcdocdata = {
-                    "objectIdAccountableParty": location_code + str(filtrnr),
+                    "objectIdAccountableParty": f"{internal_id}{str(filtrnr)}",
                     "monitoringPoints": monitoringpoints,
                 }
             else:
                 srcdocdata = {
-                    "objectIdAccountableParty": location_code + str(filtrnr),
+                    "objectIdAccountableParty": f"{internal_id}{str(filtrnr)}",
                     "groundwaterMonitoringNets": self.monitoringnetworks,  #
                     "monitoringPoints": monitoringpoints,
                 }
@@ -445,12 +445,11 @@ class GldSyncHandler:
         comments = "Succesfully validated sourcedocument, no errors"
         process_status = "source_document_validation_succesful"
 
+        validation_status = validation_info["status"] ## 401 = unauthorized
         if "errors" in validation_info:
             if len(validation_info["errors"]) > 0:
-                validation_status = validation_info["status"]
                 comments = f"Validated startregistration document, found errors: {validation_info['errors']}"
             else:
-                validation_status = validation_info["status"]
                 comments = "Succesfully validated sourcedocument, no errors"
 
         record, created = models.gld_registration_log.objects.update_or_create(
@@ -623,20 +622,11 @@ class GldSyncHandler:
             if well.deliver_gmw_to_bro is False:
                 continue
 
-            if self.demo:
-                if well.bro_id != "GMW000000042583":
-                    continue
-
             # Get some well properties
-            quality_regime = "IMBRO"
-
-            # Get all filters that are installed in this well
-            tubes = GroundwaterMonitoringTubeStatic.objects.filter(
-                groundwater_monitoring_well_id=well.groundwater_monitoring_well_static_id
-            )
+            quality_regime = "IMBRO" ## FIXME: derive from GLD
 
             # Loop over all filters within the well
-            for tube in tubes:
+            for tube in well.tube.all():
                 tube_id = tube.tube_number
 
                 # Ignore filters that should not be delivered to BRO
@@ -714,36 +704,53 @@ class GldSyncHandler:
             and registration_log.delivery_status != "OPGENOMEN_LVBRO"
             and registration_log.delivery_id is not None
         ):
+            print("1st if statement")
             # The registration has been delivered, but not yet approved
             self.check_delivery_status_levering(registration_id)
-
+            return
         else:
             # Succesfully generated a startregistration sourcedoc in the previous step
+            if (
+                registration_log.process_status
+                == "failed_to_generate_source_documents"
+            ):
+                logger.error(
+                    "Failed to generate source documents, so registration log is invalid somehow."
+                )
+                self.create_start_registration_sourcedocs(well,registration_id)
+                return
             # Validate the created sourcedocument
             if (
                 registration_log.process_status
                 == "succesfully_generated_startregistration_request"
             ):
+                print("2nd if statement")
                 self.validate_gld_startregistration_request(registration_id)
-
+                return
             # If an error occured during validation, try again
             # Failed to validate sourcedocument doesn't mean the document is valid/invalid
             # It means something went wrong during validation (e.g BRO server error)
             # Even if a document is invalid, the validation process has succeeded and won't be reattempted
-            if registration_log.process_status == "failed_to_validate_sourcedocument":
+
+            if registration_log.process_status == "failed_to_validate_sourcedocument": ## CHECKED STATEMENT DID NOT CORRESPOND TO 
                 # If we failed to validate the sourcedocument, try again
                 # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
+                print("3rd if statement")
                 self.validate_gld_startregistration_request(registration_id)
-
+                return
             # If validation is succesful and the document is valid, try a delivery
             if (
                 registration_log.process_status
                 == "source_document_validation_succesful"
             ):
                 if get_registration_validation_status(registration_id) == "VALIDE":
+                    print("4th if statement")
                     self.deliver_startregistration_sourcedocuments(registration_id)
+                    return
                 else:
+                    print("5th if statement")
                     registration_log.delete()
+                    return
 
             # If delivery is succesful, check the status of the delivery
             if (
@@ -752,17 +759,27 @@ class GldSyncHandler:
                 and registration_log.delivery_status != "OPGENOMEN_LVBRO"
                 and registration_log.delivery_id is not None
             ):
+                print("6th if statement")
                 # The registration has been delivered, but not yet approved
                 self.check_delivery_status_levering(registration_id)
+                return
 
             # If the delivery failed previously, we can retry
             if registration_log.process_status == "failed_to_deliver_sourcedocuments":
                 # This will not be the case on the first try
                 if registration_log.delivery_status == "failed_thrice":
                     # TODO report with mail?
+                    print("7th if statement")
                     return
                 else:
+                    print("8th if statement")
                     self.deliver_startregistration_sourcedocuments(registration_log.id)
+                    return
+
+        logger.error(
+            "None of the if statements are called, existing start registration is not edited."
+        )
+
 
     ### ADDITIONS ###
     def generate_gld_addition_sourcedoc_data(
@@ -862,17 +879,23 @@ class GldSyncHandler:
         # If there is not a GLD registration present in the database we can't create sourcedocs
         gld = observation.groundwater_level_dossier
         if not gld:
-            return
+            logger.error(
+                f"No GLD is available. An addition sourcedocument can't be created in this case."
+            )
+            return (None, False)
 
         # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
         if not gld.gld_bro_id:
-            return
+            logger.error(
+                f"No BroID of the GLD registration is available. An addition sourcedocument shouldn't be created in this case."
+            )
+            return (None, False)
 
         observation_tvps = models.MeasurementTvp.objects.filter(
             observation_id=observation.observation_id
         )
         if not observation_tvps:  # if there are no tvps in the observation
-            return  # then do nothing
+            return (None, False) # then do nothing
 
         (
             observation_source_document_data,
@@ -1170,8 +1193,6 @@ class Command(BaseCommand):
                     gld.create_addition_sourcedocuments_for_observation(observation)
                 )
 
-            well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=observation.groundwater_level_dossier.gwm_bro_id
-            )
+            well = observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
             gld.gld_validate_and_deliver(addition_log)

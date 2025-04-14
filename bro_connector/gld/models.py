@@ -410,15 +410,8 @@ class MeasurementPointMetadata(BaseModel):
         choices=CENSORREASON, max_length=200, blank=True, null=True
     )
     censor_reason_artesia = models.CharField(max_length=200, blank=True, null=True)
-    value_limit = models.DecimalField(
-        max_digits=100, decimal_places=10, blank=True, null=True
-    )
-    interpolation_code = models.CharField(
-        choices=INTERPOLATIONTYPE,
-        max_length=200,
-        blank=True,
-        null=True,
-        default="discontinu",
+    value_limit = models.CharField(
+        max_length=50, blank=True, null=True
     )
 
     class Meta:
@@ -431,6 +424,10 @@ class MeasurementPointMetadata(BaseModel):
             models.Index(fields=["status_quality_control"]),
             models.Index(fields=["censor_reason"]),
         ]
+
+    @property
+    def interpolation_code(self):
+        return "discontinu"
 
     def __str__(self):
         return f"{self.measurement_point_metadata_id} {self.status_quality_control}"

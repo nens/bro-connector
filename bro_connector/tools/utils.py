@@ -1,4 +1,4 @@
-def detect_csv_separator(filename):
+def detect_csv_separator(file):
     """
     Detect the separator/delimiter used in a CSV file.
 
@@ -14,36 +14,35 @@ def detect_csv_separator(filename):
     possible_delimiters = [",", ";", "\t", "|", ":"]
 
     try:
-        with open(filename, "r", newline="") as file:
-            # Read the first few lines
-            sample = "".join([file.readline() for _ in range(5)])
+        # Read the first few lines
+        sample = "".join([file.readline() for _ in range(5)])
 
-            if not sample:
-                return ","
+        if not sample:
+            return ","
 
-            # Count occurrences of each delimiter
-            delimiter_counts = {
-                delimiter: sample.count(delimiter) for delimiter in possible_delimiters
-            }
+        # Count occurrences of each delimiter
+        delimiter_counts = {
+            delimiter: sample.count(delimiter) for delimiter in possible_delimiters
+        }
 
-            # Get the delimiter with the highest count and consistent presence
-            max_delimiter = max(delimiter_counts.items(), key=lambda x: x[1])
+        # Get the delimiter with the highest count and consistent presence
+        max_delimiter = max(delimiter_counts.items(), key=lambda x: x[1])
 
-            # If the delimiter appears consistently across lines, it's likely the separator
-            if max_delimiter[1] > 0:
-                # Validate by trying to parse with the detected delimiter
-                file.seek(0)  # Reset file pointer
-                try:
-                    dialect = csv.Sniffer().sniff(
-                        sample, delimiters=possible_delimiters
-                    )
-                    if dialect.delimiter in possible_delimiters:
-                        return dialect.delimiter
-                    else:
-                        return max_delimiter[0]
-                except csv.Error:
-                    # If sniffer fails, return the most frequent delimiter
+        # If the delimiter appears consistently across lines, it's likely the separator
+        if max_delimiter[1] > 0:
+            # Validate by trying to parse with the detected delimiter
+            file.seek(0)  # Reset file pointer
+            try:
+                dialect = csv.Sniffer().sniff(
+                    sample, delimiters=possible_delimiters
+                )
+                if dialect.delimiter in possible_delimiters:
+                    return dialect.delimiter
+                else:
                     return max_delimiter[0]
+            except csv.Error:
+                # If sniffer fails, return the most frequent delimiter
+                return max_delimiter[0]
 
             return ","
 

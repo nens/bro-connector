@@ -106,6 +106,7 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
         print(
             f"Observation: {observation}; End_date: {observation.observation_endtime}"
         )
+
         addition_log = gld_addition_log.objects.filter(
             observation_id=observation.observation_id,
             addition_type=form_addition_type(observation),
@@ -138,7 +139,13 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
                 # (addition_log) = gld.create_replace_sourcedocuments(observation)
                 pass
 
-            gld.gld_validate_and_deliver(addition_log)
+            if addition_log:
+                gld.gld_validate_and_deliver(addition_log)
+            else:
+                logger.error(
+                    f"Tried to create addition document for Observation ({observation}), but not all inputs are known."
+                )
+                continue
 
         if not addition_log:
             logger.error(
