@@ -8,7 +8,6 @@ from main.settings.base import env
 from gmw import models
 from main.management.tasks.django_tools_bro import (
     GetEvents,
-    GetDjangoObjects,
     DjangoTableToDict,
 )
 import logging
@@ -87,7 +86,7 @@ def generate_object_id(well: models.GroundwaterMonitoringWellStatic) -> dict:
 def get_object_id_accountable_party(
     well: models.GroundwaterMonitoringWellStatic,
 ) -> dict:
-    object_id = {"objectIdAccountableParty": well.nitg_code}
+    object_id = {"objectIdAccountableParty": well.internal_id}
     count = 0
     if object_id["objectIdAccountableParty"] is None:
         object_id = generate_object_id(well)
@@ -278,13 +277,8 @@ class GetSourceDocData:
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        tubes = GetDjangoObjects.get_all_tubes(well)
-
         self.datafile["monitoringTubes"] = {}
-
-        tube_number = 0
-
-        for tube in tubes:
+        for tube in well.tube.all():
             tube_dynamic = (
                 models.GroundwaterMonitoringTubeDynamic.objects.filter(
                     groundwater_monitoring_tube_static=tube
@@ -295,47 +289,30 @@ class GetSourceDocData:
 
             self.handle_individual_tube(
                 dynamic_tube=tube_dynamic,
-                tube_number=tube_number,
+                tube_number=tube.tube_number,
                 sourcedoctype="construction",
             )
 
-            geo_ohm_number = 0
-
-            geo_ohm_cables = GetDjangoObjects.get_all_geo_ohm_cables(tube)
-
-            self.datafile["monitoringTubes"][tube_number]["geoOhmCables"] = {}
-
-            for geo_ohm_cable in geo_ohm_cables:
-                electrode_number = 0
-
-                electrodes = GetDjangoObjects.get_all_electrodes(geo_ohm_cable)
-
+            self.datafile["monitoringTubes"][tube.tube_number]["geoOhmCables"] = {}
+            for geo_ohm_cable in tube.geo_ohm_cable.all():
                 self.handle_individual_geo_ohm_cable(
                     geo_ohm_cable=geo_ohm_cable,
-                    tube_number=tube_number,
-                    geo_ohm_number=geo_ohm_number,
+                    tube_number=tube.tube_number,
+                    geo_ohm_number=geo_ohm_cable.cable_number,
                 )
-
-                self.datafile["monitoringTubes"][tube_number]["geoOhmCables"][
-                    geo_ohm_number
+                self.datafile["monitoringTubes"][tube.tube_number]["geoOhmCables"][
+                    geo_ohm_cable.cable_number
                 ]["electrodes"] = {}
 
-                for electrode in electrodes:
+                for electrode in geo_ohm_cable.electrode.all():
                     self.handle_individual_electrode(
                         electrode_static=electrode,
-                        tube_number=tube_number,
-                        geo_ohm_number=geo_ohm_number,
-                        electrode_number=electrode_number,
+                        tube_number=tube.tube_number,
+                        geo_ohm_number=geo_ohm_cable.cable_number,
+                        electrode_number=electrode.electrode_number,
                     )
 
-                    electrode_number += 1
-
-                geo_ohm_number += 1
-
-            tube_number += 1
-
         self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
-
         delivered_vertical_position = self.create_delivered_vertical_position_dict(
             well_static=event.groundwater_monitoring_well_static,
             well_dynamic=event.groundwater_monitoring_well_dynamic,
@@ -369,9 +346,10 @@ class GetSourceDocData:
 
         # Get tube information
         self.datafile["monitoringTubes"] = {}
-        self.handle_individual_tube(
-            event.groundwater_monitoring_well_tube_dynamic, 0, "shortening"
-        )
+        for tube in event.groundwater_monitoring_tube_dynamic.all():
+            self.handle_individual_tube(
+                tube, tube.groundwater_monitoring_well_static.tube_number, "shortening"
+            )
 
         tube_static = event.groundwater_monitoring_well_tube_dynamic.groundwater_monitoring_tube_static
 
@@ -624,15 +602,8 @@ def validate_source_doc_type(source_doc_type):
         raise Exception(f"Invalid source document type: {source_doc_type}")
 
 
-def set_delivery_accountable_party(
-    well: models.GroundwaterMonitoringWellStatic, demo: bool
-) -> int:
-    if demo:
-        delivery_accountable_party = 27376655
-    else:
-        delivery_accountable_party = well.delivery_accountable_party.company_number
-
-    return delivery_accountable_party
+def set_delivery_accountable_party(well: models.GroundwaterMonitoringWellStatic) -> int:
+    return 27376655 if _is_demo() else well.delivery_accountable_party.company_number
 
 
 def create_sourcedocs(
@@ -645,15 +616,13 @@ def create_sourcedocs(
     Try to create registration sourcedocuments for a well/tube/quality regime
     Registration requests are saved to .xml file in registrations folder
     """
-    demo = _is_demo()
     validate_source_doc_type(source_doc_type)
 
     well = models.GroundwaterMonitoringWellStatic.objects.get(
         bro_id=event.groundwater_monitoring_well_static
     )
     quality_regime = well.quality_regime
-
-    delivery_accountable_party = set_delivery_accountable_party(well, demo)
+    delivery_accountable_party = set_delivery_accountable_party(well)
 
     # Retrieve general static information of the well
     get_srcdoc_data = GetSourceDocData()
@@ -691,7 +660,7 @@ def create_sourcedocs(
         )
 
         process_status = f"succesfully_generated_{source_doc_type}_request"
-        record, created = models.gmw_registration_log.objects.update_or_create(
+        models.gmw_registration_log.objects.update_or_create(
             bro_id=srcdocdata["broId"],
             event_id=event.change_id,
             quality_regime=quality_regime,
@@ -707,7 +676,7 @@ def create_sourcedocs(
 
     except Exception as e:
         process_status = "failed_to_generate_source_documents"
-        record, created = models.gmw_registration_log.objects.update_or_create(
+        models.gmw_registration_log.objects.update_or_create(
             bro_id=srcdocdata["broId"],
             event_id=event.change_id,
             quality_regime=quality_regime,
@@ -1035,23 +1004,17 @@ def get_registration_validation_status(registration_id):
     return validation_status
 
 
-def delete_existing_failed_registrations(event: models.Event, quality_regime: str):
-    if models.gmw_registration_log.objects.filter(
-        event_id=event.change_id, quality_regime=quality_regime
-    ).exists():
-        reg = models.gmw_registration_log.objects.get(
-            event_id=event.change_id, quality_regime=quality_regime
-        )
-
-        if reg.process_status == "failed_to_generate_source_documents":
-            reg.delete()
+def delete_existing_failed_registrations(event: models.Event):
+    models.gmw_registration_log.objects.filter(
+        event_id=event.change_id, process_status="failed_to_generate_source_documents"
+    ).delete()
 
 
 class EventsHandler:
     def __init__(self, registrations_dir):
         self.registrations_dir = registrations_dir
 
-    def create_type_sourcedoc(self, event, event_type: str):
+    def create_type_sourcedoc(self, event: models.Event, event_type: str):
         """
         Possible event_types:
         WellHeadProtector, Lengthening,
@@ -1063,13 +1026,7 @@ class EventsHandler:
         Construction has its own function.
 
         """
-
-        well = models.GroundwaterMonitoringWellStatic.objects.get(
-            bro_id=event.groundwater_monitoring_well_static
-        )
-
-        delete_existing_failed_registrations(event, well.quality_regime)
-
+        delete_existing_failed_registrations(event)
         create_sourcedocs(
             event=event,
             registrations_dir=self.registrations_dir,
