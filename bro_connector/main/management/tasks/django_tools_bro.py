@@ -1,5 +1,22 @@
 from gmw import models
 
+EVENTNAME2TYPE = {
+    "constructie": "Construction",
+    "beschermconstructieVeranderd": "WellHeadProtector",
+    "buisOpgelengd": "Lengthening",
+    "buisIngekort": "Shortening",
+    "nieuweInmetingMaaiveld": "GroundLevelMeasuring",
+    "nieuweInmetingPosities": "PositionsMeasuring",
+    "nieuweBepalingMaaiveld": "GroundLevel",
+    "eigenaarVeranderd": "Owner",
+    "inmeting": "Positions",
+    "electrodeStatus": "ElectrodeStatus",
+    "onderhouderVeranderd": "Maintainer",
+    "buisstatusVeranderd": "TubeStatus",
+    "buisdeelIngeplaatst": "Insertion",
+    "maaiveldVerlegd": "Shift",
+}
+
 
 class DjangoTableToDict:
     def __init__(self):
@@ -204,92 +221,105 @@ class DjangoTableToDict:
         }
 
 
-class GetEvents:
-    """
-    A Class that helps retrieving different types of events.
-    The events will have information linking to the data that changed.
-    """
+def getConstruction():
+    return models.Event.objects.filter(
+        event_name="constructie",
+        delivered_to_bro=False,
+    )
 
-    def construction():
-        return models.Event.objects.filter(
-            event_name="constructie",
-            delivered_to_bro=False,
-        )
 
-    def wellHeadProtector():
-        return models.Event.objects.filter(
-            event_name="beschermconstructieVeranderd",
-            delivered_to_bro=False,
-        )
+def getAllIntermediateEvents():
+    return models.Event.objects.filter(delivered_to_bro=False).exclude(
+        event_name="constructie"
+    )
 
-    def lengthening():
-        return models.Event.objects.filter(
-            event_name="buisOpgelengd",
-            delivered_to_bro=False,
-        )
 
-    def shortening():
-        return models.Event.objects.filter(
-            event_name="buisIngekort",
-            delivered_to_bro=False,
-        )
+def getWellHeadProtector():
+    return models.Event.objects.filter(
+        event_name="beschermconstructieVeranderd",
+        delivered_to_bro=False,
+    )
 
-    def groundLevelMeasuring():
-        return models.Event.objects.filter(
-            event_name="nieuweInmetingMaaiveld",
-            delivered_to_bro=False,
-        )
 
-    def positionsMeasuring():
-        return models.Event.objects.filter(
-            event_name="nieuweInmetingPosities",
-            delivered_to_bro=False,
-        )
+def getLengthening():
+    return models.Event.objects.filter(
+        event_name="buisOpgelengd",
+        delivered_to_bro=False,
+    )
 
-    def groundLevel():
-        return models.Event.objects.filter(
-            event_name="nieuweBepalingMaaiveld",
-            delivered_to_bro=False,
-        )
 
-    def owner():
-        return models.Event.objects.filter(
-            event_name="eigenaarVeranderd",
-            delivered_to_bro=False,
-        )
+def getShortening():
+    return models.Event.objects.filter(
+        event_name="buisIngekort",
+        delivered_to_bro=False,
+    )
 
-    def positions():
-        return models.Event.objects.filter(
-            event_name="inmeting",
-            delivered_to_bro=False,
-        )
 
-    def electrodeStatus():
-        return models.Event.objects.filter(
-            event_name="electrodeStatus",
-            delivered_to_bro=False,
-        )
+def getGroundLevelMeasuring():
+    return models.Event.objects.filter(
+        event_name="nieuweInmetingMaaiveld",
+        delivered_to_bro=False,
+    )
 
-    def maintainer():
-        return models.Event.objects.filter(
-            event_name="onderhouderVeranderd",
-            delivered_to_bro=False,
-        )
 
-    def tubeStatus():
-        return models.Event.objects.filter(
-            event_name="buisstatusVeranderd",
-            delivered_to_bro=False,
-        )
+def getPositionsMeasuring():
+    return models.Event.objects.filter(
+        event_name="nieuweInmetingPosities",
+        delivered_to_bro=False,
+    )
 
-    def insertion():
-        return models.Event.objects.filter(
-            event_name="buisdeelIngeplaatst",
-            delivered_to_bro=False,
-        )
 
-    def shift():
-        return models.Event.objects.filter(
-            event_name="maaiveldVerlegd",
-            delivered_to_bro=False,
-        )
+def getGroundLevel():
+    return models.Event.objects.filter(
+        event_name="nieuweBepalingMaaiveld",
+        delivered_to_bro=False,
+    )
+
+
+def getOwner():
+    return models.Event.objects.filter(
+        event_name="eigenaarVeranderd",
+        delivered_to_bro=False,
+    )
+
+
+def getPositions():
+    return models.Event.objects.filter(
+        event_name="inmeting",
+        delivered_to_bro=False,
+    )
+
+
+def getElectrodeStatus():
+    return models.Event.objects.filter(
+        event_name="electrodeStatus",
+        delivered_to_bro=False,
+    )
+
+
+def getMaintainer():
+    return models.Event.objects.filter(
+        event_name="onderhouderVeranderd",
+        delivered_to_bro=False,
+    )
+
+
+def getTubeStatus():
+    return models.Event.objects.filter(
+        event_name="buisstatusVeranderd",
+        delivered_to_bro=False,
+    )
+
+
+def getInsertion():
+    return models.Event.objects.filter(
+        event_name="buisdeelIngeplaatst",
+        delivered_to_bro=False,
+    )
+
+
+def getShift():
+    return models.Event.objects.filter(
+        event_name="maaiveldVerlegd",
+        delivered_to_bro=False,
+    )

@@ -161,7 +161,7 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
 
     events_handler = gmw_sync.EventsHandler("./registrations/")
     for construction in construction_events:
-        events_handler.create_construction_sourcedoc(event=construction)
+        events_handler.create_construction(event=construction)
 
     electrodeStatus_events = GetEvents.electrodeStatus(well)
     for electrode_status in electrodeStatus_events:
