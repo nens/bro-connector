@@ -4,7 +4,7 @@ dependencies = [
     "asgiref",
     "certifi",
     "charset-normalizer",
-    "Django==4.0.3",
+    "Django==4.2",
     "django-extensions",
     "django-admin-generator==2.2.1",
     "django-jazzmin==2.6.0",
