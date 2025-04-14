@@ -36,7 +36,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube",
         "research_start_date",
         "research_last_date",
-        "gld_bro_id",        
+        "gld_bro_id",
         "quality_regime",
         "first_measurement",
         "completely_delivered",
@@ -44,7 +44,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "monitoring_networks",
     )
     list_filter = (
-        TubeFilter,        
+        TubeFilter,
         "quality_regime",
         "research_start_date",
         "research_last_date",
@@ -287,7 +287,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 )
             else:
                 gld.validate_gld_startregistration_request(
-                    registration_log.id,
+                    registration_log,
                 )
                 self.message_user(
                     request,
@@ -325,7 +325,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.deliver_startregistration_sourcedocuments(registration_log.id)
+                gld.deliver_startregistration_sourcedocuments(registration_log)
 
                 self.message_user(
                     request,
@@ -351,7 +351,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.check_delivery_status_levering(registration_log.id)
+                gld.check_delivery_status_levering(registration_log)
                 self.message_user(
                     request, "Attempted registration status check", messages.INFO
                 )

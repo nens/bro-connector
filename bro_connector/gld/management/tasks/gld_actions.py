@@ -63,10 +63,12 @@ def handle_start_registrations(
             gld._set_bro_info(well)
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
-            gld.create_start_registration_sourcedocs(
+            registration = gld.create_start_registration_sourcedocs(
                 well,
                 tube_number,
             )
+            gld.deliver_startregistration_sourcedocuments(registration)
+
         elif dossier.gld_bro_id:
             gld_registration_log.objects.update_or_create(
                 gwm_bro_id=dossier.gmw_bro_id,
@@ -88,9 +90,9 @@ def form_addition_type(observation: Observation) -> str:
     if observation.observation_type == "controlemeting":
         return "controlemeting"
 
-    if observation.observation_metadata.validation_status == "voorlopig":
-        return f"regulier_{observation.observation_metadata.validation_status}"
-    return f"regulier_{observation.observation_metadata.validation_status}"
+    if observation.validation_status == "voorlopig":
+        return f"regulier_{observation.validation_status}"
+    return f"regulier_{observation.validation_status}"
 
 
 def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):

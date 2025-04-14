@@ -13,6 +13,7 @@ from .models import (
 )
 from gmw.models import GroundwaterMonitoringTubeStatic
 import reversion
+import datetime
 
 
 def _calculate_value(field_value: float, unit: str) -> float | None:
@@ -85,20 +86,38 @@ def on_delete_measurement_observation(sender, instance: Observation, **kwargs):
     if observation_metadata:
         observation_metadata.delete()
 
+
+@receiver(pre_save, sender=Observation)
+def pre_save_measurement_observation(sender, instance: Observation, **kwargs):
+    if instance.observation_endtime:
+        if (
+            instance.observation_metadata.status == "voorlopig"
+            or instance.observation_metadata.observation_type == "controlemeting"
+        ):
+            instance.result_time = instance.timestamp_last_measurement
+        else:
+            instance.result_time = (
+                instance.observation_endtime + datetime.timedelta(weeks=1)
+                if instance.observation_endtime + datetime.timedelta(weeks=1)
+                < datetime.datetime.now()
+                else datetime.datetime.now()
+            )
+
+
 @receiver(post_save, sender=Observation)
 def on_save_observation(sender, instance: Observation, **kwargs):
     gld = instance.groundwater_level_dossier
 
-    open_observations = gld.observation_set.filter(
-        observation_endtime__isnull=True
-    )
+    open_observations = gld.observation_set.filter(observation_endtime__isnull=True)
     if open_observations.count() == 0:
-        last_observation: Observation = gld.observation_set.all().order_by("observation_starttime").last()
+        last_observation: Observation = (
+            gld.observation_set.all().order_by("observation_starttime").last()
+        )
         Observation.objects.create(
-            observation_starttime = last_observation.observation_endtime,
-            groundwater_level_dossier = last_observation.groundwater_level_dossier,
-            observation_metadata = last_observation.observation_metadata,
-            observation_process = last_observation.observation_process
+            observation_starttime=last_observation.observation_endtime,
+            groundwater_level_dossier=last_observation.groundwater_level_dossier,
+            observation_metadata=last_observation.observation_metadata,
+            observation_process=last_observation.observation_process,
         )
 
 

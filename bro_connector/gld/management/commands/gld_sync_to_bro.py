@@ -8,7 +8,7 @@ from copy import deepcopy
 from main.settings.base import env
 from django.apps import apps
 from gld import models
-from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
+from gmw.models import GroundwaterMonitoringWellStatic
 from bro.models import Organisation
 
 import logging
@@ -26,10 +26,10 @@ def get_registration_process_status(registration_id: int) -> str:
     return process_status
 
 
-def get_registration_validation_status(registration_id: int) -> str:
+def registration_is_valid(registration_id: int) -> bool:
     registration = models.gld_registration_log.objects.get(id=registration_id)
     validation_status = registration.validation_status
-    return validation_status
+    return validation_status == "VALIDE"
 
 
 def convert_value_to_meter(measurement: models.MeasurementTvp) -> models.MeasurementTvp:
@@ -174,7 +174,7 @@ def get_observation_gld_source_document_data(observation: models.Observation):
 
     # Get the observation metadata and procedure data
     observation_metadata_instance = observation.observation_metadata
-    observation_status = observation.validation_status
+    observation_status = observation.observation_metadata.status
 
     observation_metadata = {
         "observationType": observation_metadata_instance.observation_type,
@@ -236,9 +236,9 @@ def form_addition_type(observation: models.Observation) -> str:
     if observation.observation_type == "controlemeting":
         return "controlemeting"
 
-    if observation.observation_metadata.validation_status == "voorlopig":
-        return f"regulier_{observation.observation_metadata.validation_status}"
-    return f"regulier_{observation.observation_metadata.validation_status}"
+    if observation.validation_status == "voorlopig":
+        return f"regulier_{observation.validation_status}"
+    return f"regulier_{observation.validation_status}"
 
 
 def create_new_observations():
@@ -346,7 +346,7 @@ class GldSyncHandler:
         self,
         well: GroundwaterMonitoringWellStatic,
         filtrnr,
-    ):
+    ) -> models.gld_registration_log:
         """
         Try to create startregistration sourcedocuments for a well/tube/quality regime
         Startregistration requests are saved to .xml file in startregistrations folder
@@ -391,7 +391,7 @@ class GldSyncHandler:
             )
 
             process_status = "succesfully_generated_startregistration_request"
-            record, created = models.gld_registration_log.objects.update_or_create(
+            return models.gld_registration_log.objects.update_or_create(
                 gwm_bro_id=bro_id_gmw,
                 filter_number=filtrnr,
                 quality_regime=quality_regime,
@@ -402,11 +402,11 @@ class GldSyncHandler:
                     process_status=process_status,
                     file=filename,
                 ),
-            )
+            )[0]
 
         except Exception as e:
             process_status = "failed_to_generate_source_documents"
-            record, created = models.gld_registration_log.objects.update_or_create(
+            return models.gld_registration_log.objects.update_or_create(
                 gwm_bro_id=bro_id_gmw,
                 filter_number=filtrnr,
                 quality_regime=quality_regime,
@@ -417,17 +417,15 @@ class GldSyncHandler:
                     date_modified=datetime.datetime.now(),
                     process_status=process_status,
                 ),
-            )
+            )[0]
 
-    def validate_gld_startregistration_request(self, start_registration_id):
+    def validate_gld_startregistration_request(
+        self, registration: models.gld_registration_log
+    ):
         """
         Validate generated startregistration sourcedocuments
         """
-
-        gld_registration = models.gld_registration_log.objects.get(
-            id=start_registration_id
-        )
-        file = gld_registration.file
+        file = registration.file
         source_doc_file = os.path.join(self.registrations_dir, file)
         payload = open(source_doc_file)
 
@@ -445,34 +443,26 @@ class GldSyncHandler:
         comments = "Succesfully validated sourcedocument, no errors"
         process_status = "source_document_validation_succesful"
 
-        validation_status = validation_info["status"] ## 401 = unauthorized
+        validation_status = validation_info["status"]  ## 401 = unauthorized
         if "errors" in validation_info:
             if len(validation_info["errors"]) > 0:
                 comments = f"Validated startregistration document, found errors: {validation_info['errors']}"
             else:
                 comments = "Succesfully validated sourcedocument, no errors"
 
-        record, created = models.gld_registration_log.objects.update_or_create(
-            id=start_registration_id,
-            defaults=dict(
-                comments=comments,
-                process_status=process_status,
-                validation_status=validation_status,
-            ),
-        )
+        registration.comments = comments
+        registration.process_status = process_status
+        registration.validation_status = validation_status
+        registration.save()
 
-    def deliver_startregistration_sourcedocuments(self, start_registration_id):
+    def deliver_startregistration_sourcedocuments(
+        self, registration: models.gld_registration_log
+    ):
         """
         Deliver generated startregistration sourcedoc to the BRO
         """
-
-        # Get the registration
-        gld_registration = models.gld_registration_log.objects.get(
-            id=start_registration_id
-        )
-
         # If the delivery fails, use the this to indicate how many attempts were made
-        delivery_status = gld_registration.delivery_status
+        delivery_status = registration.delivery_status
         if delivery_status is None:
             delivery_status_update = "failed_once"
         else:
@@ -480,7 +470,7 @@ class GldSyncHandler:
             delivery_status_update = failed_update_strings[position + 1]
 
         try:
-            file = gld_registration.file
+            file = registration.file
             source_doc_file = os.path.join(self.registrations_dir, file)
             payload = open(source_doc_file)
             request = {file: payload}
@@ -494,49 +484,35 @@ class GldSyncHandler:
             )
 
             if upload_info == "Error":
-                comments = "Error occured during delivery of sourcedocument"
-                models.gld_registration_log.objects.update_or_create(
-                    id=start_registration_id,
-                    defaults={
-                        "date_modified": datetime.datetime.now(),
-                        "comments": comments,
-                        "delivery_status": delivery_status_update,
-                        "process_status": "failed_to_deliver_sourcedocuments",
-                    },
-                )
+                comments = "Error occurred during delivery of sourcedocument"
+                registration.date_modified = datetime.datetime.now()
+                registration.comments = comments
+                registration.delivery_status = delivery_status_update
+                registration.process_status = "failed_to_deliver_sourcedocuments"
+                registration.save()
             else:
-                delivery_id = upload_info.json()["identifier"]
-                delivery_status = upload_info.json()["status"]
-                lastchanged = upload_info.json()["lastChanged"]
-                comments = "Succesfully delivered startregistration sourcedocument"
-
-                models.gld_registration_log.objects.update_or_create(
-                    id=start_registration_id,
-                    defaults={
-                        "date_modified": datetime.datetime.now(),
-                        "comments": comments,
-                        "delivery_status": delivery_status,
-                        "lastchanged": lastchanged,
-                        "delivery_id": delivery_id,
-                        "process_status": "succesfully_delivered_sourcedocuments",
-                    },
+                upload_data = upload_info.json()
+                registration.date_modified = datetime.datetime.now()
+                registration.comments = (
+                    "Successfully delivered startregistration sourcedocument"
                 )
+                registration.delivery_status = upload_data["status"]
+                registration.last_changed = upload_data["lastChanged"]
+                registration.delivery_id = upload_data["identifier"]
+                registration.process_status = "succesfully_delivered_sourcedocuments"
+                registration.save()
 
         except Exception as e:
             comments = "Exception occured during delivery of startregistration sourcedocument: {}".format(
                 e
             )
-            models.gld_registration_log.objects.update_or_create(
-                id=start_registration_id,
-                defaults={
-                    "date_modified": datetime.datetime.now(),
-                    "comments": comments,
-                    "delivery_status": delivery_status_update,
-                    "process_status": "failed_to_deliver_sourcedocuments",
-                },
-            )
+            registration.date_modified = datetime.datetime.now()
+            registration.comments = comments
+            registration.delivery_status = delivery_status_update
+            registration.process_status = "failed_to_deliver_sourcedocuments"
+            registration.save()
 
-    def check_delivery_status_levering(self, registration_id):
+    def check_delivery_status_levering(self, registration: models.gld_registration_log):
         """
         Check the status of a startregistration delivery
         Logs the status of the delivery in the database
@@ -554,7 +530,6 @@ class GldSyncHandler:
 
         """
 
-        registration = models.gld_registration_log.objects.get(id=registration_id)
         delivery_id = registration.delivery_id
 
         try:
@@ -623,7 +598,7 @@ class GldSyncHandler:
                 continue
 
             # Get some well properties
-            quality_regime = "IMBRO" ## FIXME: derive from GLD
+            quality_regime = "IMBRO"  ## FIXME: derive from GLD
 
             # Loop over all filters within the well
             for tube in well.tube.all():
@@ -672,7 +647,7 @@ class GldSyncHandler:
 
     def check_existing_startregistrations(
         self,
-        registration_log: models.gld_registration_log,
+        registration: models.gld_registration_log,
     ):
         """
         This function loops over all exists startregistrations in the database
@@ -691,95 +666,88 @@ class GldSyncHandler:
         None.
 
         """
-        # We check the status of the registration and either validate/deliver/check status/do nothing
-        registration_id = registration_log.id
-
         well = GroundwaterMonitoringWellStatic.objects.get(
-            bro_id=registration_log.gwm_bro_id
+            bro_id=registration.gwm_bro_id
         )
         self._set_bro_info(well)
 
+        logger.info(self.bro_info)
+
         if (
-            registration_log.process_status == "succesfully_delivered_sourcedocuments"
-            and registration_log.delivery_status != "OPGENOMEN_LVBRO"
-            and registration_log.delivery_id is not None
+            registration.process_status == "succesfully_delivered_sourcedocuments"
+            and registration.delivery_status != "OPGENOMEN_LVBRO"
+            and registration.delivery_id is not None
         ):
             print("1st if statement")
             # The registration has been delivered, but not yet approved
-            self.check_delivery_status_levering(registration_id)
+            self.check_delivery_status_levering(registration)
             return
         else:
             # Succesfully generated a startregistration sourcedoc in the previous step
-            if (
-                registration_log.process_status
-                == "failed_to_generate_source_documents"
-            ):
+            if registration.process_status == "failed_to_generate_source_documents":
                 logger.error(
                     "Failed to generate source documents, so registration log is invalid somehow."
                 )
-                self.create_start_registration_sourcedocs(well,registration_id)
+                self.create_start_registration_sourcedocs(well, registration)
                 return
             # Validate the created sourcedocument
             if (
-                registration_log.process_status
+                registration.process_status
                 == "succesfully_generated_startregistration_request"
             ):
                 print("2nd if statement")
-                self.validate_gld_startregistration_request(registration_id)
+                self.validate_gld_startregistration_request(registration)
                 return
             # If an error occured during validation, try again
             # Failed to validate sourcedocument doesn't mean the document is valid/invalid
             # It means something went wrong during validation (e.g BRO server error)
             # Even if a document is invalid, the validation process has succeeded and won't be reattempted
 
-            if registration_log.process_status == "failed_to_validate_sourcedocument": ## CHECKED STATEMENT DID NOT CORRESPOND TO 
+            if (
+                registration.process_status == "failed_to_validate_sourcedocument"
+            ):  ## CHECKED STATEMENT DID NOT CORRESPOND TO
                 # If we failed to validate the sourcedocument, try again
                 # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
                 print("3rd if statement")
-                self.validate_gld_startregistration_request(registration_id)
+                self.validate_gld_startregistration_request(registration)
                 return
             # If validation is succesful and the document is valid, try a delivery
-            if (
-                registration_log.process_status
-                == "source_document_validation_succesful"
-            ):
-                if get_registration_validation_status(registration_id) == "VALIDE":
+            if registration.process_status == "source_document_validation_succesful":
+                if registration_is_valid(registration):
                     print("4th if statement")
-                    self.deliver_startregistration_sourcedocuments(registration_id)
+                    self.deliver_startregistration_sourcedocuments(registration)
                     return
                 else:
                     print("5th if statement")
-                    registration_log.delete()
+                    registration.delete()
                     return
 
             # If delivery is succesful, check the status of the delivery
             if (
-                registration_log.process_status
-                == "succesfully_delivered_sourcedocuments"
-                and registration_log.delivery_status != "OPGENOMEN_LVBRO"
-                and registration_log.delivery_id is not None
+                registration.process_status == "succesfully_delivered_sourcedocuments"
+                and registration.delivery_status != "OPGENOMEN_LVBRO"
+                and registration.delivery_id is not None
             ):
                 print("6th if statement")
                 # The registration has been delivered, but not yet approved
-                self.check_delivery_status_levering(registration_id)
+                self.check_delivery_status_levering(registration)
                 return
 
             # If the delivery failed previously, we can retry
-            if registration_log.process_status == "failed_to_deliver_sourcedocuments":
+            if registration.process_status == "failed_to_deliver_sourcedocuments":
                 # This will not be the case on the first try
-                if registration_log.delivery_status == "failed_thrice":
+                if registration.delivery_status == "failed_thrice":
                     # TODO report with mail?
                     print("7th if statement")
                     return
                 else:
                     print("8th if statement")
-                    self.deliver_startregistration_sourcedocuments(registration_log.id)
+                    self.deliver_startregistration_sourcedocuments(registration)
                     return
 
         logger.error(
             "None of the if statements are called, existing start registration is not edited."
         )
-
 
     ### ADDITIONS ###
     def generate_gld_addition_sourcedoc_data(
@@ -880,14 +848,14 @@ class GldSyncHandler:
         gld = observation.groundwater_level_dossier
         if not gld:
             logger.error(
-                f"No GLD is available. An addition sourcedocument can't be created in this case."
+                "No GLD is available. An addition sourcedocument can't be created in this case."
             )
             return (None, False)
 
         # An addition sourcedocument shouldn't be created if the BroId of the GLD registration is not available
         if not gld.gld_bro_id:
             logger.error(
-                f"No BroID of the GLD registration is available. An addition sourcedocument shouldn't be created in this case."
+                "No BroID of the GLD registration is available. An addition sourcedocument shouldn't be created in this case."
             )
             return (None, False)
 
@@ -895,7 +863,7 @@ class GldSyncHandler:
             observation_id=observation.observation_id
         )
         if not observation_tvps:  # if there are no tvps in the observation
-            return (None, False) # then do nothing
+            return (None, False)  # then do nothing
 
         (
             observation_source_document_data,
@@ -922,9 +890,8 @@ class GldSyncHandler:
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, self.bro_info, demo=self.demo, api="v2"
+                payload, bro_info=self.bro_info, demo=self.demo, api="v2"
             )
-            print(validation_info)
             validation_status = validation_info["status"]
 
             if "errors" in validation_info:

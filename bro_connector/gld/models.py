@@ -14,7 +14,6 @@ from .choices import (
     UNIT_CHOICES,
     DELIVERY_TYPE_CHOICES,
     EVALUATIONPROCEDURE,
-    INTERPOLATIONTYPE,
     MEASUREMENTINSTRUMENTTYPE,
     OBSERVATIONTYPE,
     PROCESSREFERENCE,
@@ -410,9 +409,7 @@ class MeasurementPointMetadata(BaseModel):
         choices=CENSORREASON, max_length=200, blank=True, null=True
     )
     censor_reason_artesia = models.CharField(max_length=200, blank=True, null=True)
-    value_limit = models.CharField(
-        max_length=50, blank=True, null=True
-    )
+    value_limit = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -437,6 +434,7 @@ class MeasurementPointMetadata(BaseModel):
 
 
 class gld_registration_log(BaseModel):
+    # gld = models.ForeignKey()
     gwm_bro_id = models.CharField(max_length=254)
     gld_bro_id = models.CharField(max_length=254)
     filter_number = models.CharField(max_length=254)
