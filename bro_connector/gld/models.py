@@ -136,6 +136,7 @@ class GroundwaterLevelDossier(BaseModel):
 
 class Observation(BaseModel):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False)
+    observation_id_bro = models.CharField(max_length=200, blank=True, null=True)
     groundwater_level_dossier = models.ForeignKey(
         "GroundwaterLevelDossier", on_delete=models.CASCADE
     )
