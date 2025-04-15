@@ -60,6 +60,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
     ]
 
+    autocomplete_fields = ("groundwater_monitoring_tube",)
+
     readonly_fields = [
         "gld_bro_id",
         "gmw_bro_id",
@@ -146,6 +148,12 @@ class ObservationAdmin(admin.ModelAdmin):
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
     ]
 
+    autocomplete_fields = [
+        "groundwater_level_dossier",
+        "observation_metadata",
+        "observation_process",
+    ]
+
     readonly_fields = [
         "status",
         "validation_status",
@@ -199,6 +207,12 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "responsible_party",
     )
 
+    search_fields = [
+        "observation_type",
+        "status",
+        "responsible_party",
+    ]
+
 
 class ObservationProcessAdmin(admin.ModelAdmin):
     list_display = (
@@ -217,6 +231,13 @@ class ObservationProcessAdmin(admin.ModelAdmin):
         "process_type",
         "evaluation_procedure",
     )
+
+    search_fields = [
+        "process_reference",
+        "measurement_instrument_type",
+        "air_pressure_compensation_type",
+        "evaluation_procedure",
+    ]
 
 
 class gld_registration_logAdmin(admin.ModelAdmin):
@@ -259,7 +280,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
         for registration_log in queryset:
             well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gwm_bro_id
+                bro_id=registration_log.gwm_bro_id,
             )
             gld._set_bro_info(well)
 
