@@ -20,14 +20,12 @@ failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 field_value_division_dict = {"cm": 100, "mm": 1000, "m": 1}
 
 
-def get_registration_process_status(registration_id: int) -> str:
-    registration = models.gld_registration_log.objects.get(id=registration_id)
+def get_registration_process_status(registration: models.gld_registration_log) -> str:
     process_status = registration.process_status
     return process_status
 
 
-def registration_is_valid(registration_id: int) -> bool:
-    registration = models.gld_registration_log.objects.get(id=registration_id)
+def registration_is_valid(registration: models.gld_registration_log) -> bool:
     validation_status = registration.validation_status
     return validation_status == "VALIDE"
 
@@ -117,15 +115,11 @@ def get_timeseries_tvp_for_observation_id(observation_id: int):
     return measurements_list_ordered
 
 
-def get_observation_procedure_data(observation_process_id, quality_regime):
+def get_observation_procedure_data(observation_process: models.ObservationProcess, quality_regime):
     """
     Get the procedure data for the observation
     This is unique for each observation
     """
-
-    observation_process = models.ObservationProcess.objects.get(
-        observation_process_id=observation_process_id
-    )
 
     air_pressure_compensation_type = observation_process.air_pressure_compensation_type
 
@@ -182,10 +176,14 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     }
 
     observation_procedure = get_observation_procedure_data(
-        observation.observation_process_id, quality_regime
+        observation.observation_process, quality_regime
     )
 
     # Result time is the observation endtime
+    if not observation.result_time:
+        logger.error(
+            "Result time is empty. First close the observation before delivering(?)"
+        )
     observation_result_time = observation.result_time.astimezone().strftime(
         "%Y-%m-%dT%H:%M:%S+%z"
     )
@@ -357,7 +355,7 @@ class GldSyncHandler:
         delivery_accountable_party = set_delivery_accountable_party(
             well, self._is_demo()
         )
-        print(delivery_accountable_party)
+        print("Delivery accountable party: ",delivery_accountable_party)
         try:
             monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filtrnr}]
 
@@ -673,6 +671,8 @@ class GldSyncHandler:
 
         logger.info(self.bro_info)
 
+        print("Registration process status: ",registration.process_status)
+
         if (
             registration.process_status == "succesfully_delivered_sourcedocuments"
             and registration.delivery_status != "OPGENOMEN_LVBRO"
@@ -745,7 +745,7 @@ class GldSyncHandler:
                     self.deliver_startregistration_sourcedocuments(registration)
                     return
 
-        logger.error(
+        logger.info(
             "None of the if statements are called, existing start registration is not edited."
         )
 
@@ -865,11 +865,13 @@ class GldSyncHandler:
         if not observation_tvps:  # if there are no tvps in the observation
             return (None, False)  # then do nothing
 
+        print("getting sourcedoc")
         (
             observation_source_document_data,
             addition_type,
         ) = get_observation_gld_source_document_data(observation)
 
+        print("generating addition sourcedoc")
         (gld_addition, created) = self.generate_gld_addition_sourcedoc_data(
             observation,
             observation_source_document_data,
@@ -912,6 +914,7 @@ class GldSyncHandler:
             addition.process_status = "source_document_validation_failed"
 
         addition.save()
+        print("addition comments")
         print(addition.comments)
 
         return validation_status
@@ -980,6 +983,7 @@ class GldSyncHandler:
         """
         Check the status of a delivery and log to the database what the status is
         """
+        print("Delivery ID: ",gld_addition.delivery_id)
         try:
             upload_info = brx.check_delivery_status(
                 gld_addition.delivery_id,
@@ -1009,7 +1013,7 @@ class GldSyncHandler:
             gld_addition.comments = comments
             gld_addition.delivery_status = delivery_status
 
-        print(upload_info.json())
+        print("Upload info: ",upload_info.json())
         gld_addition.save()
 
         return delivery_status
@@ -1042,6 +1046,8 @@ class GldSyncHandler:
         validation_status = gld_addition.validation_status
         filename = gld_addition.file
 
+        print("Validation status: ", validation_status)
+
         if validation_status == "VALIDE" and gld_addition.delivery_id is None:
             delivery_status = self.deliver_gld_addition_source_document(
                 gld_addition, filename
@@ -1062,6 +1068,7 @@ class GldSyncHandler:
         """
         file_name = gld_addition.file
         if gld_addition.delivery_id is None:
+            print("Delivery ID is None")
             gld_addition.comments = (
                 "Could not check delivery, as there is no delivery id."
             )
@@ -1069,6 +1076,7 @@ class GldSyncHandler:
             gld_addition.save()
             return "404"
 
+        print("Checking new delivery status")
         new_delivery_status = self.check_status_gld_addition(gld_addition)
 
         try:
@@ -1092,6 +1100,7 @@ class GldSyncHandler:
         Main algorithm that checks the observations and performs actions based on the status
         """
         validated = False
+        print(gld_addition.process_status)
         # For all the observations in the database, check the status and continue with the BRO delivery process
         if gld_addition.process_status == "source_document_created":
             # TODO check if procedure is same as other observations, use the same procedure uuid
@@ -1115,6 +1124,10 @@ class GldSyncHandler:
             self.validate_addition(gld_addition)
 
             validated = True
+        else:
+            logging.error(
+                f"Validation status = {gld_addition.validation_status}. If this is not VALIDE, then the delivery is not initiated."
+            )
 
         if gld_addition.process_status == "source_document_delivered":
             self.check_status_addition(gld_addition)
@@ -1125,6 +1138,11 @@ class GldSyncHandler:
         elif gld_addition.process_status == "flagged_for_deletion":
             # TODO Delete request
             return
+        
+        if gld_addition.process_status == "failed_to_create_source_document":
+            logger.info(
+                f"Failed to create source document. check_status_addition is therefore not called and leads to a delivery ID error later on."
+            )
 
         else:
             return

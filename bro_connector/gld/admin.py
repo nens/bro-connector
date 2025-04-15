@@ -52,6 +52,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         CompletelyDeliveredFilter,
     )
 
+    autocomplete_fields = ("groundwater_monitoring_tube",)
+
     search_fields = [
         "groundwater_level_dossier_id",
         "gld_bro_id",

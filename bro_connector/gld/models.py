@@ -157,6 +157,8 @@ class Observation(BaseModel):
     result_time = models.DateTimeField(blank=True, null=True)
     observation_endtime = models.DateTimeField(blank=True, null=True)
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
+    
+    observation_id_bro = models.CharField(max_length=200, blank=True, null=True, editable=False)
 
     @property
     def timestamp_first_measurement(self):
