@@ -20,14 +20,12 @@ failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 field_value_division_dict = {"cm": 100, "mm": 1000, "m": 1}
 
 
-def get_registration_process_status(registration_id: int) -> str:
-    registration = models.gld_registration_log.objects.get(id=registration_id)
+def get_registration_process_status(registration: models.gld_registration_log) -> str:
     process_status = registration.process_status
     return process_status
 
 
-def registration_is_valid(registration_id: int) -> bool:
-    registration = models.gld_registration_log.objects.get(id=registration_id)
+def registration_is_valid(registration: models.gld_registration_log) -> bool:
     validation_status = registration.validation_status
     return validation_status == "VALIDE"
 
@@ -117,15 +115,11 @@ def get_timeseries_tvp_for_observation_id(observation_id: int):
     return measurements_list_ordered
 
 
-def get_observation_procedure_data(observation_process_id, quality_regime):
+def get_observation_procedure_data(observation_process: models.ObservationProcess, quality_regime):
     """
     Get the procedure data for the observation
     This is unique for each observation
     """
-
-    observation_process = models.ObservationProcess.objects.get(
-        observation_process_id=observation_process_id
-    )
 
     air_pressure_compensation_type = observation_process.air_pressure_compensation_type
 
@@ -182,10 +176,14 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     }
 
     observation_procedure = get_observation_procedure_data(
-        observation.observation_process_id, quality_regime
+        observation.observation_process, quality_regime
     )
 
     # Result time is the observation endtime
+    if not observation.result_time:
+        logger.error(
+            "Result time is empty. First close the observation before delivering(?)"
+        )
     observation_result_time = observation.result_time.astimezone().strftime(
         "%Y-%m-%dT%H:%M:%S+%z"
     )
@@ -1041,6 +1039,8 @@ class GldSyncHandler:
         """
         validation_status = gld_addition.validation_status
         filename = gld_addition.file
+
+        print(validation_status)
 
         if validation_status == "VALIDE" and gld_addition.delivery_id is None:
             delivery_status = self.deliver_gld_addition_source_document(
