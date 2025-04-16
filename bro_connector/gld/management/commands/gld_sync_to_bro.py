@@ -1100,14 +1100,14 @@ class GldSyncHandler:
         Main algorithm that checks the observations and performs actions based on the status
         """
         validated = False
-        print(gld_addition.process_status)
+        print("Process status: ", gld_addition.process_status)
         # For all the observations in the database, check the status and continue with the BRO delivery process
         if gld_addition.process_status == "source_document_created":
             # TODO check if procedure is same as other observations, use the same procedure uuid
             self.validate_addition(gld_addition)
             validated = True
 
-        elif (
+        if (
             gld_addition.process_status == "source_document_validation_succeeded"
             and gld_addition.validation_status == "VALIDE"
         ):
@@ -1178,6 +1178,9 @@ class Command(BaseCommand):
                     gld.create_addition_sourcedocuments_for_observation(observation)
                 )
 
+            if not addition_log:
+                continue
+            
             well = observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
             gld.gld_validate_and_deliver(addition_log)
