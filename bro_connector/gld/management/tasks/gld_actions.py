@@ -4,7 +4,6 @@ from gld.models import (
     gld_addition_log,
     Observation,
 )
-from gmw.models import GroundwaterMonitoringWellStatic
 import os
 import logging
 
@@ -155,7 +154,6 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
             else:
                 gld.gld_validate_and_deliver(addition_log)
 
-            
             if not addition_log:
                 logger.error(
                     f"Tried to create addition document for Observation ({observation}), and validate and deliver, but this was not possible."
@@ -183,7 +181,7 @@ def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
     tube = dossier.groundwater_monitoring_tube
     # Ignore filters that should not be delivered to BRO
     if tube.deliver_gld_to_bro is False:
-        print(tube.deliver_gld_to_bro)
+        print(f"deliver tube to BRO: {tube.deliver_gld_to_bro}")
         return
 
     handle_start_registrations(dossier, deliver=True)

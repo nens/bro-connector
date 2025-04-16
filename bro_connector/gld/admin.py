@@ -436,10 +436,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "process_status",
     )
     list_filter = (
-        "observation",
         "validation_status",
         "delivery_status",
-        "addition_type",
     )
 
     # Retry functions

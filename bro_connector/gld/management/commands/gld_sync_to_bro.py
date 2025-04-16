@@ -5,6 +5,7 @@ import datetime
 import bisect
 import reversion
 import uuid
+from xml.etree import ElementTree as ET
 from copy import deepcopy
 from main.settings.base import env
 from django.apps import apps
@@ -647,6 +648,24 @@ class GldSyncHandler:
                     )
                     self.deliver_startregistration_sourcedocuments(gld_registration_log)
 
+    def read_observation_id_from_xml(self, xml_string) -> str:
+        # Define the namespaces
+        namespaces = {
+            "gml": "http://www.opengis.net/gml/3.2",
+            "om": "http://www.opengis.net/om/2.0",
+        }
+
+        # Parse the XML string
+        root = ET.fromstring(xml_string)
+
+        # Find the OM_Observation element and get its gml:id attribute
+        observation_elem = root.find(".//om:OM_Observation", namespaces)
+        print(observation_elem)
+        if observation_elem is not None:
+            return observation_elem.attrib.get("{http://www.opengis.net/gml/3.2}id")
+
+        return None
+
     def check_existing_startregistrations(
         self,
         registration: models.gld_registration_log,
@@ -781,7 +800,7 @@ class GldSyncHandler:
 
             # Add the timeseries to the sourcedocument
             gld_addition_sourcedocument = deepcopy(observation_source_document_data)
-            gld_addition_sourcedocument["observationId"] = f"_{uuid.uuid4}"
+            gld_addition_sourcedocument["observationId"] = f"_{uuid.uuid4()}"
             gld_addition_sourcedocument["metadata"]["dateStamp"] = (
                 observation.date_stamp.strftime("%Y-%m-%d")
             )
@@ -804,14 +823,20 @@ class GldSyncHandler:
 
             gld_addition_registration_request.generate()
 
+            observation_id = self.read_observation_id_from_xml(
+                gld_addition_registration_request.request
+            )
+            print(observation_id)
+
             gld_addition_registration_request.write_request(
                 output_dir=self.additions_dir, filename=filename
             )
 
             record, created = models.gld_addition_log.objects.update_or_create(
-                observation_id=observation.observation_id,
+                observation=observation,
                 addition_type=form_addition_type(observation),
                 defaults=dict(
+                    observation_identifier=observation_id,
                     date_modified=datetime.datetime.now(),
                     start_date=first_timestamp_datetime,
                     end_date=final_timestamp_datetime,

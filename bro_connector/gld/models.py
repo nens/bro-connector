@@ -209,7 +209,7 @@ class Observation(BaseModel):
         if self.observation_starttime and self.observation_endtime:
             return self.observation_endtime - self.observation_starttime
         return None
-    
+
     @property
     def date_stamp(self):
         if self.result_time:
@@ -486,6 +486,12 @@ class gld_registration_log(BaseModel):
         db_table = 'aanlevering"."gld_registration_log'
         verbose_name = "GLD Registratie Log"
         verbose_name_plural = "GLD Registratie Logs"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["gwm_bro_id", "filter_number", "quality_regime"],
+                name="unique_gld_registration_log",
+            )
+        ]
 
 
 class gld_addition_log(BaseModel):
