@@ -584,7 +584,7 @@ class GldSyncHandler:
             registration.comments += comments
             registration.save()
 
-    def create_sourcedocs_start_registrations(self):
+    def handle_all_start_registrations(self):
         """
         Run GLD start registrations for all monitoring wells in the database
         Start registrations has to be run multiple times to get all tubes registered
@@ -641,10 +641,11 @@ class GldSyncHandler:
                         )
                         continue
 
-                    self.create_start_registration_sourcedocs(
+                    gld_registration_log = self.create_start_registration_sourcedocs(
                         well,
                         tube_id,
                     )
+                    self.deliver_startregistration_sourcedocuments(gld_registration_log)
 
     def check_existing_startregistrations(
         self,
@@ -821,7 +822,7 @@ class GldSyncHandler:
                     broid_registration=gld_bro_id,
                     comments="Succesfully generated XML sourcedocument",
                     file=filename,
-                    validation_status="TO_BE_VALIDATED", 
+                    validation_status="TO_BE_VALIDATED",
                     addition_type=addition_type,
                     process_status="source_document_created",
                 ),
@@ -1163,7 +1164,7 @@ class Command(BaseCommand):
         gld = GldSyncHandler()
 
         # Check the database for new wells/tubes and start a GLD registration for these objects if its it needed
-        gld.create_sourcedocs_start_registrations()
+        gld.handle_all_start_registrations()
 
         # Get all the current registrations, check and deliver
         gld_registrations = models.gld_registration_log.objects.all()
@@ -1184,7 +1185,7 @@ class Command(BaseCommand):
 
             if not addition_log:
                 continue
-            
+
             well = observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
             gld.gld_validate_and_deliver(addition_log)
