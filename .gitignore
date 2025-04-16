@@ -18,3 +18,4 @@ bro_connector/static/dash/.mapbox_access_token
 bro_connector/.pi_cache/
 /fieldforms/**
 .pixi
+**/pastasdb/**

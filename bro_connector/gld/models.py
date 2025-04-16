@@ -235,21 +235,13 @@ class Observation(BaseModel):
             return "onbekend"
 
     def __str__(self):
-        end = "present"
-        if self.observation_endtime:
-            end = self.observation_endtime.date()
-            if self.groundwater_level_dossier:
-                if self.observation_starttime:
-                    return f"{self.groundwater_level_dossier} ({self.observation_starttime.date()} - {end})"
-                else:
-                    return f"{self.groundwater_level_dossier} (Unknown - {end})"
-            else:
-                if self.observation_starttime:
-                    return f"No groundwater_level_dossier ({self.observation_starttime.date()} - {end})"
-                else:
-                    return f"No groundwater_level_dossier (Unknown - {end})"
-        else:
-            return f"{self.groundwater_level_dossier} (Unknown - Unknown)"
+        start = (
+            self.observation_starttime.date()
+            if self.observation_starttime
+            else "Unknown"
+        )
+        end = self.observation_endtime.date() if self.observation_endtime else "Present"
+        return f"{self.groundwater_level_dossier} ({start} - {end})"
 
     class Meta:
         managed = True

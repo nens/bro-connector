@@ -5,7 +5,7 @@ De BRO-connector is een maatwerk Django applicatie voor de aanlevering van grond
 
 ### Inhoudsopgave
 Deze ReadMe bevat de volgende beschrijvingen:
-- [Architectuuur](https://github.com/nens/bro-connector/?tab=readme-ov-file#architectuur)
+- [Architectuur](https://github.com/nens/bro-connector/?tab=readme-ov-file#architectuur)
 - [Installatie](https://github.com/nens/bro-connector/?tab=readme-ov-file#installeren-van-django-applicatie-op-server)
 - [Screenshots](https://github.com/nens/bro-connector/?tab=readme-ov-file#screenshots)
 - [Initialisatie](https://github.com/nens/bro-connector/?tab=readme-ov-file#initialisatie)
