@@ -79,6 +79,13 @@ def on_save_gld_addition_log(sender, instance: gld_addition_log, created, **kwar
             observation.save(update_fields=["observation_id_bro"])
             reversion.set_comment("Updated observation_id based on delivery to BRO.")
 
+    if instance.delivery_status == "DOORGELEVERD":
+        with reversion.create_revision():
+            observation.up_to_date_in_bro = True
+            observation.save(update_fields=["up_to_date_in_bro"])
+            reversion.set_comment("Updated up_to_date_in_bro as delivery was succesful.")
+
+
 
 @receiver(post_delete, sender=MeasurementTvp)
 def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
@@ -99,7 +106,7 @@ def on_delete_measurement_observation(sender, instance: Observation, **kwargs):
 
 
 @receiver(pre_save, sender=Observation)
-def pre_save_measurement_observation(sender, instance: Observation, **kwargs):
+def pre_save_observation(sender, instance: Observation, **kwargs):
     if instance.observation_endtime:
         if (
             instance.observation_metadata.status == "voorlopig"
@@ -110,8 +117,8 @@ def pre_save_measurement_observation(sender, instance: Observation, **kwargs):
             instance.result_time = (
                 instance.observation_endtime + datetime.timedelta(weeks=1)
                 if instance.observation_endtime + datetime.timedelta(weeks=1)
-                < datetime.datetime.now()
-                else datetime.datetime.now()
+                < datetime.datetime.now().astimezone()
+                else datetime.datetime.now().astimezone()
             )
 
 

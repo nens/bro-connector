@@ -188,7 +188,7 @@ def get_observation_gld_source_document_data(observation: models.Observation):
             "Result time is empty. First close the observation before delivering(?)"
         )
     observation_result_time = observation.result_time.astimezone().strftime(
-        "%Y-%m-%dT%H:%M:%S+%z"
+        "%Y-%m-%dT%H:%M:%S%z"
     )
     print(observation_result_time)
     splited_time = observation_result_time.split("+")
@@ -776,18 +776,14 @@ class GldSyncHandler:
 
         # try to create source document
         try:
-            first_timestamp = measurement_timeseries_tvp[0]["time"]
-            first_timestamp_datetime = datetime.datetime.fromisoformat(first_timestamp)
-
-            final_timestamp = measurement_timeseries_tvp[-1]["time"]
-            final_timestamp_datetime = datetime.datetime.fromisoformat(final_timestamp)
-            final_timestamp_date = final_timestamp_datetime.date()
+            first_timestamp_datetime = observation.timestamp_first_measurement
+            final_timestamp_datetime = observation.timestamp_last_measurement
 
             # Add the timeseries to the sourcedocument
             gld_addition_sourcedocument = deepcopy(observation_source_document_data)
             gld_addition_sourcedocument["observationId"] = f"_{uuid.uuid4}"
             gld_addition_sourcedocument["metadata"]["dateStamp"] = (
-                final_timestamp_date.isoformat()
+                observation.date_stamp.strftime("%Y-%m-%d")
             )
             gld_addition_sourcedocument["result"] = list(measurement_timeseries_tvp)
 

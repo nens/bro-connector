@@ -209,6 +209,12 @@ class Observation(BaseModel):
         if self.observation_starttime and self.observation_endtime:
             return self.observation_endtime - self.observation_starttime
         return None
+    
+    @property
+    def date_stamp(self):
+        if self.result_time:
+            return self.result_time.date()
+        return None
 
     @property
     def validation_status(self):
