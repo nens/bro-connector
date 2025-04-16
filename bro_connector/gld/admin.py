@@ -446,6 +446,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     readonly_fields = (
         "date_modified",
         "broid_registration",
+        "observation_identifier",
         "start_date",
         "end_date",
         "validation_status",
