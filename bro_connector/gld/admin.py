@@ -148,6 +148,7 @@ class ObservationAdmin(admin.ModelAdmin):
     search_fields = [
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
+        "groundwater_level_dossier__gld_bro_id",
     ]
 
     autocomplete_fields = [
@@ -435,7 +436,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "process_status",
     )
     list_filter = (
-        "broid_registration",
         "observation",
         "validation_status",
         "delivery_status",
@@ -459,6 +459,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "addition_type",
         "process_status",
     )
+
+    autocomplete_fields = ("observation",)
 
     actions = [
         "regenerate_sourcedocuments",

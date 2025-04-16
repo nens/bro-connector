@@ -99,7 +99,7 @@ def on_delete_measurement_observation(sender, instance: Observation, **kwargs):
 
 
 @receiver(pre_save, sender=Observation)
-def pre_save_measurement_observation(sender, instance: Observation, **kwargs):
+def pre_save_observation(sender, instance: Observation, **kwargs):
     if instance.observation_endtime:
         if (
             instance.observation_metadata.status == "voorlopig"
@@ -110,8 +110,8 @@ def pre_save_measurement_observation(sender, instance: Observation, **kwargs):
             instance.result_time = (
                 instance.observation_endtime + datetime.timedelta(weeks=1)
                 if instance.observation_endtime + datetime.timedelta(weeks=1)
-                < datetime.datetime.now()
-                else datetime.datetime.now()
+                < datetime.datetime.now().astimezone()
+                else datetime.datetime.now().astimezone()
             )
 
 
