@@ -8,7 +8,7 @@ bcrypt==4.2.0
 beautifulsoup4==4.12.3
 blinker==1.7.0
 branca==0.7.2
-bro-exchange @ git+https://github.com/nens/bro-exchange@5caacc13998b009456fa0b6bb25a7f51a77466fc
+bro-exchange @ git+https://github.com/nens/bro-exchange
 Brotli==1.1.0
 cachelib==0.9.0
 certifi==2024.7.4

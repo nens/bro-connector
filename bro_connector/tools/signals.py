@@ -3,6 +3,7 @@ from django.db.models.signals import (
 )
 from datetime import datetime
 import polars as pl
+import numpy as np
 from .models import GLDImport, GMNImport
 from django.dispatch import receiver
 from io import BytesIO
@@ -21,6 +22,7 @@ from gld.models import (
     MeasurementPointMetadata,
     ObservationProcess,
     ObservationMetadata,
+    GroundwaterLevelDossier
 )
 from gld.choices import STATUSQUALITYCONTROL, CENSORREASON
 from .utils import detect_csv_separator
@@ -104,8 +106,12 @@ def process_csv_file(instance: GLDImport):
 
     time_col = "time" if "time" in reader.columns else "tijd"
     value_col = "value" if "value" in reader.columns else "waarde"
-
+    gld = GroundwaterLevelDossier.objects.filter(
+        groundwater_monitoring_tube = instance.groundwater_monitoring_tube
+        # quality_regime = instance.quality_regime
+    ).first()
     if instance.validated:
+        print("validated")
         # Create ObservationProces
         Obs_Pro = ObservationProcess.objects.update_or_create(
             process_reference=instance.process_reference,
@@ -114,25 +120,28 @@ def process_csv_file(instance: GLDImport):
             process_type=instance.process_type,
             evaluation_procedure=instance.evaluation_procedure,
         )[0]
-
+        print("starting meta")
         # Create ObservationMetadata
         Obs_Meta = ObservationMetadata.objects.update_or_create(
-            date_stamp=datetime.today(),  # creatiedatum van de metadata over de observatie
             observation_type=instance.observation_type,
             status=instance.status,
             responsible_party=instance.responsible_party,
         )[0]
 
+        print("starting dates")
         first_datetime = reader[time_col].min()
         last_datetime = reader[time_col].max()
 
         # Create Observation
+        print("starting obs")
         Obs = Observation.objects.update_or_create(
+            groundwater_level_dossier = gld,
             observation_metadata=Obs_Meta,
             observation_process=Obs_Pro,
             observation_starttime=first_datetime,
             observation_endtime=last_datetime,
         )[0]
+        print("created obs")
 
         # itter over file
         for index, row in reader.iterrows():
@@ -140,7 +149,9 @@ def process_csv_file(instance: GLDImport):
             time = row[time_col]
 
             # create basic MeasurementPointMetadata
-            mp_meta = MeasurementPointMetadata.objects.create()
+            mp_meta = MeasurementPointMetadata.objects.create(
+                value_limit = None
+            )
 
             # Add the present fields to the metadata if they are given in the CSV
             st_quality_control_tvp = row.get("status_quality_control", None)
@@ -151,9 +162,10 @@ def process_csv_file(instance: GLDImport):
             if censor_reason_tvp:
                 mp_meta.censor_reason = censor_reason_tvp
 
-            censor_reason_tvp = row.get("censor_limit", None)
-            if censor_reason_tvp:
-                mp_meta.value_limit = censor_reason_tvp
+            censor_limit_tvp = row.get("censor_limit", None)
+            if censor_limit_tvp:
+                if not pd.isna(censor_limit_tvp):
+                    mp_meta.value_limit = censor_limit_tvp
 
             # Save the metadata after all fields are set
             mp_meta.save()
@@ -166,15 +178,16 @@ def process_csv_file(instance: GLDImport):
                 field_value_unit=instance.field_value_unit,
                 measurement_point_metadata=mp_meta,
             )
-
+    
         instance.executed = True
-        instance.save()
 
 
 def validate_csv(file, filename: str, instance: GLDImport):
     time_col = None
-    seperator = detect_csv_separator(filename)
+    seperator = ","# detect_csv_separator(file)
+    print("Separator: ",seperator)
     reader = pd.read_csv(file, header=0, index_col=False, sep=seperator)
+    print(reader)
     required_columns = ["time", "value"]
     missing_columns = [col for col in required_columns if col not in reader.columns]
     if missing_columns:
@@ -190,8 +203,9 @@ def validate_csv(file, filename: str, instance: GLDImport):
     # Validate the first column format for datetimes
     time_col = reader.columns[0]
     try:
+        # print(reader[time_col])
         reader[time_col] = pd.to_datetime(
-            reader[time_col], format="%Y-%m-%d %H:%M:%S", errors="raise"
+            reader[time_col], format="%Y-%m-%dT%H:%M:%S%z", errors="raise"
         )  # This will raise an error if invalid format
     except Exception as e:
         instance.validated = False
@@ -218,7 +232,7 @@ def validate_csv(file, filename: str, instance: GLDImport):
 
     # validate the censor_reason column if given in csv
     if "censor_reason" in reader.columns:
-        CENSORREASON_LIST = [status[0] for status in CENSORREASON]
+        CENSORREASON_LIST = [status[0] for status in CENSORREASON] + [np.nan]
         # Validate that all values in the column are in the allowed set
         if not reader["censor_reason"].isin(CENSORREASON_LIST).all():
             instance.validated = False

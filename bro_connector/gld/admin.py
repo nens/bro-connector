@@ -37,6 +37,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "research_start_date",
         "research_last_date",
         "gld_bro_id",
+        "quality_regime",
         "first_measurement",
         "completely_delivered",
         "has_open_observation",
@@ -44,11 +45,14 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     )
     list_filter = (
         TubeFilter,
+        "quality_regime",
         "research_start_date",
         "research_last_date",
         HasOpenObservationFilter,
         CompletelyDeliveredFilter,
     )
+
+    autocomplete_fields = ("groundwater_monitoring_tube",)
 
     search_fields = [
         "groundwater_level_dossier_id",
@@ -57,6 +61,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
         "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
     ]
+
+    autocomplete_fields = ("groundwater_monitoring_tube",)
 
     readonly_fields = [
         "gld_bro_id",
@@ -140,8 +146,16 @@ class ObservationAdmin(admin.ModelAdmin):
     )
 
     search_fields = [
+        "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
+        "groundwater_level_dossier__gld_bro_id",
+    ]
+
+    autocomplete_fields = [
+        "groundwater_level_dossier",
+        "observation_metadata",
+        "observation_process",
     ]
 
     readonly_fields = [
@@ -197,6 +211,12 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "responsible_party",
     )
 
+    search_fields = [
+        "observation_type",
+        "status",
+        "responsible_party",
+    ]
+
 
 class ObservationProcessAdmin(admin.ModelAdmin):
     list_display = (
@@ -215,6 +235,13 @@ class ObservationProcessAdmin(admin.ModelAdmin):
         "process_type",
         "evaluation_procedure",
     )
+
+    search_fields = [
+        "process_reference",
+        "measurement_instrument_type",
+        "air_pressure_compensation_type",
+        "evaluation_procedure",
+    ]
 
 
 class gld_registration_logAdmin(admin.ModelAdmin):
@@ -257,7 +284,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
         for registration_log in queryset:
             well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gwm_bro_id
+                bro_id=registration_log.gwm_bro_id,
             )
             gld._set_bro_info(well)
 
@@ -285,7 +312,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 )
             else:
                 gld.validate_gld_startregistration_request(
-                    registration_log.id,
+                    registration_log,
                 )
                 self.message_user(
                     request,
@@ -323,7 +350,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.deliver_startregistration_sourcedocuments(registration_log.id)
+                gld.deliver_startregistration_sourcedocuments(registration_log)
 
                 self.message_user(
                     request,
@@ -349,7 +376,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.check_delivery_status_levering(registration_log.id)
+                gld.check_delivery_status_levering(registration_log)
                 self.message_user(
                     request, "Attempted registration status check", messages.INFO
                 )
@@ -398,7 +425,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     list_display = (
         "date_modified",
         "broid_registration",
-        "observation_id",
+        "observation",
+        "observation_identifier",
         "start_date",
         "end_date",
         "validation_status",
@@ -409,21 +437,15 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "process_status",
     )
     list_filter = (
-        "broid_registration",
-        "observation_id",
-        "start_date",
         "validation_status",
-        "delivery_type",
         "delivery_status",
-        "comments",
-        "addition_type",
     )
 
     # Retry functions
     readonly_fields = (
         "date_modified",
         "broid_registration",
-        "observation_id",
+        "observation_identifier",
         "start_date",
         "end_date",
         "validation_status",
@@ -437,6 +459,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         "addition_type",
         "process_status",
     )
+
+    autocomplete_fields = ("observation",)
 
     actions = [
         "regenerate_sourcedocuments",
@@ -570,26 +594,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 self.message_user(
                     request, "Succesfully attemped status check", messages.INFO
                 )
-
-    # Custom delete method
-
-    list_display = (
-        "date_modified",
-        "observation_id",
-        "start_date",
-        "end_date",
-        "broid_registration",
-        "validation_status",
-        "delivery_id",
-        "delivery_status",
-        "addition_type",
-        "comments",
-        "file",
-    )
-    list_filter = (
-        "validation_status",
-        "delivery_status",
-    )
 
 
 _register(models.GroundwaterLevelDossier, GroundwaterLevelDossierAdmin)

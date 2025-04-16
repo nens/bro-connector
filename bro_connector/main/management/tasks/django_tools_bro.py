@@ -1,30 +1,21 @@
 from gmw import models
 
-
-class GetDjangoObjects:
-    def get_all_tubes(well_static_id):
-        return models.GroundwaterMonitoringTubeStatic.objects.filter(
-            groundwater_monitoring_well_static_id=well_static_id,
-        )
-
-    def get_all_geo_ohm_cables(tube_static_id):
-        return models.GeoOhmCable.objects.filter(
-            groundwater_monitoring_tube_static_id=tube_static_id,
-        )
-
-    def get_all_electrodes(geo_ohm_cable_id):
-        return models.Electrode.objects.filter(geo_ohm_cable=geo_ohm_cable_id)
-
-    def get_geo_ohm_cable(geo_ohm_cable_id) -> models.GeoOhmCable:
-        return models.GeoOhmCable.objects.get(geo_ohm_cable_id=geo_ohm_cable_id)
-
-    def get_electrode_static(electrode_static_id) -> models.Electrode:
-        return models.Electrode.objects.get(electrode_static_id=electrode_static_id)
-
-    def get_tube_static(tube_static_id) -> models.GroundwaterMonitoringTubeStatic:
-        return models.GroundwaterMonitoringTubeStatic.objects.get(
-            groundwater_monitoring_tube_static_id=tube_static_id
-        )
+EVENTNAME2TYPE = {
+    "constructie": "Construction",
+    "beschermconstructieVeranderd": "WellHeadProtector",
+    "buisOpgelengd": "Lengthening",
+    "buisIngekort": "Shortening",
+    "nieuweInmetingMaaiveld": "GroundLevelMeasuring",
+    "nieuweInmetingPosities": "PositionsMeasuring",
+    "nieuweBepalingMaaiveld": "GroundLevel",
+    "eigenaarVeranderd": "Owner",
+    "inmeting": "Positions",
+    "electrodeStatus": "ElectrodeStatus",
+    "onderhouderVeranderd": "Maintainer",
+    "buisstatusVeranderd": "TubeStatus",
+    "buisdeelIngeplaatst": "Insertion",
+    "maaiveldVerlegd": "Shift",
+}
 
 
 class DjangoTableToDict:
@@ -94,27 +85,19 @@ class DjangoTableToDict:
         static_tube_data["geoOhmCables"] = {}
 
         if tube.number_of_geo_ohm_cables > 0:
-            geo_ohm_cables = GetDjangoObjects.get_all_geo_ohm_cables(
-                tube.groundwater_monitoring_tube_static_id
-            )
             geo_ohm_cable_number = 0
-            for geo_ohm_cable in geo_ohm_cables:
+            for geo_ohm_cable in tube.geo_ohm_cables.all():
                 geo_ohm_cable_data = self.update_static_geo_ohm_cable(geo_ohm_cable)
 
                 static_tube_data["geoOhmCables"][geo_ohm_cable_number] = (
                     geo_ohm_cable_data
                 )
-
-                electrodes = GetDjangoObjects.get_all_electrodes(
-                    geo_ohm_cable.geo_ohm_cable_id
-                )
-
                 electrodes_number = 0
                 static_tube_data["geoOhmCables"][geo_ohm_cable_number][
                     "electrodes"
                 ] = {}
 
-                for electrode in electrodes:
+                for electrode in geo_ohm_cable.electrode.all():
                     electrodes_data = self.update_static_electrode(electrode)
                     static_tube_data["geoOhmCables"][geo_ohm_cable_number][
                         "electrodes"
@@ -165,134 +148,178 @@ class DjangoTableToDict:
         return dynamic_well_data
 
     def update_dynamic_tube(
-        self, dynamic_tube: models.GroundwaterMonitoringTubeDynamic, sourcedoctype
+        self, dynamic_tube: models.GroundwaterMonitoringTubeDynamic, sourcedoctype: str
     ) -> dict:
-        if sourcedoctype == "construction" or "construction_with_history":
-            dynamic_tube_data = {
-                "tubeTopDiameter": dynamic_tube.tube_top_diameter,
-                "variableDiameter": dynamic_tube.variable_diameter,
-                "tubeStatus": dynamic_tube.tube_status,
-                "tubeTopPosition": dynamic_tube.tube_top_position,
-                "tubeTopPositioningMethod": dynamic_tube.tube_top_positioning_method,
-                "tubePackingMaterial": dynamic_tube.tube_packing_material,
-                "glue": dynamic_tube.glue,
-                "plainTubePart": {
-                    "plainTubePartLength": dynamic_tube.plain_tube_part_length
-                },
-                "insertedPartDiameter": dynamic_tube.inserted_part_diameter,
-                "insertedPartLength": dynamic_tube.inserted_part_length,
-                "insertedPartMaterial": dynamic_tube.inserted_part_material,
-            }
+        """
+        Update dynamic tube data based on document type.
 
-        elif sourcedoctype == "positions" or "positions_measuring":
-            dynamic_tube_data = {
-                "tubeTopPosition": dynamic_tube.tube_top_position,
-                "tubeTopPositioningMethod": dynamic_tube.tube_top_positioning_method,
-            }
+        Args:
+            dynamic_tube: GroundwaterMonitoringTubeDynamic model instance
+            sourcedoctype: Type of source document
 
-        elif sourcedoctype == "shortening" or "lengthening":
-            dynamic_tube_data = {
-                "tubeTopPosition": dynamic_tube.tube_top_position,
-                "tubeTopPositioningMethod": dynamic_tube.tube_top_positioning_method,
-                "plainTubePart": {
-                    "plainTubePartLength": dynamic_tube.plain_tube_part_length
-                },
-            }
-
+        Returns:
+            Dictionary containing relevant dynamic tube data for the given document type
+        """
+        if sourcedoctype in ["construction", "construction_with_history"]:
+            return self._get_construction_tube_data(dynamic_tube)
+        elif sourcedoctype in ["positions", "positions_measuring"]:
+            return self._get_positions_tube_data(dynamic_tube)
+        elif sourcedoctype in ["shortening", "lengthening"]:
+            return self._get_length_change_tube_data(dynamic_tube)
         elif sourcedoctype == "tube_status":
-            dynamic_tube_data = {
-                "tubeStatus": dynamic_tube.tube_status,
-            }
+            return self._get_tube_status_data(dynamic_tube)
+        else:
+            return {}  # Return empty dict for unknown document types
 
-        return dynamic_tube_data
+    def _get_construction_tube_data(
+        self, dynamic_tube: models.GroundwaterMonitoringTubeDynamic
+    ) -> dict:
+        """Get dynamic tube data for construction document types."""
+        return {
+            "tubeTopDiameter": dynamic_tube.tube_top_diameter,
+            "variableDiameter": dynamic_tube.variable_diameter,
+            "tubeStatus": dynamic_tube.tube_status,
+            "tubeTopPosition": dynamic_tube.tube_top_position,
+            "tubeTopPositioningMethod": dynamic_tube.tube_top_positioning_method,
+            "tubePackingMaterial": dynamic_tube.tube_packing_material,
+            "glue": dynamic_tube.glue,
+            "plainTubePart": {
+                "plainTubePartLength": dynamic_tube.plain_tube_part_length
+            },
+            "insertedPartDiameter": dynamic_tube.inserted_part_diameter,
+            "insertedPartLength": dynamic_tube.inserted_part_length,
+            "insertedPartMaterial": dynamic_tube.inserted_part_material,
+        }
+
+    def _get_positions_tube_data(
+        self, dynamic_tube: models.GroundwaterMonitoringTubeDynamic
+    ) -> dict:
+        """Get dynamic tube data for positions document types."""
+        return {
+            "tubeTopPosition": dynamic_tube.tube_top_position,
+            "tubeTopPositioningMethod": dynamic_tube.tube_top_positioning_method,
+        }
+
+    def _get_length_change_tube_data(
+        self, dynamic_tube: models.GroundwaterMonitoringTubeDynamic
+    ) -> dict:
+        """Get dynamic tube data for shortening or lengthening document types."""
+        return {
+            "tubeTopPosition": dynamic_tube.tube_top_position,
+            "tubeTopPositioningMethod": dynamic_tube.tube_top_positioning_method,
+            "plainTubePart": {
+                "plainTubePartLength": dynamic_tube.plain_tube_part_length
+            },
+        }
+
+    def _get_tube_status_data(
+        self, dynamic_tube: models.GroundwaterMonitoringTubeDynamic
+    ) -> dict:
+        """Get dynamic tube data for tube status document type."""
+        return {
+            "tubeStatus": dynamic_tube.tube_status,
+        }
 
 
-class GetEvents:
-    """
-    A Class that helps retrieving different types of events.
-    The events will have information linking to the data that changed.
-    """
+def getConstruction():
+    return models.Event.objects.filter(
+        event_name="constructie",
+        delivered_to_bro=False,
+    )
 
-    def construction():
-        return models.Event.objects.filter(
-            event_name="constructie",
-            delivered_to_bro=False,
-        )
 
-    def wellHeadProtector():
-        return models.Event.objects.filter(
-            event_name="beschermconstructieVeranderd",
-            delivered_to_bro=False,
-        )
+def getAllIntermediateEvents():
+    return models.Event.objects.filter(delivered_to_bro=False).exclude(
+        event_name="constructie"
+    )
 
-    def lengthening():
-        return models.Event.objects.filter(
-            event_name="buisOpgelengd",
-            delivered_to_bro=False,
-        )
 
-    def shortening():
-        return models.Event.objects.filter(
-            event_name="buisIngekort",
-            delivered_to_bro=False,
-        )
+def getWellHeadProtector():
+    return models.Event.objects.filter(
+        event_name="beschermconstructieVeranderd",
+        delivered_to_bro=False,
+    )
 
-    def groundLevelMeasuring():
-        return models.Event.objects.filter(
-            event_name="nieuweInmetingMaaiveld",
-            delivered_to_bro=False,
-        )
 
-    def positionsMeasuring():
-        return models.Event.objects.filter(
-            event_name="nieuweInmetingPosities",
-            delivered_to_bro=False,
-        )
+def getLengthening():
+    return models.Event.objects.filter(
+        event_name="buisOpgelengd",
+        delivered_to_bro=False,
+    )
 
-    def groundLevel():
-        return models.Event.objects.filter(
-            event_name="nieuweBepalingMaaiveld",
-            delivered_to_bro=False,
-        )
 
-    def owner():
-        return models.Event.objects.filter(
-            event_name="eigenaarVeranderd",
-            delivered_to_bro=False,
-        )
+def getShortening():
+    return models.Event.objects.filter(
+        event_name="buisIngekort",
+        delivered_to_bro=False,
+    )
 
-    def positions():
-        return models.Event.objects.filter(
-            event_name="inmeting",
-            delivered_to_bro=False,
-        )
 
-    def electrodeStatus():
-        return models.Event.objects.filter(
-            event_name="electrodeStatus",
-            delivered_to_bro=False,
-        )
+def getGroundLevelMeasuring():
+    return models.Event.objects.filter(
+        event_name="nieuweInmetingMaaiveld",
+        delivered_to_bro=False,
+    )
 
-    def maintainer():
-        return models.Event.objects.filter(
-            event_name="onderhouderVeranderd",
-            delivered_to_bro=False,
-        )
 
-    def tubeStatus():
-        return models.Event.objects.filter(
-            event_name="buisstatusVeranderd",
-            delivered_to_bro=False,
-        )
+def getPositionsMeasuring():
+    return models.Event.objects.filter(
+        event_name="nieuweInmetingPosities",
+        delivered_to_bro=False,
+    )
 
-    def insertion():
-        return models.Event.objects.filter(
-            event_name="buisdeelIngeplaatst",
-            delivered_to_bro=False,
-        )
 
-    def shift():
-        return models.Event.objects.filter(
-            event_name="maaiveldVerlegd",
-            delivered_to_bro=False,
-        )
+def getGroundLevel():
+    return models.Event.objects.filter(
+        event_name="nieuweBepalingMaaiveld",
+        delivered_to_bro=False,
+    )
+
+
+def getOwner():
+    return models.Event.objects.filter(
+        event_name="eigenaarVeranderd",
+        delivered_to_bro=False,
+    )
+
+
+def getPositions():
+    return models.Event.objects.filter(
+        event_name="inmeting",
+        delivered_to_bro=False,
+    )
+
+
+def getElectrodeStatus():
+    return models.Event.objects.filter(
+        event_name="electrodeStatus",
+        delivered_to_bro=False,
+    )
+
+
+def getMaintainer():
+    return models.Event.objects.filter(
+        event_name="onderhouderVeranderd",
+        delivered_to_bro=False,
+    )
+
+
+def getTubeStatus():
+    return models.Event.objects.filter(
+        event_name="buisstatusVeranderd",
+        delivered_to_bro=False,
+    )
+
+
+def getInsertion():
+    return models.Event.objects.filter(
+        event_name="buisdeelIngeplaatst",
+        delivered_to_bro=False,
+    )
+
+
+def getShift():
+    return models.Event.objects.filter(
+        event_name="maaiveldVerlegd",
+        delivered_to_bro=False,
+    )

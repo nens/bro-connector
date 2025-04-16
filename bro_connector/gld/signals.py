@@ -6,6 +6,7 @@ from django.db.models.signals import (
 from django.dispatch import receiver
 from .models import (
     gld_registration_log,
+    gld_addition_log,
     GroundwaterLevelDossier,
     MeasurementTvp,
     MeasurementPointMetadata,
@@ -13,6 +14,7 @@ from .models import (
 )
 from gmw.models import GroundwaterMonitoringTubeStatic
 import reversion
+import datetime
 
 
 def _calculate_value(field_value: float, unit: str) -> float | None:
@@ -50,7 +52,7 @@ def _calculate_value_tube(
 
 
 @receiver(post_save, sender=gld_registration_log)
-def on_save_gld_synchronisatie_log(
+def on_save_gld_registration_log(
     sender, instance: gld_registration_log, created, **kwargs
 ):
     if instance.gld_bro_id is not None:
@@ -66,6 +68,23 @@ def on_save_gld_synchronisatie_log(
                 reversion.set_comment(
                     f"Updated BRO-ID based on sync_log ({instance.id})."
                 )
+
+
+@receiver(post_save, sender=gld_addition_log)
+def on_save_gld_addition_log(sender, instance: gld_addition_log, created, **kwargs):
+    if instance.observation_identifier is not None:
+        with reversion.create_revision():
+            observation = instance.observation
+            observation.observation_id_bro = instance.observation_identifier
+            observation.save(update_fields=["observation_id_bro"])
+            reversion.set_comment("Updated observation_id based on delivery to BRO.")
+
+    if instance.delivery_status == "DOORGELEVERD":
+        with reversion.create_revision():
+            observation.up_to_date_in_bro = True
+            observation.save(update_fields=["up_to_date_in_bro"])
+            reversion.set_comment("Updated up_to_date_in_bro as delivery was succesful.")
+
 
 
 @receiver(post_delete, sender=MeasurementTvp)
@@ -85,20 +104,38 @@ def on_delete_measurement_observation(sender, instance: Observation, **kwargs):
     if observation_metadata:
         observation_metadata.delete()
 
+
+@receiver(pre_save, sender=Observation)
+def pre_save_observation(sender, instance: Observation, **kwargs):
+    if instance.observation_endtime:
+        if (
+            instance.observation_metadata.status == "voorlopig"
+            or instance.observation_metadata.observation_type == "controlemeting"
+        ):
+            instance.result_time = instance.timestamp_last_measurement
+        else:
+            instance.result_time = (
+                instance.observation_endtime + datetime.timedelta(weeks=1)
+                if instance.observation_endtime + datetime.timedelta(weeks=1)
+                < datetime.datetime.now().astimezone()
+                else datetime.datetime.now().astimezone()
+            )
+
+
 @receiver(post_save, sender=Observation)
 def on_save_observation(sender, instance: Observation, **kwargs):
     gld = instance.groundwater_level_dossier
 
-    open_observations = gld.observation_set.filter(
-        observation_endtime__isnull=True
-    )
+    open_observations = gld.observation_set.filter(observation_endtime__isnull=True)
     if open_observations.count() == 0:
-        last_observation: Observation = gld.observation_set.all().order_by("observation_starttime").last()
+        last_observation: Observation = (
+            gld.observation_set.all().order_by("observation_starttime").last()
+        )
         Observation.objects.create(
-            observation_starttime = last_observation.observation_endtime,
-            groundwater_level_dossier = last_observation.groundwater_level_dossier,
-            observation_metadata = last_observation.observation_metadata,
-            observation_process = last_observation.observation_process
+            observation_starttime=last_observation.observation_endtime,
+            groundwater_level_dossier=last_observation.groundwater_level_dossier,
+            observation_metadata=last_observation.observation_metadata,
+            observation_process=last_observation.observation_process,
         )
 
 

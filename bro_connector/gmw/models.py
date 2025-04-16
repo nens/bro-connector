@@ -467,6 +467,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
     # bro_complete
 
     state: Manager["GroundwaterMonitoringTubeDynamic"]
+    geo_ohm_cable: Manager["GeoOhmCable"]
 
     @property
     def report(self):
@@ -658,6 +659,7 @@ class GeoOhmCable(BaseModel):
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         verbose_name="Buis",
+        related_name="geo_ohm_cable",
     )
     cable_number = models.IntegerField(
         blank=True, null=True, verbose_name="Kabelnummer"
@@ -665,6 +667,8 @@ class GeoOhmCable(BaseModel):
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
+
+    electrode: Manager["Electrode"]
 
     def __str__(self):
         return f"{self.groundwater_monitoring_tube_static}-K{self.cable_number}"
@@ -687,7 +691,12 @@ class GeoOhmCable(BaseModel):
 
 class Electrode(BaseModel):
     electrode_static_id = models.AutoField(primary_key=True)
-    geo_ohm_cable = models.ForeignKey(GeoOhmCable, on_delete=models.CASCADE)
+    geo_ohm_cable = models.ForeignKey(
+        GeoOhmCable,
+        on_delete=models.CASCADE,
+        related_name="electrode",
+        verbose_name="Geo Ohm Kabel",
+    )
     electrode_packing_material = models.CharField(
         choices=ELECTRODEPACKINGMATERIAL,
         max_length=200,

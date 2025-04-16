@@ -74,7 +74,7 @@ def validate_tube_static(tube: GroundwaterMonitoringTubeStatic) -> tuple[bool, s
             report += f"{tube._meta.get_field('sock_material').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
 
         # sediment_sump_length
-        if tube.sediment_sump_length is None:
+        if tube.sediment_sump_present == "ja" and tube.sediment_sump_length is None:
             valid = False
             report += f"{tube._meta.get_field('sediment_sump_length').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
 
@@ -128,7 +128,7 @@ def validate_tube_static(tube: GroundwaterMonitoringTubeStatic) -> tuple[bool, s
             report += f"{tube._meta.get_field('sock_material').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
 
         # sediment_sump_length
-        if tube.sediment_sump_length is None:
+        if tube.sediment_sump_present == "ja" and tube.sediment_sump_length is None:
             valid = False
             report += f"{tube._meta.get_field('sediment_sump_length').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
 
@@ -195,21 +195,6 @@ def validate_tube_dynamic(
             valid = False
             report += f"{tube_state._meta.get_field('plain_tube_part_length').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
 
-        # inserted_part_diameter
-        if tube_state.inserted_part_diameter is None:
-            valid = False
-            report += f"{tube_state._meta.get_field('inserted_part_diameter').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
-
-        # inserted_part_length
-        if tube_state.inserted_part_length is None:
-            valid = False
-            report += f"{tube_state._meta.get_field('inserted_part_length').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
-
-        # inserted_part_material
-        if tube_state.inserted_part_material is None:
-            valid = False
-            report += f"{tube_state._meta.get_field('inserted_part_material').verbose_name} moet aangevuld worden om het IMBRO te maken\n"
-
     else:
         # tube_top_diameter
         if tube_state.tube_top_diameter is None:
@@ -258,20 +243,5 @@ def validate_tube_dynamic(
         if tube_state.plain_tube_part_length is None:
             valid = False
             report += f"{tube_state._meta.get_field('plain_tube_part_length').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
-
-        # inserted_part_diameter
-        if tube_state.inserted_part_diameter is None:
-            valid = False
-            report += f"{tube_state._meta.get_field('inserted_part_diameter').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
-
-        # inserted_part_length
-        if tube_state.inserted_part_length is None:
-            valid = False
-            report += f"{tube_state._meta.get_field('inserted_part_length').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
-
-        # inserted_part_material
-        if tube_state.inserted_part_material is None:
-            valid = False
-            report += f"{tube_state._meta.get_field('inserted_part_material').verbose_name} moet aangevuld worden om het IMBRO/A te maken\n"
 
     return valid, report

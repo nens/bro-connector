@@ -5,7 +5,8 @@ import bro.models as bro_models
 import datetime
 from string import punctuation, whitespace
 from django.contrib.gis.geos import Point
-
+import os
+os.environ['PROJ_LIB'] = r'C:\OSGeo4W\share\proj'
 
 def import_xml(file: str, path: str) -> tuple:
     gmw = GMWHandler()
@@ -78,13 +79,13 @@ def get_sediment_sump_present(dict: dict, prefix: str) -> bool | None:
         aanwezig = aanwezig.translate(str.maketrans("", "", ignore))
 
     if aanwezig == "ja":
-        return True
+        return "ja"
 
     elif aanwezig == "nee":
-        return False
+        return "nee"
 
     else:
-        return None
+        return "onbekend"
 
 
 def get_artesian_well_cap_present(dict: dict, prefix: str) -> bool | None:
