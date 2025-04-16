@@ -3,6 +3,7 @@ from django.db.models.signals import (
 )
 from datetime import datetime
 import polars as pl
+import numpy as np
 from .models import GLDImport, GMNImport
 from django.dispatch import receiver
 from io import BytesIO
@@ -161,9 +162,10 @@ def process_csv_file(instance: GLDImport):
             if censor_reason_tvp:
                 mp_meta.censor_reason = censor_reason_tvp
 
-            censor_reason_tvp = row.get("censor_limit", None)
-            if censor_reason_tvp:
-                mp_meta.value_limit = censor_reason_tvp
+            censor_limit_tvp = row.get("censor_limit", None)
+            if censor_limit_tvp:
+                if not pd.isna(censor_limit_tvp):
+                    mp_meta.value_limit = censor_limit_tvp
 
             # Save the metadata after all fields are set
             mp_meta.save()
@@ -176,7 +178,7 @@ def process_csv_file(instance: GLDImport):
                 field_value_unit=instance.field_value_unit,
                 measurement_point_metadata=mp_meta,
             )
-
+    
         instance.executed = True
 
 
@@ -230,10 +232,9 @@ def validate_csv(file, filename: str, instance: GLDImport):
 
     # validate the censor_reason column if given in csv
     if "censor_reason" in reader.columns:
-        CENSORREASON_LIST = [status[0] for status in CENSORREASON]
+        CENSORREASON_LIST = [status[0] for status in CENSORREASON] + [np.nan]
         # Validate that all values in the column are in the allowed set
-        if not reader["censor_reason"].isin(CENSORREASON_LIST).all() and not reader["censor_reason"].isna().all():
-            print(reader["censor_reason"].values[0])
+        if not reader["censor_reason"].isin(CENSORREASON_LIST).all():
             instance.validated = False
             instance.report += (
                 "Fout in 'censor_reason': Ongeldige waarden gevonden.\n\n"

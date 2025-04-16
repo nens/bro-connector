@@ -96,10 +96,12 @@ def form_addition_type(observation: Observation) -> str:
 
 
 def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
+    print("handle additions function")
     # Get observations
     observations = Observation.objects.filter(
         groundwater_level_dossier=dossier,
         observation_endtime__isnull=False,
+        # Up to date BRO is False
     )
 
     gld = gld_sync_to_bro.GldSyncHandler()
@@ -117,16 +119,25 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
         print(observation)
         print(addition_log)
 
-        well = GroundwaterMonitoringWellStatic.objects.get(
-            bro_id=observation.groundwater_level_dossier.gmw_bro_id
-        )
+        well = observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
         gld._set_bro_info(well)
 
         if deliver:
             if not addition_log:
+                # STEP 1: Create the document
+                logger.info("Creating new sourcedocument as no addition_log existed.")
                 (addition_log, created) = (
                     gld.create_addition_sourcedocuments_for_observation(observation)
                 )
+
+                if addition_log:
+                    # STEP 2: Validate the document
+                    validation_status = gld.validate_addition(addition_log)
+                    logger.info(f"Validation resulted in: {validation_status}")
+
+                    # STEP 3: Deliver
+                    logger.info("Delivering addition")
+                    gld.deliver_addition(addition_log)
 
             elif (
                 addition_log.process_status == "failed_to_create_source_document"
@@ -141,11 +152,13 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
                 # (addition_log) = gld.create_replace_sourcedocuments(observation)
                 pass
 
-            if addition_log:
-                gld.gld_validate_and_deliver(addition_log)
             else:
+                gld.gld_validate_and_deliver(addition_log)
+
+            
+            if not addition_log:
                 logger.error(
-                    f"Tried to create addition document for Observation ({observation}), but not all inputs are known."
+                    f"Tried to create addition document for Observation ({observation}), and validate and deliver, but this was not possible."
                 )
                 continue
 

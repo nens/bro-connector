@@ -821,7 +821,7 @@ class GldSyncHandler:
                     broid_registration=gld_bro_id,
                     comments="Succesfully generated XML sourcedocument",
                     file=filename,
-                    validation_status=None,
+                    validation_status="TO_BE_VALIDATED", 
                     addition_type=addition_type,
                     process_status="source_document_created",
                 ),
@@ -867,6 +867,9 @@ class GldSyncHandler:
             observation_id=observation.observation_id
         )
         if not observation_tvps:  # if there are no tvps in the observation
+            logger.error(
+                "No observation time value pairs available in the observation. An addition source document cant be created in this case."
+            )
             return (None, False)  # then do nothing
 
         print("getting sourcedoc")
@@ -918,9 +921,6 @@ class GldSyncHandler:
             addition.process_status = "source_document_validation_failed"
 
         addition.save()
-        print("addition comments")
-        print(addition.comments)
-
         return validation_status
 
     def deliver_gld_addition_source_document(
@@ -1104,14 +1104,14 @@ class GldSyncHandler:
         Main algorithm that checks the observations and performs actions based on the status
         """
         validated = False
-        print(gld_addition.process_status)
+        print("Process status: ", gld_addition.process_status)
         # For all the observations in the database, check the status and continue with the BRO delivery process
         if gld_addition.process_status == "source_document_created":
             # TODO check if procedure is same as other observations, use the same procedure uuid
             self.validate_addition(gld_addition)
             validated = True
 
-        elif (
+        if (
             gld_addition.process_status == "source_document_validation_succeeded"
             and gld_addition.validation_status == "VALIDE"
         ):
@@ -1182,6 +1182,9 @@ class Command(BaseCommand):
                     gld.create_addition_sourcedocuments_for_observation(observation)
                 )
 
+            if not addition_log:
+                continue
+            
             well = observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
             gld.gld_validate_and_deliver(addition_log)
