@@ -817,7 +817,7 @@ class GldSyncHandler:
                     broid_registration=gld_bro_id,
                     comments="Succesfully generated XML sourcedocument",
                     file=filename,
-                    validation_status=None,
+                    validation_status="TO_BE_VALIDATED", 
                     addition_type=addition_type,
                     process_status="source_document_created",
                 ),
@@ -863,6 +863,9 @@ class GldSyncHandler:
             observation_id=observation.observation_id
         )
         if not observation_tvps:  # if there are no tvps in the observation
+            logger.error(
+                "No observation time value pairs available in the observation. An addition source document cant be created in this case."
+            )
             return (None, False)  # then do nothing
 
         print("getting sourcedoc")
@@ -914,9 +917,6 @@ class GldSyncHandler:
             addition.process_status = "source_document_validation_failed"
 
         addition.save()
-        print("addition comments")
-        print(addition.comments)
-
         return validation_status
 
     def deliver_gld_addition_source_document(

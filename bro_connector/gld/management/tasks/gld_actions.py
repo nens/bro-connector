@@ -96,6 +96,7 @@ def form_addition_type(observation: Observation) -> str:
 
 
 def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
+    print("handle additions function")
     # Get observations
     observations = Observation.objects.filter(
         groundwater_level_dossier=dossier,
@@ -123,11 +124,20 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
 
         if deliver:
             if not addition_log:
+                # STEP 1: Create the document
+                logger.info("Creating new sourcedocument as no addition_log existed.")
                 (addition_log, created) = (
                     gld.create_addition_sourcedocuments_for_observation(observation)
                 )
 
-                gld.deliver_addition(addition_log)
+                if addition_log:
+                    # STEP 2: Validate the document
+                    validation_status = gld.validate_addition(addition_log)
+                    logger.info(f"Validation resulted in: {validation_status}")
+
+                    # STEP 3: Deliver
+                    logger.info("Delivering addition")
+                    gld.deliver_addition(addition_log)
 
             elif (
                 addition_log.process_status == "failed_to_create_source_document"
@@ -148,7 +158,7 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
             
             if not addition_log:
                 logger.error(
-                    f"Tried to create addition document for Observation ({observation}), but not all inputs are known."
+                    f"Tried to create addition document for Observation ({observation}), and validate and deliver, but this was not possible."
                 )
                 continue
 
