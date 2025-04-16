@@ -423,7 +423,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     list_display = (
         "date_modified",
         "broid_registration",
-        "observation_id",
+        "observation",
+        "observation_identifier",
         "start_date",
         "end_date",
         "validation_status",
@@ -435,12 +436,9 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     )
     list_filter = (
         "broid_registration",
-        "observation_id",
-        "start_date",
+        "observation",
         "validation_status",
-        "delivery_type",
         "delivery_status",
-        "comments",
         "addition_type",
     )
 
@@ -448,7 +446,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     readonly_fields = (
         "date_modified",
         "broid_registration",
-        "observation_id",
         "start_date",
         "end_date",
         "validation_status",
@@ -595,26 +592,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 self.message_user(
                     request, "Succesfully attemped status check", messages.INFO
                 )
-
-    # Custom delete method
-
-    list_display = (
-        "date_modified",
-        "observation_id",
-        "start_date",
-        "end_date",
-        "broid_registration",
-        "validation_status",
-        "delivery_id",
-        "delivery_status",
-        "addition_type",
-        "comments",
-        "file",
-    )
-    list_filter = (
-        "validation_status",
-        "delivery_status",
-    )
 
 
 _register(models.GroundwaterLevelDossier, GroundwaterLevelDossierAdmin)

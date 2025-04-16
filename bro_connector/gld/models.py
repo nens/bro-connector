@@ -157,8 +157,10 @@ class Observation(BaseModel):
     result_time = models.DateTimeField(blank=True, null=True)
     observation_endtime = models.DateTimeField(blank=True, null=True)
     up_to_date_in_bro = models.BooleanField(default=False, editable=False)
-    
-    observation_id_bro = models.CharField(max_length=200, blank=True, null=True, editable=False)
+
+    observation_id_bro = models.CharField(
+        max_length=200, blank=True, null=True, editable=False
+    )  # Should also import this with the BRO-Import tool
 
     @property
     def timestamp_first_measurement(self):
@@ -437,27 +439,42 @@ class MeasurementPointMetadata(BaseModel):
 
 class gld_registration_log(BaseModel):
     # gld = models.ForeignKey()
-    gwm_bro_id = models.CharField(max_length=254)
-    gld_bro_id = models.CharField(max_length=254)
-    filter_number = models.CharField(max_length=254)
-    validation_status = models.CharField(max_length=254, null=True, blank=True)
-    delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    gwm_bro_id = models.CharField(max_length=254, verbose_name="GMW ID")
+    gld_bro_id = models.CharField(max_length=254, verbose_name="GLD ID")
+    filter_number = models.CharField(max_length=254, verbose_name="Filternummer")
+    validation_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Validatiestatus"
+    )
+    delivery_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Leverings ID"
+    )
     delivery_type = models.CharField(
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
         default="register",
+        verbose_name="Leverings type",
     )
-    delivery_status = models.CharField(max_length=254)
-    comments = models.CharField(max_length=10000, null=True, blank=True)
-    last_changed = models.CharField(max_length=254, null=True, blank=True)
+    delivery_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Leverings status"
+    )
+    comments = models.CharField(
+        max_length=50000, null=True, blank=True, verbose_name="Commentaar"
+    )
+    last_changed = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Laatste wijziging"
+    )
     corrections_applied = models.BooleanField(blank=True, null=True)
     timestamp_end_registration = models.DateTimeField(blank=True, null=True)
     quality_regime = models.CharField(
         choices=QUALITYREGIME, max_length=254, null=True, blank=True
     )
-    file = models.CharField(max_length=254, null=True, blank=True)
-    process_status = models.CharField(max_length=254, null=True, blank=True)
+    file = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Bestand"
+    )
+    process_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Proces status"
+    )
 
     class Meta:
         db_table = 'aanlevering"."gld_registration_log'
@@ -466,20 +483,57 @@ class gld_registration_log(BaseModel):
 
 
 class gld_addition_log(BaseModel):
-    broid_registration = models.CharField(max_length=254)
-    observation_id = models.CharField(max_length=254)
-    start_date = models.DateTimeField(max_length=254, null=True, blank=True)
-    end_date = models.DateTimeField(max_length=254, null=True, blank=True)
-    validation_status = models.CharField(max_length=254, null=True, blank=True)
-    delivery_id = models.CharField(max_length=254, null=True, blank=True)
-    delivery_type = models.CharField(max_length=254, null=True, blank=True)
-    delivery_status = models.CharField(max_length=254, null=True, blank=True)
-    comments = models.CharField(max_length=50000, null=True, blank=True)
-    last_changed = models.CharField(max_length=254, null=True, blank=True)
-    corrections_applied = models.BooleanField(blank=True, null=True)
-    file = models.CharField(max_length=254, null=True, blank=True)
-    addition_type = models.CharField(max_length=254, null=True, blank=True)
-    process_status = models.CharField(max_length=254, null=True, blank=True)
+    broid_registration = models.CharField(max_length=254, verbose_name="GLD ID")
+    observation = models.ForeignKey(
+        Observation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Observatie reeks",
+    )
+    observation_identifier = models.CharField(
+        max_length=254, verbose_name="Observatie ID"
+    )
+    start_date = models.DateTimeField(
+        max_length=254, null=True, blank=True, verbose_name="Startdatum"
+    )
+    end_date = models.DateTimeField(
+        max_length=254, null=True, blank=True, verbose_name="Einddatum"
+    )
+    validation_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Validatiestatus"
+    )
+    delivery_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Leverings ID"
+    )
+    delivery_type = models.CharField(
+        choices=DELIVERY_TYPE_CHOICES,
+        blank=False,
+        max_length=40,
+        default="register",
+        verbose_name="Leverings type",
+    )
+    delivery_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Leverings status"
+    )
+    comments = models.CharField(
+        max_length=50000, null=True, blank=True, verbose_name="Commentaar"
+    )
+    last_changed = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Laatste wijziging"
+    )
+    corrections_applied = models.BooleanField(
+        blank=True, null=True, verbose_name="Correcties toegepast"
+    )
+    file = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Bestand"
+    )
+    addition_type = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Toevoeging type"
+    )
+    process_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Proces status"
+    )
 
     class Meta:
         db_table = 'aanlevering"."gld_addition_log'

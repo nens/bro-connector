@@ -4,6 +4,7 @@ import os
 import datetime
 import bisect
 import reversion
+import uuid
 from copy import deepcopy
 from main.settings.base import env
 from django.apps import apps
@@ -115,7 +116,9 @@ def get_timeseries_tvp_for_observation_id(observation_id: int):
     return measurements_list_ordered
 
 
-def get_observation_procedure_data(observation_process: models.ObservationProcess, quality_regime):
+def get_observation_procedure_data(
+    observation_process: models.ObservationProcess, quality_regime
+):
     """
     Get the procedure data for the observation
     This is unique for each observation
@@ -355,7 +358,7 @@ class GldSyncHandler:
         delivery_accountable_party = set_delivery_accountable_party(
             well, self._is_demo()
         )
-        print("Delivery accountable party: ",delivery_accountable_party)
+        print("Delivery accountable party: ", delivery_accountable_party)
         try:
             monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filtrnr}]
 
@@ -671,7 +674,7 @@ class GldSyncHandler:
 
         logger.info(self.bro_info)
 
-        print("Registration process status: ",registration.process_status)
+        print("Registration process status: ", registration.process_status)
 
         if (
             registration.process_status == "succesfully_delivered_sourcedocuments"
@@ -781,6 +784,7 @@ class GldSyncHandler:
 
             # Add the timeseries to the sourcedocument
             gld_addition_sourcedocument = deepcopy(observation_source_document_data)
+            gld_addition_sourcedocument["observationId"] = f"_{uuid.uuid4}"
             gld_addition_sourcedocument["metadata"]["dateStamp"] = (
                 final_timestamp_date.isoformat()
             )
@@ -983,7 +987,7 @@ class GldSyncHandler:
         """
         Check the status of a delivery and log to the database what the status is
         """
-        print("Delivery ID: ",gld_addition.delivery_id)
+        print("Delivery ID: ", gld_addition.delivery_id)
         try:
             upload_info = brx.check_delivery_status(
                 gld_addition.delivery_id,
@@ -1013,7 +1017,7 @@ class GldSyncHandler:
             gld_addition.comments = comments
             gld_addition.delivery_status = delivery_status
 
-        print("Upload info: ",upload_info.json())
+        print("Upload info: ", upload_info.json())
         gld_addition.save()
 
         return delivery_status
@@ -1138,10 +1142,10 @@ class GldSyncHandler:
         elif gld_addition.process_status == "flagged_for_deletion":
             # TODO Delete request
             return
-        
+
         if gld_addition.process_status == "failed_to_create_source_document":
             logger.info(
-                f"Failed to create source document. check_status_addition is therefore not called and leads to a delivery ID error later on."
+                "Failed to create source document. check_status_addition is therefore not called and leads to a delivery ID error later on."
             )
 
         else:

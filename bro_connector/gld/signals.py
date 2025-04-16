@@ -6,6 +6,7 @@ from django.db.models.signals import (
 from django.dispatch import receiver
 from .models import (
     gld_registration_log,
+    gld_addition_log,
     GroundwaterLevelDossier,
     MeasurementTvp,
     MeasurementPointMetadata,
@@ -51,7 +52,7 @@ def _calculate_value_tube(
 
 
 @receiver(post_save, sender=gld_registration_log)
-def on_save_gld_synchronisatie_log(
+def on_save_gld_registration_log(
     sender, instance: gld_registration_log, created, **kwargs
 ):
     if instance.gld_bro_id is not None:
@@ -67,6 +68,16 @@ def on_save_gld_synchronisatie_log(
                 reversion.set_comment(
                     f"Updated BRO-ID based on sync_log ({instance.id})."
                 )
+
+
+@receiver(post_save, sender=gld_addition_log)
+def on_save_gld_addition_log(sender, instance: gld_addition_log, created, **kwargs):
+    if instance.observation_identifier is not None:
+        with reversion.create_revision():
+            observation = instance.observation
+            observation.observation_id_bro = instance.observation_identifier
+            observation.save(update_fields=["observation_id_bro"])
+            reversion.set_comment("Updated observation_id based on delivery to BRO.")
 
 
 @receiver(post_delete, sender=MeasurementTvp)
