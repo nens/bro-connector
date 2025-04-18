@@ -410,7 +410,7 @@ class MeasurementPointMetadata(BaseModel):
     censor_reason = models.CharField(
         choices=CENSORREASON, max_length=200, blank=True, null=True, default=None
     )
-    censor_reason_artesia = models.CharField(max_length=200, blank=True, null=True)
+    censor_reason_datalens = models.CharField(max_length=200, blank=True, null=True)
     value_limit = models.CharField(max_length=50, blank=True, null=True, default=None)
 
     class Meta:

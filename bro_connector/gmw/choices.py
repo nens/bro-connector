@@ -403,6 +403,16 @@ QUALITYREGIME = (
 
 VERTICALDATUM = (("NAP", "NAP"),)
 
+SALINITY_CHOICES = (
+    ("variabel", "variabel"),
+    ("zoet", "zoet"),
+    ("brak", "brak"),
+    ("zout", "zout"),
+    ("onbekend", "onbekend"),
+)
+
+DEPTH_CHOICES = (("ondiep", "ondiep"), ("diep", "diep"), ("onbekend", "onbekend"))
+
 WELLSTATUS = (
     ("inGebruik", "In gebruik"),
     ("inAanleg", "In aanleg"),

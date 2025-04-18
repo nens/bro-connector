@@ -15,6 +15,8 @@ from gmw.choices import (
     DELIVERYCONTEXT,
     HORIZONTALPOSITIONINGMETHOD,
     VERTICALDATUM,
+    SALINITY_CHOICES,
+    DEPTH_CHOICES,
     LABELS,
     LOCKS,
     LOCALVERTICALREFERENCEPOINT,
@@ -150,6 +152,37 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     construction_date = models.DateField(
         blank=True, null=True, verbose_name="Inrichtingsdatum"
     )
+
+    # Added by Zeeland at later stage 2025-04-18
+    krw_body = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        verbose_name="KRW-lichaam",
+        help_text="Bijv. SC00000001",
+    )
+    aquifer_layer = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        verbose_name="Watervoerend pakket",
+        help_text="Bijv. WVP1",
+    )
+    salinity = models.CharField(
+        max_length=30,
+        choices=SALINITY_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Zoutgehalte",
+    )
+    depth = models.CharField(
+        max_length=30,
+        choices=DEPTH_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Diepte",
+    )
+
     # Added for additional wells that are not owned by the user
     in_management = models.BooleanField(
         null=True, blank=True, default=True, editable=True, verbose_name="In beheer"
@@ -534,6 +567,20 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         help_text="Hoogte bovenkant buis. Eenheid: mNAP",
         verbose_name="Positie bovenkant buis",
     )
+
+    sensor_depth = models.FloatField(
+        blank=True,
+        null=True,
+        help_text="Hoogte bovenkant buis. Eenheid: m tov bkb.",
+        verbose_name="Sensor diepte",
+    )
+    sensor_id = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Serienummer van de sensor",
+        verbose_name="Sensor ID",
+    )
+
     tube_top_positioning_method = models.CharField(
         choices=TUBETOPPOSITIONINGMETHOD,
         max_length=200,
