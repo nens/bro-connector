@@ -1,5 +1,6 @@
 from ..tasks.bro_handlers import GMWHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
+from .ogc_handler import DataRetrieverOGC
 from ..tasks.progressor import Progress
 from ..tasks import events_handler
 import reversion
@@ -20,7 +21,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 def within_bbox(coordinates) -> bool:
     print(f"x: {coordinates.x}, y: {coordinates.y}")
     if (
@@ -33,14 +33,25 @@ def within_bbox(coordinates) -> bool:
     return False
 
 
-def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
+def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "ogc"):
     progressor = Progress()
     gmw = GMWHandler()
 
-    if kvk_number:
+    if kvk_number and handler == "kvk":
         DR = DataRetrieverKVK(kvk_number)
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
+        gmw_ids = DR.gmw_ids
+        gmw_ids_ini_count = len(gmw_ids)
+
+    bbox_settings = settings.BBOX_SETTINGS
+    if bbox_settings["use_bbox"] and handler == "ogc":
+        print("bbox settings: ",bbox_settings)
+        DR = DataRetrieverOGC(bbox_settings)
+        DR.request_bro_ids(bro_type)
+        if kvk_number:
+            DR.filter_ids_kvk(kvk_number)
+        DR.get_ids_ogc()
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
 

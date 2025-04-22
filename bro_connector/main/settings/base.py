@@ -15,24 +15,26 @@ import platform
 from pathlib import Path
 import django.db.models.options as options
 from main.localsecret import env, GDAL_DLL_VERSION
+from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
 # Application definition
 MODULES = ["gmw", "frd", "gld", "gmn"]
 
-BBOX_SETTINGS = {
-    "use_bbox": True,
-    "xmin": 10000,
-    "xmax": 80000,
-    "ymin": 355000,
-    "ymax": 420000,
-}
+# BBOX_SETTINGS = {
+#     "use_bbox": True,
+#     "xmin": 10000,
+#     "xmax": 80000,
+#     "ymin": 355000,
+#     "ymax": 420000,
+# }
 POLYGON_SHAPEFILE = (
     r"C:\Users\steven.hosper\Desktop\bro-connector-1\data\shapefile\zeeland.shp"
 )
-KVK_USER = "20168636"
+BBOX_SETTINGS = BBOX_EXTRACTOR(shp=POLYGON_SHAPEFILE,use_bbox=True).bbox_settings
 
+KVK_USER = "20168636"
 
 ##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
 
