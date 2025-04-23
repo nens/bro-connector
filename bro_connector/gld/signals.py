@@ -57,7 +57,7 @@ def on_save_gld_registration_log(
 ):
     if instance.gld_bro_id is not None:
         tube = GroundwaterMonitoringTubeStatic.objects.get(
-            groundwater_monitoring_well_static__bro_id=instance.gwm_bro_id,
+            groundwater_monitoring_well_static__bro_id=instance.gmw_bro_id,
             tube_number=instance.filter_number,
         )
         gld = GroundwaterLevelDossier.objects.get(groundwater_monitoring_tube=tube)
@@ -83,8 +83,9 @@ def on_save_gld_addition_log(sender, instance: gld_addition_log, created, **kwar
         with reversion.create_revision():
             observation.up_to_date_in_bro = True
             observation.save(update_fields=["up_to_date_in_bro"])
-            reversion.set_comment("Updated up_to_date_in_bro as delivery was succesful.")
-
+            reversion.set_comment(
+                "Updated up_to_date_in_bro as delivery was succesful."
+            )
 
 
 @receiver(post_delete, sender=MeasurementTvp)
@@ -126,10 +127,10 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
 def on_save_observation(sender, instance: Observation, **kwargs):
     gld = instance.groundwater_level_dossier
 
-    open_observations = gld.observation_set.filter(observation_endtime__isnull=True)
+    open_observations = gld.observation.filter(observation_endtime__isnull=True)
     if open_observations.count() == 0:
         last_observation: Observation = (
-            gld.observation_set.all().order_by("observation_starttime").last()
+            gld.observation.all().order_by("observation_starttime").last()
         )
         Observation.objects.create(
             observation_starttime=last_observation.observation_endtime,

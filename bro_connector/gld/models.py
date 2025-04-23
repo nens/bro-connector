@@ -8,6 +8,7 @@
 import os
 import datetime
 import bisect
+import uuid
 from django.apps import apps
 from django.db import models
 from logging import getLogger
@@ -31,8 +32,16 @@ from gmn.models import GroundwaterMonitoringNet
 from main.models import BaseModel
 from main.localsecret import DEMO
 import bro_exchange as brx
+from django.db.models import Manager
+from xml.etree import ElementTree as ET
 
 logger = getLogger(__file__)
+
+failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
+
+app_config = apps.get_app_config("gld")
+REGISTRATIONS_DIR = os.path.join(app_config.path, "startregistrations")
+ADDITION_DIR = os.path.join(app_config.path, "additions")
 
 
 # %% GLD Models
@@ -42,11 +51,58 @@ def s2d(string: str):
     return string
 
 
-failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
+def read_observation_id_from_xml(xml_string) -> str:
+    # Define the namespaces
+    namespaces = {
+        "gml": "http://www.opengis.net/gml/3.2",
+        "om": "http://www.opengis.net/om/2.0",
+    }
 
-app_config = apps.get_app_config("gld")
-REGISTRATIONS_DIR = os.path.join(app_config.path, "startregistrations")
-ADDITION_DIR = os.path.join(app_config.path, "additions")
+    # Parse the XML string
+    root = ET.fromstring(xml_string)
+
+    # Find the OM_Observation element and get its gml:id attribute
+    observation_elem = root.find(".//om:OM_Observation", namespaces)
+    print(observation_elem)
+    if observation_elem is not None:
+        return observation_elem.attrib.get("{http://www.opengis.net/gml/3.2}id")
+
+    return None
+
+
+def get_timeseries_tvp_for_observation_id(observation):
+    """
+    Get all timeseries values between start and stop datetime, including metadata
+    """
+    measurement_tvp = observation.measurement.all()
+    measurements_list = []
+    for measurement in measurement_tvp:
+        if measurement.measurement_point_metadata:
+            metadata = measurement.measurement_point_metadata.get_sourcedocument_data()
+        else:
+            continue
+
+        # discard a measurement with quality control type 1 (afgekeurd)
+        if metadata["StatusQualityControl"] == "afgekeurd":
+            continue
+
+        # If the measurement value  is None, this value must have been censored
+        if measurement.field_value is None:
+            if metadata["censoredReason"] is None:
+                # We can't include a missing value without a censoring reason
+                continue
+
+        measurement_data = {
+            "time": measurement.measurement_time.isoformat(),
+            "value": float(measurement.calculated_value),
+            "metadata": metadata,
+        }
+
+        measurements_list += [measurement_data]
+
+    measurements_list_ordered = _order_measurements_list(measurements_list)
+
+    return measurements_list_ordered
 
 
 class GroundwaterLevelDossier(BaseModel):
@@ -150,7 +206,7 @@ class GroundwaterLevelDossier(BaseModel):
 class Observation(BaseModel):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False)
     groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE
+        "GroundwaterLevelDossier", on_delete=models.CASCADE, related_name="observation"
     )
     observation_metadata = models.ForeignKey(
         "ObservationMetadata",
@@ -174,6 +230,8 @@ class Observation(BaseModel):
     observation_id_bro = models.CharField(
         max_length=200, blank=True, null=True, editable=False
     )  # Should also import this with the BRO-Import tool
+
+    measurement: Manager["MeasurementTvp"]
 
     @property
     def timestamp_first_measurement(self):
@@ -247,6 +305,12 @@ class Observation(BaseModel):
         else:
             return "onbekend"
 
+    @property
+    def addition_type(self):
+        if self.observation_type == "controlemeting":
+            return "controlemeting"
+        return f"regulier_{self.observation_type}"
+
     def __str__(self):
         start = (
             self.observation_starttime.date()
@@ -255,6 +319,53 @@ class Observation(BaseModel):
         )
         end = self.observation_endtime.date() if self.observation_endtime else "Present"
         return f"{self.groundwater_level_dossier} ({start} - {end})"
+
+    def get_sourcedocument_data(self):
+        """
+        Generate the GLD addition sourcedocs, without result data
+        """
+        # Get the GLD registration id for this measurement timeseries
+        # Check which parts of the observation have already been succesfully delivered
+        # Get the observation metadata and procedure data
+        observation_metadata = {
+            "observationType": self.observation_type,
+            "principalInvestigator": self.observation_metadata.responsible_party.company_number,
+        }
+
+        observation_procedure = self.observation_process.get_sourcedocument_data()
+
+        date_stamp = None
+        observation_result_time = ""
+        if self.result_time:
+            observation_result_time = self.result_time.astimezone().strftime(
+                "%Y-%m-%dT%H:%M:%S%z"
+            )
+            date_stamp = self.result_time.astimezone().strftime("%Y-%m-%d")
+
+            if "+" in observation_result_time:
+                splited_time = observation_result_time.split("+")
+                tz_seporator = "+"
+            else:
+                splited_time = observation_result_time.split("-")
+                tz_seporator = "-"
+
+            timezone = splited_time[-1]
+            observation_result_time = (
+                f"{splited_time[0]}{tz_seporator}{timezone[0:2]}:{timezone[2:4]}"
+            )
+
+        source_document_data = {
+            "metadata": {"parameters": observation_metadata, "dateStamp": date_stamp},
+            "procedure": {"parameters": observation_procedure},
+            "resultTime": observation_result_time,
+            "result": get_timeseries_tvp_for_observation_id(self),
+        }
+        if self.observation_type != "controlemeting":
+            source_document_data["metadata"].update(
+                {"status": self.observation_metadata.status}
+            )
+
+        return source_document_data
 
     class Meta:
         managed = True
@@ -323,6 +434,28 @@ class ObservationProcess(BaseModel):
             logger.exception(e)
             return str(self.observation_process_id)
 
+    def get_sourcedocument_data(self):
+        """
+        Get the procedure data for the observation
+        This is unique for each observation
+        """
+        observation_procedure_data = {
+            "airPressureCompensationType": self.air_pressure_compensation_type,
+            "evaluationProcedure": self.evaluation_procedure,
+            "measurementInstrumentType": self.measurement_instrument_type,
+        }
+
+        if self.measurement_instrument_type in [
+            "analoogPeilklokje",
+            "elektronischPeilklokje",
+            "onbekendPeilklokje",
+            "onbekend",
+            None,
+        ]:
+            observation_procedure_data.pop("airPressureCompensationType")
+
+        return observation_procedure_data
+
     class Meta:
         managed = True
         db_table = 'gld"."observation_process'
@@ -351,6 +484,7 @@ class MeasurementTvp(BaseModel):
         null=True,
         blank=True,
         verbose_name="Observatie",
+        related_name="measurement",
     )
     measurement_time = models.DateTimeField(
         blank=True, null=True, verbose_name="Tijd meting"
@@ -444,13 +578,25 @@ class MeasurementPointMetadata(BaseModel):
     def __str__(self):
         return f"{self.measurement_point_metadata_id} {self.status_quality_control}"
 
+    def get_sourcedocument_data(
+        self,
+    ):
+        metadata = {
+            "StatusQualityControl": self.status_quality_control,
+            "interpolationType": "Discontinuous",
+        }
+        if self.censor_reason not in ["", "nan", None]:
+            metadata["censoredReason"] = self.censor_reason
+
+        return metadata
+
 
 # %% Aanlevering models
 
 
 class gld_registration_log(BaseModel):
     # gld = models.ForeignKey()
-    gwm_bro_id = models.CharField(max_length=254, verbose_name="GMW ID")
+    gmw_bro_id = models.CharField(max_length=254, verbose_name="GMW ID")
     gld_bro_id = models.CharField(
         max_length=254, verbose_name="GLD ID", null=True, blank=True
     )
@@ -495,7 +641,7 @@ class gld_registration_log(BaseModel):
         verbose_name_plural = "GLD Registratie Logs"
         constraints = [
             models.UniqueConstraint(
-                fields=["gwm_bro_id", "filter_number", "quality_regime"],
+                fields=["gmw_bro_id", "filter_number", "quality_regime"],
                 name="unique_gld_registration_log",
             )
         ]
@@ -503,12 +649,12 @@ class gld_registration_log(BaseModel):
     def generate_sourcedocument(
         self,
     ) -> str:
-        if self.gwm_bro_id is None or self.filter_number is None:
+        if self.gmw_bro_id is None or self.filter_number is None:
             self.comments = "No GMW ID or filter number provided"
             self.save()
             return
 
-        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         tube = gmw.tube.get(tube_number=self.filter_number)
         filternumber = self.filter_number
 
@@ -570,7 +716,7 @@ class gld_registration_log(BaseModel):
             self.save()
             return
 
-        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         source_doc_file = os.path.join(REGISTRATIONS_DIR, self.file)
         payload = open(source_doc_file)
         try:
@@ -618,7 +764,7 @@ class gld_registration_log(BaseModel):
             position = bisect.bisect_left(failed_update_strings, delivery_status)
             delivery_status_update = failed_update_strings[position + 1]
 
-        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         bro_info = gmw.get_bro_info()
         file = self.file
         source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
@@ -666,11 +812,9 @@ class gld_registration_log(BaseModel):
         Check the delivery status of the generated GLD sourcedoc
         """
         if not self.delivery_id:
-            self.comments = "No delivery ID to check"
-            self.save()
             return
 
-        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         bro_info = gmw.get_bro_info()
 
         try:
@@ -706,6 +850,9 @@ class gld_addition_log(BaseModel):
         null=True,
         blank=True,
         verbose_name="Observatie reeks",
+    )
+    addition_type = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Reeks type"
     )
     observation_identifier = models.CharField(
         max_length=254, verbose_name="Observatie ID"
@@ -744,9 +891,6 @@ class gld_addition_log(BaseModel):
     file = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Bestand"
     )
-    addition_type = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Toevoeging type"
-    )
     process_status = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Proces status"
     )
@@ -755,6 +899,62 @@ class gld_addition_log(BaseModel):
         db_table = 'aanlevering"."gld_addition_log'
         verbose_name = "GLD Toevoeging Log"
         verbose_name_plural = "GLD Toevoeging Logs"
+
+    def generate_sourcedocument(
+        self,
+    ) -> str:
+        observation_source_document_data = self.observation.get_sourcedocument_data()
+        print(observation_source_document_data)
+
+        first_timestamp_datetime = self.observation.timestamp_first_measurement
+        final_timestamp_datetime = self.observation.timestamp_last_measurement
+
+        # Add the timeseries to the sourcedocument
+        gld_addition_sourcedocument = observation_source_document_data
+        gld_addition_sourcedocument["observationId"] = f"_{uuid.uuid4()}"
+
+        # filename should be unique
+        filename = f"GLD_Addition_Observation_{self.observation.observation_id}_{self.observation.groundwater_level_dossier.gld_bro_id}.xml"
+        # try to create source document
+        try:
+            # Create addition source document
+            gld_addition_registration_request = brx.gld_registration_request(
+                srcdoc="GLD_Addition",
+                requestReference=filename,
+                deliveryAccountableParty=self.observation.observation_metadata.responsible_party.company_number,  # investigator_identification (NENS voor TEST)
+                qualityRegime=self.observation.groundwater_level_dossier.quality_regime,
+                broId=self.observation.groundwater_level_dossier.gld_bro_id,
+                srcdocdata=gld_addition_sourcedocument,
+            )
+            print(gld_addition_registration_request)
+
+            gld_addition_registration_request.generate()
+            gld_addition_registration_request.write_request(
+                output_dir=ADDITION_DIR, filename=filename
+            )
+
+            observation_id = read_observation_id_from_xml(
+                gld_addition_registration_request.request
+            )
+
+            # Set or update the record fields
+            self.observation_identifier = observation_id
+            self.date_modified = datetime.datetime.now()
+            self.start_date = first_timestamp_datetime
+            self.end_date = final_timestamp_datetime
+            self.comments = "Successfully generated XML sourcedocument"
+            self.file = filename
+            self.validation_status = "TO_BE_VALIDATED"
+            self.addition_type = self.observation.addition_type
+            self.process_status = "source_document_created"
+
+        except Exception as e:
+            print(e)
+            self.date_modified = datetime.datetime.now()
+            self.comments = f"Failed to generate XML source document, {e}"
+            self.process_status = "failed_to_create_source_document"
+
+        self.save()
 
     def validate_sourcedocument(
         self,
@@ -768,7 +968,7 @@ class gld_addition_log(BaseModel):
             return
 
         gmw: GroundwaterMonitoringWellStatic = self.observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
-        source_doc_file = os.path.join(REGISTRATIONS_DIR, self.file)
+        source_doc_file = os.path.join(ADDITION_DIR, self.file)
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
@@ -803,8 +1003,6 @@ class gld_addition_log(BaseModel):
         Deliver the generated GLD sourcedoc
         """
         if not self.file:
-            self.comments = "No file to deliver"
-            self.save()
             return
 
         # If the delivery fails, use the this to indicate how many attempts were made
@@ -818,7 +1016,7 @@ class gld_addition_log(BaseModel):
         gmw: GroundwaterMonitoringWellStatic = self.observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
         bro_info = gmw.get_bro_info()
         file = self.file
-        source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
+        source_doc_file = os.path.join(ADDITION_DIR, file)
         payload = open(source_doc_file)
         try:
             request = {file: payload}
@@ -854,5 +1052,59 @@ class gld_addition_log(BaseModel):
             self.delivery_status = delivery_status_update
 
         self.save()
+        return delivery_status
+
+    def check_delivery_status(
+        self,
+    ) -> str:
+        """
+        Check the delivery status of the generated GLD sourcedoc
+        """
+        if not self.delivery_id:
+            return
+
+        gmw: GroundwaterMonitoringWellStatic = self.observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+        bro_info = gmw.get_bro_info()
+
+        try:
+            delivery_info = brx.check_delivery_status(
+                bro_info["token"],
+                bro_info["projectnummer"],
+                self.delivery_id,
+                demo=DEMO,
+                api="v2",
+            )
+            delivery_status = delivery_info.json()["status"]
+            self.date_modified = datetime.datetime.now()
+            self.comments = f"Delivery status: {delivery_status}"
+            self.delivery_status = delivery_status
+            self.last_changed = delivery_info.json()["lastChanged"]
+            self.process_status = "delivery_status_checked"
+
+        except Exception as e:
+            delivery_status = "Failed"
+            comments = f"Failed to check delivery status: {e}"
+            self.date_modified = datetime.datetime.now()
+            self.comments = comments
+            self.process_status = "failed_to_check_delivery_status"
+
         self.save()
         return delivery_status
+
+
+### Helper functions
+def _order_measurements_list(measurement_list: list):
+    datetime_values = [
+        datetime.datetime.fromisoformat(tvp["time"]) for tvp in measurement_list
+    ]
+    datetime_ordered = sorted(datetime_values)
+    indices = [
+        datetime_values.index(datetime_value) for datetime_value in datetime_ordered
+    ]
+
+    measurement_list_ordered = []
+    for index in indices:
+        measurement_list_ordered.append(measurement_list[index])
+
+    # print(measurement_list_ordered)
+    return measurement_list_ordered

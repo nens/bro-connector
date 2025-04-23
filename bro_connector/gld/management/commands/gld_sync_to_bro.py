@@ -17,8 +17,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
+app_config = apps.get_app_config("gld")
+REGISTRATIONS_DIR = os.path.join(app_config.path, "startregistrations")
+ADDITION_DIR = os.path.join(app_config.path, "additions")
 
+failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 field_value_division_dict = {"cm": 100, "mm": 1000, "m": 1}
 
 
@@ -77,15 +80,13 @@ def get_measurement_point_metadata_for_measurement(
     return metadata
 
 
-def get_timeseries_tvp_for_observation_id(observation_id: int):
+def get_timeseries_tvp_for_observation_id(observation: models.Observation):
     """
     Get all timeseries values between start and stop datetime, including metadata
     """
     # TODO checken of toegepaste filter/check werkt (of de measurement_list alleen de goedgekeurde waardes heeft)
 
-    measurement_tvp = models.MeasurementTvp.objects.filter(
-        observation_id=observation_id
-    )
+    measurement_tvp = observation.measurement.all()
     measurements_list = []
     for measurement in measurement_tvp:
         metadata = get_measurement_point_metadata_for_measurement(
@@ -328,18 +329,11 @@ class GldSyncHandler:
         # Currently not yet dynamically implemented
         self.monitoringnetworks = None
         self.demo = self._is_demo()
-        self._set_folder_dir("gld")
 
     def _is_demo(self):
         if ENV == "production":
             return False
         return True
-
-    def _set_folder_dir(self, app: str) -> None:
-        app_config = apps.get_app_config(app)
-        self.base_dir = app_config.path
-        self.registrations_dir = f"{self.base_dir}\\startregistrations"
-        self.additions_dir = f"{self.base_dir}\\additions"
 
     def _set_bro_info(self, well: GroundwaterMonitoringWellStatic) -> None:
         self.bro_info = form_bro_info(well)
@@ -389,11 +383,11 @@ class GldSyncHandler:
             filename = request_reference + ".xml"
             gld_startregistration_request.generate()
             gld_startregistration_request.write_request(
-                output_dir=self.registrations_dir, filename=filename
+                output_dir=REGISTRATIONS_DIR, filename=filename
             )
             process_status = "succesfully_generated_startregistration_request"
             return models.gld_registration_log.objects.update_or_create(
-                gwm_bro_id=bro_id_gmw,
+                gmw_bro_id=bro_id_gmw,
                 filter_number=filtrnr,
                 quality_regime=quality_regime,
                 defaults=dict(
@@ -408,7 +402,7 @@ class GldSyncHandler:
         except Exception as e:
             process_status = "failed_to_generate_source_documents"
             return models.gld_registration_log.objects.update_or_create(
-                gwm_bro_id=bro_id_gmw,
+                gmw_bro_id=bro_id_gmw,
                 filter_number=filtrnr,
                 quality_regime=quality_regime,
                 defaults=dict(
@@ -427,7 +421,7 @@ class GldSyncHandler:
         Validate generated startregistration sourcedocuments
         """
         file = registration.file
-        source_doc_file = os.path.join(self.registrations_dir, file)
+        source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
         payload = open(source_doc_file)
 
         try:
@@ -472,7 +466,7 @@ class GldSyncHandler:
 
         try:
             file = registration.file
-            source_doc_file = os.path.join(self.registrations_dir, file)
+            source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
             payload = open(source_doc_file)
             request = {file: payload}
 
@@ -559,7 +553,7 @@ class GldSyncHandler:
                 registration.save()
 
                 tube = models.GroundwaterMonitoringTubeStatic.objects.get(
-                    groundwater_monitoring_well_static__bro_id=registration.gwm_bro_id,
+                    groundwater_monitoring_well_static__bro_id=registration.gmw_bro_id,
                     tube_number=registration.filter_number,
                 )
                 gld = models.GroundwaterLevelDossier.objects.get(
@@ -570,7 +564,7 @@ class GldSyncHandler:
 
                 # Remove the sourcedocument file if delivery is approved
                 file = registration.file
-                source_doc_file = os.path.join(self.registrations_dir, file)
+                source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
                 os.remove(source_doc_file)
 
             else:
@@ -611,7 +605,7 @@ class GldSyncHandler:
 
                 # Check if there is already a registration for this tube
                 if not models.gld_registration_log.objects.filter(
-                    gwm_bro_id=well.bro_id,
+                    gmw_bro_id=well.bro_id,
                     filter_number=tube_id,
                     quality_regime=quality_regime,
                 ).exists():
@@ -626,7 +620,7 @@ class GldSyncHandler:
 
                     if gld.gld_bro_id:
                         models.gld_registration_log.objects.get_or_create(
-                            gwm_bro_id=gld.gmw_bro_id,
+                            gmw_bro_id=gld.gmw_bro_id,
                             gld_bro_id=gld.gld_bro_id,
                             filter_number=gld.tube_number,
                             delivery_type="register",
@@ -687,7 +681,7 @@ class GldSyncHandler:
 
         """
         well = GroundwaterMonitoringWellStatic.objects.get(
-            bro_id=registration.gwm_bro_id
+            bro_id=registration.gmw_bro_id
         )
         self._set_bro_info(well)
 
@@ -775,8 +769,6 @@ class GldSyncHandler:
     def generate_gld_addition_sourcedoc_data(
         self,
         observation: models.Observation,
-        observation_source_document_data,
-        addition_type,
     ):
         """
         Generate all additions for this observation instance
@@ -784,9 +776,11 @@ class GldSyncHandler:
         These will later be delivered
         """
 
-        measurement_timeseries_tvp = get_timeseries_tvp_for_observation_id(
-            observation.observation_id
+        observation_source_document_data, addition_type = (
+            get_observation_gld_source_document_data(observation)
         )
+
+        measurement_timeseries_tvp = get_timeseries_tvp_for_observation_id(observation)
 
         gld_bro_id, quality_regime = get_gld_registration_data_for_observation(
             observation
@@ -828,7 +822,7 @@ class GldSyncHandler:
             print(observation_id)
 
             gld_addition_registration_request.write_request(
-                output_dir=self.additions_dir, filename=filename
+                output_dir=ADDITION_DIR, filename=filename
             )
 
             record, created = models.gld_addition_log.objects.update_or_create(
@@ -915,7 +909,7 @@ class GldSyncHandler:
         """
         Validate the generated GLD addition sourcedoc
         """
-        source_doc_file = os.path.join(self.additions_dir, addition.file)
+        source_doc_file = os.path.join(ADDITION_DIR, addition.file)
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
@@ -951,7 +945,7 @@ class GldSyncHandler:
         """
         Deliver GLD addition sourcedocument to the BRO
         """
-        source_doc_file = os.path.join(self.additions_dir, filename)
+        source_doc_file = os.path.join(ADDITION_DIR, filename)
         payload = open(source_doc_file)
         request = {filename: payload}
 
@@ -1100,12 +1094,12 @@ class GldSyncHandler:
 
         try:
             if new_delivery_status == "DOORGELEVERD":  # "OPGENOMEN_LVBRO":
-                sourcedoc_filepath = os.path.join(self.additions_dir, file_name)
+                sourcedoc_filepath = os.path.join(ADDITION_DIR, file_name)
                 os.remove(sourcedoc_filepath)
         except Exception as e:
             logger.exception(e)
             logger.info(
-                f"File {file_name} could not be removed from {self.additions_dir}. Likely manually removed or renamed."
+                f"File {file_name} could not be removed from {ADDITION_DIR}. Likely manually removed or renamed."
             )
             pass  # no file to remove
 

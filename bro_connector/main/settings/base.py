@@ -33,7 +33,6 @@ POLYGON_SHAPEFILE = (
 )
 KVK_USER = "20168636"
 
-
 ##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

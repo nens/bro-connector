@@ -59,7 +59,7 @@ def handle_start_registrations(
     gld = gld_sync_to_bro.GldSyncHandler()
 
     gld_registration_logs = gld_registration_log.objects.filter(
-        gwm_bro_id=well.bro_id,
+        gmw_bro_id=well.bro_id,
         filter_number=tube_number,
         quality_regime=well.quality_regime,
     )
@@ -84,7 +84,7 @@ def handle_start_registrations(
 
         elif dossier.gld_bro_id:
             gld_registration_log.objects.update_or_create(
-                gwm_bro_id=dossier.gmw_bro_id,
+                gmw_bro_id=dossier.gmw_bro_id,
                 gld_bro_id=dossier.gld_bro_id,
                 filter_number=dossier.tube_number,
                 validation_status="VALID",
@@ -199,7 +199,7 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
     # Create GLD Registration Log
     if is_broid(dossier.gld_bro_id):
         gld_start_registration = gld_registration_log.objects.update_or_create(
-            gwm_bro_id=dossier.gmw_bro_id,
+            gmw_bro_id=dossier.gmw_bro_id,
             gld_bro_id=dossier.gld_bro_id,
             filter_number=dossier.tube_number,
             quality_regime=dossier.quality_regime
@@ -255,7 +255,47 @@ def check_and_deliver_start_registrations(dossier: GroundwaterLevelDossier) -> N
 
 
 def check_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
-    handle_additions(dossier, deliver=True)
+    for observation in dossier.observation.filter(
+        up_to_date_in_bro=False, result_time__isnull=False
+    ):
+        addition_log = gld_addition_log.objects.update_or_create(
+            broid_registration=dossier.gld_bro_id,
+            observation=observation,
+            addition_type=observation.addition_type,
+        )[0]
+
+        logger.info(f"Check and deliver; Log created: {addition_log}")
+
+        addition_log.generate_sourcedocument()
+        logger.info(f"Check and deliver; File generated: {addition_log.file}")
+        if addition_log.process_status == "failed_to_create_source_document":
+            logger.error(
+                f"Check and deliver; File generation failed: {addition_log.comments}"
+            )
+            return
+
+        addition_log.validate_sourcedocument()
+        logger.info(
+            f"Check and deliver; File validated: {addition_log.validation_status}"
+        )
+        if addition_log.process_status == "source_document_validation_failed":
+            logger.error(
+                f"Check and deliver; File generation failed: {addition_log.comments}"
+            )
+            return
+
+        addition_log.deliver_sourcedocument()
+        logger.info(
+            f"Check and deliver; File delivered: {addition_log.delivery_id} {addition_log.delivery_status}"
+        )
+        if addition_log.process_status == "source_document_validation_failed":
+            logger.error(
+                f"Check and deliver; File generation failed: {addition_log.comments}"
+            )
+            return
+
+    # Sleep for 1 seconds to avoid overwhelming the server
+    time.sleep(1)
 
 
 def check_status(dossier: GroundwaterLevelDossier) -> None:
