@@ -9,7 +9,7 @@ import logging
 
 from gld.management.commands import gld_sync_to_bro
 
-from main.settings.base import env
+from main.settings.base import ENV
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ folders = ["./additions/", "./startregistrations/"]
 
 
 def is_demo():
-    if env == "production":
+    if ENV == "production":
         return False
     return True
 

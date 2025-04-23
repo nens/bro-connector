@@ -93,18 +93,6 @@ def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     if metadata:
         metadata.delete()
 
-
-@receiver(post_delete, sender=Observation)
-def on_delete_measurement_observation(sender, instance: Observation, **kwargs):
-    observation_process = instance.observation_process
-    if observation_process:
-        observation_process.delete()
-
-    observation_metadata = instance.observation_metadata
-    if observation_metadata:
-        observation_metadata.delete()
-
-
 @receiver(pre_save, sender=Observation)
 def pre_save_observation(sender, instance: Observation, **kwargs):
     if instance.observation_endtime:

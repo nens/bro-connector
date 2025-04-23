@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand
 from gmw.management.tasks import sync_gmw_events
-from main.settings.base import env
+from main.settings.base import ENV
 from django.apps import apps
 
 
 def _is_demo(self):
-    if env == "production":
+    if ENV == "production":
         return False
     return True
 

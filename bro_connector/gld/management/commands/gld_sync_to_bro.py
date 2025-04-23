@@ -7,7 +7,7 @@ import reversion
 import uuid
 from xml.etree import ElementTree as ET
 from copy import deepcopy
-from main.settings.base import env
+from main.settings.base import ENV
 from django.apps import apps
 from gld import models
 from gmw.models import GroundwaterMonitoringWellStatic
@@ -331,7 +331,7 @@ class GldSyncHandler:
         self._set_folder_dir("gld")
 
     def _is_demo(self):
-        if env == "production":
+        if ENV == "production":
             return False
         return True
 

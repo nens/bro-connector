@@ -21,16 +21,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def within_bbox(coordinates) -> bool:
-    print(f"x: {coordinates.x}, y: {coordinates.y}")
-    if (
-        coordinates.x > settings.BBOX_SETTINGS["xmin"]
-        and coordinates.x < settings.BBOX_SETTINGS["xmax"]
-        and coordinates.y > settings.BBOX_SETTINGS["ymin"]
-        and coordinates.y < settings.BBOX_SETTINGS["ymax"]
-    ):
-        return True
-    return False
+# def within_bbox(coordinates) -> bool:
+#     print(f"x: {coordinates.x}, y: {coordinates.y}")
+#     if (
+#         coordinates.x > settings.BBOX_SETTINGS["xmin"]
+#         and coordinates.x < settings.BBOX_SETTINGS["xmax"]
+#         and coordinates.y > settings.BBOX_SETTINGS["ymin"]
+#         and coordinates.y < settings.BBOX_SETTINGS["ymax"]
+#     ):
+#         return True
+#     return False
 
 
 def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "ogc"):
@@ -46,12 +46,14 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
 
     bbox_settings = settings.BBOX_SETTINGS
     bbox = settings.BBOX
+    shp = settings.POLYGON_SHAPEFILE
     if bbox_settings["use_bbox"] and handler == "ogc":
         print("bbox settings: ",bbox_settings)
         DR = DataRetrieverOGC(bbox)
         DR.request_bro_ids(bro_type)
         if kvk_number:
             DR.filter_ids_kvk(kvk_number)
+        DR.enforce_shapefile(shp)
         DR.get_ids_ogc()
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
@@ -62,12 +64,26 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
 
     print(f"{gmw_ids_ini_count} bro ids found for kvk {kvk_number}.")
     stop
+    def print_duplicates(input_list):
+        seen = []
+        duplicates = []
+        
+        for item in input_list:
+            if item in seen:
+                duplicates.append(item)
+            else:
+                seen.append(item)
+        
+        print("Duplicate values:", duplicates)
+    print_duplicates(gmw_ids)
+    
     imported = 0
     gmw_ids_count = len(gmw_ids)
     progressor.calibrate(gmw_ids, 25)
 
     # Import the well data
     for id in range(gmw_ids_count):
+        print("BRO id: ",gmw_ids[id])
         gmw.get_data(gmw_ids[id], True)
         if gmw.root is None:
             continue
@@ -82,29 +98,21 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
         ini = InitializeData(gmw_dict)
         ini.well_static()
         gmws = ini.gmws
-
-        if settings.BBOX_SETTINGS["use_bbox"]:
-            if not within_bbox(gmws.coordinates):
-                gmws.delete()
-                gmw.reset_values()
-                ini.reset_tube_number()
-                progressor.next()
-                progressor.progress()
-                continue
-
-        print(f"In bbox for {gmws}")
         ini.well_dynamic()
 
         for tube_number in range(gmw.number_of_tubes):
+            print("tube number: ",tube_number)
             ini.increment_tube_number()
             ini.tube_static()
             ini.tube_dynamic()
 
             for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
+                print("geo ohm cable: ",geo_ohm_cable)
                 ini.increment_geo_ohm_number()
                 ini.geo_ohm()
 
                 for electrode in range(int(gmw.number_of_electrodes)):
+                    print("Electrode: ",electrode)
                     ini.increment_electrode_number()
                     ini.electrode()
 
@@ -116,17 +124,20 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
         # Update based on the events
         updater = events_handler.Updater(gmw.dict, gmws)
         for nr in range(int(gmw.number_of_events)):
+            print(nr)
             updater.intermediate_events()
 
         gmw.reset_values()
         ini.reset_tube_number()
         progressor.next()
         progressor.progress()
+        print("next")
 
     info = {
         "ids_found": gmw_ids_count,
         "imported": imported,
     }
+    print("run finished")
     return info
 
 

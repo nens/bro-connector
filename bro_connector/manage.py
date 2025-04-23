@@ -3,16 +3,16 @@
 
 import os
 import sys
-from main.settings.base import env
+from main.settings.base import ENV
 
 
 def main():
     """Run administrative tasks."""
-    if env == "production":
+    if ENV == "production":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.production")
-    elif env == "staging":
+    elif ENV == "staging":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.staging")
-    elif env == "development":
+    elif ENV == "development":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.development")
 
     try:
