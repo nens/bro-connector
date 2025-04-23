@@ -30,6 +30,7 @@ class Command(BaseCommand):
         kvk_number = options["kvk_number"]
         bro_type = options["type"]
         handler = options["handler"]
+        print("KVK number: ",kvk_number)
 
         if bro_type == "gmw":
             retrieve_historic_gmw.run(kvk_number=kvk_number,handler=handler)

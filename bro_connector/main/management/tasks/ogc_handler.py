@@ -3,8 +3,8 @@ import json
 
 
 class DataRetrieverOGC:
-    def __init__(self, bbox_settings):
-        self.bbox = f"bbox={bbox_settings["xmin"]}%2C{bbox_settings["ymin"]}%2C{bbox_settings["xmax"]}%2C{bbox_settings["ymax"]}"
+    def __init__(self, bbox):
+        self.bbox = f"bbox={bbox.xmin}%2C{bbox.ymin}%2C{bbox.xmax}%2C{bbox.ymax}"
         self.bro_ids = []
 
     def request_bro_ids(self, type):
@@ -12,9 +12,9 @@ class DataRetrieverOGC:
         if type.lower() not in options:
             raise Exception(f"Unknown type: {type}. Use a correct option: {options}.")
 
-        basis_url = "https://api.pdok.nl/"
+        basis_url = "https://api.pdok.nl"
         ogc_verzoek = requests.get(
-            f"{basis_url}/bzk/bro-gminsamenhang-karakteristieken/ogc/v1/collections/gm_{type}/items?{self.bbox}f=json"
+            f"{basis_url}/bzk/bro-gminsamenhang-karakteristieken/ogc/v1/collections/gm_{type}/items?{self.bbox}&f=json"
         )
         features: list = json.loads(ogc_verzoek.text)["features"]
         self.bro_ids = []
@@ -27,6 +27,7 @@ class DataRetrieverOGC:
     def filter_ids_kvk(self, kvk_number):
         for bro_id, kvk_id in zip(self.bro_ids, self.kvk_ids):
             if kvk_number != kvk_id:
+                print("Removing ",bro_id)
                 self.bro_ids.remove(bro_id)
 
     def get_ids_ogc(self):

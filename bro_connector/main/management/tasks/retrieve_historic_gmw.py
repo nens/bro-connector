@@ -45,9 +45,10 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
         gmw_ids_ini_count = len(gmw_ids)
 
     bbox_settings = settings.BBOX_SETTINGS
+    bbox = settings.BBOX
     if bbox_settings["use_bbox"] and handler == "ogc":
         print("bbox settings: ",bbox_settings)
-        DR = DataRetrieverOGC(bbox_settings)
+        DR = DataRetrieverOGC(bbox)
         DR.request_bro_ids(bro_type)
         if kvk_number:
             DR.filter_ids_kvk(kvk_number)
@@ -59,7 +60,8 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
         print(f"No IDs found for kvk: {kvk_number}.")
         return {"ids_found": gmw_ids_ini_count, "imported": gmw_ids_ini_count}
 
-    print(f"{gmw_ids_ini_count} bro ids found for organisation.")
+    print(f"{gmw_ids_ini_count} bro ids found for kvk {kvk_number}.")
+    stop
     imported = 0
     gmw_ids_count = len(gmw_ids)
     progressor.calibrate(gmw_ids, 25)
