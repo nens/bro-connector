@@ -15,6 +15,8 @@ from gmw.choices import (
     DELIVERYCONTEXT,
     HORIZONTALPOSITIONINGMETHOD,
     VERTICALDATUM,
+    SALINITY_CHOICES,
+    DEPTH_CHOICES,
     LABELS,
     LOCKS,
     LOCALVERTICALREFERENCEPOINT,
@@ -37,6 +39,13 @@ from bro.models import Organisation, BROProject
 import datetime
 from gmw.utils import generate_put_code
 from main.models import BaseModel
+
+
+def _get_token(owner: Organisation):
+    return {
+        "user": owner.bro_user,
+        "pass": owner.bro_token,
+    }
 
 
 class GroundwaterMonitoringWellStatic(BaseModel):
@@ -106,7 +115,10 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         max_length=256, blank=True, null=True, verbose_name="OLGA-code"
     )
     well_code = models.CharField(
-        max_length=256, blank=True, null=True, verbose_name="Putcode", unique=True
+        max_length=256,
+        blank=True,
+        null=True,
+        verbose_name="Putcode",
     )
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     coordinates = geo_models.PointField(
@@ -150,6 +162,37 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     construction_date = models.DateField(
         blank=True, null=True, verbose_name="Inrichtingsdatum"
     )
+
+    # Added by Zeeland at later stage 2025-04-18
+    krw_body = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        verbose_name="KRW-lichaam",
+        help_text="Bijv. SC00000001",
+    )
+    aquifer_layer = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        verbose_name="Watervoerend pakket",
+        help_text="Bijv. WVP1",
+    )
+    salinity = models.CharField(
+        max_length=30,
+        choices=SALINITY_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Zoutgehalte",
+    )
+    depth = models.CharField(
+        max_length=30,
+        choices=DEPTH_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Diepte",
+    )
+
     # Added for additional wells that are not owned by the user
     in_management = models.BooleanField(
         null=True, blank=True, default=True, editable=True, verbose_name="In beheer"
@@ -224,6 +267,12 @@ class GroundwaterMonitoringWellStatic(BaseModel):
             return self.project.project_number
         else:
             None
+
+    def get_bro_info(self):
+        return {
+            "token": _get_token(self.delivery_accountable_party),
+            "projectnummer": self.project_number,
+        }
 
     project_number.fget.short_description = "Projectnummer"
 
@@ -486,6 +535,14 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
             groundwater_monitoring_tube_static=self
         ).count()
 
+    @property
+    def gmn_ids(self) -> list[str]:
+        gmn_ids = []
+        for mp in self.measuring_point.all():
+            gmn_ids.append(mp.gmn.gmn_bro_id)
+
+        return gmn_ids
+
     def __str__(self):
         if self.groundwater_monitoring_well_static:
             well = f"{self.groundwater_monitoring_well_static.__str__()}"
@@ -534,6 +591,20 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         help_text="Hoogte bovenkant buis. Eenheid: mNAP",
         verbose_name="Positie bovenkant buis",
     )
+
+    sensor_depth = models.FloatField(
+        blank=True,
+        null=True,
+        help_text="Hoogte bovenkant buis. Eenheid: m tov bkb.",
+        verbose_name="Sensor diepte",
+    )
+    sensor_id = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Serienummer van de sensor",
+        verbose_name="Sensor ID",
+    )
+
     tube_top_positioning_method = models.CharField(
         choices=TUBETOPPOSITIONINGMETHOD,
         max_length=200,
