@@ -115,7 +115,10 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         max_length=256, blank=True, null=True, verbose_name="OLGA-code"
     )
     well_code = models.CharField(
-        max_length=256, blank=True, null=True, verbose_name="Putcode", unique=True
+        max_length=256,
+        blank=True,
+        null=True,
+        verbose_name="Putcode",
     )
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
     coordinates = geo_models.PointField(
