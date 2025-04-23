@@ -4,7 +4,7 @@ import datetime
 import bisect
 import reversion
 from bro.models import Organisation
-from main.settings.base import env
+from main.settings.base import ENV
 from gmw import models
 from main.management.tasks.django_tools_bro import (
     DjangoTableToDict,
@@ -21,7 +21,7 @@ failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
 
 def _is_demo():
-    if env == "production":
+    if ENV == "production":
         return False
     return True
 

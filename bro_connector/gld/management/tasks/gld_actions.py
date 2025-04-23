@@ -6,10 +6,11 @@ from gld.models import (
 )
 import os
 import logging
+import time
 
 from gld.management.commands import gld_sync_to_bro
 
-from main.settings.base import env
+from main.settings.base import ENV
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,20 @@ folders = ["./additions/", "./startregistrations/"]
 
 
 def is_demo():
-    if env == "production":
+    if ENV == "production":
         return False
     return True
+
+
+def is_broid(bro_id: str) -> bool:
+    """
+    Check if the given bro_id is a valid BRO ID.
+    """
+    return (
+        bro_id.startswith(("GMW", "GMN", "GLD", "FRD"))
+        and len(bro_id) == 15
+        and bro_id[3:].isdigit()
+    )
 
 
 def create_registrations_folder():
@@ -66,7 +78,9 @@ def handle_start_registrations(
                 well,
                 tube_number,
             )
-            gld.deliver_startregistration_sourcedocuments(registration)
+            logger.info(f"Registration created: {registration}")
+            registration.validate_sourcedocument()
+            registration.deliver_sourcedocument()
 
         elif dossier.gld_bro_id:
             gld_registration_log.objects.update_or_create(
@@ -175,17 +189,72 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
     return
 
 
-def check_and_deliver(dossier: GroundwaterLevelDossier) -> None:
-    create_registrations_folder()
-
+def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
     tube = dossier.groundwater_monitoring_tube
     # Ignore filters that should not be delivered to BRO
     if tube.deliver_gld_to_bro is False:
         print(f"deliver tube to BRO: {tube.deliver_gld_to_bro}")
         return
 
-    handle_start_registrations(dossier, deliver=True)
+    # Create GLD Registration Log
+    if is_broid(dossier.gld_bro_id):
+        gld_start_registration = gld_registration_log.objects.update_or_create(
+            gwm_bro_id=dossier.gmw_bro_id,
+            gld_bro_id=dossier.gld_bro_id,
+            filter_number=dossier.tube_number,
+            quality_regime=dossier.quality_regime
+            if dossier.quality_regime
+            else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+            defaults=dict(
+                validation_status="VALID",
+                delivery_id=None,
+                delivery_type="register",
+                delivery_status="OPGENOMEN_LVBRO",
+                comments="Imported into BRO-Connector.",
+            ),
+        )[0]
+    else:
+        gld_start_registration = gld_registration_log.objects.update_or_create(
+            gmw_bro_id=dossier.gmw_bro_id,
+            gld_bro_id=dossier.gld_bro_id,
+            filter_number=dossier.tube_number,
+            quality_regime=dossier.quality_regime
+            if dossier.quality_regime
+            else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+        )[0]
 
+        logger.info(f"Check and deliver; Log created: {gld_start_registration}")
+
+        gld_start_registration.generate_sourcedocument()
+        logger.info(f"Check and deliver; File generated: {gld_start_registration.file}")
+
+        gld_start_registration.validate_sourcedocument()
+        logger.info(
+            f"Check and deliver; File validated: {gld_start_registration.validation_status}"
+        )
+
+        gld_start_registration.deliver_sourcedocument()
+        logger.info(
+            f"Check and deliver; File delivered: {gld_start_registration.delivery_id} {gld_start_registration.delivery_status}"
+        )
+
+    # Sleep for 0.3 seconds to avoid overwhelming the server
+    time.sleep(0.3)
+
+
+def check_and_deliver_start_registrations(dossier: GroundwaterLevelDossier) -> None:
+    start_log = gld_registration_log.objects.get(
+        gmw_bro_id=dossier.gmw_bro_id,
+        gld_bro_id=dossier.gld_bro_id,
+        filter_number=dossier.tube_number,
+        quality_regime=dossier.quality_regime
+        if dossier.quality_regime
+        else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+    )
+    start_log.check_delivery_status()
+
+
+def check_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
     handle_additions(dossier, deliver=True)
 
 

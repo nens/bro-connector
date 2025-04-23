@@ -5,6 +5,10 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+import os
+import datetime
+import bisect
+from django.apps import apps
 from django.db import models
 from logging import getLogger
 from .choices import (
@@ -22,9 +26,11 @@ from .choices import (
     STATUSQUALITYCONTROL,
 )
 from bro.models import Organisation
-from gmw.models import GroundwaterMonitoringTubeStatic
+from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from gmn.models import GroundwaterMonitoringNet
 from main.models import BaseModel
+from main.localsecret import DEMO
+import bro_exchange as brx
 
 logger = getLogger(__file__)
 
@@ -34,6 +40,13 @@ def s2d(string: str):
     if len(string) > 9:
         return f"{string[0:3]}...{string[-3:]}"
     return string
+
+
+failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
+
+app_config = apps.get_app_config("gld")
+REGISTRATIONS_DIR = os.path.join(app_config.path, "startregistrations")
+ADDITION_DIR = os.path.join(app_config.path, "additions")
 
 
 class GroundwaterLevelDossier(BaseModel):
@@ -438,7 +451,9 @@ class MeasurementPointMetadata(BaseModel):
 class gld_registration_log(BaseModel):
     # gld = models.ForeignKey()
     gwm_bro_id = models.CharField(max_length=254, verbose_name="GMW ID")
-    gld_bro_id = models.CharField(max_length=254, verbose_name="GLD ID")
+    gld_bro_id = models.CharField(
+        max_length=254, verbose_name="GLD ID", null=True, blank=True
+    )
     filter_number = models.CharField(max_length=254, verbose_name="Filternummer")
     validation_status = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Validatiestatus"
@@ -484,6 +499,203 @@ class gld_registration_log(BaseModel):
                 name="unique_gld_registration_log",
             )
         ]
+
+    def generate_sourcedocument(
+        self,
+    ) -> str:
+        if self.gwm_bro_id is None or self.filter_number is None:
+            self.comments = "No GMW ID or filter number provided"
+            self.save()
+            return
+
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        tube = gmw.tube.get(tube_number=self.filter_number)
+        filternumber = self.filter_number
+
+        bro_id_gmw = gmw.bro_id
+        internal_id = gmw.internal_id
+        quality_regime = gmw.quality_regime
+        delivery_accountable_party = (
+            "27376655" if DEMO else gmw.delivery_accountable_party.company_number
+        )
+        monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filternumber}]
+
+        if len(tube.gmn_ids) == 0:
+            srcdocdata = {
+                "objectIdAccountableParty": f"{internal_id}{str(filternumber)}",
+                "monitoringPoints": monitoringpoints,
+            }
+        else:
+            srcdocdata = {
+                "objectIdAccountableParty": f"{internal_id}{str(filternumber)}",
+                "groundwaterMonitoringNets": tube.gmn_ids,
+                "monitoringPoints": monitoringpoints,
+            }
+
+        request_reference = "GLD_StartRegistration_{}_tube_{}".format(
+            bro_id_gmw, str(filternumber)
+        )
+        gld_startregistration_request = brx.gld_registration_request(
+            srcdoc="GLD_StartRegistration",
+            requestReference=request_reference,
+            deliveryAccountableParty=delivery_accountable_party,
+            qualityRegime=quality_regime,
+            srcdocdata=srcdocdata,
+        )
+
+        filename = request_reference + ".xml"
+        gld_startregistration_request.generate()
+        gld_startregistration_request.write_request(
+            output_dir=REGISTRATIONS_DIR, filename=filename
+        )
+        process_status = "succesfully_generated_startregistration_request"
+        self.comments = ("Succesfully generated startregistration request",)
+        self.date_modified = datetime.datetime.now()
+        self.validation_status = None
+        self.process_status = process_status
+        self.file = filename
+
+        self.save()
+
+        return process_status
+
+    def validate_sourcedocument(
+        self,
+    ) -> str:
+        """
+        Validate the generated GLD sourcedoc
+        """
+        if not self.file:
+            self.comments = "No file to validate"
+            self.save()
+            return
+
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        source_doc_file = os.path.join(REGISTRATIONS_DIR, self.file)
+        payload = open(source_doc_file)
+        try:
+            validation_info = brx.validate_sourcedoc(
+                payload, bro_info=gmw.get_bro_info(), demo=DEMO, api="v2"
+            )
+            validation_status = validation_info["status"]
+
+            if "errors" in validation_info:
+                comments = f"Validated sourcedocument, found errors: {validation_info['errors']}"
+                self.process_status = "source_document_validation_failed"
+
+            else:
+                comments = "Succesfully validated sourcedocument, no errors"
+
+            self.date_modified = datetime.datetime.now()
+            self.comments = comments[0:20000]
+            self.validation_status = validation_status
+            self.process_status = "source_document_validation_succeeded"
+
+        except Exception as e:
+            self.date_modified = datetime.datetime.now()
+            self.comments = f"Failed to validate source document: {e}"
+            self.process_status = "source_document_validation_failed"
+
+        self.save()
+        return validation_status
+
+    def deliver_sourcedocument(
+        self,
+    ) -> str:
+        """
+        Deliver the generated GLD sourcedoc
+        """
+        if not self.file:
+            self.comments = "No file to deliver"
+            self.save()
+            return
+
+        # If the delivery fails, use the this to indicate how many attempts were made
+        delivery_status = self.delivery_status
+        if delivery_status is None:
+            delivery_status_update = "failed_once"
+        else:
+            position = bisect.bisect_left(failed_update_strings, delivery_status)
+            delivery_status_update = failed_update_strings[position + 1]
+
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        bro_info = gmw.get_bro_info()
+        file = self.file
+        source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
+        payload = open(source_doc_file)
+        try:
+            request = {file: payload}
+            upload_info = brx.upload_sourcedocs_from_dict(
+                request,
+                token=bro_info["token"],
+                api="v2",
+                project_id=bro_info["projectnummer"],
+                demo=DEMO,
+            )
+            if upload_info == "Error":
+                comments = "Error occurred during delivery of sourcedocument"
+                self.date_modified = datetime.datetime.now()
+                self.comments = comments
+                self.delivery_status = delivery_status_update
+                self.process_status = "failed_to_deliver_sourcedocuments"
+            else:
+                upload_data = upload_info.json()
+                self.date_modified = datetime.datetime.now()
+                self.comments = "Successfully delivered startself sourcedocument"
+                self.delivery_status = upload_data["status"]
+                self.last_changed = upload_data["lastChanged"]
+                self.delivery_id = upload_data["identifier"]
+                self.process_status = "succesfully_delivered_sourcedocuments"
+
+        except Exception as e:
+            comments = "Exception occured during delivery of startself sourcedocument: {}".format(
+                e
+            )
+            self.date_modified = datetime.datetime.now()
+            self.comments = comments
+            self.delivery_status = delivery_status_update
+            self.process_status = "failed_to_deliver_sourcedocuments"
+
+        self.save()
+        return delivery_status
+
+    def check_delivery_status(
+        self,
+    ) -> str:
+        """
+        Check the delivery status of the generated GLD sourcedoc
+        """
+        if not self.delivery_id:
+            self.comments = "No delivery ID to check"
+            self.save()
+            return
+
+        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gwm_bro_id)
+        bro_info = gmw.get_bro_info()
+
+        try:
+            delivery_info = brx.check_delivery_status(
+                bro_info["token"],
+                bro_info["projectnummer"],
+                self.delivery_id,
+                demo=DEMO,
+                api="v2",
+            )
+            delivery_status = delivery_info.json()["status"]
+            self.date_modified = datetime.datetime.now()
+            self.comments = f"Delivery status: {delivery_status}"
+            self.delivery_status = delivery_status
+            self.last_changed = delivery_info.json()["lastChanged"]
+            self.process_status = "delivery_status_checked"
+
+        except Exception as e:
+            comments = f"Failed to check delivery status: {e}"
+            self.date_modified = datetime.datetime.now()
+            self.comments = comments
+            self.process_status = "failed_to_check_delivery_status"
+
+        self.save()
+        return delivery_status
 
 
 class gld_addition_log(BaseModel):
@@ -543,3 +755,104 @@ class gld_addition_log(BaseModel):
         db_table = 'aanlevering"."gld_addition_log'
         verbose_name = "GLD Toevoeging Log"
         verbose_name_plural = "GLD Toevoeging Logs"
+
+    def validate_sourcedocument(
+        self,
+    ) -> str:
+        """
+        Validate the generated GLD sourcedoc
+        """
+        if not self.file:
+            self.comments = "No file to validate"
+            self.save()
+            return
+
+        gmw: GroundwaterMonitoringWellStatic = self.observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+        source_doc_file = os.path.join(REGISTRATIONS_DIR, self.file)
+        payload = open(source_doc_file)
+        try:
+            validation_info = brx.validate_sourcedoc(
+                payload, bro_info=gmw.get_bro_info(), demo=DEMO, api="v2"
+            )
+            validation_status = validation_info["status"]
+
+            if "errors" in validation_info:
+                comments = f"Validated sourcedocument, found errors: {validation_info['errors']}"
+                self.process_status = "source_document_validation_failed"
+
+            else:
+                comments = "Succesfully validated sourcedocument, no errors"
+
+            self.date_modified = datetime.datetime.now()
+            self.comments = comments[0:20000]
+            self.validation_status = validation_status
+            self.process_status = "source_document_validation_succeeded"
+
+        except Exception as e:
+            self.date_modified = datetime.datetime.now()
+            self.comments = f"Failed to validate source document: {e}"
+            self.process_status = "source_document_validation_failed"
+
+        self.save()
+        return validation_status
+
+    def deliver_sourcedocument(
+        self,
+    ) -> str:
+        """
+        Deliver the generated GLD sourcedoc
+        """
+        if not self.file:
+            self.comments = "No file to deliver"
+            self.save()
+            return
+
+        # If the delivery fails, use the this to indicate how many attempts were made
+        delivery_status = self.delivery_status
+        if delivery_status is None:
+            delivery_status_update = "failed_once"
+        else:
+            position = bisect.bisect_left(failed_update_strings, delivery_status)
+            delivery_status_update = failed_update_strings[position + 1]
+
+        gmw: GroundwaterMonitoringWellStatic = self.observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+        bro_info = gmw.get_bro_info()
+        file = self.file
+        source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
+        payload = open(source_doc_file)
+        try:
+            request = {file: payload}
+            upload_info = brx.upload_sourcedocs_from_dict(
+                request,
+                token=bro_info["token"],
+                api="v2",
+                project_id=bro_info["projectnummer"],
+                demo=DEMO,
+            )
+            if upload_info == "Error":
+                comments = "Error occured during delivery of sourcedocument"
+
+                self.date_modified = datetime.datetime.now()
+                self.comments = comments
+                self.delivery_status = delivery_status_update
+
+            else:
+                self.date_modified = datetime.datetime.now()
+                self.comments = "Succesfully delivered sourcedocument"
+                self.delivery_status = upload_info.json()["status"]
+                self.last_changed = upload_info.json()["lastChanged"]
+                self.delivery_id = upload_info.json()["identifier"]
+                self.process_status = "source_document_delivered"
+
+        except Exception as e:
+            comments = (
+                "Error occured in attempting to deliver sourcedocument, {}".format(e)
+            )
+
+            self.date_modified = datetime.datetime.now()
+            self.comments = comments
+            self.delivery_status = delivery_status_update
+
+        self.save()
+        self.save()
+        return delivery_status

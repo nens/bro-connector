@@ -94,8 +94,26 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     monitoring_networks.short_description = "Meetnetten"
 
     def deliver_to_bro(self, request, queryset):
+        gld_actions.create_registrations_folder()
+
+        # First create all registration logs and deliver them to the BRO
         for dossier in queryset:
-            gld_actions.check_and_deliver(dossier)
+            gld_actions.check_and_deliver_start(dossier)
+
+        # Then check the status of each individual registration log
+        for dossier in queryset:
+            start_log = models.gld_registration_log.objects.get(
+                gmw_bro_id=dossier.gmw_bro_id,
+                gld_bro_id=dossier.gld_bro_id,
+                filter_number=dossier.tube_number,
+                quality_regime=dossier.quality_regime
+                if dossier.quality_regime
+                else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+            )
+            start_log.check_delivery_status()
+
+        for dossier in queryset:
+            gld_actions.check_and_deliver_additions(dossier)
 
     def check_status(self, request, queryset):
         for dossier in queryset:

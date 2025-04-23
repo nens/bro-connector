@@ -41,6 +41,13 @@ from gmw.utils import generate_put_code
 from main.models import BaseModel
 
 
+def _get_token(owner: Organisation):
+    return {
+        "user": owner.bro_user,
+        "pass": owner.bro_token,
+    }
+
+
 class GroundwaterMonitoringWellStatic(BaseModel):
     groundwater_monitoring_well_static_id = models.AutoField(primary_key=True)
     internal_id = models.CharField(
@@ -257,6 +264,12 @@ class GroundwaterMonitoringWellStatic(BaseModel):
             return self.project.project_number
         else:
             None
+
+    def get_bro_info(self):
+        return {
+            "token": _get_token(self.delivery_accountable_party),
+            "projectnummer": self.project_number,
+        }
 
     project_number.fget.short_description = "Projectnummer"
 
@@ -518,6 +531,14 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         return GeoOhmCable.objects.filter(
             groundwater_monitoring_tube_static=self
         ).count()
+
+    @property
+    def gmn_ids(self) -> list[str]:
+        gmn_ids = []
+        for mp in self.measuring_point.all():
+            gmn_ids.append(mp.gmn.gmn_bro_id)
+
+        return gmn_ids
 
     def __str__(self):
         if self.groundwater_monitoring_well_static:

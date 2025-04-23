@@ -7,7 +7,7 @@ import reversion
 import uuid
 from xml.etree import ElementTree as ET
 from copy import deepcopy
-from main.settings.base import env
+from main.localsecret import ENV
 from django.apps import apps
 from gld import models
 from gmw.models import GroundwaterMonitoringWellStatic
@@ -331,7 +331,7 @@ class GldSyncHandler:
         self._set_folder_dir("gld")
 
     def _is_demo(self):
-        if env == "production":
+        if ENV == "production":
             return False
         return True
 
@@ -391,7 +391,6 @@ class GldSyncHandler:
             gld_startregistration_request.write_request(
                 output_dir=self.registrations_dir, filename=filename
             )
-
             process_status = "succesfully_generated_startregistration_request"
             return models.gld_registration_log.objects.update_or_create(
                 gwm_bro_id=bro_id_gmw,
@@ -912,12 +911,11 @@ class GldSyncHandler:
     def validate_gld_addition_source_document(
         self,
         addition: models.gld_addition_log,
-        filename: str,
     ):
         """
         Validate the generated GLD addition sourcedoc
         """
-        source_doc_file = os.path.join(self.additions_dir, filename)
+        source_doc_file = os.path.join(self.additions_dir, addition.file)
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
@@ -1051,13 +1049,8 @@ class GldSyncHandler:
         """
         Validate the sourcedocuments, register the results in the database
         """
-        filename = gld_addition.file
-        validation_status = gld_addition.validation_status
-
         # Validate the sourcedocument for this observation
-        validation_status = self.validate_gld_addition_source_document(
-            gld_addition, filename
-        )
+        validation_status = self.validate_gld_addition_source_document(gld_addition)
 
         return validation_status
 
