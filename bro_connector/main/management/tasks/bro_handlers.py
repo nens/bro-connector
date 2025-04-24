@@ -43,8 +43,6 @@ class GMWHandler(BROHandler):
             fh = "nee"
 
         gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
-        print(gmw_verzoek.content)
-        print(id)
         try:
             self.root = ET.fromstring(gmw_verzoek.content)
         except Exception as e:

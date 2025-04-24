@@ -39,46 +39,42 @@ class DataRetrieverOGC:
                 self.kvk_ids.append(feature["properties"]["delivery_accountable_party"])
 
     def filter_ids_kvk(self, kvk_number):
-        for bro_id, kvk_id in zip(self.bro_ids, self.kvk_ids):
+        for bro_id, kvk_id in zip(self.bro_ids[:], self.kvk_ids):
             if kvk_number != kvk_id:
                 #print("Removing ",bro_id)
                 self.bro_ids.remove(bro_id)
         
         print(f"{self.bro_ids} points after filtering for kvk {kvk_number}.")
 
-    def enforce_shapefile(self, shp):
+    def enforce_shapefile(self, shp, delete=True):
         gdf = gpd.read_file(shp)
         crs_bro = "EPSG:4326"
         crs_shp = gdf.crs.to_string()
         if crs_shp != crs_bro:
             gdf = gdf.to_crs(crs_bro)
 
-        for id,coord in zip(self.bro_ids, self.bro_coords):
+        print("Number of bro ids before enforcing shapefile: ",len(self.bro_ids))
+        for id,coord in zip(self.bro_ids[:], self.bro_coords[:]):
             point = Point(coord[0], coord[1])
             is_within = gdf.contains(point).item()
-            if id == "GMW000000005893":
-                print("!!!!!!")
 
             if not is_within:
-                print("BRO point id: ",id)
                 self.bro_ids.remove(id)
                 self.bro_coords.remove(coord)
 
-        wells = GroundwaterMonitoringWellStatic.objects.filter(
-            coordinates__isnull=False
-        ).all()
-        for well in wells:
-            point = Point(well.coordinates.x, well.coordinates.y)
-            crs_shp = gdf.crs.to_string()
-            if crs_shp != "EPSG:28992":
-                gdf = gdf.to_crs("EPSG:28992")
-            is_within = gdf.contains(point).item()
+        print("Number of bro ids after enforcing shapefile: ",len(self.bro_ids))
 
-            if not is_within:
-                print("BRO well id: ",well.bro_id)
-                well.delete()
-        
-        print(f"{len(self.bro_ids)} points present after enforcing shape")
+        if delete:
+            wells = GroundwaterMonitoringWellStatic.objects.filter(coordinates__isnull=False).all()
+            for well in wells:
+                point = Point(well.coordinates.x, well.coordinates.y)
+                crs_shp = gdf.crs.to_string()
+                if crs_shp != "EPSG:28992":
+                    gdf = gdf.to_crs("EPSG:28992")
+
+                is_within = gdf.contains(point).item()
+                if not is_within:
+                    well.delete()
 
     def get_ids_ogc(self):
         self.gmw_ids = []
@@ -151,12 +147,12 @@ def process_request_for_bbox(type,bbox):
         if len(results) < 1000:
             features.extend(results)
         else:
-            idx += 1
             stack.extend(subdivide_bbox(current_bbox))
 
-        time.sleep(0.01)
-
+        idx += 1
         if idx > 1e4:
-            raise Exception("Forced an exception because amount of subdivisions was too high.")
+            raise Exception("Forced an exception because amount of iterations was too high (>1000).")
+
+        time.sleep(0.01)
 
     return features

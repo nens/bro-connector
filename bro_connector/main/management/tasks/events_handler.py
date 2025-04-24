@@ -188,7 +188,7 @@ def get_tube_static(groundwater_monitoring_well, tube_number):
 
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime.datetime:
-    print(event_date)
+    # print(event_date)
     try:
         date = datetime.datetime.strptime(event_date, "%Y-%m-%d")
     except ValueError:
@@ -226,7 +226,7 @@ class Updater:
         else:
             raise Exception(f"date/year not found in dict: {self.event_updates}")
 
-        print("create base date: ",date)
+        # print("create base date: ",date)
         date = convert_event_date_str_to_datetime(date)
 
         event = Event.objects.filter(
@@ -257,13 +257,13 @@ class Updater:
                     quality_regime=self.event.groundwater_monitoring_well_static.quality_regime,
                 ),
             )
-        print("Event and event date: ", self.event, self.event.event_date)
+        # print("Event and event date: ", self.event, self.event.event_date)
 
     def intermediate_events(self):
         # Create a base event
         self.read_updates()
         self.create_base()
-        print("Intermediate event and event date: ", self.event, self.event.event_date)
+        # print("Intermediate event and event date: ", self.event, self.event.event_date)
         # Update tables accordingly
         TableUpdater.fill(
             self.groundwater_monitoring_well_static, self.event, self.event_updates
@@ -273,8 +273,7 @@ class Updater:
 
 class TableUpdater(Updater):
     def fill(well_static, event, updates):
-        print("Table Updater event and event date: ", event, event.event_date)
-        print(updates)
+        # print("Table Updater event and event date: ", event, event.event_date)
         if "wellData" in updates:
             TableUpdater.well_data(well_static, event, updates)
 
@@ -308,9 +307,7 @@ class TableUpdater(Updater):
                     "No Groundwater Monitoring Tube Dynamic Tables found for this GMW: ",
                     well_static,
                 )
-            print("Dynamic Tube: ")
-            print(new_gmtd)
-            print("")
+
             updates = remove_prefix_from_keys(updates, prefix)
             new_gmtd = tube_dynamic(new_gmtd, updates)
             new_gmtd.date_from = datetime.datetime.combine(
