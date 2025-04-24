@@ -172,19 +172,17 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
                 logger.error(
                     f"Tried to create addition document for Observation ({observation}), and validate and deliver, but this was not possible."
                 )
+                
+        if addition_log:
+            if addition_log.process_status == "delivery_approved":
+                logger.info(f"Delivery already approved (DOORGELEVERD): {addition_log}")
                 continue
 
-        if not addition_log:
+            gld.check_status_gld_addition(addition_log)
+        else:
             logger.error(
                 f"Tried to check status for Observation ({observation}), but no addition log exists. Generate an addition log first. "
             )
-            continue
-
-        if addition_log.process_status == "delivery_approved":
-            logger.info(f"Delivery already approved (DOORGELEVERD): {addition_log}")
-            continue
-
-        gld.check_status_gld_addition(addition_log)
 
     return
 
