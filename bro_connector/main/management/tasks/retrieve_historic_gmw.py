@@ -1,5 +1,6 @@
 from ..tasks.bro_handlers import GMWHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
+from .ogc_handler import DataRetrieverOGC
 from ..tasks.progressor import Progress
 from ..tasks import events_handler
 import reversion
@@ -20,41 +21,57 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# def within_bbox(coordinates) -> bool:
+#     print(f"x: {coordinates.x}, y: {coordinates.y}")
+#     if (
+#         coordinates.x > settings.BBOX_SETTINGS["xmin"]
+#         and coordinates.x < settings.BBOX_SETTINGS["xmax"]
+#         and coordinates.y > settings.BBOX_SETTINGS["ymin"]
+#         and coordinates.y < settings.BBOX_SETTINGS["ymax"]
+#     ):
+#         return True
+#     return False
 
-def within_bbox(coordinates) -> bool:
-    print(f"x: {coordinates.x}, y: {coordinates.y}")
-    if (
-        coordinates.x > settings.BBOX_SETTINGS["xmin"]
-        and coordinates.x < settings.BBOX_SETTINGS["xmax"]
-        and coordinates.y > settings.BBOX_SETTINGS["ymin"]
-        and coordinates.y < settings.BBOX_SETTINGS["ymax"]
-    ):
-        return True
-    return False
 
-
-def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
+def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "ogc"):
     progressor = Progress()
     gmw = GMWHandler()
 
-    if kvk_number:
+    if kvk_number and handler == "kvk":
         DR = DataRetrieverKVK(kvk_number)
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
 
+    bbox_settings = settings.BBOX_SETTINGS
+    bbox = settings.BBOX
+    shp = settings.POLYGON_SHAPEFILE
+    if bbox_settings["use_bbox"] and handler == "ogc":
+        print("bbox settings: ",bbox_settings)
+        DR = DataRetrieverOGC(bbox)
+        DR.request_bro_ids(bro_type)
+        if kvk_number:
+            DR.filter_ids_kvk(kvk_number)
+        DR.enforce_shapefile(shp,delete=False)
+        DR.get_ids_ogc()
+        gmw_ids = DR.gmw_ids
+        gmw_ids_ini_count = len(gmw_ids)
+    
     if gmw_ids_ini_count == 0:
         print(f"No IDs found for kvk: {kvk_number}.")
         return {"ids_found": gmw_ids_ini_count, "imported": gmw_ids_ini_count}
 
-    print(f"{gmw_ids_ini_count} bro ids found for organisation.")
+    print(f"{gmw_ids_ini_count} bro ids found for kvk {kvk_number}.")
+    
     imported = 0
     gmw_ids_count = len(gmw_ids)
     progressor.calibrate(gmw_ids, 25)
 
     # Import the well data
     for id in range(gmw_ids_count):
+        print("BRO id: ",gmw_ids[id])
+
         gmw.get_data(gmw_ids[id], True)
         if gmw.root is None:
             continue
@@ -69,17 +86,6 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
         ini = InitializeData(gmw_dict)
         ini.well_static()
         gmws = ini.gmws
-
-        if settings.BBOX_SETTINGS["use_bbox"]:
-            if not within_bbox(gmws.coordinates):
-                gmws.delete()
-                gmw.reset_values()
-                ini.reset_tube_number()
-                progressor.next()
-                progressor.progress()
-                continue
-
-        print(f"In bbox for {gmws}")
         ini.well_dynamic()
 
         for tube_number in range(gmw.number_of_tubes):
@@ -109,11 +115,12 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw"):
         ini.reset_tube_number()
         progressor.next()
         progressor.progress()
-
+        
     info = {
         "ids_found": gmw_ids_count,
         "imported": imported,
     }
+    print("run finished")
     return info
 
 
@@ -295,41 +302,48 @@ class InitializeData:
         )
 
     def tube_dynamic(self):
-        self.gmtd, created = GroundwaterMonitoringTubeDynamic.objects.update_or_create(
-            groundwater_monitoring_tube_static=self.gmts,
-            date_from=self.gmwd.date_from,
-            defaults={
-                "glue": self.gmw_dict.get(self.prefix + "glue", None),
-                "inserted_part_diameter": self.gmw_dict.get(
-                    self.prefix + "insertedPartDiameter", None
-                ),
-                "inserted_part_length": self.gmw_dict.get(
-                    self.prefix + "insertedPartLength", None
-                ),
-                "inserted_part_material": self.gmw_dict.get(
-                    self.prefix + "insertedPartMaterial", None
-                ),
-                "plain_tube_part_length": self.gmw_dict.get(
-                    self.prefix + "plainTubePartLength", None
-                ),
-                "tube_packing_material": self.gmw_dict.get(
-                    self.prefix + "tubePackingMaterial", None
-                ),
-                "tube_status": self.gmw_dict.get(self.prefix + "tubeStatus", None),
-                "tube_top_diameter": self.gmw_dict.get(
-                    self.prefix + "tubeTopDiameter", None
-                ),
-                "tube_top_position": self.gmw_dict.get(
-                    self.prefix + "tubeTopPosition", None
-                ),
-                "tube_top_positioning_method": self.gmw_dict.get(
-                    self.prefix + "tubeTopPositioningMethod", None
-                ),
-                "variable_diameter": self.gmw_dict.get(
-                    self.prefix + "variableDiameter", None
-                ),
-            },
-        )
+        try:
+            self.gmtd, created = GroundwaterMonitoringTubeDynamic.objects.update_or_create(
+                groundwater_monitoring_tube_static=self.gmts,
+                date_from=self.gmwd.date_from,
+                defaults={
+                    "glue": self.gmw_dict.get(self.prefix + "glue", None),
+                    "inserted_part_diameter": self.gmw_dict.get(
+                        self.prefix + "insertedPartDiameter", None
+                    ),
+                    "inserted_part_length": self.gmw_dict.get(
+                        self.prefix + "insertedPartLength", None
+                    ),
+                    "inserted_part_material": self.gmw_dict.get(
+                        self.prefix + "insertedPartMaterial", None
+                    ),
+                    "plain_tube_part_length": self.gmw_dict.get(
+                        self.prefix + "plainTubePartLength", None
+                    ),
+                    "tube_packing_material": self.gmw_dict.get(
+                        self.prefix + "tubePackingMaterial", None
+                    ),
+                    "tube_status": self.gmw_dict.get(self.prefix + "tubeStatus", None),
+                    "tube_top_diameter": self.gmw_dict.get(
+                        self.prefix + "tubeTopDiameter", None
+                    ),
+                    "tube_top_position": self.gmw_dict.get(
+                        self.prefix + "tubeTopPosition", None
+                    ),
+                    "tube_top_positioning_method": self.gmw_dict.get(
+                        self.prefix + "tubeTopPositioningMethod", None
+                    ),
+                    "variable_diameter": self.gmw_dict.get(
+                        self.prefix + "variableDiameter", None
+                    ),
+                },
+            )
+        except:
+            print("Raised a MultipleObjectsReturned exception. Now taking the dynamic tube with the highest primary key.")
+            self.gmtd = GroundwaterMonitoringTubeDynamic.objects.filter(
+                groundwater_monitoring_tube_static=self.gmts,
+                date_from=self.gmwd.date_from,
+            ).order_by("-pk").last()
 
     def geo_ohm(self):
         self.geoc, created = GeoOhmCable.objects.update_or_create(
