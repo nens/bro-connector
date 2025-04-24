@@ -603,6 +603,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         null=True,
         help_text="Serienummer van de sensor",
         verbose_name="Sensor ID",
+        max_length=50,
     )
 
     tube_top_positioning_method = models.CharField(
