@@ -46,7 +46,7 @@ class DataRetrieverOGC:
         
         print(f"{self.bro_ids} points after filtering for kvk {kvk_number}.")
 
-    def enforce_shapefile(self, shp, delete=True):
+    def enforce_shapefile(self, shp, delete=False):
         gdf = gpd.read_file(shp)
         crs_bro = "EPSG:4326"
         crs_shp = gdf.crs.to_string()
