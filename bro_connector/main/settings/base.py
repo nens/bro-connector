@@ -14,7 +14,7 @@ import os
 import platform
 from pathlib import Path
 import django.db.models.options as options
-from main.localsecret import env, GDAL_DLL_VERSION
+from main.localsecret import ENV, GDAL_DLL_VERSION
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
@@ -32,7 +32,6 @@ POLYGON_SHAPEFILE = (
     r"C:\Users\steven.hosper\Desktop\bro-connector-1\data\shapefile\zeeland.shp"
 )
 KVK_USER = "20168636"
-
 
 ##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
 
@@ -336,7 +335,7 @@ LOGGING = {
     },
 }
 
-if env == "production":
+if ENV == "production":
     demo = False
     welcome_sign = "Inloggen"
 else:

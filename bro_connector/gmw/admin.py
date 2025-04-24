@@ -63,11 +63,12 @@ class PicturesInline(ImageUploaderInline):
     fields = ["picture"]
 
     extra = 0
-    max_num = 3
+    max_num = 0
 
 
 class WellDynamicInline(admin.TabularInline):
     model = gmw_models.GroundwaterMonitoringWellDynamic
+    show_change_link = True
     search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
     fields = (
         "date_from",
@@ -78,6 +79,9 @@ class WellDynamicInline(admin.TabularInline):
     )
 
     readonly_fields = ["date_from"]
+
+    extra = 0
+    max_num = 0
 
 
 class TubeDynamicInline(admin.TabularInline):
@@ -93,6 +97,9 @@ class TubeDynamicInline(admin.TabularInline):
     )
 
     readonly_fields = ["date_from"]
+
+    extra = 0
+    max_num = 0
 
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):

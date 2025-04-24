@@ -94,8 +94,38 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     monitoring_networks.short_description = "Meetnetten"
 
     def deliver_to_bro(self, request, queryset):
+        gld_actions.create_registrations_folder()
+
+        # First create all registration logs and deliver them to the BRO
         for dossier in queryset:
-            gld_actions.check_and_deliver(dossier)
+            gld_actions.check_and_deliver_start(dossier)
+
+        # Then check the status of each individual registration log
+        for dossier in queryset.exclude(gld_bro_id__isnull=False):
+            start_log = models.gld_registration_log.objects.get(
+                gmw_bro_id=dossier.gmw_bro_id,
+                gld_bro_id=dossier.gld_bro_id,
+                filter_number=dossier.tube_number,
+                quality_regime=dossier.quality_regime
+                if dossier.quality_regime
+                else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+            )
+            start_log.check_delivery_status()
+
+        for dossier in queryset:
+            gld_actions.check_and_deliver_additions(dossier)
+
+        # Then check the status of each individual registration log
+        for dossier in queryset:
+            for observation in dossier.observation.filter(up_to_date_in_bro=False):
+                obs = models.Observation.objects.get(
+                    observation_id=observation.observation_id
+                )
+                addition_log = models.gld_addition_log.objects.filter(
+                    observation=obs, addition_type=obs.addition_type
+                ).first()
+                if addition_log:
+                    addition_log.check_delivery_status()
 
     def check_status(self, request, queryset):
         for dossier in queryset:
@@ -258,7 +288,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         gld = GldSyncHandler()
         for registration_log in queryset:
             well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gwm_bro_id
+                bro_id=registration_log.gmw_bro_id
             )
             gld._set_bro_info(well)
 
@@ -284,7 +314,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
         for registration_log in queryset:
             well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gwm_bro_id,
+                bro_id=registration_log.gmw_bro_id,
             )
             gld._set_bro_info(well)
 
@@ -324,7 +354,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     def deliver_startregistration_sourcedocument(self, request, queryset):
         for registration_log in queryset:
             well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gwm_bro_id
+                bro_id=registration_log.gmw_bro_id
             )
             gld._set_bro_info(well)
 
@@ -364,7 +394,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
 
         for registration_log in queryset:
             well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gwm_bro_id
+                bro_id=registration_log.gmw_bro_id
             )
             gld._set_bro_info(well)
 
@@ -384,7 +414,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     list_display = (
         "date_modified",
         "gld_bro_id",
-        "gwm_bro_id",
+        "gmw_bro_id",
         "filter_number",
         "quality_regime",
         "validation_status",
@@ -404,7 +434,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     )
     readonly_fields = (
         "date_modified",
-        "gwm_bro_id",
+        "gmw_bro_id",
         "gld_bro_id",
         "filter_number",
         "validation_status",
