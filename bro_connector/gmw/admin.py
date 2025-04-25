@@ -8,6 +8,7 @@ import logging
 
 
 from . import models as gmw_models
+from gld.models import GroundwaterLevelDossier
 import gmw.management.tasks.gmw_actions as gmw_actions
 from . import forms as gmw_forms
 from gmn.models import MeasuringPoint
@@ -46,12 +47,19 @@ def get_searchable_fields(model_class):
 
 
 class EventsInline(admin.TabularInline):
-    model = gmw_models.Event
+    model = gmw_models.Event    
+    show_change_link = True
     search_fields = get_searchable_fields(gmw_models.Event)
     fields = (
         "event_name",
         "event_date",
-    )
+        "delivered_to_bro",
+        "bro_actions",
+        "complete_bro",
+        )
+
+    ordering = ["event_date"]
+    readonly_fields = ["delivered_to_bro","bro_actions","complete_bro"]
 
     extra = 0
     max_num = 0
@@ -72,35 +80,131 @@ class WellDynamicInline(admin.TabularInline):
     search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
     fields = (
         "date_from",
+        "date_till",
         "well_head_protector",
         "ground_level_position",
         "ground_level_positioning_method",
+        "number_of_standpipes",
         "comment",
     )
-
-    readonly_fields = ["date_from"]
+    ordering = ["date_from"]
+    readonly_fields = ["date_from","date_till","number_of_standpipes"]
 
     extra = 0
     max_num = 0
 
+class WellStaticInline(admin.TabularInline):
+    model = gmw_models.GroundwaterMonitoringWellStatic
+    show_change_link = True
+    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellStatic)
+    fields = (
+        "internal_id",
+        "bro_id",
+    )
+    readonly_fields = ["bro_id"]
+
+    extra = 0
+    max_num = 0
+
+class TubeStaticInline(admin.TabularInline):
+    model = gmw_models.GroundwaterMonitoringTubeStatic
+    show_change_link = True
+    search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringTubeStatic)
+    fields = (
+        "deliver_gld_to_bro",
+        "tube_number",
+        "tube_type",
+        "bro_actions",
+        "report",
+        "number_of_geo_ohm_cables"
+    )
+    ordering = ["tube_number"]
+    readonly_fields = ["tube_number","bro_actions","report","number_of_geo_ohm_cables"]
+
+    extra = 0
+    max_num = 0
 
 class TubeDynamicInline(admin.TabularInline):
     model = gmw_models.GroundwaterMonitoringTubeDynamic
     search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
     fields = (
         "date_from",
+        "date_till",
         "tube_top_diameter",
         "tube_top_position",
         "tube_top_positioning_method",
         "tube_status",
         "comment",
     )
+    show_change_link = True
 
-    readonly_fields = ["date_from"]
+    readonly_fields = ["date_from","date_till"]
 
     extra = 0
     max_num = 0
 
+class GeoOhmCableInline(admin.TabularInline):
+    model = gmw_models.GeoOhmCable
+    search_fields = get_searchable_fields(gmw_models.GeoOhmCable)
+    fields = (
+        "cable_number",
+        "bro_actions",
+        "electrode_count",
+    )
+    show_change_link = True
+
+    readonly_fields = [
+        "cable_number",
+        "bro_actions",
+        "electrode_count",
+    ]
+
+    extra = 0
+    max_num = 0
+
+class ElectrodeInline(admin.TabularInline):
+    model = gmw_models.Electrode
+    search_fields = get_searchable_fields(gmw_models.Electrode)
+    fields = (
+        "electrode_number",
+        "electrode_status",
+        "bro_actions",
+    )
+    show_change_link = True
+
+    readonly_fields = [
+        "electrode_number",
+        "electrode_status",
+        "bro_actions",
+    ]
+
+    ordering = ["electrode_number"]
+
+    extra = 0
+    max_num = 0
+
+
+class GLDInline(admin.TabularInline):
+    model = GroundwaterLevelDossier
+    search_fields = get_searchable_fields(GroundwaterLevelDossier)
+    fields = (
+        "research_start_date",
+        "research_last_date",
+        "research_last_correction",
+        "gld_bro_id",
+        "groundwater_monitoring_net",
+    )
+    show_change_link = True
+
+    readonly_fields = [
+        "research_start_date",
+        "research_last_date",
+        "research_last_correction",
+        "gld_bro_id",
+    ]
+
+    extra = 0
+    max_num = 0
 
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
@@ -176,6 +280,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     inlines = (
         PicturesInline,
         WellDynamicInline,
+        TubeStaticInline,
         EventsInline,
     )
 
@@ -298,6 +403,8 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
 
+    # inlines = (WellStaticInline,)
+
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringWellDynamic, form, change
     ):
@@ -362,7 +469,11 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
 
     readonly_fields = ["number_of_geo_ohm_cables", "in_monitoring_net", "report"]
 
-    inlines = (TubeDynamicInline,)
+    inlines = (
+        TubeDynamicInline,
+        GeoOhmCableInline,
+        GLDInline,
+    )
 
     actions = ["deliver_gld_to_true"]
 
@@ -473,9 +584,13 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
         # "electrode_count",
     )
 
+    list_filter = (TubeFilter,)
+
     readonly_fields = ["electrode_count"]
 
-    list_filter = (TubeFilter,)
+    inlines = (
+        ElectrodeInline,
+    )
 
     def save_model(self, request, obj: gmw_models.GeoOhmCable, form, change):
         is_valid, report = validate_geo_ohm_cable(obj)

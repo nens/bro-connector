@@ -437,6 +437,8 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         return GroundwaterMonitoringTubeStatic.objects.filter(
             groundwater_monitoring_well_static=self.groundwater_monitoring_well_static
         ).count()
+    
+    number_of_standpipes.fget.short_description = "Aantal buizen"
 
     @property
     def deliver_gld_to_bro(self):
