@@ -50,7 +50,7 @@ class WellValidation:
 
     def geo_ohm_cable(self, tube_static):
         # geo ohm cable query
-        geo_ohm_cable_query = tube_static.geoohmcable_set.all()
+        geo_ohm_cable_query = tube_static.geo_ohm_cable.all()
         for geo_ohm_cable in geo_ohm_cable_query:
             # geo ohm cable validation
             com_bro_geo_ohm, bro_act_geo_ohm = electrode.validate_geo_ohm_cable(

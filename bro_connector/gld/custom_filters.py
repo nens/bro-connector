@@ -1,5 +1,7 @@
 from admin_auto_filters.filters import AutocompleteFilter
+from django.contrib.admin import SimpleListFilter
 from django.contrib import admin
+from bro.models import Organisation
 
 
 class GLDFilter(AutocompleteFilter):
@@ -12,6 +14,22 @@ class ObservationFilter(AutocompleteFilter):
     title = "observation"
     field_name = "observation"
     is_placeholder_title = True
+
+
+class OrganisationFilter(SimpleListFilter):
+    title = "Organisation"
+    parameter_name = "responsible_party"
+
+    def lookups(self, request, model_admin):
+        # Autocomplete-like filtering is trickier; for now, just do simple lookups
+        return [(org.pk, org.name) for org in Organisation.objects.all()]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(
+                observation_metadata__responsible_party__id=self.value()
+            )
+        return queryset
 
 
 class TubeFilter(AutocompleteFilter):

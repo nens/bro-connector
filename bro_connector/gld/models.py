@@ -288,7 +288,7 @@ class Observation(BaseModel):
         return None
 
     @property
-    def validation_status(self):
+    def all_measurements_validated(self):
         nr_of_unvalidated = len(
             MeasurementTvp.objects.filter(
                 observation=self,

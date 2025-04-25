@@ -32,6 +32,13 @@ class Command(BaseCommand):
         "foto {number}_{nitg code}_yyyymmdd-hhmmss.jpg"
     """
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--ftp_folder",
+            type=str,
+            help="Gebruik een ftp_folder om fotos in te spoelen",
+        )
+
     def handle(self, *args, **options):
         # Use FTP Folder of choice (ONBDERHOUD, GLD_PMG, ...)
         ftp_folder_path = str(options["ftp_folder"])
@@ -48,12 +55,6 @@ class Command(BaseCommand):
                 cnopts=cnopts,
             ) as sftp:
                 verwerkt_path = ftp_folder_path + "/verwerkt"
-                if sftp.exists(verwerkt_path):
-                    print("folder verwerkt exists.")
-                else:
-                    sftp.mkdir(verwerkt_path)
-                    print("folder verwerkt has been created")
-
                 with sftp.cd(ftp_folder_path):
                     files = sftp.listdir(ftp_folder_path)
                     jpgs = [file for file in files if ".jpg" in file]
@@ -66,10 +67,7 @@ class Command(BaseCommand):
                             jpg_split[1],
                             jpg_split[2],
                         )
-                        # upcomming filename format
-                        # well_code, datetime_str = (jpg_split[0], jpg_split[1])
 
-                        # convert datetime into correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ])
                         datetime = f"{datetime_str[:4]}-{datetime_str[4:6]}-{datetime_str[6:8]} {datetime_str[9:11]}:{datetime_str[11:13]}:{datetime_str[13:15]}"
 
                         well = find_monitoring_well(well_code)

@@ -127,10 +127,19 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
 def on_save_observation(sender, instance: Observation, **kwargs):
     gld = instance.groundwater_level_dossier
 
-    open_observations = gld.observation.filter(observation_endtime__isnull=True)
+    open_observations = gld.observation.filter(
+        observation_endtime__isnull=True,
+        observation_process=instance.observation_process,
+        observation_metadata=instance.observation_metadata,
+    )
     if open_observations.count() == 0:
         last_observation: Observation = (
-            gld.observation.all().order_by("observation_starttime").last()
+            gld.observation.all(
+                observation_process=instance.observation_process,
+                observation_metadata=instance.observation_metadata,
+            )
+            .order_by("observation_starttime")
+            .last()
         )
         Observation.objects.create(
             observation_starttime=last_observation.observation_endtime,
