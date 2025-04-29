@@ -307,7 +307,7 @@ class Observation(BaseModel):
         else:
             return "onbekend"
         
-    validation_status.fget.short_description = "Validatie status"
+    all_measurements_validated.fget.short_description = "Status validatie"
 
     @property
     def addition_type(self):

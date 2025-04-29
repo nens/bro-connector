@@ -45,7 +45,7 @@ class ObservationInline(admin.TabularInline):
     search_fields = get_searchable_fields(models.Observation)
     fields = (
         "observation_type",
-        "validation_status",
+        "all_measurements_validated",
         "up_to_date_in_bro",
         "observation_id_bro",
         "observation_starttime",
@@ -55,7 +55,7 @@ class ObservationInline(admin.TabularInline):
 
     readonly_fields = [
         "observation_type",
-        "validation_status",
+        "all_measurements_validated",
         "up_to_date_in_bro",
         "observation_id_bro",
         "observation_starttime",
