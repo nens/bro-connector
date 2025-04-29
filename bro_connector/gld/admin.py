@@ -16,6 +16,7 @@ from .custom_filters import (
     CompletelyDeliveredFilter,
     TubeFilter,
     GLDFilter,
+    OrganisationFilter,
     ObservationFilter,
 )
 import datetime
@@ -203,11 +204,12 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_type",
         "measurement_type",
         "status",
-        "validation_status",
+        "all_measurements_validated",
         "up_to_date_in_bro",
     )
     list_filter = (
         GLDFilter,
+        OrganisationFilter,
         "observation_starttime",
         "observation_endtime",
         "result_time",
@@ -229,7 +231,7 @@ class ObservationAdmin(admin.ModelAdmin):
 
     readonly_fields = [
         "status",
-        "validation_status",
+        "all_measurements_validated",
         "timestamp_first_measurement",
         "timestamp_last_measurement",
     ]

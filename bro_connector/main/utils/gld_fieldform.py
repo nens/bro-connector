@@ -98,36 +98,10 @@ def in_gmn(gmn_name: str, tube: gmw_models.GroundwaterMonitoringTubeStatic) -> b
 def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> dict:
     filter_name = tube.__str__()
     filter_state = tube.state.order_by("date_from").last()
-    if not filter_state:
-        {
-            f"{filter_name}": {
-                "inputfields": input_fields_filter,
-                "properties": {
-                    "Bovenkant buis [mNAP] ": "Onbekend",
-                    "Diameter": "Onbekend",
-                    "Bovenkant filter [mNAP] ": "Onbekend",
-                    "Onderkant filter [mNAP] ": "Onbekend",
-                    "PMG": "Ja"
-                    if in_gmn("pmg", tube)
-                    else "Nee",  # Adjust to actual name
-                    "HMN": "Ja"
-                    if in_gmn("hmn", tube)
-                    else "Nee",  # Adjust to actual name
-                    "KRW-Kwantiteit": "Ja"
-                    if in_gmn("krw_kwal", tube)
-                    else "Nee",  # Adjust to actual name
-                },
-            },
-        }
-
-    return {
+    sublocation = {
         f"{filter_name}": {
             "inputfields": input_fields_filter,
             "properties": {
-                "Bovenkant buis [mNAP] ": filter_state.tube_top_position,
-                "Diameter": filter_state.tube_top_diameter,
-                "Bovenkant filter [mNAP] ": filter_state.screen_top_position,
-                "Onderkant filter [mNAP] ": filter_state.screen_bottom_position,
                 "PMG": "Ja" if in_gmn("pmg", tube) else "Nee",  # Adjust to actual name
                 "HMN": "Ja" if in_gmn("hmn", tube) else "Nee",  # Adjust to actual name
                 "KRW-Kwantiteit": "Ja"
@@ -136,6 +110,26 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
             },
         },
     }
+    if not filter_state:
+        sublocation[filter_name]["properties"].update(
+            {
+                "Bovenkant buis [mNAP] ": "Onbekend",
+                "Diameter": "Onbekend",
+                "Bovenkant filter [mNAP] ": "Onbekend",
+                "Onderkant filter [mNAP] ": "Onbekend",
+            }
+        )
+    else:
+        sublocation[filter_name]["properties"].update(
+            {
+                "Bovenkant buis [mNAP] ": filter_state.tube_top_position,
+                "Diameter": filter_state.tube_top_diameter,
+                "Bovenkant filter [mNAP] ": filter_state.screen_top_position,
+                "Onderkant filter [mNAP] ": filter_state.screen_bottom_position,
+            }
+        )
+
+    return sublocation
 
 
 class FieldFormGenerator:

@@ -103,9 +103,9 @@ def form_addition_type(observation: Observation) -> str:
     if observation.observation_type == "controlemeting":
         return "controlemeting"
 
-    if observation.validation_status == "voorlopig":
-        return f"regulier_{observation.validation_status}"
-    return f"regulier_{observation.validation_status}"
+    if observation.observation_metadata.status == "voorlopig":
+        return f"regulier_{observation.observation_metadata.status}"
+    return f"regulier_{observation.observation_metadata.status}"
 
 
 def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
@@ -172,7 +172,7 @@ def handle_additions(dossier: GroundwaterLevelDossier, deliver: bool):
                 logger.error(
                     f"Tried to create addition document for Observation ({observation}), and validate and deliver, but this was not possible."
                 )
-                
+
         if addition_log:
             if addition_log.process_status == "delivery_approved":
                 logger.info(f"Delivery already approved (DOORGELEVERD): {addition_log}")

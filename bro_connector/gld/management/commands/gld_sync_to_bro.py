@@ -240,9 +240,9 @@ def form_addition_type(observation: models.Observation) -> str:
     if observation.observation_type == "controlemeting":
         return "controlemeting"
 
-    if observation.validation_status == "voorlopig":
-        return f"regulier_{observation.validation_status}"
-    return f"regulier_{observation.validation_status}"
+    if observation.observation_metadata.status == "voorlopig":
+        return f"regulier_{observation.observation_metadata.status}"
+    return f"regulier_{observation.observation_metadata.status}"
 
 
 def create_new_observations():
