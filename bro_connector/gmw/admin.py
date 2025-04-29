@@ -55,11 +55,10 @@ class EventsInline(admin.TabularInline):
         "event_date",
         "delivered_to_bro",
         "bro_actions",
-        "complete_bro",
         )
 
     ordering = ["event_date"]
-    readonly_fields = ["delivered_to_bro","bro_actions","complete_bro"]
+    readonly_fields = ["delivered_to_bro","bro_actions"]
 
     extra = 0
     max_num = 0
@@ -88,7 +87,7 @@ class WellDynamicInline(admin.TabularInline):
         "comment",
     )
     ordering = ["date_from"]
-    readonly_fields = ["date_from","date_till","number_of_standpipes"]
+    readonly_fields = ["date_from","date_till","number_of_standpipes","comment"]
 
     extra = 0
     max_num = 0
@@ -114,12 +113,12 @@ class TubeStaticInline(admin.TabularInline):
         "deliver_gld_to_bro",
         "tube_number",
         "tube_type",
+        "number_of_geo_ohm_cables",
         "bro_actions",
         "report",
-        "number_of_geo_ohm_cables"
     )
     ordering = ["tube_number"]
-    readonly_fields = ["tube_number","bro_actions","report","number_of_geo_ohm_cables"]
+    readonly_fields = ["tube_number","number_of_geo_ohm_cables","bro_actions","report"]
 
     extra = 0
     max_num = 0
@@ -138,7 +137,7 @@ class TubeDynamicInline(admin.TabularInline):
     )
     show_change_link = True
 
-    readonly_fields = ["date_from","date_till"]
+    readonly_fields = ["date_from","date_till","comment"]
 
     extra = 0
     max_num = 0
@@ -187,20 +186,20 @@ class ElectrodeInline(admin.TabularInline):
 class GLDInline(admin.TabularInline):
     model = GroundwaterLevelDossier
     search_fields = get_searchable_fields(GroundwaterLevelDossier)
-    fields = (
+    fields = (        
+        "gld_bro_id",
+        "groundwater_monitoring_net",
         "research_start_date",
         "research_last_date",
         "research_last_correction",
-        "gld_bro_id",
-        "groundwater_monitoring_net",
     )
     show_change_link = True
 
-    readonly_fields = [
+    readonly_fields = [        
+        "gld_bro_id",
         "research_start_date",
         "research_last_date",
         "research_last_correction",
-        "gld_bro_id",
     ]
 
     extra = 0

@@ -43,25 +43,23 @@ class ObservationInline(admin.TabularInline):
     show_change_link = True
     search_fields = get_searchable_fields(models.Observation)
     fields = (
-        "observation_starttime",
-        "observation_endtime",
-        "result_time",
+        "observation_type",
+        "validation_status",
         "up_to_date_in_bro",
         "observation_id_bro",
-        "observation_type",
-        "status",
-        "validation_status"
+        "observation_starttime",
+        "observation_endtime",
+        "result_time",   
     )
 
     readonly_fields = [
-        "observation_starttime",
-        "observation_endtime",
-        "result_time",
+        "observation_type",
+        "validation_status",
         "up_to_date_in_bro",
         "observation_id_bro",
-        "observation_type",
-        "status",
-        "validation_status"
+        "observation_starttime",
+        "observation_endtime",
+        "result_time",                              
     ]
 
     ordering = ["observation_starttime"]
