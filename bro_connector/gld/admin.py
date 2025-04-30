@@ -523,14 +523,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 observation = models.Observation.objects.get(
                     observation_id=observation_id
                 )
-                (
-                    observation_source_document_data,
-                    addition_type,
-                ) = get_observation_gld_source_document_data(observation)
                 gld.generate_gld_addition_sourcedoc_data(
                     observation,
-                    observation_source_document_data,
-                    addition_type,
                 )
 
                 self.message_user(
@@ -568,7 +562,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 )
                 # Validate the sourcedocument for this observation
             else:
-                gld.validate_gld_addition_source_document(addition_log, filename)
+                gld.validate_gld_addition_source_document(addition_log)
                 self.message_user(
                     request, "Succesfully attemped document validation", messages.INFO
                 )
@@ -584,8 +578,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
 
-            filename = addition_log.file
-
             if addition_log.validation_status is None:
                 self.message_user(
                     request,
@@ -599,7 +591,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.deliver_gld_addition_source_document(addition_log, filename)
+                gld.deliver_gld_addition_source_document(addition_log)
                 self.message_user(
                     request, "Succesfully attemped document delivery", messages.INFO
                 )

@@ -77,31 +77,32 @@ def get_timeseries_tvp_for_observation_id(observation):
     measurement_tvp = observation.measurement.all()
     measurements_list = []
     for measurement in measurement_tvp:
+        logger.info(f"Measurement: {measurement}; value: {measurement.calculated_value}; field_val: {measurement.field_value}")
+        logger.info(f"Measurement has metadata: {measurement.measurement_point_metadata}")
         if measurement.measurement_point_metadata:
             metadata = measurement.measurement_point_metadata.get_sourcedocument_data()
         else:
             continue
 
-        # discard a measurement with quality control type 1 (afgekeurd)
-        if metadata["StatusQualityControl"] == "afgekeurd":
-            continue
-
         # If the measurement value  is None, this value must have been censored
-        if measurement.field_value is None:
-            if metadata["censoredReason"] is None:
+        if measurement.calculated_value is None:
+            if metadata.get("censoredReason") is None:
                 # We can't include a missing value without a censoring reason
                 continue
 
         measurement_data = {
             "time": measurement.measurement_time.isoformat(),
-            "value": float(measurement.calculated_value),
+            "value": float(measurement.calculated_value) if measurement.calculated_value else None,
             "metadata": metadata,
         }
+        logger.info(f"Measurement data: {measurement_data}")
 
         measurements_list += [measurement_data]
 
-    measurements_list_ordered = _order_measurements_list(measurements_list)
+    logger.info(f"Pre-order: {measurements_list}")
 
+    measurements_list_ordered = _order_measurements_list(measurements_list)
+    logger.info(f"Post-order: {measurements_list_ordered}")
     return measurements_list_ordered
 
 
@@ -905,6 +906,14 @@ class gld_addition_log(BaseModel):
     ) -> str:
         observation_source_document_data = self.observation.get_sourcedocument_data()
         print(observation_source_document_data)
+        if len(observation_source_document_data["result"]) < 1:
+            logger.warning("No results in observation")
+            self.date_modified = datetime.datetime.now()
+            self.comments = f"No results in observation"
+            self.process_status = "failed_to_create_source_document"
+            self.save()
+            return
+
 
         first_timestamp_datetime = self.observation.timestamp_first_measurement
         final_timestamp_datetime = self.observation.timestamp_last_measurement
