@@ -1,20 +1,6 @@
-    
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from __future__ import division
-
 from django.core.management.base import BaseCommand
 from gld.models import GroundwaterLevelDossier
-from ..tasks import (
-    retrieve_historic_gmw,
-    retrieve_historic_frd,
-    retrieve_historic_gld,
-    retrieve_historic_gmn,
-)
 import requests
-import requests.auth
-from abc import ABC, abstractmethod
 import xml.etree.ElementTree as ET
 import datetime
 
