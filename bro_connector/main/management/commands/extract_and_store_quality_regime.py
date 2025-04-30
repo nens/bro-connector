@@ -26,11 +26,14 @@ class Command(BaseCommand):
         print("Number of GLDs without a quality regime before: ",len(glds))
 
         if glds:
-            for gld in glds:
+            for i,gld in enumerate(glds,1):
                 bro_id = gld.gld_bro_id
                 quality_regime = extract_quality_regime(bro_id,False)
                 gld.quality_regime = quality_regime
                 gld.save() 
+
+                if i % 50 == 0:
+                    print(f"{i} GLDs saved")
 
         glds = GroundwaterLevelDossier.objects.filter(
             quality_regime__isnull=True
