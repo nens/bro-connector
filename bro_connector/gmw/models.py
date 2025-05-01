@@ -281,6 +281,16 @@ class GroundwaterMonitoringWellStatic(BaseModel):
 
     def cy(self):
         return self.construction_coordinates.y
+    
+
+    @property
+    def bro_loket_link(self):
+        if self.bro_id:
+            bro_loket = f"https://www.broloket.nl/ondergrondgegevens?bro-id={self.bro_id}"
+            return format_html(f'<a href="{bro_loket}">{bro_loket}</a>')
+        return "-"
+    
+    bro_loket_link.fget.short_description = "Link:"
 
     def __str__(self):
         if self.well_code:

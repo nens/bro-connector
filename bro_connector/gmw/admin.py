@@ -6,6 +6,8 @@ import reversion
 from reversion_compare.helpers import patch_admin
 import logging
 
+from django.utils.html import format_html
+
 
 from . import models as gmw_models
 import gmw.management.tasks.gmw_actions as gmw_actions
@@ -126,7 +128,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "well_code",
         "in_management",
     )
-    readonly_fields = ("lat", "lon", "report", "complete_bro", "bro_actions")
+    readonly_fields = ("lat", "lon", "report", "complete_bro", "bro_actions", "bro_loket_link")
 
     fieldsets = [
         (
@@ -158,6 +160,9 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "bro_actions",
                 ],
             },
+        ),
+        (
+            "BRO-loket", {"fields": ["bro_loket_link"]},
         ),
         (
             "Coordinates",

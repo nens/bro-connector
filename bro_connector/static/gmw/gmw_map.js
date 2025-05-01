@@ -52,6 +52,7 @@ const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 const createPopup = (well) => {
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
+  const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
   const gldPageUrl = `/admin/gld/groundwaterleveldossier/?q=${well.bro_id}`;
   const frdPageUrl = `/admin/frd/formationresistancedossier/?q=${well.bro_id}`;
   const popupContent = `
@@ -79,6 +80,10 @@ const createPopup = (well) => {
                 <div class="well-item">
                   <span class="label">In beheer:</span>
                   <span class="value">${checkOrCross(well.in_management)}</span>
+                </div>
+                <div class="well-item">
+                  <span class="label">BRO-loket:</span>
+                  <span class="value"><a href="${BROloketUrl}" target="_blank">broloket link</a></span>
                 </div>
                 <div class="well-item">
                   <span class="label">GMNs:</span>
