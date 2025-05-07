@@ -120,13 +120,13 @@ class GroundwaterLevelDossier(BaseModel):
         blank=False,
         related_name="groundwaterleveldossier",
     )
-    gld_bro_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    gld_bro_id = models.CharField(max_length=255, blank=True, null=True, unique=True, verbose_name="GLD BRO id")
     quality_regime = models.CharField(
-        choices=QUALITYREGIME, max_length=254, null=True, blank=True
+        choices=QUALITYREGIME, max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime"
     )
-    research_start_date = models.DateField(blank=True, null=True)
-    research_last_date = models.DateField(blank=True, null=True)
-    research_last_correction = models.DateTimeField(blank=True, null=True)
+    research_start_date = models.DateField(blank=True, null=True, verbose_name="Onderzoeksstartdatum")
+    research_last_date = models.DateField(blank=True, null=True, verbose_name="Onderzoekseinddatum")
+    research_last_correction = models.DateTimeField(blank=True, null=True, verbose_name="Laatste correctie")
 
     @property
     def gmw_bro_id(self):
@@ -223,13 +223,13 @@ class Observation(BaseModel):
         null=True,
         blank=True,
     )
-    observation_starttime = models.DateTimeField(blank=True, null=True)
-    result_time = models.DateTimeField(blank=True, null=True)
-    observation_endtime = models.DateTimeField(blank=True, null=True)
-    up_to_date_in_bro = models.BooleanField(default=False, editable=False)
+    observation_starttime = models.DateTimeField(blank=True, null=True, verbose_name="Starttijd")
+    result_time = models.DateTimeField(blank=True, null=True, verbose_name="Resultaat tijd")
+    observation_endtime = models.DateTimeField(blank=True, null=True, verbose_name="Eindtijd")
+    up_to_date_in_bro = models.BooleanField(default=False, editable=False, verbose_name="Up to date in BRO")
 
     observation_id_bro = models.CharField(
-        max_length=200, blank=True, null=True, editable=False
+        max_length=200, blank=True, null=True, editable=False, verbose_name="Observatie BRO ID"
     )  # Should also import this with the BRO-Import tool
 
     measurement: Manager["MeasurementTvp"]
@@ -269,6 +269,8 @@ class Observation(BaseModel):
         if self.observation_metadata:
             return self.observation_metadata.observation_type
         return "-"
+    
+    observation_type.fget.short_description = "Observatie type"
 
     @property
     def status(self):
@@ -305,6 +307,8 @@ class Observation(BaseModel):
             return "volledigBeoordeeld"
         else:
             return "onbekend"
+        
+    all_measurements_validated.fget.short_description = "Status validatie"
 
     @property
     def addition_type(self):

@@ -441,12 +441,16 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         if next_dynamic:
             return next_dynamic.date_from
         return None
+    
+    date_till.fget.short_description = "Datum tot"
 
     @property
     def number_of_standpipes(self):
         return GroundwaterMonitoringTubeStatic.objects.filter(
             groundwater_monitoring_well_static=self.groundwater_monitoring_well_static
         ).count()
+    
+    number_of_standpipes.fget.short_description = "Aantal buizen"
 
     @property
     def deliver_gld_to_bro(self):
@@ -473,7 +477,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         related_name="tube",
         verbose_name="Put",
     )
-    deliver_gld_to_bro = models.BooleanField(blank=True, default=False)
+    deliver_gld_to_bro = models.BooleanField(blank=True, default=False, verbose_name="Lever GLD aan naar BRO")
     tube_number = models.IntegerField(
         blank=True,
         null=True,
@@ -544,6 +548,8 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         return GeoOhmCable.objects.filter(
             groundwater_monitoring_tube_static=self
         ).count()
+    
+    number_of_geo_ohm_cables.fget.short_description = "Aantal geo ohm kabels"
 
     @property
     def gmn_ids(self) -> list[str]:
@@ -672,6 +678,8 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         if next_dynamic:
             return next_dynamic.date_from
         return None
+    
+    date_till.fget.short_description = "Datum tot"
 
     @property
     def tube_inserted(self):
@@ -763,6 +771,8 @@ class GeoOhmCable(BaseModel):
             return "minimaal aantal elektrodes van 2 nog niet gelinkt aan Geo-ohmkabel"
         else:
             return number_of_electrodes
+        
+    electrode_count.fget.short_description = "Aantal electrodes"
 
     class Meta:
         managed = True
@@ -855,7 +865,7 @@ class Event(BaseModel):
         verbose_name="Electrodes",
         related_name="event",
     )
-    delivered_to_bro = models.BooleanField(blank=True, default=False)
+    delivered_to_bro = models.BooleanField(blank=True, default=False, verbose_name="Aangeleverd aan BRO")
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )

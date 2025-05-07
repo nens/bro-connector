@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
+from django.db.models import fields
 import os
 from . import models
 from main.settings.base import gld_SETTINGS
@@ -26,11 +27,45 @@ from gld.models import GroundwaterLevelDossier
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
+def get_searchable_fields(model_class):
+    return [
+        f.name
+        for f in model_class._meta.fields
+        if isinstance(f, (fields.CharField, fields.AutoField))
+    ]
 
 # %% GLD model registration
 
 gld = GldSyncHandler()
 
+
+class ObservationInline(admin.TabularInline):
+    model = models.Observation
+    show_change_link = True
+    search_fields = get_searchable_fields(models.Observation)
+    fields = (
+        "observation_type",
+        "all_measurements_validated",
+        "up_to_date_in_bro",
+        "observation_id_bro",
+        "observation_starttime",
+        "observation_endtime",
+        "result_time",   
+    )
+
+    readonly_fields = [
+        "observation_type",
+        "all_measurements_validated",
+        "up_to_date_in_bro",
+        "observation_id_bro",
+        "observation_starttime",
+        "observation_endtime",
+        "result_time",                              
+    ]
+
+    ordering = ["observation_starttime"]
+    extra = 0
+    max_num = 0
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -71,6 +106,10 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "tube_number",
         "most_recent_measurement",
     ]
+
+    inlines = (
+        ObservationInline,
+    )
 
     actions = ["deliver_to_bro", "check_status"]
 
