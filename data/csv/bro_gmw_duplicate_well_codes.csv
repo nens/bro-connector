@@ -1,0 +1,643 @@
+gm_gmw_pk,bro_id,delivery_accountable_party,quality_regime,object_registration_time,latest_addition_time,registration_completion_time,latest_correction_time,under_review_time,deregistration_time,number_of_monitoring_tubes,nitg_code,well_code,owner,well_construction_date,well_removal_date,construction_standard,initial_function,well_head_protector,local_vertical_reference_point,ground_level_position,imbro_xml_url,delivered_location,ranking,coordinates
+48013,GMW000000057269,20168636,IMBRO/A,2021-11-03T16:04:02+01:00,2021-11-03T16:04:02+01:00,,,,,1,B42B0156,GMW42B000156,20168636,2017-04-19,,onbekend,stand,onbekend,NAP,6.19,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057269,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>37140.000 412573.000</gml:pos>
+</gml:Point>",1.0,(3.682613167 51.689519062)
+48036,GMW000000057292,20168636,IMBRO/A,2021-11-03T16:04:22+01:00,2021-11-03T16:04:22+01:00,2021-11-03T16:04:22+01:00,,,,1,B42B0156,GMW42B000156,20168636,2014-10-29,2017-04-19,onbekend,stand,onbekend,NAP,6.19,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057292,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>37140.000 412573.000</gml:pos>
+</gml:Point>",1.0,(3.682613167 51.689519062)
+48005,GMW000000057261,20168636,IMBRO/A,2021-11-03T16:03:55+01:00,2021-11-03T16:03:55+01:00,,,,,1,B42B0157,GMW42B000157,20168636,2016-10-13,,onbekend,stand,onbekend,NAP,6.07,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057261,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>37198.000 412637.000</gml:pos>
+</gml:Point>",1.0,(3.683429994 51.690106323)
+48067,GMW000000057323,20168636,IMBRO/A,2021-11-03T16:04:47+01:00,2021-11-03T16:04:47+01:00,2021-11-03T16:04:47+01:00,,,,1,B42B0157,GMW42B000157,20168636,2014-10-29,2016-10-13,onbekend,stand,onbekend,NAP,6.073,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057323,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>37198.000 412637.000</gml:pos>
+</gml:Point>",1.0,(3.683429994 51.690106323)
+47992,GMW000000057248,20168636,IMBRO/A,2021-11-03T16:03:44+01:00,2021-11-03T16:03:44+01:00,,,,,1,B42E0020,GMW42E000020,20168636,1960-07-15,,onbekend,stand,koker,NAP,-0.91,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057248,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>46759.000 414531.000</gml:pos>
+</gml:Point>",1.0,(3.821070197 51.709054951)
+48095,GMW000000057351,20168636,IMBRO/A,2021-11-03T16:05:14+01:00,,,,,,3,B42E0020,GMW42E000020,20168636,1958-04-18,,onbekend,stand,koker,NAP,-0.83,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057351,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>46759.000 414531.000</gml:pos>
+</gml:Point>",1.0,(3.821070197 51.709054951)
+41682,GMW000000050868,20168636,IMBRO/A,2021-09-14T14:33:32+02:00,2021-09-14T14:33:32+02:00,,,,,3,B42E0023,GMW42E000023,20168636,1958,,onbekend,stand,koker,NAP,-0.95,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050868,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>44290.000 413760.000</gml:pos>
+</gml:Point>",1.0,(3.78560491 51.70164414)
+41778,GMW000000050964,20168636,IMBRO/A,2021-09-14T14:34:30+02:00,2021-09-14T14:34:30+02:00,,,,,1,B42E0023,GMW42E000023,20168636,1963-03-22,,onbekend,stand,koker,NAP,-0.95,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050964,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>44290.000 413760.000</gml:pos>
+</gml:Point>",1.0,(3.78560491 51.70164414)
+41661,GMW000000050847,20168636,IMBRO/A,2021-09-14T14:33:19+02:00,,,,,,1,B42E0033,GMW42E000033,20168636,1990,,onbekend,stand,koker,NAP,5.16,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050847,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42540.000 416350.000</gml:pos>
+</gml:Point>",1.0,(3.75946016 51.72456789)
+41813,GMW000000050999,20168636,IMBRO/A,2021-09-14T14:34:53+02:00,2021-09-14T14:34:53+02:00,2021-09-14T14:34:53+02:00,,,,1,B42E0033,GMW42E000033,20168636,1956-12-14,1990,onbekend,stand,koker,NAP,5.23,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050999,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42540.000 416350.000</gml:pos>
+</gml:Point>",1.0,(3.75946016 51.72456789)
+48011,GMW000000057267,20168636,IMBRO/A,2021-11-03T16:04:01+01:00,2021-11-03T16:04:01+01:00,,,,,1,B42E0042,GMW42E000042,20168636,1973-07-13,,onbekend,kwaliteitStand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057267,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>48211.000 416712.000</gml:pos>
+</gml:Point>",1.0,(3.841401727 51.728931947)
+48032,GMW000000057288,20168636,IMBRO/A,2021-11-03T16:04:18+01:00,2021-11-03T16:04:18+01:00,,,,,4,B42E0042,GMW42E000042,20168636,1962-10-01,,onbekend,kwaliteitStand,koker,NAP,-0.6,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057288,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>48211.000 416712.000</gml:pos>
+</gml:Point>",1.0,(3.841401727 51.728931947)
+48080,GMW000000057336,20168636,IMBRO/A,2021-11-03T16:04:58+01:00,2021-11-03T16:04:58+01:00,,,,,1,B42E0044,GMW42E000044,20168636,1981,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057336,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>44380.000 417879.000</gml:pos>
+</gml:Point>",1.0,(3.785595232 51.738673682)
+48105,GMW000000057361,20168636,IMBRO/A,2021-11-03T16:05:23+01:00,2021-11-03T16:05:23+01:00,,,,,4,B42E0044,GMW42E000044,20168636,1963-07-12,,onbekend,stand,koker,NAP,0.5,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057361,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>44380.000 417879.000</gml:pos>
+</gml:Point>",1.0,(3.785595232 51.738673682)
+41513,GMW000000050699,20168636,IMBRO/A,2021-09-14T14:31:36+02:00,,,,,,1,B42E0286,GMW42E000286,20168636,1986-05-26,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050699,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42300.000 416910.000</gml:pos>
+</gml:Point>",1.0,(3.75580605 51.72955149)
+41826,GMW000000051012,20168636,IMBRO/A,2021-09-14T14:35:03+02:00,2021-09-14T14:35:03+02:00,2021-09-14T14:35:03+02:00,,,,1,B42E0286,GMW42E000286,20168636,1964-01-10,1986-05-26,onbekend,stand,pot,NAP,4.74,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051012,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42300.000 416910.000</gml:pos>
+</gml:Point>",1.0,(3.75580605 51.72955149)
+46555,GMW000000055790,50200097,IMBRO/A,2021-10-16T18:25:09+02:00,2021-10-16T18:25:09+02:00,2021-10-16T18:25:09+02:00,,,,1,B42E0299,GMW42E000299,27376655,1969-06-27,1972-11-14,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055790,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41845.000 415610.000</gml:pos>
+</gml:Point>",0.833325,(3.74964563 51.7177785)
+46657,GMW000000055892,50200097,IMBRO/A,2021-10-16T18:26:09+02:00,,,,,,1,B42E0299,GMW42E000299,27376655,1972-12-28,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055892,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41845.000 415610.000</gml:pos>
+</gml:Point>",0.916675,(3.74964563 51.7177785)
+46718,GMW000000055953,50200097,IMBRO/A,2021-10-16T18:26:43+02:00,,2021-10-16T18:26:43+02:00,,,,1,B42E0299,GMW42E000299,27376655,1963-10-14,1969-06-27,onbekend,stand,pot,NAP,5.95,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055953,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41845.000 415610.000</gml:pos>
+</gml:Point>",0.833325,(3.74964563 51.7177785)
+46798,GMW000000056033,50200097,IMBRO/A,2021-10-16T18:27:27+02:00,,2021-10-16T18:27:27+02:00,,,,1,B42E0299,GMW42E000299,27376655,1972-11-14,1972-12-28,onbekend,stand,pot,NAP,5.96,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056033,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41845.000 415610.000</gml:pos>
+</gml:Point>",0.916675,(3.74964563 51.7177785)
+46651,GMW000000055886,50200097,IMBRO/A,2021-10-16T18:26:06+02:00,,2021-10-16T18:26:06+02:00,,,,1,B42E0301,GMW42E000301,27376655,1969-06-25,1972-12-07,onbekend,stand,geen,NAP,-0.58,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055886,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>44880.000 415840.000</gml:pos>
+</gml:Point>",1.0,(3.7934783 51.72045067)
+46784,GMW000000056019,50200097,IMBRO/A,2021-10-16T18:27:19+02:00,,,,,,1,B42E0301,GMW42E000301,27376655,1972-12-07,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056019,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>44880.000 415840.000</gml:pos>
+</gml:Point>",1.0,(3.7934783 51.72045067)
+55902,GMW000000066421,50200097,IMBRO/A,2023-03-03T17:28:52+01:00,,2023-03-03T17:28:52+01:00,,,,1,B42E0304,GMW42E000304,27376655,1964-01-10,1969-08-28,onbekend,stand,geen,NAP,4.77,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066421,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40910.000 415100.000</gml:pos>
+</gml:Point>",1.0,(3.736287223 51.713006054)
+55903,GMW000000066422,50200097,IMBRO/A,2023-03-03T17:28:57+01:00,2023-03-03T17:28:57+01:00,,,,,1,B42E0304,GMW42E000304,27376655,1969-08-28,,onbekend,stand,geen,NAP,4.83,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066422,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40910.000 415100.000</gml:pos>
+</gml:Point>",1.0,(3.736287223 51.713006054)
+55904,GMW000000066423,50200097,IMBRO/A,2023-03-03T17:29:03+01:00,2023-03-03T17:29:03+01:00,2023-03-03T17:29:03+01:00,,,,1,B42E0306,GMW42E000306,27376655,1964-01-10,1971-08-30,onbekend,stand,geen,NAP,-0.42,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066423,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42700.000 415590.000</gml:pos>
+</gml:Point>",1.0,(3.762020717 51.717771)
+55905,GMW000000066424,50200097,IMBRO/A,2023-03-03T17:29:07+01:00,,,,,,1,B42E0306,GMW42E000306,27376655,1971-08-30,,onbekend,stand,geen,NAP,-0.45,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066424,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42700.000 415590.000</gml:pos>
+</gml:Point>",1.0,(3.762020717 51.717771)
+55906,GMW000000066425,50200097,IMBRO/A,2023-03-03T17:29:10+01:00,,2023-03-03T17:29:10+01:00,,,,1,B42E0307,GMW42E000307,27376655,1964-01-10,1971-08-30,onbekend,stand,geen,NAP,-0.49,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066425,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42760.000 415510.000</gml:pos>
+</gml:Point>",1.0,(3.762914528 51.717064194)
+55907,GMW000000066426,50200097,IMBRO/A,2023-03-03T17:29:15+01:00,,,,,,1,B42E0307,GMW42E000307,27376655,1971-08-30,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066426,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42760.000 415510.000</gml:pos>
+</gml:Point>",1.0,(3.762914528 51.717064194)
+55910,GMW000000066429,50200097,IMBRO/A,2023-03-03T17:29:27+01:00,,2023-03-03T17:29:27+01:00,,,,1,B42E0310,GMW42E000310,27376655,1964-01-10,1964-06-29,onbekend,stand,geen,NAP,-0.87,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066429,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42830.000 415100.000</gml:pos>
+</gml:Point>",1.0,(3.764059462 51.713394154)
+55911,GMW000000066430,50200097,IMBRO/A,2023-03-03T17:29:32+01:00,2023-03-03T17:29:32+01:00,,,,,1,B42E0310,GMW42E000310,27376655,1964-06-29,,onbekend,stand,geen,NAP,-0.9,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066430,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42830.000 415100.000</gml:pos>
+</gml:Point>",1.0,(3.764059462 51.713394154)
+55913,GMW000000066432,50200097,IMBRO/A,2023-03-03T17:29:40+01:00,2023-03-03T17:29:40+01:00,2023-03-03T17:29:40+01:00,,,,1,B42E0314,GMW42E000314,27376655,1964-01-10,1971-08-30,onbekend,stand,geen,NAP,0.08,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066432,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42180.000 414900.000</gml:pos>
+</gml:Point>",1.0,(3.754722246 51.7114664)
+55914,GMW000000066433,50200097,IMBRO/A,2023-03-03T17:29:45+01:00,,2023-03-03T17:29:45+01:00,,,,1,B42E0314,GMW42E000314,27376655,1971-08-30,1973-08-28,onbekend,stand,geen,NAP,0.07,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066433,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42180.000 414900.000</gml:pos>
+</gml:Point>",0.8,(3.754722246 51.7114664)
+55915,GMW000000066434,50200097,IMBRO/A,2023-03-03T17:29:48+01:00,,,,,,1,B42E0314,GMW42E000314,27376655,1973-08-28,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066434,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42180.000 414900.000</gml:pos>
+</gml:Point>",1.0,(3.754722246 51.7114664)
+46627,GMW000000055862,50200097,IMBRO/A,2021-10-16T18:25:51+02:00,2021-10-16T18:25:51+02:00,,,,,1,B42E0326,GMW42E000326,27376655,1972-12-28,,onbekend,stand,pot,NAP,5.14,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055862,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40320.000 412820.000</gml:pos>
+</gml:Point>",1.0,(3.72850492 51.69239871)
+46685,GMW000000055920,50200097,IMBRO/A,2021-10-16T18:26:24+02:00,,2021-10-16T18:26:24+02:00,,,,1,B42E0326,GMW42E000326,27376655,1966-10-28,1972-12-28,onbekend,stand,pot,NAP,5.15,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055920,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40320.000 412820.000</gml:pos>
+</gml:Point>",0.8,(3.72850492 51.69239871)
+46722,GMW000000055957,50200097,IMBRO/A,2021-10-16T18:26:45+02:00,2021-10-16T18:26:45+02:00,2021-10-16T18:26:45+02:00,,,,1,B42E0326,GMW42E000326,27376655,1964-01-10,1966-10-28,onbekend,stand,pot,NAP,5.16,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055957,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40320.000 412820.000</gml:pos>
+</gml:Point>",1.0,(3.72850492 51.69239871)
+55920,GMW000000066439,50200097,IMBRO/A,2023-03-03T17:30:12+01:00,2023-03-03T17:30:12+01:00,2023-03-03T17:30:12+01:00,,,,1,B42E0327,GMW42E000327,27376655,1964-01-10,1971-08-30,onbekend,stand,geen,NAP,0.08,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066439,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41020.000 412650.000</gml:pos>
+</gml:Point>",1.0,(3.738681165 51.691014072)
+55921,GMW000000066440,50200097,IMBRO/A,2023-03-03T17:30:17+01:00,2023-03-03T17:30:17+01:00,,,,,1,B42E0327,GMW42E000327,27376655,1971-08-30,,onbekend,stand,geen,NAP,0.07,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066440,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41020.000 412650.000</gml:pos>
+</gml:Point>",1.0,(3.738681165 51.691014072)
+41655,GMW000000050841,20168636,IMBRO/A,2021-09-14T14:33:15+02:00,2021-09-14T14:33:15+02:00,,,,,15,B42F0023,GMW42F000023,20168636,1965-05-28,,onbekend,stand,koker,NAP,-0.4,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050841,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59820.000 412910.000</gml:pos>
+</gml:Point>",1.0,(4.01043644 51.69686195)
+41871,GMW000000051057,20168636,IMBRO/A,2021-09-14T14:35:36+02:00,2021-09-14T14:35:36+02:00,2021-09-14T14:35:36+02:00,,,,1,B42F0023,GMW42F000023,20168636,1975-01-14,2004-07-20,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051057,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59820.000 412910.000</gml:pos>
+</gml:Point>",1.0,(4.01043644 51.69686195)
+36971,GMW000000045855,27364178,IMBRO/A,2021-02-25T14:04:24+01:00,2021-02-25T14:04:24+01:00,,,,,1,B42F0025,GMW42F000025,27364178,1976-04-15,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045855,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>51310.000 418250.000</gml:pos>
+</gml:Point>",1.0,(3.8857866 51.74333545)
+36974,GMW000000045858,27364178,IMBRO/A,2021-02-25T14:04:26+01:00,2021-02-25T14:04:26+01:00,,,,,13,B42F0025,GMW42F000025,27364178,1965-10-28,,onbekend,stand,koker,NAP,0.15,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045858,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>51310.000 418250.000</gml:pos>
+</gml:Point>",1.0,(3.8857866 51.74333545)
+47942,GMW000000057198,20168636,IMBRO/A,2021-11-03T16:02:59+01:00,2021-11-03T16:02:59+01:00,,,,,4,B42F0032,GMW42F000032,20168636,1963-03-01,,onbekend,stand,koker,NAP,0.25,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057198,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56883.000 413053.000</gml:pos>
+</gml:Point>",1.0,(3.967925349 51.697639954)
+48008,GMW000000057264,20168636,IMBRO/A,2021-11-03T16:03:58+01:00,2021-11-03T16:03:58+01:00,,,,,1,B42F0032,GMW42F000032,20168636,1975-08-29,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057264,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56883.000 413053.000</gml:pos>
+</gml:Point>",1.0,(3.967925349 51.697639954)
+41741,GMW000000050927,20168636,IMBRO/A,2021-09-14T14:34:08+02:00,2021-09-14T14:34:08+02:00,,,,,4,B42F0107,GMW42F000107,20168636,1963-08-01,,onbekend,stand,onbekend,NAP,0.5,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050927,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56218.000 416970.000</gml:pos>
+</gml:Point>",1.0,(3.9571959 51.73272191)
+41769,GMW000000050955,20168636,IMBRO/A,2021-09-14T14:34:25+02:00,2021-09-14T14:34:25+02:00,2021-09-14T14:34:25+02:00,,,,1,B42F0107,GMW42F000107,20168636,1975-08-29,2008-06-17,onbekend,stand,onbekend,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050955,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56218.000 416970.000</gml:pos>
+</gml:Point>",1.0,(3.9571959 51.73272191)
+35981,GMW000000044865,27364178,IMBRO/A,2021-02-25T13:52:41+01:00,2021-02-25T13:52:41+01:00,,,,,5,B42F0110,GMW42F000110,27364178,1967-07-01,,onbekend,stand,koker,NAP,0.75,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000044865,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>57100.000 415690.000</gml:pos>
+</gml:Point>",1.0,(3.97032094 51.72137465)
+37234,GMW000000046118,27364178,IMBRO/A,2021-02-25T14:07:31+01:00,,,,,,1,B42F0110,GMW42F000110,27364178,1975-08-29,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000046118,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>57100.000 415690.000</gml:pos>
+</gml:Point>",1.0,(3.97032094 51.72137465)
+47940,GMW000000057196,20168636,IMBRO/A,2021-11-03T16:02:57+01:00,2021-11-03T16:02:57+01:00,,,,,1,B42F0112,GMW42F000112,20168636,1973-08-14,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057196,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>55896.000 414781.000</gml:pos>
+</gml:Point>",1.0,(3.953160232 51.712994211)
+48045,GMW000000057301,20168636,IMBRO/A,2021-11-03T16:04:29+01:00,2021-11-03T16:04:29+01:00,,,,,4,B42F0112,GMW42F000112,20168636,1962-10-01,,onbekend,stand,koker,NAP,0.05,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057301,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>55896.000 414781.000</gml:pos>
+</gml:Point>",1.0,(3.953160232 51.712994211)
+36618,GMW000000045502,27364178,IMBRO/A,2021-02-25T14:00:24+01:00,2021-02-25T14:00:24+01:00,,,,,4,B42F0134,GMW42F000134,27364178,1967-09-26,,onbekend,stand,koker,NAP,0.55,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045502,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56223.000 416783.000</gml:pos>
+</gml:Point>",1.0,(3.95732145 51.73104238)
+37144,GMW000000046028,27364178,IMBRO/A,2021-02-25T14:06:30+01:00,,2021-02-25T14:06:30+01:00,,,,1,B42F0134,GMW42F000134,27364178,1975-08-29,2008-06-17,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000046028,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56223.000 416783.000</gml:pos>
+</gml:Point>",1.0,(3.95732145 51.73104238)
+41689,GMW000000050875,20168636,IMBRO/A,2021-09-14T14:33:36+02:00,2021-09-14T14:33:36+02:00,,,,,2,B42G0096,GMW42G000096,20168636,1990-04-12,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050875,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41071.000 410611.000</gml:pos>
+</gml:Point>",1.0,(3.74008565 51.67270307)
+41829,GMW000000051015,20168636,IMBRO/A,2021-09-14T14:35:06+02:00,2021-09-14T14:35:06+02:00,,,,,2,B42G0096,GMW42G000096,20168636,1983-03-01,,onbekend,stand,koker,NAP,6.62,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051015,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41071.000 410611.000</gml:pos>
+</gml:Point>",1.0,(3.74008565 51.67270307)
+46664,GMW000000055899,50200097,IMBRO/A,2021-10-16T18:26:13+02:00,2021-10-16T18:26:13+02:00,,,,,1,B42G0204,GMW42G000204,27376655,1971-08-30,,onbekend,stand,geen,NAP,0.22,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055899,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41840.000 411160.000</gml:pos>
+</gml:Point>",1.0,(3.75102067 51.67779197)
+46808,GMW000000056043,50200097,IMBRO/A,2021-10-16T18:27:32+02:00,2021-10-16T18:27:32+02:00,2021-10-16T18:27:32+02:00,,,,1,B42G0204,GMW42G000204,27376655,1964-02-28,1971-08-30,onbekend,stand,geen,NAP,0.21,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056043,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41840.000 411160.000</gml:pos>
+</gml:Point>",1.0,(3.75102067 51.67779197)
+48038,GMW000000057294,20168636,IMBRO/A,2021-11-03T16:04:23+01:00,2021-11-03T16:04:23+01:00,,,,,1,B42H0041,GMW42H000041,20168636,1975-09-15,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057294,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>53750.000 409214.000</gml:pos>
+</gml:Point>",1.0,(3.923736151 51.662584457)
+48094,GMW000000057350,20168636,IMBRO/A,2021-11-03T16:05:13+01:00,2021-11-03T16:05:13+01:00,,,,,4,B42H0041,GMW42H000041,20168636,1962-08-01,,onbekend,stand,koker,NAP,-0.45,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057350,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>53750.000 409214.000</gml:pos>
+</gml:Point>",1.0,(3.923736151 51.662584457)
+47991,GMW000000057247,20168636,IMBRO/A,2021-11-03T16:03:43+01:00,2021-11-03T16:03:43+01:00,,,,,4,B42H0043,GMW42H000043,20168636,1963-03-01,,onbekend,stand,koker,NAP,-0.3,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057247,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>58742.000 410127.000</gml:pos>
+</gml:Point>",1.0,(3.995617194 51.671668705)
+47999,GMW000000057255,20168636,IMBRO/A,2021-11-03T16:03:50+01:00,,,,,,1,B42H0043,GMW42H000043,20168636,1986-04-14,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057255,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>58742.000 410127.000</gml:pos>
+</gml:Point>",1.0,(3.995617194 51.671668705)
+41634,GMW000000050820,20168636,IMBRO/A,2021-09-14T14:33:03+02:00,2021-09-14T14:33:03+02:00,,,,,1,B42H0051,GMW42H000051,20168636,1979,,onbekend,stand,koker,NAP,0.18,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050820,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>58466.000 411749.000</gml:pos>
+</gml:Point>",1.0,(3.99117867 51.68619704)
+41872,GMW000000051058,20168636,IMBRO/A,2021-09-14T14:35:36+02:00,2021-09-14T14:35:36+02:00,,,,,3,B42H0051,GMW42H000051,20168636,1963-03-21,,onbekend,stand,koker,NAP,0.18,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051058,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>58466.000 411749.000</gml:pos>
+</gml:Point>",1.0,(3.99117867 51.68619704)
+47973,GMW000000057229,20168636,IMBRO/A,2021-11-03T16:03:29+01:00,2021-11-03T16:03:29+01:00,,,,,1,B42H0113,GMW42H000113,20168636,1979,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057229,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56174.000 411064.000</gml:pos>
+</gml:Point>",1.0,(3.958237291 51.679641693)
+47979,GMW000000057235,20168636,IMBRO/A,2021-11-03T16:03:33+01:00,2021-11-03T16:03:33+01:00,,,,,4,B42H0113,GMW42H000113,20168636,1962-09-06,,onbekend,stand,koker,NAP,0.55,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057235,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56174.000 411064.000</gml:pos>
+</gml:Point>",1.0,(3.958237291 51.679641693)
+47924,GMW000000057180,20168636,IMBRO/A,2021-11-03T16:02:43+01:00,2021-11-03T16:02:43+01:00,,,,,3,B42H0138,GMW42H000138,20168636,1962-01-05,,onbekend,stand,koker,NAP,0.08,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057180,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59918.000 405920.000</gml:pos>
+</gml:Point>",1.0,(4.013760766 51.634063645)
+48047,GMW000000057303,20168636,IMBRO/A,2021-11-03T16:04:31+01:00,2021-11-03T16:04:31+01:00,2021-11-03T16:04:31+01:00,,,,1,B42H0138,GMW42H000138,20168636,1973-07-13,2008-06-17,onbekend,stand,koker,NAP,0.08,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057303,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59918.000 405920.000</gml:pos>
+</gml:Point>",1.0,(4.013760766 51.634063645)
+36232,GMW000000045116,27364178,IMBRO/A,2021-02-25T13:56:01+01:00,,2021-02-25T13:56:01+01:00,,,,1,B42H0199,GMW42H000199,27364178,1973-07-30,2008-06-17,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045116,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56615.000 406965.000</gml:pos>
+</gml:Point>",1.0,(3.96576888 51.64288473)
+36763,GMW000000045647,27364178,IMBRO/A,2021-02-25T14:02:12+01:00,2021-02-25T14:02:12+01:00,,,,,3,B42H0199,GMW42H000199,27364178,1962-01-05,,onbekend,stand,koker,NAP,-0.5,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045647,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56615.000 406965.000</gml:pos>
+</gml:Point>",1.0,(3.96576888 51.64288473)
+34839,GMW000000043722,27364178,IMBRO/A,2021-02-25T13:37:05+01:00,2021-02-25T13:37:05+01:00,,,,,3,B42H0204,GMW42H000204,27364178,1962-01-05,,onbekend,stand,koker,NAP,0.5,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000043722,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56641.000 409837.000</gml:pos>
+</gml:Point>",1.0,(3.96533424 51.66869782)
+36750,GMW000000045634,27364178,IMBRO/A,2021-02-25T14:02:03+01:00,,2021-02-25T14:02:03+01:00,,,,1,B42H0204,GMW42H000204,27364178,1975-09-15,2008-06-17,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045634,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>56641.000 409837.000</gml:pos>
+</gml:Point>",1.0,(3.96533424 51.66869782)
+35678,GMW000000044561,27364178,IMBRO/A,2021-02-25T13:48:45+01:00,,2021-02-25T13:48:45+01:00,,,,1,B42H0206,GMW42H000206,27364178,1973-07-16,2008-06-17,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000044561,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59653.000 407915.000</gml:pos>
+</gml:Point>",1.0,(4.00938873 51.65194661)
+36215,GMW000000045099,27364178,IMBRO/A,2021-02-25T13:55:47+01:00,2021-02-25T13:55:47+01:00,,,,,3,B42H0206,GMW42H000206,27364178,1962-01-05,,onbekend,stand,koker,NAP,-0.85,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045099,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59653.000 407915.000</gml:pos>
+</gml:Point>",1.0,(4.00938873 51.65194661)
+46567,GMW000000055802,50200097,IMBRO/A,2021-10-16T18:25:16+02:00,,2021-10-16T18:25:16+02:00,,,,1,B42H0213,GMW42H000213,27376655,1962-08-01,1966-09-08,onbekend,stand,geen,NAP,-0.68,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055802,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59700.000 407470.000</gml:pos>
+</gml:Point>",1.0,(4.01018932 51.64795565)
+46656,GMW000000055891,50200097,IMBRO/A,2021-10-16T18:26:08+02:00,,2021-10-16T18:26:08+02:00,,,,1,B42H0213,GMW42H000213,27376655,1971-06-10,1972-03-10,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055891,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59700.000 407470.000</gml:pos>
+</gml:Point>",0.83335,(4.01018932 51.64795565)
+46707,GMW000000055942,50200097,IMBRO/A,2021-10-16T18:26:36+02:00,,,,,,1,B42H0213,GMW42H000213,27376655,1972-03-10,,onbekend,stand,geen,NAP,-0.55,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055942,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59700.000 407470.000</gml:pos>
+</gml:Point>",0.8666599999999999,(4.01018932 51.64795565)
+46708,GMW000000055943,50200097,IMBRO/A,2021-10-16T18:26:37+02:00,2021-10-16T18:26:37+02:00,2021-10-16T18:26:37+02:00,,,,1,B42H0213,GMW42H000213,27376655,1966-09-08,1971-06-10,onbekend,stand,geen,NAP,-0.64,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055943,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59700.000 407470.000</gml:pos>
+</gml:Point>",0.833325,(4.01018932 51.64795565)
+46525,GMW000000055760,50200097,IMBRO/A,2021-10-16T18:24:52+02:00,,2021-10-16T18:24:52+02:00,,,,1,B42H0214,GMW42H000214,27376655,1971-11-23,1980-02-28,onbekend,stand,geen,NAP,-0.14,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055760,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>54380.000 408100.000</gml:pos>
+</gml:Point>",1.0,(3.93316083 51.6526874)
+46612,GMW000000055847,50200097,IMBRO/A,2021-10-16T18:25:43+02:00,2021-10-16T18:25:43+02:00,2021-10-16T18:25:43+02:00,,,,1,B42H0214,GMW42H000214,27376655,1965-09-18,1971-11-23,onbekend,stand,geen,NAP,-0.15,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055847,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>54380.000 408100.000</gml:pos>
+</gml:Point>",1.0,(3.93316083 51.6526874)
+41509,GMW000000050695,20168636,IMBRO/A,2021-09-14T14:31:34+02:00,2021-09-14T14:31:34+02:00,,,,,2,B43C0058,GMW43C000058,20168636,1958-06-01,,onbekend,stand,koker,NAP,1.23,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050695,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>65030.000 409430.000</gml:pos>
+</gml:Point>",0.875,(4.0866781 51.66645005)
+41517,GMW000000050703,20168636,IMBRO/A,2021-09-14T14:31:38+02:00,2021-09-14T14:31:38+02:00,2021-09-14T14:31:38+02:00,,,,3,B43C0058,GMW43C000058,20168636,1990,2004-11-01,onbekend,stand,koker,NAP,1.23,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050703,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>65030.000 409430.000</gml:pos>
+</gml:Point>",1.0,(4.0866781 51.66645005)
+41874,GMW000000051060,20168636,IMBRO/A,2021-09-14T14:35:37+02:00,2021-09-14T14:35:37+02:00,,,,,1,B43C0058,GMW43C000058,20168636,1971-09-28,,onbekend,stand,koker,NAP,1.23,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051060,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>65030.000 409430.000</gml:pos>
+</gml:Point>",0.875,(4.0866781 51.66645005)
+35581,GMW000000044464,27364178,IMBRO/A,2021-02-25T13:47:27+01:00,2021-02-25T13:47:27+01:00,,,,,3,B43C0059,GMW43C000059,27364178,1962-05-16,,onbekend,stand,koker,NAP,0.35,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000044464,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>63518.000 409620.000</gml:pos>
+</gml:Point>",1.0,(4.06477774 51.66791269)
+36191,GMW000000045075,27364178,IMBRO/A,2021-02-25T13:55:27+01:00,2021-02-25T13:55:27+01:00,,,,,1,B43C0059,GMW43C000059,27364178,1973-09-14,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045075,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>63518.000 409620.000</gml:pos>
+</gml:Point>",1.0,(4.06477774 51.66791269)
+47916,GMW000000057172,20168636,IMBRO/A,2021-11-03T16:02:35+01:00,2021-11-03T16:02:35+01:00,,,,,4,B43C0082,GMW43C000082,20168636,1963-05-07,,onbekend,stand,koker,NAP,0.34,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057172,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>63314.000 409073.000</gml:pos>
+</gml:Point>",1.0,(4.06197349 51.662963696)
+47953,GMW000000057209,20168636,IMBRO/A,2021-11-03T16:03:09+01:00,2021-11-03T16:03:09+01:00,,,,,1,B43C0082,GMW43C000082,20168636,1973-07-13,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057209,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>63314.000 409073.000</gml:pos>
+</gml:Point>",1.0,(4.06197349 51.662963696)
+54477,GMW000000064978,20168636,IMBRO/A,2023-02-24T14:38:37+01:00,2023-02-24T14:38:37+01:00,,,,,2,B43C0372,GMW43C000372,20168636,1990-06-07,,onbekend,stand,onbekend,NAP,-0.57,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064978,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>67979.000 405260.000</gml:pos>
+</gml:Point>",1.0,(4.13033639 51.629440932)
+54478,GMW000000064979,20168636,IMBRO/A,2023-02-24T14:38:38+01:00,,,,,,1,B43C0372,GMW43C000372,20168636,1996-10-25,,onbekend,stand,onbekend,NAP,-0.54,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064979,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>67979.000 405260.000</gml:pos>
+</gml:Point>",0.875,(4.13033639 51.629440932)
+54479,GMW000000064980,20168636,IMBRO/A,2023-02-24T14:38:39+01:00,,,,,,2,B43C0372,GMW43C000372,20168636,2005-04-22,,onbekend,stand,onbekend,NAP,-0.62,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064980,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>67979.000 405260.000</gml:pos>
+</gml:Point>",0.9,(4.13033639 51.629440932)
+46976,GMW000000056211,50200097,IMBRO/A,2021-10-16T18:39:32+02:00,,2021-10-16T18:39:32+02:00,,,,1,B48B0207,GMW48B000207,27376655,1982-08-16,1996-02-15,onbekend,stand,geen,NAP,0.12,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056211,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>35600.000 392600.000</gml:pos>
+</gml:Point>",1.0,(3.66717007 51.50973054)
+47109,GMW000000056344,50200097,IMBRO/A,2021-10-16T18:40:46+02:00,,,,,,1,B48B0207,GMW48B000207,27376655,1996-02-15,,onbekend,stand,geen,NAP,0.22,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056344,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>35600.000 392600.000</gml:pos>
+</gml:Point>",1.0,(3.66717007 51.50973054)
+46827,GMW000000056062,50200097,IMBRO/A,2021-10-16T18:38:08+02:00,,,,,,1,B48E0257,GMW48E000257,27376655,1994-12-01,,onbekend,stand,geen,NAP,1.54,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056062,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41370.000 388080.000</gml:pos>
+</gml:Point>",1.0,(3.75171811 51.47030954)
+46900,GMW000000056135,50200097,IMBRO/A,2021-10-16T18:38:49+02:00,2021-10-16T18:38:49+02:00,2021-10-16T18:38:49+02:00,,,,1,B48E0257,GMW48E000257,27376655,1950-01-13,1994-12-01,onbekend,stand,geen,NAP,1.34,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056135,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41370.000 388080.000</gml:pos>
+</gml:Point>",1.0,(3.75171811 51.47030954)
+54450,GMW000000064945,20168636,IMBRO/A,2023-02-23T21:53:53+01:00,2023-02-23T21:53:53+01:00,2023-02-28T13:13:06+01:00,,,,1,B48E0288,GMW48E000288,40516730,1987-03-05,2003-04-16,STOWAgwst,stand,geen,NAP,0.49,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064945,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42152.000 396177.000</gml:pos>
+</gml:Point>",1.0,(3.760368202 51.543223874)
+54451,GMW000000064946,20168636,IMBRO/A,2023-02-23T21:54:23+01:00,2023-02-23T21:54:23+01:00,,,,,1,B48E0288,GMW48E000288,40516730,2003-04-16,,STOWAgwst,stand,kokerMetaal,NAP,0.43,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064946,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>42152.000 396177.000</gml:pos>
+</gml:Point>",1.0,(3.760368202 51.543223874)
+47004,GMW000000056239,50200097,IMBRO/A,2021-10-16T18:39:47+02:00,,2021-10-16T18:39:47+02:00,,,,1,B48F0225,GMW48F000225,27376655,1951-05-28,1968-02-28,onbekend,stand,geen,NAP,0.81,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056239,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>54720.000 388950.000</gml:pos>
+</gml:Point>",1.0,(3.94355524 51.48066093)
+47052,GMW000000056287,50200097,IMBRO/A,2021-10-16T18:40:14+02:00,,,,,,1,B48F0225,GMW48F000225,27376655,1968-02-28,,onbekend,stand,geen,NAP,0.7,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056287,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>54720.000 388950.000</gml:pos>
+</gml:Point>",1.0,(3.94355524 51.48066093)
+54485,GMW000000064986,20168636,IMBRO/A,2023-02-24T14:38:45+01:00,,,,,,2,B48F0235,GMW48F000235,20168636,1989-05-23,,onbekend,stand,onbekend,NAP,-1,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064986,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59420.000 389655.000</gml:pos>
+</gml:Point>",1.0,(4.011006248 51.487813452)
+54486,GMW000000064987,20168636,IMBRO/A,2023-02-24T14:38:46+01:00,2023-02-24T14:38:46+01:00,,,,,2,B48F0235,GMW48F000235,20168636,1996-09-24,,onbekend,stand,onbekend,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064987,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59420.000 389655.000</gml:pos>
+</gml:Point>",0.75,(4.011006248 51.487813452)
+54487,GMW000000064988,20168636,IMBRO/A,2023-02-24T14:38:47+01:00,2023-02-24T14:38:47+01:00,,,,,1,B48F0235,GMW48F000235,20168636,1999-08-01,,onbekend,stand,onbekend,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064988,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59420.000 389655.000</gml:pos>
+</gml:Point>",1.0,(4.011006248 51.487813452)
+54483,GMW000000064984,20168636,IMBRO/A,2023-02-24T14:38:43+01:00,,,,,,2,B48F0236,GMW48F000236,20168636,1989-05-23,,onbekend,stand,onbekend,NAP,-1.41,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064984,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59552.000 389862.000</gml:pos>
+</gml:Point>",1.0,(4.012850126 51.489696044)
+54484,GMW000000064985,20168636,IMBRO/A,2023-02-24T14:38:44+01:00,2023-02-24T14:38:44+01:00,,,,,1,B48F0236,GMW48F000236,20168636,1996-09-24,,onbekend,stand,onbekend,NAP,-0.95,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064985,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>59552.000 389862.000</gml:pos>
+</gml:Point>",1.0,(4.012850126 51.489696044)
+41534,GMW000000050720,20168636,IMBRO/A,2021-09-14T14:31:49+02:00,2021-09-14T14:31:49+02:00,,,,,6,B48G0060,GMW48G000060,20168636,1967-03-20,,onbekend,stand,koker,NAP,1.05,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050720,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40365.000 385895.000</gml:pos>
+</gml:Point>",1.0,(3.73796994 51.45047239)
+41643,GMW000000050829,20168636,IMBRO/A,2021-09-14T14:33:08+02:00,,,,,,6,B48G0060,GMW48G000060,20168636,1992-10-07,,onbekend,stand,koker,NAP,1.04,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050829,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40365.000 385895.000</gml:pos>
+</gml:Point>",1.0,(3.73796994 51.45047239)
+46980,GMW000000056215,50200097,IMBRO/A,2021-10-16T18:39:34+02:00,,2021-10-16T18:39:34+02:00,,,,1,B48G0236,GMW48G000236,27376655,1965-09-28,1968-04-16,onbekend,stand,geen,NAP,1.52,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056215,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>46220.000 383180.000</gml:pos>
+</gml:Point>",1.0,(3.82301106 51.4272355)
+47030,GMW000000056265,50200097,IMBRO/A,2021-10-16T18:40:01+02:00,,,,,,1,B48G0236,GMW48G000236,27376655,1968-04-16,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056265,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>46220.000 383180.000</gml:pos>
+</gml:Point>",1.0,(3.82301106 51.4272355)
+47108,GMW000000056343,50200097,IMBRO/A,2021-10-16T18:40:46+02:00,2021-10-16T18:40:46+02:00,2021-10-16T18:40:46+02:00,,,,1,B48G0237,GMW48G000237,27376655,1951-03-28,1986-04-22,onbekend,stand,geen,NAP,1.19,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056343,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41270.000 384200.000</gml:pos>
+</gml:Point>",1.0,(3.75153161 51.43542491)
+47115,GMW000000056350,50200097,IMBRO/A,2021-10-16T18:40:50+02:00,,,,,,1,B48G0237,GMW48G000237,27376655,1986-04-22,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056350,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>41270.000 384200.000</gml:pos>
+</gml:Point>",1.0,(3.75153161 51.43542491)
+46882,GMW000000056117,50200097,IMBRO/A,2021-10-16T18:38:39+02:00,2021-10-16T18:38:39+02:00,2021-10-16T18:38:39+02:00,,,,1,B48H0322,GMW48H000322,27376655,1962-12-21,1969-08-28,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056117,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>51430.000 386460.000</gml:pos>
+</gml:Point>",1.0,(3.89693966 51.45769026)
+46891,GMW000000056126,50200097,IMBRO/A,2021-10-16T18:38:44+02:00,,2021-10-16T18:38:44+02:00,,,,1,B48H0322,GMW48H000322,27376655,1956-04-14,1962-12-21,onbekend,stand,geen,NAP,0.28,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056126,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>51430.000 386460.000</gml:pos>
+</gml:Point>",1.0,(3.89693966 51.45769026)
+55979,GMW000000066498,50200097,IMBRO/A,2023-03-03T17:34:39+01:00,,2023-03-03T17:34:39+01:00,,,,1,B49A0259,GMW49A000259,27376655,1952-02-15,1961-04-14,onbekend,stand,geen,NAP,-0.18,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066498,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>68000.000 398090.000</gml:pos>
+</gml:Point>",1.0,(4.132423856 51.565008421)
+55980,GMW000000066499,50200097,IMBRO/A,2023-03-03T17:34:44+01:00,,,,,,1,B49A0259,GMW49A000259,27376655,1961-04-14,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066499,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>68000.000 398090.000</gml:pos>
+</gml:Point>",1.0,(4.132423856 51.565008421)
+55981,GMW000000066500,50200097,IMBRO/A,2023-03-03T17:34:48+01:00,2023-03-03T17:34:48+01:00,2023-03-03T17:34:48+01:00,,,,1,B49A0261,GMW49A000261,27376655,1961-02-07,1967-05-03,onbekend,stand,geen,NAP,-0.37,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066500,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>67960.000 398050.000</gml:pos>
+</gml:Point>",1.0,(4.131857023 51.564642751)
+55982,GMW000000066501,50200097,IMBRO/A,2023-03-03T17:34:52+01:00,,,,,,1,B49A0261,GMW49A000261,27376655,1967-05-03,,onbekend,stand,geen,NAP,-0.35,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066501,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>67960.000 398050.000</gml:pos>
+</gml:Point>",1.0,(4.131857023 51.564642751)
+55983,GMW000000066502,50200097,IMBRO/A,2023-03-03T17:34:59+01:00,,2023-03-03T17:34:59+01:00,,,,1,B49A0262,GMW49A000262,27376655,1961-02-07,1965-12-15,onbekend,stand,geen,NAP,-1.32,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066502,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>69800.000 398320.000</gml:pos>
+</gml:Point>",1.0,(4.158322937 51.567351188)
+56089,GMW000000066608,50200097,IMBRO/A,2023-03-03T17:43:23+01:00,,2023-03-03T17:43:23+01:00,,,,1,B49A0262,GMW49A000262,27376655,1965-12-15,1968-05-09,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066608,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>69800.000 398320.000</gml:pos>
+</gml:Point>",1.0,(4.158322937 51.567351188)
+55991,GMW000000066510,50200097,IMBRO/A,2023-03-03T17:35:46+01:00,,2023-03-03T17:35:46+01:00,,,,1,B49B0653,GMW49B000653,27376655,1961-02-07,1966-05-05,onbekend,stand,pot,NAP,0.03,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066510,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>71270.000 397980.000</gml:pos>
+</gml:Point>",1.0,(4.17960204 51.56451654)
+55992,GMW000000066511,50200097,IMBRO/A,2023-03-03T17:35:51+01:00,2023-03-03T17:35:51+01:00,2023-03-03T17:35:51+01:00,,,,1,B49B0653,GMW49B000653,27376655,1966-05-05,1969-04-28,onbekend,stand,pot,NAP,-0.42,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066511,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>71270.000 397980.000</gml:pos>
+</gml:Point>",0.8,(4.17960204 51.56451654)
+55993,GMW000000066512,50200097,IMBRO/A,2023-03-03T17:35:55+01:00,2023-03-03T17:35:55+01:00,,,,,1,B49B0653,GMW49B000653,27376655,1969-04-28,,onbekend,stand,pot,NAP,-0.37,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066512,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>71270.000 397980.000</gml:pos>
+</gml:Point>",1.0,(4.17960204 51.56451654)
+58959,GMW000000069515,50200097,IMBRO/A,2023-03-06T19:39:16+01:00,,,,,,2,B49B0674,GMW49B000674,30263544,1990-12-11,,onbekend,stand,onbekend,NAP,-0.42,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000069515,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>75750.000 392610.000</gml:pos>
+</gml:Point>",1.0,(4.245415186 51.516904837)
+58963,GMW000000069519,50200097,IMBRO/A,2023-03-06T19:39:21+01:00,,,,,,1,B49B0674,GMW49B000674,30263544,1991-10-31,,onbekend,stand,onbekend,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000069519,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>75750.000 392610.000</gml:pos>
+</gml:Point>",1.0,(4.245415186 51.516904837)
+31795,GMW000000040641,20169091,IMBRO/A,2020-12-07T16:37:22+01:00,,,,,,1,B49B2033,GMW49B002033,20169091,2011-01-31,,onbekend,onbekend,onbekend,NAP,5.85,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040641,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>77506.300 394623.800</gml:pos>
+</gml:Point>",1.0,(4.27026938 51.53524791)
+71799,GMW000000083572,20169091,IMBRO/A,2024-08-14T12:56:43+02:00,2024-08-14T12:56:43+02:00,,,,,1,B49B2033,GMW49B002033,20169091,2011-01-31,,onbekend,onbekend,onbekend,NAP,5.85,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083572,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>77506.300 394623.800</gml:pos>
+</gml:Point>",1.0,(4.270269405 51.535247901)
+31786,GMW000000040632,20169091,IMBRO/A,2020-12-07T16:37:15+01:00,,,,,,1,B49B2052,GMW49B002052,20169091,2011-02-08,,onbekend,onbekend,onbekend,NAP,7.38,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040632,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>78183.700 390073.500</gml:pos>
+</gml:Point>",1.0,(4.28102633 51.49444597)
+72487,GMW000000084326,20169091,IMBRO/A,2024-09-13T09:32:49+02:00,2024-09-13T09:32:49+02:00,,,,,1,B49B2052,GMW49B002052,20169091,2011-02-08,,onbekend,onbekend,onbekend,NAP,7.38,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000084326,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>78183.700 390073.500</gml:pos>
+</gml:Point>",1.0,(4.281026356 51.494445953)
+31818,GMW000000040664,20169091,IMBRO/A,2020-12-07T16:37:40+01:00,,,,,,1,B49B2058,GMW49B002058,20169091,2011-02-08,,onbekend,onbekend,onbekend,NAP,13.25,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040664,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>78592.700 389932.000</gml:pos>
+</gml:Point>",1.0,(4.28694572 51.49322989)
+71797,GMW000000083570,20169091,IMBRO/A,2024-08-14T12:56:15+02:00,2024-08-14T12:56:15+02:00,,,,,1,B49B2058,GMW49B002058,20169091,2011-02-08,,onbekend,onbekend,onbekend,NAP,13.25,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083570,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>78592.700 389932.000</gml:pos>
+</gml:Point>",1.0,(4.286945736 51.493229877)
+31819,GMW000000040665,20169091,IMBRO/A,2020-12-07T16:37:41+01:00,,,,,,1,B49B2070,GMW49B002070,20169091,2011-02-08,,onbekend,onbekend,onbekend,NAP,1.47,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040665,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>78812.900 388193.300</gml:pos>
+</gml:Point>",1.0,(4.29049271 51.47763349)
+71796,GMW000000083569,20169091,IMBRO/A,2024-08-14T12:56:08+02:00,2024-08-14T12:56:08+02:00,,,,,1,B49B2070,GMW49B002070,20169091,2011-02-08,,onbekend,onbekend,onbekend,NAP,1.47,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083569,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>78812.900 388193.300</gml:pos>
+</gml:Point>",1.0,(4.290492731 51.477633477)
+31763,GMW000000040609,20169091,IMBRO/A,2020-12-07T16:36:55+01:00,,,,,,1,B49B2071,GMW49B002071,20169091,2011-08-31,,onbekend,onbekend,onbekend,NAP,1.66,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040609,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79265.600 388311.100</gml:pos>
+</gml:Point>",1.0,(4.29698275 51.47875321)
+71795,GMW000000083568,20169091,IMBRO/A,2024-08-14T12:56:02+02:00,2024-08-14T12:56:02+02:00,,,,,1,B49B2071,GMW49B002071,20169091,2011-08-31,,onbekend,onbekend,onbekend,NAP,1.66,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083568,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79265.600 388311.100</gml:pos>
+</gml:Point>",1.0,(4.296982779 51.478753198)
+31810,GMW000000040656,20169091,IMBRO/A,2020-12-07T16:37:34+01:00,,,,,,1,B49B2083,GMW49B002083,20169091,2011-04-04,,onbekend,onbekend,onbekend,NAP,1.36,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040656,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79373.800 388211.700</gml:pos>
+</gml:Point>",1.0,(4.29856142 51.4778744)
+71794,GMW000000083567,20169091,IMBRO/A,2024-08-14T12:55:56+02:00,2024-08-14T12:55:56+02:00,,,,,1,B49B2083,GMW49B002083,20169091,2011-04-04,,onbekend,onbekend,onbekend,NAP,1.36,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083567,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79373.800 388211.700</gml:pos>
+</gml:Point>",1.0,(4.298561441 51.477874387)
+41619,GMW000000050805,20168636,IMBRO/A,2021-09-14T14:32:53+02:00,2021-09-14T14:32:53+02:00,,,,,2,B49C0139,GMW49C000139,20168636,1983-03-31,,onbekend,stand,koker,NAP,2.16,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050805,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>69120.000 379860.000</gml:pos>
+</gml:Point>",1.0,(4.15302469 51.4013489)
+41887,GMW000000051073,20168636,IMBRO/A,2021-09-14T14:35:46+02:00,,,,,,2,B49C0139,GMW49C000139,20168636,1992-10-05,,onbekend,stand,koker,NAP,2.21,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051073,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>69120.000 379860.000</gml:pos>
+</gml:Point>",1.0,(4.15302469 51.4013489)
+41646,GMW000000050832,20168636,IMBRO/A,2021-09-14T14:33:10+02:00,,,,,,1,B49C0232,GMW49C000232,20168636,1979-03-29,,onbekend,stand,koker,NAP,0.4,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050832,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>60060.000 386700.000</gml:pos>
+</gml:Point>",1.0,(4.02101582 51.46136656)
+41772,GMW000000050958,20168636,IMBRO/A,2021-09-14T14:34:26+02:00,2021-09-14T14:34:26+02:00,,,,,2,B49C0232,GMW49C000232,20168636,1971-09-03,,onbekend,stand,koker,NAP,0.4,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050958,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>60060.000 386700.000</gml:pos>
+</gml:Point>",1.0,(4.02101582 51.46136656)
+46838,GMW000000056073,50200097,IMBRO/A,2021-10-16T18:38:14+02:00,,,,,,1,B49C0245,GMW49C000245,27376655,1980-02-06,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056073,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>63360.000 382420.000</gml:pos>
+</gml:Point>",1.0,(4.06960379 51.42344981)
+46875,GMW000000056110,50200097,IMBRO/A,2021-10-16T18:38:34+02:00,2021-10-16T18:38:34+02:00,2021-10-16T18:38:34+02:00,,,,1,B49C0245,GMW49C000245,27376655,1962-08-01,1980-02-06,onbekend,stand,geen,NAP,-0.62,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056110,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>63360.000 382420.000</gml:pos>
+</gml:Point>",1.0,(4.06960379 51.42344981)
+47072,GMW000000056307,50200097,IMBRO/A,2021-10-16T18:40:26+02:00,,2021-10-16T18:40:26+02:00,,,,1,B49C0248,GMW49C000248,27376655,1966-11-14,1969-06-13,onbekend,stand,geen,NAP,1.54,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056307,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>60390.000 377900.000</gml:pos>
+</gml:Point>",1.0,(4.02812173 51.38233989)
+47105,GMW000000056340,50200097,IMBRO/A,2021-10-16T18:40:44+02:00,,2021-10-16T18:40:44+02:00,,,,1,B49C0248,GMW49C000248,27376655,1966-04-28,1966-11-14,onbekend,stand,geen,NAP,1.56,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056340,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>60390.000 377900.000</gml:pos>
+</gml:Point>",1.0,(4.02812173 51.38233989)
+46823,GMW000000056058,50200097,IMBRO/A,2021-10-16T18:38:05+02:00,,2021-10-16T18:38:05+02:00,,,,1,B49C0253,GMW49C000253,27376655,1956-05-28,1974-06-14,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056058,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>66620.000 382680.000</gml:pos>
+</gml:Point>",0.875,(4.11639985 51.42630631)
+46969,GMW000000056204,50200097,IMBRO/A,2021-10-16T18:39:29+02:00,2021-10-16T18:39:29+02:00,2021-10-16T18:39:29+02:00,,,,1,B49C0253,GMW49C000253,27376655,1951-05-28,1956-05-28,onbekend,stand,geen,NAP,0.64,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056204,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>66620.000 382680.000</gml:pos>
+</gml:Point>",0.875,(4.11639985 51.42630631)
+47034,GMW000000056269,50200097,IMBRO/A,2021-10-16T18:40:03+02:00,,2021-10-16T18:40:03+02:00,,,,1,B49C0253,GMW49C000253,27376655,1974-06-14,1990-12-18,onbekend,stand,geen,NAP,0.75,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056269,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>66620.000 382680.000</gml:pos>
+</gml:Point>",1.0,(4.11639985 51.42630631)
+41514,GMW000000050700,20168636,IMBRO/A,2021-09-14T14:31:37+02:00,2021-09-14T14:31:37+02:00,,,,,6,B49D0094,GMW49D000094,20168636,1968-04-25,,onbekend,stand,koker,NAP,0.65,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050700,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>73205.000 382980.000</gml:pos>
+</gml:Point>",1.0,(4.21099434 51.42999507)
+41647,GMW000000050833,20168636,IMBRO/A,2021-09-14T14:33:10+02:00,,,,,,6,B49D0094,GMW49D000094,20168636,1992-09-01,,onbekend,stand,koker,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050833,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>73205.000 382980.000</gml:pos>
+</gml:Point>",1.0,(4.21099434 51.42999507)
+41488,GMW000000050674,20168636,IMBRO/A,2021-09-14T14:31:20+02:00,2021-09-14T14:31:20+02:00,,,,,6,B49D0098,GMW49D000098,20168636,1992-10-06,,onbekend,stand,koker,NAP,0.45,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050674,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>75960.000 383275.000</gml:pos>
+</gml:Point>",1.0,(4.25053721 51.43303886)
+41692,GMW000000050878,20168636,IMBRO/A,2021-09-14T14:33:38+02:00,2021-09-14T14:33:38+02:00,,,,,6,B49D0098,GMW49D000098,20168636,1968-05-01,,onbekend,stand,koker,NAP,0.6,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050878,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>75960.000 383275.000</gml:pos>
+</gml:Point>",1.0,(4.25053721 51.43303886)
+47033,GMW000000056268,50200097,IMBRO/A,2021-10-16T18:40:03+02:00,2021-10-16T18:40:03+02:00,2021-10-16T18:40:03+02:00,,,,1,B49D0382,GMW49D000382,27376655,1958-02-14,1962-04-16,onbekend,stand,geen,NAP,3.43,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056268,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79920.000 382640.000</gml:pos>
+</gml:Point>",1.0,(4.3076106 51.42787264)
+47116,GMW000000056351,50200097,IMBRO/A,2021-10-16T18:40:50+02:00,,,,,,1,B49D0382,GMW49D000382,27376655,1962-04-16,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056351,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79920.000 382640.000</gml:pos>
+</gml:Point>",1.0,(4.3076106 51.42787264)
+74909,GMW000000086973,50200097,IMBRO/A,2024-12-17T16:56:24+01:00,,,,,,1,B49D0397,GMW49D000397,08217302,1968-01-30,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000086973,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>77550.000 383620.000</gml:pos>
+</gml:Point>",1.0,(4.273322752 51.43635991)
+75437,GMW000000087504,50200097,IMBRO/A,2024-12-17T17:31:23+01:00,,2024-12-17T17:31:23+01:00,,,,1,B49D0397,GMW49D000397,08217302,1964-12-28,1968-01-30,onbekend,stand,geen,NAP,1.17,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087504,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>77550.000 383620.000</gml:pos>
+</gml:Point>",1.0,(4.273322752 51.43635991)
+47014,GMW000000056249,50200097,IMBRO/A,2021-10-16T18:39:52+02:00,,2021-10-16T18:39:52+02:00,,,,1,B49D0404,GMW49D000404,27376655,1964-11-27,1973-02-28,onbekend,stand,pot,NAP,1.72,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056249,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>76220.000 382560.000</gml:pos>
+</gml:Point>",1.0,(4.2544353 51.42664936)
+47074,GMW000000056309,50200097,IMBRO/A,2021-10-16T18:40:27+02:00,,2021-10-16T18:40:27+02:00,,,,1,B49D0404,GMW49D000404,27376655,1973-02-28,1983-09-28,onbekend,stand,pot,NAP,1.69,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056309,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>76220.000 382560.000</gml:pos>
+</gml:Point>",1.0,(4.2544353 51.42664936)
+46872,GMW000000056107,50200097,IMBRO/A,2021-10-16T18:38:33+02:00,,2021-10-16T18:38:33+02:00,,,,1,B49D0434,GMW49D000434,27376655,1976-02-27,1979-09-14,onbekend,stand,geen,NAP,1.67,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056107,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>70400.000 381900.000</gml:pos>
+</gml:Point>",1.0,(4.1709265 51.41987562)
+46930,GMW000000056165,50200097,IMBRO/A,2021-10-16T18:39:07+02:00,2021-10-16T18:39:07+02:00,,,,,1,B49D0434,GMW49D000434,27376655,1979-09-14,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056165,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>70400.000 381900.000</gml:pos>
+</gml:Point>",1.0,(4.1709265 51.41987562)
+2241,GMW000000006775,51181584,IMBRO/A,2019-05-09T13:18:06+02:00,,,2022-04-13T14:33:38+02:00,,,2,B49D2058,GMW49D002058,51181584,2006-01-01,,onbekend,kwaliteitStand,onbekend,NAP,-0.13,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000006775,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79286.000 381261.000</gml:pos>
+</gml:Point>",1.0,(4.298791853 51.415394393)
+2349,GMW000000006889,51181584,IMBRO/A,2019-05-09T13:19:35+02:00,,,,,,1,B49D2058,GMW49D002058,51181584,2014-01-01,,onbekend,kwaliteitStand,onbekend,NAP,-0.13,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000006889,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>79286.000 381261.000</gml:pos>
+</gml:Point>",1.0,(4.29879186 51.41539441)
+31747,GMW000000040593,20169091,IMBRO/A,2020-12-07T16:36:42+01:00,,,,,,1,B49E1377,GMW49E001377,20169091,2011-02-07,,onbekend,onbekend,onbekend,NAP,5.18,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040593,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80051.300 389343.200</gml:pos>
+</gml:Point>",1.0,(4.30807115 51.48813409)
+71793,GMW000000083566,20169091,IMBRO/A,2024-08-14T12:55:50+02:00,2024-08-14T12:55:50+02:00,,,,,1,B49E1377,GMW49E001377,20169091,2011-02-07,,onbekend,onbekend,onbekend,NAP,5.18,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083566,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80051.300 389343.200</gml:pos>
+</gml:Point>",1.0,(4.308071176 51.488134078)
+47257,GMW000000056492,50200097,IMBRO/A,2021-10-16T18:47:00+02:00,2021-10-16T18:47:00+02:00,2021-10-16T18:47:00+02:00,,,,1,B49G0377,GMW49G000377,27376655,1958-02-14,1976-11-29,onbekend,stand,geen,NAP,21.4,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056492,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80930.000 382470.000</gml:pos>
+</gml:Point>",1.0,(4.32216683 51.42647823)
+47300,GMW000000056535,50200097,IMBRO/A,2021-10-16T18:47:23+02:00,,,,,,1,B49G0377,GMW49G000377,27376655,1976-11-29,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056535,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80930.000 382470.000</gml:pos>
+</gml:Point>",1.0,(4.32216683 51.42647823)
+47135,GMW000000056370,50200097,IMBRO/A,2021-10-16T18:45:50+02:00,,,,,,1,B49G0397,GMW49G000397,27376655,1971-04-28,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056370,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80930.000 381790.000</gml:pos>
+</gml:Point>",1.0,(4.32230967 51.4203668)
+47293,GMW000000056528,50200097,IMBRO/A,2021-10-16T18:47:19+02:00,2021-10-16T18:47:19+02:00,2021-10-16T18:47:19+02:00,,,,1,B49G0397,GMW49G000397,27376655,1958-02-14,1971-04-28,onbekend,stand,pot,NAP,21.78,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056528,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80930.000 381790.000</gml:pos>
+</gml:Point>",1.0,(4.32230967 51.4203668)
+47134,GMW000000056369,50200097,IMBRO/A,2021-10-16T18:45:49+02:00,,2021-10-16T18:45:49+02:00,,,,1,B49G0422,GMW49G000422,27376655,1966-08-29,1977-10-14,onbekend,stand,geen,NAP,15.25,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056369,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>86430.000 376330.000</gml:pos>
+</gml:Point>",1.0,(4.4024302 51.37198935)
+47379,GMW000000056614,50200097,IMBRO/A,2021-10-16T18:48:04+02:00,2021-10-16T18:48:04+02:00,,,,,1,B49G0422,GMW49G000422,27376655,1977-10-14,,onbekend,stand,geen,NAP,15.43,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056614,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>86430.000 376330.000</gml:pos>
+</gml:Point>",1.0,(4.4024302 51.37198934)
+47204,GMW000000056439,50200097,IMBRO/A,2021-10-16T18:46:31+02:00,2021-10-16T18:46:31+02:00,2021-10-16T18:46:31+02:00,,,,1,B49G0425,GMW49G000425,27376655,1968-08-28,1977-10-14,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056439,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>85890.000 375480.000</gml:pos>
+</gml:Point>",0.833325,(4.39484218 51.36428412)
+47276,GMW000000056511,50200097,IMBRO/A,2021-10-16T18:47:10+02:00,,2021-10-16T18:47:10+02:00,,,,1,B49G0425,GMW49G000425,27376655,1966-08-29,1968-08-28,onbekend,stand,pot,NAP,13.56,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056511,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>85890.000 375480.000</gml:pos>
+</gml:Point>",0.916675,(4.39484218 51.36428412)
+47289,GMW000000056524,50200097,IMBRO/A,2021-10-16T18:47:17+02:00,2021-10-16T18:47:17+02:00,,,,,1,B49G0425,GMW49G000425,27376655,1982-10-28,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056524,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>85890.000 375480.000</gml:pos>
+</gml:Point>",0.833325,(4.39484218 51.36428412)
+47393,GMW000000056628,50200097,IMBRO/A,2021-10-16T18:48:11+02:00,,2021-10-16T18:48:11+02:00,,,,1,B49G0425,GMW49G000425,27376655,1977-10-14,1982-10-28,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056628,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>85890.000 375480.000</gml:pos>
+</gml:Point>",0.8889,(4.39484218 51.36428412)
+47142,GMW000000056377,50200097,IMBRO/A,2021-10-16T18:45:54+02:00,,2021-10-16T18:45:54+02:00,,,,1,B49G0427,GMW49G000427,27376655,1966-08-29,1977-10-14,onbekend,stand,pot,NAP,10.76,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056377,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>84980.000 375050.000</gml:pos>
+</gml:Point>",1.0,(4.38186245 51.36030751)
+47234,GMW000000056469,50200097,IMBRO/A,2021-10-16T18:46:47+02:00,2021-10-16T18:46:47+02:00,,,,,1,B49G0427,GMW49G000427,27376655,1977-10-14,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056469,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>84980.000 375050.000</gml:pos>
+</gml:Point>",1.0,(4.38186245 51.36030751)
+47335,GMW000000056570,50200097,IMBRO/A,2021-10-16T18:47:41+02:00,,2021-10-16T18:47:41+02:00,,,,1,B49G0431,GMW49G000431,27376655,1966-08-29,1977-10-14,onbekend,stand,pot,NAP,14.3,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056570,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>86490.000 375580.000</gml:pos>
+</gml:Point>",1.0,(4.40343702 51.36525591)
+47370,GMW000000056605,50200097,IMBRO/A,2021-10-16T18:47:59+02:00,2021-10-16T18:47:59+02:00,,,,,1,B49G0431,GMW49G000431,27376655,1977-10-14,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056605,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>86490.000 375580.000</gml:pos>
+</gml:Point>",1.0,(4.40343702 51.3652559)
+47200,GMW000000056435,50200097,IMBRO/A,2021-10-16T18:46:28+02:00,,,,,,1,B49G0449,GMW49G000449,27376655,1986-09-01,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056435,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>81700.000 381750.000</gml:pos>
+</gml:Point>",1.0,(4.33338628 51.4201078)
+47408,GMW000000056643,50200097,IMBRO/A,2021-10-16T18:48:19+02:00,,2021-10-16T18:48:19+02:00,,,,1,B49G0449,GMW49G000449,27376655,1984-11-14,1986-09-01,onbekend,stand,geen,NAP,25.06,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056643,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>81700.000 381750.000</gml:pos>
+</gml:Point>",1.0,(4.33338628 51.4201078)
+64823,GMW000000075847,50200097,IMBRO/A,2023-07-28T11:25:44+02:00,2023-07-28T11:25:44+02:00,,,,,2,B49G0460,GMW49G000460,40516730,2009-10-27,,STOWAgwst,stand,geen,NAP,0.16,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000075847,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80028.000 381033.000</gml:pos>
+</gml:Point>",1.0,(4.309504898 51.413444283)
+64824,GMW000000075848,50200097,IMBRO/A,2023-07-28T11:28:04+02:00,2023-07-28T11:28:04+02:00,2023-07-28T11:28:04+02:00,,,,2,B49G0460,GMW49G000460,40516730,1994-11-17,2009-10-27,STOWAgwst,stand,kokerMetaal,NAP,0.38,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000075848,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>80027.000 381033.000</gml:pos>
+</gml:Point>",1.0,(4.309490526 51.41344415)
+47505,GMW000000056740,50200097,IMBRO/A,2021-10-16T18:53:20+02:00,,2021-10-16T18:53:20+02:00,,,,1,B54A0094,GMW54A000094,27376655,1965-09-28,1972-05-29,onbekend,stand,geen,NAP,2.23,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056740,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>22980.000 366560.000</gml:pos>
+</gml:Point>",1.0,(3.49519006 51.27295071)
+47536,GMW000000056771,50200097,IMBRO/A,2021-10-16T18:53:36+02:00,,2021-10-16T18:53:36+02:00,,,,1,B54A0094,GMW54A000094,27376655,1972-05-29,1976-06-03,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056771,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>22980.000 366560.000</gml:pos>
+</gml:Point>",1.0,(3.49519006 51.27295071)
+47542,GMW000000056777,50200097,IMBRO/A,2021-10-16T18:53:39+02:00,,,,,,1,B54A0096,GMW54A000096,27376655,1984-09-17,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056777,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>24680.000 373780.000</gml:pos>
+</gml:Point>",1.0,(3.5168896 51.33821467)
+47571,GMW000000056806,50200097,IMBRO/A,2021-10-16T18:53:54+02:00,2021-10-16T18:53:54+02:00,2021-10-16T18:53:54+02:00,,,,1,B54A0096,GMW54A000096,27376655,1967-10-27,1984-09-17,onbekend,stand,pot,NAP,1.31,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056806,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>24680.000 373780.000</gml:pos>
+</gml:Point>",0.8,(3.5168896 51.33821467)
+47639,GMW000000056874,50200097,IMBRO/A,2021-10-16T18:54:29+02:00,2021-10-16T18:54:29+02:00,2021-10-16T18:54:29+02:00,,,,1,B54A0096,GMW54A000096,27376655,1952-05-14,1967-10-27,onbekend,stand,pot,NAP,1.48,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056874,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>24680.000 373780.000</gml:pos>
+</gml:Point>",1.0,(3.5168896 51.33821467)
+47534,GMW000000056769,50200097,IMBRO/A,2021-10-16T18:53:35+02:00,2021-10-16T18:53:35+02:00,,,,,1,B54A0097,GMW54A000097,27376655,1974-06-14,,onbekend,stand,pot,NAP,1.19,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056769,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>27800.000 369040.000</gml:pos>
+</gml:Point>",1.0,(3.56334445 51.29633596)
+47550,GMW000000056785,50200097,IMBRO/A,2021-10-16T18:53:43+02:00,2021-10-16T18:53:43+02:00,2021-10-16T18:53:43+02:00,,,,1,B54A0097,GMW54A000097,27376655,1952-01-14,1974-06-14,onbekend,stand,pot,NAP,1.11,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056785,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>27800.000 369040.000</gml:pos>
+</gml:Point>",1.0,(3.56334445 51.29633596)
+47492,GMW000000056727,50200097,IMBRO/A,2021-10-16T18:53:13+02:00,2021-10-16T18:53:13+02:00,2021-10-16T18:53:13+02:00,,,,1,B54A0099,GMW54A000099,27376655,1952-05-14,1996-02-26,onbekend,stand,geen,NAP,1.29,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056727,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>20260.000 363750.000</gml:pos>
+</gml:Point>",1.0,(3.45729441 51.24706376)
+47661,GMW000000056896,50200097,IMBRO/A,2021-10-16T18:54:41+02:00,,,,,,1,B54A0099,GMW54A000099,27376655,1996-02-26,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056896,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>20260.000 363750.000</gml:pos>
+</gml:Point>",1.0,(3.45729441 51.24706376)
+47591,GMW000000056826,50200097,IMBRO/A,2021-10-16T18:54:04+02:00,,2021-10-16T18:54:04+02:00,,,,1,B54B0097,GMW54B000097,27376655,1969-06-13,1972-09-14,onbekend,stand,geen,NAP,3.69,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056826,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>36400.000 372150.000</gml:pos>
+</gml:Point>",1.0,(3.68556161 51.32614709)
+47671,GMW000000056906,50200097,IMBRO/A,2021-10-16T18:54:47+02:00,,,,,,1,B54B0097,GMW54B000097,27376655,1972-09-14,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056906,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>36400.000 372150.000</gml:pos>
+</gml:Point>",1.0,(3.68556161 51.32614708)
+47428,GMW000000056663,50200097,IMBRO/A,2021-10-16T18:52:39+02:00,2021-10-16T18:52:39+02:00,2021-10-16T18:52:39+02:00,,,,1,B54B0098,GMW54B000098,27376655,1952-11-14,1980-09-15,onbekend,stand,geen,NAP,1.62,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056663,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>30570.000 373820.000</gml:pos>
+</gml:Point>",1.0,(3.60136647 51.33990035)
+47468,GMW000000056703,50200097,IMBRO/A,2021-10-16T18:53:01+02:00,2021-10-16T18:53:01+02:00,,,,,1,B54B0098,GMW54B000098,27376655,1988-02-23,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056703,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>30570.000 373820.000</gml:pos>
+</gml:Point>",0.916675,(3.60136647 51.33990035)
+47613,GMW000000056848,50200097,IMBRO/A,2021-10-16T18:54:15+02:00,,2021-10-16T18:54:15+02:00,,,,1,B54B0098,GMW54B000098,27376655,1980-09-15,1983-09-14,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056848,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>30570.000 373820.000</gml:pos>
+</gml:Point>",0.66665,(3.60136647 51.33990035)
+47622,GMW000000056857,50200097,IMBRO/A,2021-10-16T18:54:20+02:00,2021-10-16T18:54:20+02:00,2021-10-16T18:54:20+02:00,,,,1,B54B0098,GMW54B000098,27376655,1983-09-14,1988-02-23,onbekend,stand,geen,NAP,1.54,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056857,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>30570.000 373820.000</gml:pos>
+</gml:Point>",0.916675,(3.60136647 51.33990035)
+47573,GMW000000056808,50200097,IMBRO/A,2021-10-16T18:53:55+02:00,,,,,,1,B54E0343,GMW54E000343,27376655,1991-04-26,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056808,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>48390.000 369620.000</gml:pos>
+</gml:Point>",1.0,(3.85828926 51.3057981)
+47677,GMW000000056912,50200097,IMBRO/A,2021-10-16T18:54:50+02:00,,2021-10-16T18:54:50+02:00,,,,1,B54E0343,GMW54E000343,27376655,1967-10-27,1991-04-26,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056912,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>48390.000 369620.000</gml:pos>
+</gml:Point>",0.75,(3.85828926 51.3057981)
+47679,GMW000000056914,50200097,IMBRO/A,2021-10-16T18:54:51+02:00,,2021-10-16T18:54:51+02:00,,,,1,B54E0343,GMW54E000343,27376655,1965-09-28,1967-10-27,onbekend,stand,geen,NAP,1.74,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056914,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>48390.000 369620.000</gml:pos>
+</gml:Point>",1.0,(3.85828926 51.3057981)
+47478,GMW000000056713,50200097,IMBRO/A,2021-10-16T18:53:06+02:00,,,,,,1,B54E0344,GMW54E000344,27376655,1970-06-12,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056713,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40780.000 368520.000</gml:pos>
+</gml:Point>",1.0,(3.7495482 51.29442993)
+47684,GMW000000056919,50200097,IMBRO/A,2021-10-16T18:54:54+02:00,2021-10-16T18:54:54+02:00,2021-10-16T18:54:54+02:00,,,,1,B54E0344,GMW54E000344,27376655,1965-09-28,1970-06-12,onbekend,stand,pot,NAP,2.08,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056919,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>40780.000 368520.000</gml:pos>
+</gml:Point>",1.0,(3.7495482 51.29442993)
+47545,GMW000000056780,50200097,IMBRO/A,2021-10-16T18:53:40+02:00,2021-10-16T18:53:40+02:00,,,,,1,B54E0347,GMW54E000347,27376655,1968-04-14,,onbekend,stand,geen,NAP,1.14,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056780,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>49650.000 370710.000</gml:pos>
+</gml:Point>",1.0,(3.87602936 51.31582885)
+47567,GMW000000056802,50200097,IMBRO/A,2021-10-16T18:53:52+02:00,,2021-10-16T18:53:52+02:00,,,,1,B54E0347,GMW54E000347,27376655,1966-11-28,1968-04-14,onbekend,stand,geen,NAP,1.32,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056802,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>49650.000 370710.000</gml:pos>
+</gml:Point>",1.0,(3.87602936 51.31582885)
+47433,GMW000000056668,50200097,IMBRO/A,2021-10-16T18:52:42+02:00,2021-10-16T18:52:42+02:00,2021-10-16T18:52:42+02:00,,,,1,B54E0348,GMW54E000348,27376655,1951-11-14,1965-09-21,onbekend,stand,geen,NAP,2.24,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056668,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>43490.000 368320.000</gml:pos>
+</gml:Point>",1.0,(3.78845161 51.29317275)
+47611,GMW000000056846,50200097,IMBRO/A,2021-10-16T18:54:14+02:00,,2021-10-16T18:54:14+02:00,,,,1,B54E0348,GMW54E000348,27376655,1980-09-15,1981-10-14,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056846,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>43490.000 368320.000</gml:pos>
+</gml:Point>",0.916675,(3.78845161 51.29317274)
+47623,GMW000000056858,50200097,IMBRO/A,2021-10-16T18:54:21+02:00,2021-10-16T18:54:21+02:00,2021-10-16T18:54:21+02:00,,,,1,B54E0348,GMW54E000348,27376655,1965-09-21,1974-08-28,onbekend,stand,geen,NAP,2.22,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056858,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>43490.000 368320.000</gml:pos>
+</gml:Point>",0.73332,(3.78845161 51.29317275)
+47674,GMW000000056909,50200097,IMBRO/A,2021-10-16T18:54:48+02:00,,2021-10-16T18:54:48+02:00,,,,1,B54E0348,GMW54E000348,27376655,1974-08-28,1980-09-15,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056909,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>43490.000 368320.000</gml:pos>
+</gml:Point>",0.8889,(3.78845161 51.29317274)
+47469,GMW000000056704,50200097,IMBRO/A,2021-10-16T18:53:01+02:00,,,,,,1,B54F0102,GMW54F000102,27376655,1996-02-28,,onbekend,stand,geen,NAP,1.69,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056704,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>58280.000 367860.000</gml:pos>
+</gml:Point>",1.0,(4.00056063 51.2917571)
+47603,GMW000000056838,50200097,IMBRO/A,2021-10-16T18:54:10+02:00,,2021-10-16T18:54:10+02:00,,,,1,B54F0102,GMW54F000102,27376655,1972-05-28,1996-02-28,onbekend,stand,geen,NAP,1.57,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056838,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>58280.000 367860.000</gml:pos>
+</gml:Point>",1.0,(4.00056063 51.2917571)
+47569,GMW000000056804,50200097,IMBRO/A,2021-10-16T18:53:53+02:00,2021-10-16T18:53:53+02:00,,,,,1,B54F0103,GMW54F000103,27376655,1972-05-29,,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056804,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>57370.000 373450.000</gml:pos>
+</gml:Point>",1.0,(3.9859792 51.34183588)
+47644,GMW000000056879,50200097,IMBRO/A,2021-10-16T18:54:32+02:00,2021-10-16T18:54:32+02:00,2021-10-16T18:54:32+02:00,,,,1,B54F0103,GMW54F000103,27376655,1951-09-28,1965-09-21,onbekend,stand,pot,NAP,1.16,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056879,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>57370.000 373450.000</gml:pos>
+</gml:Point>",0.875,(3.9859792 51.34183588)
+47682,GMW000000056917,50200097,IMBRO/A,2021-10-16T18:54:53+02:00,,2021-10-16T18:54:53+02:00,,,,1,B54F0103,GMW54F000103,27376655,1965-09-21,1972-05-29,onbekend,stand,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056917,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>57370.000 373450.000</gml:pos>
+</gml:Point>",0.8333333333333334,(3.9859792 51.34183588)
+47487,GMW000000056722,50200097,IMBRO/A,2021-10-16T18:53:11+02:00,2021-10-16T18:53:11+02:00,,,,,1,B54F0105,GMW54F000105,27376655,1967-10-26,,onbekend,stand,geen,NAP,1.98,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056722,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>55140.000 368150.000</gml:pos>
+</gml:Point>",1.0,(3.95547535 51.29381846)
+47632,GMW000000056867,50200097,IMBRO/A,2021-10-16T18:54:26+02:00,,2021-10-16T18:54:26+02:00,,,,1,B54F0105,GMW54F000105,27376655,1951-06-14,1967-10-26,onbekend,stand,geen,NAP,1.97,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056867,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>55140.000 368150.000</gml:pos>
+</gml:Point>",1.0,(3.95547535 51.29381846)
+47529,GMW000000056764,50200097,IMBRO/A,2021-10-16T18:53:32+02:00,,2021-10-16T18:53:32+02:00,,,,1,B55A0367,GMW55A000367,27376655,1951-09-14,1968-04-16,onbekend,stand,geen,NAP,0.15,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056764,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>64520.000 369180.000</gml:pos>
+</gml:Point>",1.0,(4.08966265 51.30465066)
+47663,GMW000000056898,50200097,IMBRO/A,2021-10-16T18:54:42+02:00,,2021-10-16T18:54:42+02:00,,,,1,B55A0367,GMW55A000367,27376655,1968-04-16,1981-10-21,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056898,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>64520.000 369180.000</gml:pos>
+</gml:Point>",1.0,(4.08966265 51.30465066)
+47516,GMW000000056751,50200097,IMBRO/A,2021-10-16T18:53:26+02:00,2021-10-16T18:53:26+02:00,2021-10-16T18:53:26+02:00,,,,1,B55A0370,GMW55A000370,27376655,1962-09-28,1974-08-28,onbekend,stand,geen,NAP,1.7,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056751,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>68960.000 367770.000</gml:pos>
+</gml:Point>",1.0,(4.15366252 51.29267092)
+47589,GMW000000056824,50200097,IMBRO/A,2021-10-16T18:54:03+02:00,2021-10-16T18:54:03+02:00,,,,,1,B55A0370,GMW55A000370,27376655,1974-08-28,,onbekend,stand,geen,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056824,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>68960.000 367770.000</gml:pos>
+</gml:Point>",1.0,(4.15366252 51.29267092)

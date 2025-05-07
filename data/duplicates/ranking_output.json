@@ -1,0 +1,2236 @@
+{
+    "GMW42H000204": {
+        "Tube Ranking": {
+            "GMW000000043722": 1.0,
+            "GMW000000045634": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000043722": 1.0,
+            "GMW000000045634": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000043722": 1.0,
+            "GMW000000045634": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000043722": 1.0,
+            "GMW000000045634": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000045634": 1.0,
+            "GMW000000043722": 0.0
+        }
+    },
+    "GMW43C000059": {
+        "Tube Ranking": {
+            "GMW000000044464": 1.0,
+            "GMW000000045075": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000044464": 1.0,
+            "GMW000000045075": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000044464": 1.0,
+            "GMW000000045075": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000044464": 1.0,
+            "GMW000000045075": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000045075": 1.0,
+            "GMW000000044464": 0.0
+        }
+    },
+    "GMW42F000110": {
+        "Tube Ranking": {
+            "GMW000000044865": 1.0,
+            "GMW000000046118": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000044865": 1.0,
+            "GMW000000046118": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000044865": 1.0,
+            "GMW000000046118": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000044865": 1.0,
+            "GMW000000046118": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000046118": 1.0,
+            "GMW000000044865": 0.0
+        }
+    },
+    "GMW42F000134": {
+        "Tube Ranking": {
+            "GMW000000045502": 1.0,
+            "GMW000000046028": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000045502": 1.0,
+            "GMW000000046028": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000045502": 1.0,
+            "GMW000000046028": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000045502": 1.0,
+            "GMW000000046028": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000046028": 1.0,
+            "GMW000000045502": 0.0
+        }
+    },
+    "GMW43C000058": {
+        "Tube Ranking": {
+            "GMW000000050703": 1.0,
+            "GMW000000050695": 0.5,
+            "GMW000000051060": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050695": 1.0,
+            "GMW000000050703": 1.0,
+            "GMW000000051060": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050695": 1.0,
+            "GMW000000050703": 1.0,
+            "GMW000000051060": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050695": 1.0,
+            "GMW000000050703": 1.0,
+            "GMW000000051060": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050703": 1.0,
+            "GMW000000051060": 0.5,
+            "GMW000000050695": 0.0
+        }
+    },
+    "GMW42H000051": {
+        "Tube Ranking": {
+            "GMW000000051058": 1.0,
+            "GMW000000050820": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050820": 1.0,
+            "GMW000000051058": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050820": 1.0,
+            "GMW000000051058": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050820": 1.0,
+            "GMW000000051058": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050820": 1.0,
+            "GMW000000051058": 0.0
+        }
+    },
+    "GMW42F000023": {
+        "Tube Ranking": {
+            "GMW000000050841": 1.0,
+            "GMW000000051057": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050841": 1.0,
+            "GMW000000051057": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050841": 1.0,
+            "GMW000000051057": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050841": 1.0,
+            "GMW000000051057": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000051057": 1.0,
+            "GMW000000050841": 0.0
+        }
+    },
+    "GMW42F000107": {
+        "Tube Ranking": {
+            "GMW000000050927": 1.0,
+            "GMW000000050955": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050927": 1.0,
+            "GMW000000050955": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050927": 1.0,
+            "GMW000000050955": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050927": 1.0,
+            "GMW000000050955": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050955": 1.0,
+            "GMW000000050927": 0.0
+        }
+    },
+    "GMW43C000082": {
+        "Tube Ranking": {
+            "GMW000000057172": 1.0,
+            "GMW000000057209": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057172": 1.0,
+            "GMW000000057209": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057172": 1.0,
+            "GMW000000057209": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057172": 1.0,
+            "GMW000000057209": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057209": 1.0,
+            "GMW000000057172": 0.0
+        }
+    },
+    "GMW42F000112": {
+        "Tube Ranking": {
+            "GMW000000057301": 1.0,
+            "GMW000000057196": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057196": 1.0,
+            "GMW000000057301": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057196": 1.0,
+            "GMW000000057301": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057301": 1.0,
+            "GMW000000057196": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057196": 1.0,
+            "GMW000000057301": 0.0
+        }
+    },
+    "GMW42F000032": {
+        "Tube Ranking": {
+            "GMW000000057198": 1.0,
+            "GMW000000057264": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057198": 1.0,
+            "GMW000000057264": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057198": 1.0,
+            "GMW000000057264": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057198": 1.0,
+            "GMW000000057264": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057264": 1.0,
+            "GMW000000057198": 0.0
+        }
+    },
+    "GMW42H000113": {
+        "Tube Ranking": {
+            "GMW000000057235": 1.0,
+            "GMW000000057229": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057229": 1.0,
+            "GMW000000057235": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057229": 1.0,
+            "GMW000000057235": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057235": 1.0,
+            "GMW000000057229": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057229": 1.0,
+            "GMW000000057235": 0.0
+        }
+    },
+    "GMW42H000043": {
+        "Tube Ranking": {
+            "GMW000000057247": 1.0,
+            "GMW000000057255": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057247": 1.0,
+            "GMW000000057255": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057247": 1.0,
+            "GMW000000057255": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057247": 1.0,
+            "GMW000000057255": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057255": 1.0,
+            "GMW000000057247": 0.0
+        }
+    },
+    "GMW42H000041": {
+        "Tube Ranking": {
+            "GMW000000057350": 1.0,
+            "GMW000000057294": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057294": 1.0,
+            "GMW000000057350": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057294": 1.0,
+            "GMW000000057350": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057350": 1.0,
+            "GMW000000057294": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057294": 1.0,
+            "GMW000000057350": 0.0
+        }
+    },
+    "GMW49B002033": {
+        "Tube Ranking": {
+            "GMW000000040641": 1.0,
+            "GMW000000083572": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000040641": 1.0,
+            "GMW000000083572": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000040641": 1.0,
+            "GMW000000083572": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000040641": 1.0,
+            "GMW000000083572": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000040641": 1.0,
+            "GMW000000083572": 1.0
+        }
+    },
+    "GMW49B000653": {
+        "Tube Ranking": {
+            "GMW000000066510": 1.0,
+            "GMW000000066511": 1.0,
+            "GMW000000066512": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066510": 1.0,
+            "GMW000000066511": 1.0,
+            "GMW000000066512": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066510": 1.0,
+            "GMW000000066511": 1.0,
+            "GMW000000066512": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066510": 1.0,
+            "GMW000000066511": 1.0,
+            "GMW000000066512": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066512": 1.0,
+            "GMW000000066511": 0.5,
+            "GMW000000066510": 0.0
+        }
+    },
+    "GMW49B000674": {
+        "Tube Ranking": {
+            "GMW000000069515": 1.0,
+            "GMW000000069519": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000069515": 1.0,
+            "GMW000000069519": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000069515": 1.0,
+            "GMW000000069519": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000069515": 1.0,
+            "GMW000000069519": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000069519": 1.0,
+            "GMW000000069515": 0.0
+        }
+    },
+    "GMW42H000206": {
+        "Tube Ranking": {
+            "GMW000000045099": 1.0,
+            "GMW000000044561": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000044561": 1.0,
+            "GMW000000045099": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000044561": 1.0,
+            "GMW000000045099": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000045099": 1.0,
+            "GMW000000044561": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000044561": 1.0,
+            "GMW000000045099": 0.0
+        }
+    },
+    "GMW42H000199": {
+        "Tube Ranking": {
+            "GMW000000045647": 1.0,
+            "GMW000000045116": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000045116": 1.0,
+            "GMW000000045647": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000045116": 1.0,
+            "GMW000000045647": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000045647": 1.0,
+            "GMW000000045116": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000045116": 1.0,
+            "GMW000000045647": 0.0
+        }
+    },
+    "GMW42H000214": {
+        "Tube Ranking": {
+            "GMW000000055760": 1.0,
+            "GMW000000055847": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000055760": 1.0,
+            "GMW000000055847": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000055760": 1.0,
+            "GMW000000055847": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000055760": 1.0,
+            "GMW000000055847": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000055760": 1.0,
+            "GMW000000055847": 0.0
+        }
+    },
+    "GMW42H000213": {
+        "Tube Ranking": {
+            "GMW000000055802": 1.0,
+            "GMW000000055891": 1.0,
+            "GMW000000055942": 1.0,
+            "GMW000000055943": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000055802": 1.0,
+            "GMW000000055891": 1.0,
+            "GMW000000055942": 1.0,
+            "GMW000000055943": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000055802": 1.0,
+            "GMW000000055891": 1.0,
+            "GMW000000055942": 1.0,
+            "GMW000000055943": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000055802": 1.0,
+            "GMW000000055942": 1.0,
+            "GMW000000055943": 1.0,
+            "GMW000000055891": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000055942": 1.0,
+            "GMW000000055891": 0.6667,
+            "GMW000000055943": 0.3333,
+            "GMW000000055802": 0.0
+        }
+    },
+    "GMW42H000138": {
+        "Tube Ranking": {
+            "GMW000000057180": 1.0,
+            "GMW000000057303": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057180": 1.0,
+            "GMW000000057303": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057180": 1.0,
+            "GMW000000057303": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057180": 1.0,
+            "GMW000000057303": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057303": 1.0,
+            "GMW000000057180": 0.0
+        }
+    },
+    "GMW43C000372": {
+        "Tube Ranking": {
+            "GMW000000064978": 1.0,
+            "GMW000000064980": 1.0,
+            "GMW000000064979": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000064978": 1.0,
+            "GMW000000064979": 1.0,
+            "GMW000000064980": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000064978": 1.0,
+            "GMW000000064979": 1.0,
+            "GMW000000064980": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000064978": 1.0,
+            "GMW000000064979": 1.0,
+            "GMW000000064980": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000064980": 1.0,
+            "GMW000000064979": 0.5,
+            "GMW000000064978": 0.0
+        }
+    },
+    "GMW49A000259": {
+        "Tube Ranking": {
+            "GMW000000066498": 1.0,
+            "GMW000000066499": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066498": 1.0,
+            "GMW000000066499": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066498": 1.0,
+            "GMW000000066499": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066498": 1.0,
+            "GMW000000066499": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066499": 1.0,
+            "GMW000000066498": 0.0
+        }
+    },
+    "GMW49A000261": {
+        "Tube Ranking": {
+            "GMW000000066500": 1.0,
+            "GMW000000066501": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066500": 1.0,
+            "GMW000000066501": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066500": 1.0,
+            "GMW000000066501": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066500": 1.0,
+            "GMW000000066501": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066501": 1.0,
+            "GMW000000066500": 0.0
+        }
+    },
+    "GMW49A000262": {
+        "Tube Ranking": {
+            "GMW000000066502": 1.0,
+            "GMW000000066608": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066502": 1.0,
+            "GMW000000066608": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066502": 1.0,
+            "GMW000000066608": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066502": 1.0,
+            "GMW000000066608": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066608": 1.0,
+            "GMW000000066502": 0.0
+        }
+    },
+    "GMW42F000025": {
+        "Tube Ranking": {
+            "GMW000000045858": 1.0,
+            "GMW000000045855": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000045855": 1.0,
+            "GMW000000045858": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000045855": 1.0,
+            "GMW000000045858": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000045858": 1.0,
+            "GMW000000045855": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000045855": 1.0,
+            "GMW000000045858": 0.0
+        }
+    },
+    "GMW42E000286": {
+        "Tube Ranking": {
+            "GMW000000050699": 1.0,
+            "GMW000000051012": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050699": 1.0,
+            "GMW000000051012": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050699": 1.0,
+            "GMW000000051012": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000051012": 1.0,
+            "GMW000000050699": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050699": 1.0,
+            "GMW000000051012": 0.0
+        }
+    },
+    "GMW42E000033": {
+        "Tube Ranking": {
+            "GMW000000050847": 1.0,
+            "GMW000000050999": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050847": 1.0,
+            "GMW000000050999": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050847": 1.0,
+            "GMW000000050999": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050847": 1.0,
+            "GMW000000050999": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050847": 1.0,
+            "GMW000000050999": 0.0
+        }
+    },
+    "GMW42E000023": {
+        "Tube Ranking": {
+            "GMW000000050868": 1.0,
+            "GMW000000050964": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050868": 1.0,
+            "GMW000000050964": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050868": 1.0,
+            "GMW000000050964": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050868": 1.0,
+            "GMW000000050964": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050964": 1.0,
+            "GMW000000050868": 0.0
+        }
+    },
+    "GMW42G000096": {
+        "Tube Ranking": {
+            "GMW000000050875": 1.0,
+            "GMW000000051015": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050875": 1.0,
+            "GMW000000051015": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050875": 1.0,
+            "GMW000000051015": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000051015": 1.0,
+            "GMW000000050875": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050875": 1.0,
+            "GMW000000051015": 0.0
+        }
+    },
+    "GMW42E000299": {
+        "Tube Ranking": {
+            "GMW000000055790": 1.0,
+            "GMW000000055892": 1.0,
+            "GMW000000055953": 1.0,
+            "GMW000000056033": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000055790": 1.0,
+            "GMW000000055892": 1.0,
+            "GMW000000055953": 1.0,
+            "GMW000000056033": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000055790": 1.0,
+            "GMW000000055892": 1.0,
+            "GMW000000055953": 1.0,
+            "GMW000000056033": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000055953": 1.0,
+            "GMW000000056033": 1.0,
+            "GMW000000055790": 0.0,
+            "GMW000000055892": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000055892": 1.0,
+            "GMW000000056033": 0.6667,
+            "GMW000000055790": 0.3333,
+            "GMW000000055953": 0.0
+        }
+    },
+    "GMW42E000326": {
+        "Tube Ranking": {
+            "GMW000000055862": 1.0,
+            "GMW000000055920": 1.0,
+            "GMW000000055957": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000055862": 1.0,
+            "GMW000000055920": 1.0,
+            "GMW000000055957": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000055862": 1.0,
+            "GMW000000055920": 1.0,
+            "GMW000000055957": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000055862": 1.0,
+            "GMW000000055920": 1.0,
+            "GMW000000055957": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000055862": 1.0,
+            "GMW000000055920": 0.5,
+            "GMW000000055957": 0.0
+        }
+    },
+    "GMW42E000301": {
+        "Tube Ranking": {
+            "GMW000000055886": 1.0,
+            "GMW000000056019": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000055886": 1.0,
+            "GMW000000056019": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000055886": 1.0,
+            "GMW000000056019": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000055886": 1.0,
+            "GMW000000056019": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056019": 1.0,
+            "GMW000000055886": 0.0
+        }
+    },
+    "GMW42G000204": {
+        "Tube Ranking": {
+            "GMW000000055899": 1.0,
+            "GMW000000056043": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000055899": 1.0,
+            "GMW000000056043": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000055899": 1.0,
+            "GMW000000056043": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000055899": 1.0,
+            "GMW000000056043": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000055899": 1.0,
+            "GMW000000056043": 0.0
+        }
+    },
+    "GMW48B000207": {
+        "Tube Ranking": {
+            "GMW000000056211": 1.0,
+            "GMW000000056344": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056211": 1.0,
+            "GMW000000056344": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056211": 1.0,
+            "GMW000000056344": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056211": 1.0,
+            "GMW000000056344": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056344": 1.0,
+            "GMW000000056211": 0.0
+        }
+    },
+    "GMW42E000020": {
+        "Tube Ranking": {
+            "GMW000000057351": 1.0,
+            "GMW000000057248": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057248": 1.0,
+            "GMW000000057351": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057248": 1.0,
+            "GMW000000057351": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057248": 1.0,
+            "GMW000000057351": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057248": 1.0,
+            "GMW000000057351": 0.0
+        }
+    },
+    "GMW42B000157": {
+        "Tube Ranking": {
+            "GMW000000057261": 1.0,
+            "GMW000000057323": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057261": 1.0,
+            "GMW000000057323": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057261": 1.0,
+            "GMW000000057323": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057261": 1.0,
+            "GMW000000057323": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057261": 1.0,
+            "GMW000000057323": 0.0
+        }
+    },
+    "GMW42E000042": {
+        "Tube Ranking": {
+            "GMW000000057288": 1.0,
+            "GMW000000057267": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057267": 1.0,
+            "GMW000000057288": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057267": 1.0,
+            "GMW000000057288": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057288": 1.0,
+            "GMW000000057267": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057267": 1.0,
+            "GMW000000057288": 0.0
+        }
+    },
+    "GMW42B000156": {
+        "Tube Ranking": {
+            "GMW000000057269": 1.0,
+            "GMW000000057292": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057269": 1.0,
+            "GMW000000057292": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057269": 1.0,
+            "GMW000000057292": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057269": 1.0,
+            "GMW000000057292": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057269": 1.0,
+            "GMW000000057292": 0.0
+        }
+    },
+    "GMW42E000044": {
+        "Tube Ranking": {
+            "GMW000000057361": 1.0,
+            "GMW000000057336": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000057336": 1.0,
+            "GMW000000057361": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000057336": 1.0,
+            "GMW000000057361": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000057361": 1.0,
+            "GMW000000057336": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000057336": 1.0,
+            "GMW000000057361": 0.0
+        }
+    },
+    "GMW48E000288": {
+        "Tube Ranking": {
+            "GMW000000064945": 1.0,
+            "GMW000000064946": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000064945": 1.0,
+            "GMW000000064946": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000064945": 1.0,
+            "GMW000000064946": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000064945": 1.0,
+            "GMW000000064946": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000064946": 1.0,
+            "GMW000000064945": 0.0
+        }
+    },
+    "GMW42E000304": {
+        "Tube Ranking": {
+            "GMW000000066421": 1.0,
+            "GMW000000066422": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066421": 1.0,
+            "GMW000000066422": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066421": 1.0,
+            "GMW000000066422": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066421": 1.0,
+            "GMW000000066422": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066422": 1.0,
+            "GMW000000066421": 0.0
+        }
+    },
+    "GMW42E000306": {
+        "Tube Ranking": {
+            "GMW000000066423": 1.0,
+            "GMW000000066424": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066423": 1.0,
+            "GMW000000066424": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066423": 1.0,
+            "GMW000000066424": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066423": 1.0,
+            "GMW000000066424": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066424": 1.0,
+            "GMW000000066423": 0.0
+        }
+    },
+    "GMW42E000307": {
+        "Tube Ranking": {
+            "GMW000000066425": 1.0,
+            "GMW000000066426": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066425": 1.0,
+            "GMW000000066426": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066425": 1.0,
+            "GMW000000066426": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066425": 1.0,
+            "GMW000000066426": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066426": 1.0,
+            "GMW000000066425": 0.0
+        }
+    },
+    "GMW42E000310": {
+        "Tube Ranking": {
+            "GMW000000066429": 1.0,
+            "GMW000000066430": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066429": 1.0,
+            "GMW000000066430": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066429": 1.0,
+            "GMW000000066430": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066429": 1.0,
+            "GMW000000066430": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066430": 1.0,
+            "GMW000000066429": 0.0
+        }
+    },
+    "GMW42E000314": {
+        "Tube Ranking": {
+            "GMW000000066432": 1.0,
+            "GMW000000066433": 1.0,
+            "GMW000000066434": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066432": 1.0,
+            "GMW000000066433": 1.0,
+            "GMW000000066434": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066432": 1.0,
+            "GMW000000066433": 1.0,
+            "GMW000000066434": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066432": 1.0,
+            "GMW000000066433": 1.0,
+            "GMW000000066434": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066434": 1.0,
+            "GMW000000066433": 0.5,
+            "GMW000000066432": 0.0
+        }
+    },
+    "GMW42E000327": {
+        "Tube Ranking": {
+            "GMW000000066439": 1.0,
+            "GMW000000066440": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000066439": 1.0,
+            "GMW000000066440": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000066439": 1.0,
+            "GMW000000066440": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000066439": 1.0,
+            "GMW000000066440": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000066440": 1.0,
+            "GMW000000066439": 0.0
+        }
+    },
+    "GMW49D002058": {
+        "Tube Ranking": {
+            "GMW000000006775": 1.0,
+            "GMW000000006889": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000006775": 1.0,
+            "GMW000000006889": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000006775": 1.0,
+            "GMW000000006889": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000006775": 1.0,
+            "GMW000000006889": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000006889": 1.0,
+            "GMW000000006775": 0.0
+        }
+    },
+    "GMW49E001377": {
+        "Tube Ranking": {
+            "GMW000000040593": 1.0,
+            "GMW000000083566": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000040593": 1.0,
+            "GMW000000083566": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000040593": 1.0,
+            "GMW000000083566": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000040593": 1.0,
+            "GMW000000083566": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000040593": 1.0,
+            "GMW000000083566": 1.0
+        }
+    },
+    "GMW49B002071": {
+        "Tube Ranking": {
+            "GMW000000040609": 1.0,
+            "GMW000000083568": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000040609": 1.0,
+            "GMW000000083568": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000040609": 1.0,
+            "GMW000000083568": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000040609": 1.0,
+            "GMW000000083568": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000040609": 1.0,
+            "GMW000000083568": 1.0
+        }
+    },
+    "GMW49B002052": {
+        "Tube Ranking": {
+            "GMW000000040632": 1.0,
+            "GMW000000084326": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000040632": 1.0,
+            "GMW000000084326": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000040632": 1.0,
+            "GMW000000084326": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000040632": 1.0,
+            "GMW000000084326": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000040632": 1.0,
+            "GMW000000084326": 1.0
+        }
+    },
+    "GMW49B002083": {
+        "Tube Ranking": {
+            "GMW000000040656": 1.0,
+            "GMW000000083567": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000040656": 1.0,
+            "GMW000000083567": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000040656": 1.0,
+            "GMW000000083567": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000040656": 1.0,
+            "GMW000000083567": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000040656": 1.0,
+            "GMW000000083567": 1.0
+        }
+    },
+    "GMW49B002058": {
+        "Tube Ranking": {
+            "GMW000000040664": 1.0,
+            "GMW000000083570": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000040664": 1.0,
+            "GMW000000083570": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000040664": 1.0,
+            "GMW000000083570": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000040664": 1.0,
+            "GMW000000083570": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000040664": 1.0,
+            "GMW000000083570": 1.0
+        }
+    },
+    "GMW49B002070": {
+        "Tube Ranking": {
+            "GMW000000040665": 1.0,
+            "GMW000000083569": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000040665": 1.0,
+            "GMW000000083569": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000040665": 1.0,
+            "GMW000000083569": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000040665": 1.0,
+            "GMW000000083569": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000040665": 1.0,
+            "GMW000000083569": 1.0
+        }
+    },
+    "GMW49D000098": {
+        "Tube Ranking": {
+            "GMW000000050674": 1.0,
+            "GMW000000050878": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050674": 1.0,
+            "GMW000000050878": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050674": 1.0,
+            "GMW000000050878": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050674": 1.0,
+            "GMW000000050878": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050674": 1.0,
+            "GMW000000050878": 0.0
+        }
+    },
+    "GMW49D000094": {
+        "Tube Ranking": {
+            "GMW000000050700": 1.0,
+            "GMW000000050833": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050700": 1.0,
+            "GMW000000050833": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050700": 1.0,
+            "GMW000000050833": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050700": 1.0,
+            "GMW000000050833": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050833": 1.0,
+            "GMW000000050700": 0.0
+        }
+    },
+    "GMW49C000139": {
+        "Tube Ranking": {
+            "GMW000000050805": 1.0,
+            "GMW000000051073": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050805": 1.0,
+            "GMW000000051073": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050805": 1.0,
+            "GMW000000051073": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050805": 1.0,
+            "GMW000000051073": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000051073": 1.0,
+            "GMW000000050805": 0.0
+        }
+    },
+    "GMW49C000232": {
+        "Tube Ranking": {
+            "GMW000000050958": 1.0,
+            "GMW000000050832": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050832": 1.0,
+            "GMW000000050958": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050832": 1.0,
+            "GMW000000050958": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050832": 1.0,
+            "GMW000000050958": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050832": 1.0,
+            "GMW000000050958": 0.0
+        }
+    },
+    "GMW49C000253": {
+        "Tube Ranking": {
+            "GMW000000056058": 1.0,
+            "GMW000000056204": 1.0,
+            "GMW000000056269": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056058": 1.0,
+            "GMW000000056204": 1.0,
+            "GMW000000056269": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056058": 1.0,
+            "GMW000000056204": 1.0,
+            "GMW000000056269": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056204": 1.0,
+            "GMW000000056269": 1.0,
+            "GMW000000056058": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056269": 1.0,
+            "GMW000000056058": 0.5,
+            "GMW000000056204": 0.0
+        }
+    },
+    "GMW49C000245": {
+        "Tube Ranking": {
+            "GMW000000056073": 1.0,
+            "GMW000000056110": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056073": 1.0,
+            "GMW000000056110": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056073": 1.0,
+            "GMW000000056110": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056110": 1.0,
+            "GMW000000056073": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056073": 1.0,
+            "GMW000000056110": 0.0
+        }
+    },
+    "GMW49D000434": {
+        "Tube Ranking": {
+            "GMW000000056107": 1.0,
+            "GMW000000056165": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056107": 1.0,
+            "GMW000000056165": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056107": 1.0,
+            "GMW000000056165": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056107": 1.0,
+            "GMW000000056165": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056165": 1.0,
+            "GMW000000056107": 0.0
+        }
+    },
+    "GMW48H000322": {
+        "Tube Ranking": {
+            "GMW000000056117": 1.0,
+            "GMW000000056126": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056117": 1.0,
+            "GMW000000056126": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056117": 1.0,
+            "GMW000000056126": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056126": 1.0,
+            "GMW000000056117": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056117": 1.0,
+            "GMW000000056126": 0.0
+        }
+    },
+    "GMW48F000225": {
+        "Tube Ranking": {
+            "GMW000000056239": 1.0,
+            "GMW000000056287": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056239": 1.0,
+            "GMW000000056287": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056239": 1.0,
+            "GMW000000056287": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056239": 1.0,
+            "GMW000000056287": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056287": 1.0,
+            "GMW000000056239": 0.0
+        }
+    },
+    "GMW49D000404": {
+        "Tube Ranking": {
+            "GMW000000056249": 1.0,
+            "GMW000000056309": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056249": 1.0,
+            "GMW000000056309": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056249": 1.0,
+            "GMW000000056309": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056249": 1.0,
+            "GMW000000056309": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056309": 1.0,
+            "GMW000000056249": 0.0
+        }
+    },
+    "GMW49D000382": {
+        "Tube Ranking": {
+            "GMW000000056268": 1.0,
+            "GMW000000056351": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056268": 1.0,
+            "GMW000000056351": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056268": 1.0,
+            "GMW000000056351": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056268": 1.0,
+            "GMW000000056351": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056351": 1.0,
+            "GMW000000056268": 0.0
+        }
+    },
+    "GMW49C000248": {
+        "Tube Ranking": {
+            "GMW000000056307": 1.0,
+            "GMW000000056340": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056307": 1.0,
+            "GMW000000056340": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056307": 1.0,
+            "GMW000000056340": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056307": 1.0,
+            "GMW000000056340": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056307": 1.0,
+            "GMW000000056340": 0.0
+        }
+    },
+    "GMW49G000422": {
+        "Tube Ranking": {
+            "GMW000000056369": 1.0,
+            "GMW000000056614": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056369": 1.0,
+            "GMW000000056614": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056369": 1.0,
+            "GMW000000056614": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056369": 1.0,
+            "GMW000000056614": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056614": 1.0,
+            "GMW000000056369": 0.0
+        }
+    },
+    "GMW49G000397": {
+        "Tube Ranking": {
+            "GMW000000056370": 1.0,
+            "GMW000000056528": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056370": 1.0,
+            "GMW000000056528": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056370": 1.0,
+            "GMW000000056528": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056528": 1.0,
+            "GMW000000056370": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056370": 1.0,
+            "GMW000000056528": 0.0
+        }
+    },
+    "GMW49G000427": {
+        "Tube Ranking": {
+            "GMW000000056377": 1.0,
+            "GMW000000056469": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056377": 1.0,
+            "GMW000000056469": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056377": 1.0,
+            "GMW000000056469": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056377": 1.0,
+            "GMW000000056469": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056469": 1.0,
+            "GMW000000056377": 0.0
+        }
+    },
+    "GMW49G000449": {
+        "Tube Ranking": {
+            "GMW000000056435": 1.0,
+            "GMW000000056643": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056435": 1.0,
+            "GMW000000056643": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056435": 1.0,
+            "GMW000000056643": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056643": 1.0,
+            "GMW000000056435": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056435": 1.0,
+            "GMW000000056643": 0.0
+        }
+    },
+    "GMW49G000425": {
+        "Tube Ranking": {
+            "GMW000000056439": 1.0,
+            "GMW000000056511": 1.0,
+            "GMW000000056524": 1.0,
+            "GMW000000056628": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056439": 1.0,
+            "GMW000000056511": 1.0,
+            "GMW000000056524": 1.0,
+            "GMW000000056628": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056439": 1.0,
+            "GMW000000056511": 1.0,
+            "GMW000000056524": 1.0,
+            "GMW000000056628": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056511": 1.0,
+            "GMW000000056439": 0.0,
+            "GMW000000056524": 0.0,
+            "GMW000000056628": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056524": 1.0,
+            "GMW000000056628": 0.6667,
+            "GMW000000056439": 0.3333,
+            "GMW000000056511": 0.0
+        }
+    },
+    "GMW49G000377": {
+        "Tube Ranking": {
+            "GMW000000056492": 1.0,
+            "GMW000000056535": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056492": 1.0,
+            "GMW000000056535": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056492": 1.0,
+            "GMW000000056535": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056492": 1.0,
+            "GMW000000056535": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056535": 1.0,
+            "GMW000000056492": 0.0
+        }
+    },
+    "GMW49G000431": {
+        "Tube Ranking": {
+            "GMW000000056570": 1.0,
+            "GMW000000056605": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056570": 1.0,
+            "GMW000000056605": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056570": 1.0,
+            "GMW000000056605": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056570": 1.0,
+            "GMW000000056605": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056605": 1.0,
+            "GMW000000056570": 0.0
+        }
+    },
+    "GMW54F000102": {
+        "Tube Ranking": {
+            "GMW000000056704": 1.0,
+            "GMW000000056838": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056704": 1.0,
+            "GMW000000056838": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056704": 1.0,
+            "GMW000000056838": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056704": 1.0,
+            "GMW000000056838": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056704": 1.0,
+            "GMW000000056838": 0.0
+        }
+    },
+    "GMW54F000105": {
+        "Tube Ranking": {
+            "GMW000000056722": 1.0,
+            "GMW000000056867": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056722": 1.0,
+            "GMW000000056867": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056722": 1.0,
+            "GMW000000056867": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056722": 1.0,
+            "GMW000000056867": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056722": 1.0,
+            "GMW000000056867": 0.0
+        }
+    },
+    "GMW55A000370": {
+        "Tube Ranking": {
+            "GMW000000056751": 1.0,
+            "GMW000000056824": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056751": 1.0,
+            "GMW000000056824": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056751": 1.0,
+            "GMW000000056824": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056751": 1.0,
+            "GMW000000056824": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056824": 1.0,
+            "GMW000000056751": 0.0
+        }
+    },
+    "GMW55A000367": {
+        "Tube Ranking": {
+            "GMW000000056764": 1.0,
+            "GMW000000056898": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056764": 1.0,
+            "GMW000000056898": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056764": 1.0,
+            "GMW000000056898": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056764": 1.0,
+            "GMW000000056898": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056898": 1.0,
+            "GMW000000056764": 0.0
+        }
+    },
+    "GMW54F000103": {
+        "Tube Ranking": {
+            "GMW000000056804": 1.0,
+            "GMW000000056879": 1.0,
+            "GMW000000056917": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056804": 1.0,
+            "GMW000000056879": 1.0,
+            "GMW000000056917": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056804": 1.0,
+            "GMW000000056879": 1.0,
+            "GMW000000056917": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056879": 1.0,
+            "GMW000000056804": 0.0,
+            "GMW000000056917": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056804": 1.0,
+            "GMW000000056917": 0.5,
+            "GMW000000056879": 0.0
+        }
+    },
+    "GMW48F000236": {
+        "Tube Ranking": {
+            "GMW000000064984": 1.0,
+            "GMW000000064985": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000064984": 1.0,
+            "GMW000000064985": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000064984": 1.0,
+            "GMW000000064985": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000064984": 1.0,
+            "GMW000000064985": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000064985": 1.0,
+            "GMW000000064984": 0.0
+        }
+    },
+    "GMW48F000235": {
+        "Tube Ranking": {
+            "GMW000000064986": 1.0,
+            "GMW000000064987": 1.0,
+            "GMW000000064988": 0.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000064986": 1.0,
+            "GMW000000064987": 1.0,
+            "GMW000000064988": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000064986": 1.0,
+            "GMW000000064987": 1.0,
+            "GMW000000064988": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000064986": 1.0,
+            "GMW000000064987": 0.0,
+            "GMW000000064988": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000064988": 1.0,
+            "GMW000000064987": 0.5,
+            "GMW000000064986": 0.0
+        }
+    },
+    "GMW49G000460": {
+        "Tube Ranking": {
+            "GMW000000075847": 1.0,
+            "GMW000000075848": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000075847": 1.0,
+            "GMW000000075848": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000075847": 1.0,
+            "GMW000000075848": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000075847": 1.0,
+            "GMW000000075848": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000075847": 1.0,
+            "GMW000000075848": 0.0
+        }
+    },
+    "GMW49D000397": {
+        "Tube Ranking": {
+            "GMW000000086973": 1.0,
+            "GMW000000087504": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000086973": 1.0,
+            "GMW000000087504": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000086973": 1.0,
+            "GMW000000087504": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000087504": 1.0,
+            "GMW000000086973": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000086973": 1.0,
+            "GMW000000087504": 0.0
+        }
+    },
+    "GMW48G000060": {
+        "Tube Ranking": {
+            "GMW000000050720": 1.0,
+            "GMW000000050829": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000050720": 1.0,
+            "GMW000000050829": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000050720": 1.0,
+            "GMW000000050829": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000050720": 1.0,
+            "GMW000000050829": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000050829": 1.0,
+            "GMW000000050720": 0.0
+        }
+    },
+    "GMW48E000257": {
+        "Tube Ranking": {
+            "GMW000000056062": 1.0,
+            "GMW000000056135": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056062": 1.0,
+            "GMW000000056135": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056062": 1.0,
+            "GMW000000056135": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056062": 1.0,
+            "GMW000000056135": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056062": 1.0,
+            "GMW000000056135": 0.0
+        }
+    },
+    "GMW48G000236": {
+        "Tube Ranking": {
+            "GMW000000056215": 1.0,
+            "GMW000000056265": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056215": 1.0,
+            "GMW000000056265": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056215": 1.0,
+            "GMW000000056265": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056215": 1.0,
+            "GMW000000056265": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056265": 1.0,
+            "GMW000000056215": 0.0
+        }
+    },
+    "GMW48G000237": {
+        "Tube Ranking": {
+            "GMW000000056343": 1.0,
+            "GMW000000056350": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056343": 1.0,
+            "GMW000000056350": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056343": 1.0,
+            "GMW000000056350": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056343": 1.0,
+            "GMW000000056350": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056350": 1.0,
+            "GMW000000056343": 0.0
+        }
+    },
+    "GMW54B000098": {
+        "Tube Ranking": {
+            "GMW000000056663": 1.0,
+            "GMW000000056703": 1.0,
+            "GMW000000056848": 1.0,
+            "GMW000000056857": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056663": 1.0,
+            "GMW000000056703": 1.0,
+            "GMW000000056848": 1.0,
+            "GMW000000056857": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056663": 1.0,
+            "GMW000000056703": 1.0,
+            "GMW000000056848": 1.0,
+            "GMW000000056857": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056663": 1.0,
+            "GMW000000056857": 1.0,
+            "GMW000000056703": 0.0,
+            "GMW000000056848": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056703": 1.0,
+            "GMW000000056857": 0.6667,
+            "GMW000000056848": 0.3333,
+            "GMW000000056663": 0.0
+        }
+    },
+    "GMW54E000348": {
+        "Tube Ranking": {
+            "GMW000000056668": 1.0,
+            "GMW000000056846": 1.0,
+            "GMW000000056858": 1.0,
+            "GMW000000056909": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056668": 1.0,
+            "GMW000000056846": 1.0,
+            "GMW000000056858": 1.0,
+            "GMW000000056909": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056668": 1.0,
+            "GMW000000056846": 1.0,
+            "GMW000000056858": 1.0,
+            "GMW000000056909": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056668": 1.0,
+            "GMW000000056858": 1.0,
+            "GMW000000056846": 0.0,
+            "GMW000000056909": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056846": 1.0,
+            "GMW000000056909": 0.6667,
+            "GMW000000056858": 0.3333,
+            "GMW000000056668": 0.0
+        }
+    },
+    "GMW54E000344": {
+        "Tube Ranking": {
+            "GMW000000056713": 1.0,
+            "GMW000000056919": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056713": 1.0,
+            "GMW000000056919": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056713": 1.0,
+            "GMW000000056919": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056919": 1.0,
+            "GMW000000056713": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056713": 1.0,
+            "GMW000000056919": 0.0
+        }
+    },
+    "GMW54A000099": {
+        "Tube Ranking": {
+            "GMW000000056727": 1.0,
+            "GMW000000056896": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056727": 1.0,
+            "GMW000000056896": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056727": 1.0,
+            "GMW000000056896": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056727": 1.0,
+            "GMW000000056896": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056896": 1.0,
+            "GMW000000056727": 0.0
+        }
+    },
+    "GMW54A000094": {
+        "Tube Ranking": {
+            "GMW000000056740": 1.0,
+            "GMW000000056771": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056740": 1.0,
+            "GMW000000056771": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056740": 1.0,
+            "GMW000000056771": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056740": 1.0,
+            "GMW000000056771": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056771": 1.0,
+            "GMW000000056740": 0.0
+        }
+    },
+    "GMW54A000097": {
+        "Tube Ranking": {
+            "GMW000000056769": 1.0,
+            "GMW000000056785": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056769": 1.0,
+            "GMW000000056785": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056769": 1.0,
+            "GMW000000056785": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056769": 1.0,
+            "GMW000000056785": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056769": 1.0,
+            "GMW000000056785": 0.0
+        }
+    },
+    "GMW54A000096": {
+        "Tube Ranking": {
+            "GMW000000056777": 1.0,
+            "GMW000000056806": 1.0,
+            "GMW000000056874": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056777": 1.0,
+            "GMW000000056806": 1.0,
+            "GMW000000056874": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056777": 1.0,
+            "GMW000000056806": 1.0,
+            "GMW000000056874": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056806": 1.0,
+            "GMW000000056874": 1.0,
+            "GMW000000056777": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056777": 1.0,
+            "GMW000000056806": 0.5,
+            "GMW000000056874": 0.0
+        }
+    },
+    "GMW54E000347": {
+        "Tube Ranking": {
+            "GMW000000056780": 1.0,
+            "GMW000000056802": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056780": 1.0,
+            "GMW000000056802": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056780": 1.0,
+            "GMW000000056802": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056780": 1.0,
+            "GMW000000056802": 1.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056780": 1.0,
+            "GMW000000056802": 0.0
+        }
+    },
+    "GMW54E000343": {
+        "Tube Ranking": {
+            "GMW000000056808": 1.0,
+            "GMW000000056912": 1.0,
+            "GMW000000056914": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056808": 1.0,
+            "GMW000000056912": 1.0,
+            "GMW000000056914": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056808": 1.0,
+            "GMW000000056912": 1.0,
+            "GMW000000056914": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056914": 1.0,
+            "GMW000000056808": 0.0,
+            "GMW000000056912": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056808": 1.0,
+            "GMW000000056912": 0.5,
+            "GMW000000056914": 0.0
+        }
+    },
+    "GMW54B000097": {
+        "Tube Ranking": {
+            "GMW000000056826": 1.0,
+            "GMW000000056906": 1.0
+        },
+        "Quality Regime Ranking": {
+            "GMW000000056826": 1.0,
+            "GMW000000056906": 1.0
+        },
+        "Unknwon Values Ranking": {
+            "GMW000000056826": 1.0,
+            "GMW000000056906": 1.0
+        },
+        "Empty Values Ranking": {
+            "GMW000000056826": 1.0,
+            "GMW000000056906": 0.0
+        },
+        "Construction Date Ranking": {
+            "GMW000000056906": 1.0,
+            "GMW000000056826": 0.0
+        }
+    }
+}

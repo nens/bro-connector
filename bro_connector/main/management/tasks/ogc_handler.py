@@ -3,6 +3,10 @@ import json
 import time
 import geopandas as gpd
 from shapely.geometry import Point
+from collections import Counter, defaultdict
+import csv
+from pathlib import Path
+
 from gmw.models import GroundwaterMonitoringWellStatic
 
 class DataRetrieverOGC:
@@ -21,30 +25,37 @@ class DataRetrieverOGC:
         
 
         features = process_request_for_bbox(type,self.bbox)
-        # basis_url = "https://api.pdok.nl"
-        # ogc_verzoek = requests.get(
-        #     f"{basis_url}/bzk/bro-gminsamenhang-karakteristieken/ogc/v1/collections/gm_{type}/items?bbox={self.xmin}%2C{self.ymin}%2C{self.xmax}%2C{self.ymax}&f=json&limit=1000"
-        # )
-        # print(f"{basis_url}/bzk/bro-gminsamenhang-karakteristieken/ogc/v1/collections/gm_{type}/items?{self.bbox}&f=json&limit=1000")
-        # features: list = json.loads(ogc_verzoek.text)["features"]
+        # self.features = features
+
         self.bro_ids = []
         self.bro_coords = []
         self.kvk_ids = []
+        self.well_codes = []
+        self.bro_features = []
         if features:
             print(f"{len(features)} received from bbox")
             ## add a while loop that divides the bbox into smaller ones if the len = 1000
             for feature in features:
+                if feature["properties"]["bro_id"] == "GMW000000064982":
+                    print(feature)
+
                 self.bro_ids.append(feature["properties"]["bro_id"])
                 self.bro_coords.append(feature["geometry"]["coordinates"])
                 self.kvk_ids.append(feature["properties"]["delivery_accountable_party"])
+                self.well_codes.append(feature["properties"]["well_code"])
+            
+            self.bro_features = features
+
+        
 
     def filter_ids_kvk(self, kvk_number):
-        for bro_id, kvk_id in zip(self.bro_ids[:], self.kvk_ids):
-            if kvk_number != kvk_id:
-                #print("Removing ",bro_id)
-                self.bro_ids.remove(bro_id)
+        if kvk_number:
+            for bro_id, kvk_id in zip(self.bro_ids[:], self.kvk_ids):
+                if kvk_number != kvk_id:
+                    #print("Removing ",bro_id)
+                    self.bro_ids.remove(bro_id)
         
-        print(f"{self.bro_ids} points after filtering for kvk {kvk_number}.")
+        print(f"{len(self.bro_ids)} points after filtering for kvk {kvk_number}.")
 
     def enforce_shapefile(self, shp, delete=False):
         gdf = gpd.read_file(shp)
@@ -54,13 +65,15 @@ class DataRetrieverOGC:
             gdf = gdf.to_crs(crs_bro)
 
         print("Number of bro ids before enforcing shapefile: ",len(self.bro_ids))
-        for id,coord in zip(self.bro_ids[:], self.bro_coords[:]):
+        for id,coord,code,feat in zip(self.bro_ids[:], self.bro_coords[:], self.well_codes[:], self.bro_features[:]):
             point = Point(coord[0], coord[1])
             is_within = gdf.contains(point).item()
 
             if not is_within:
                 self.bro_ids.remove(id)
                 self.bro_coords.remove(coord)
+                self.well_codes.remove(code)
+                self.bro_features.remove(feat)
 
         print("Number of bro ids after enforcing shapefile: ",len(self.bro_ids))
 
@@ -103,6 +116,65 @@ class DataRetrieverOGC:
 
             else:
                 self.other_ids.append(id)
+
+    def get_ids_with_duplicate_well_codes(self):
+        bro_ids = self.bro_ids
+        well_codes = self.well_codes
+        nitg_codes = [feat["properties"]["nitg_code"] for feat in self.bro_features]
+
+        print(len(bro_ids))
+        print(len(well_codes))
+
+        duplicates = {}
+        for bro_id, well_code, nitg_code in zip(bro_ids,well_codes,nitg_codes):
+            if Counter(well_codes)[well_code] > 1 and Counter(nitg_codes)[nitg_code] > 1: ## do we want functionality for None values of well code?
+                if not well_code in duplicates.keys():
+                    duplicates[well_code] = []
+                duplicates[well_code].append(bro_id)
+
+
+        self.duplicate_well_codes = duplicates
+
+    def store_duplicates_as_csv(self, type):
+
+        duplicates = self.duplicate_well_codes
+        well_codes = list(duplicates.keys())
+        well_code_ordering = {key: index for index, key in enumerate(well_codes)}
+        features_all = self.bro_features
+        ## sort based on well code
+        features_unsorted = [feat for feat in features_all if feat["properties"]["well_code"] in well_codes]
+        features = sorted(features_unsorted, key=lambda d:well_code_ordering.get(d["properties"]["well_code"], len(well_code_ordering)))
+
+        print(len(features_all))
+        print(len(features))
+
+        # Prepare the CSV file
+        csv_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "csv" / "bro_gmw_duplicate_well_codes.csv"
+
+        with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
+            if not features:
+                raise ValueError("No features to write")
+
+            # Extract column headers from the first feature
+            first_feature = features[0]
+            feature_attributes = list(first_feature['properties'].keys()) + ["coordinates"]
+            fieldnames = feature_attributes
+
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+
+            # Write rows for each feature
+            for feature in features:
+                row = feature['properties'].copy()
+                print(row["bro_id"],row["well_code"])
+                if row["well_code"] == "":
+                    print("Huh")
+                coordinates = feature.get('geometry',{}).get('coordinates',())
+                if coordinates:
+                    coordinates = str(tuple(coordinates)).replace(",","")
+                
+                row['coordinates'] = coordinates
+                writer.writerow(row)
 
 
 def request_from_pdok(type,bbox) -> list:
