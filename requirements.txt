@@ -139,3 +139,4 @@ xyzservices==2024.9.0
 zipp==3.20.2
 zope.interface==7.0.3
 zstandard==0.23.0
+django-image-uploader-widget
