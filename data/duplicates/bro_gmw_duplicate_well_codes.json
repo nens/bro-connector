@@ -71519,7 +71519,8 @@
             "local_vertical_reference_point": "NAP",
             "ground_level_position": 12.16,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087104",
-            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85830.000 374690.000</gml:pos>\n</gml:Point>"
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85830.000 374690.000</gml:pos>\n</gml:Point>",
+            "ranking": 1
         },
         "geometry": {
             "type": "Point",
@@ -71699,7 +71700,8 @@
             "local_vertical_reference_point": "NAP",
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087156",
-            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85830.000 374690.000</gml:pos>\n</gml:Point>"
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85830.000 374690.000</gml:pos>\n</gml:Point>",
+            "ranking": 2
         },
         "geometry": {
             "type": "Point",

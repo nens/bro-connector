@@ -30,21 +30,70 @@ class GMWDuplicatesHandler:
         self.features = features
 
     def get_duplicates(self, properties: list[str] = ["well_code"]):        
-        duplicates = defaultdict(list)
-        seen = defaultdict(list)
+        # duplicates = defaultdict(list)
+        # seen = defaultdict(list)
 
+        # for feature in self.features:
+        #     bro_id = feature["properties"].get("bro_id")
+        #     property_values = [feature["properties"].get(prop) for prop in properties]
+
+        #     for i,prop in enumerate(property_values):
+        #         if prop == None:
+        #             property_values[i] = ""
+        #     seen[property_values[0]].append(bro_id)
+
+        # for prop, bro_ids in seen.items():
+        #     if len(bro_ids) > 1:
+        #         duplicates[prop].extend(bro_ids)
+
+        # self.duplicates = dict(duplicates)
+
+        duplicates = defaultdict(list)
+        seen = {prop: defaultdict(list) for prop in properties}
+        assigned_bro_ids = set()
+
+        # Collect all values for each property
         for feature in self.features:
             bro_id = feature["properties"].get("bro_id")
-            property_values = [feature["properties"].get(prop) for prop in properties]
+            if not bro_id:
+                continue
 
-            if property_values[0] is not None:
-                seen[property_values[0]].append(bro_id)
+            for prop in properties:
+                value = feature["properties"].get(prop)
+                if value is None or value == "":
+                    continue
+                seen[prop][value].append(bro_id)
 
-        for prop, bro_ids in seen.items():
-            if len(bro_ids) > 1:
-                duplicates[prop].extend(bro_ids)
+        # Assign each bro_id to one duplicate group only
+        for prop in properties:
+            for value, bro_ids in seen[prop].items():
+                if len(bro_ids) > 1:
+                    for bro_id in bro_ids:
+                        if bro_id not in assigned_bro_ids:
+                            duplicates[(prop, value)].append(bro_id)
+                            assigned_bro_ids.add(bro_id)
 
-        self.duplicates = dict(duplicates)
+        self.duplicates = duplicates
+
+    # def get_duplicates(self, properties: list[str] = ["well_code"]):
+    #     duplicates = defaultdict(list)
+
+    #     for prop in properties:
+    #         seen = defaultdict(list)
+    #         for feature in self.features:
+    #             bro_id = feature["properties"].get("bro_id")
+    #             value = feature["properties"].get(prop)
+                
+    #             if value is None or value == "":
+    #                 continue  # skip missing or empty values
+
+    #             seen[value].append(bro_id)
+            
+    #         for value, bro_ids in seen.items():
+    #             if len(bro_ids) > 1:
+    #                 duplicates[(prop, value)].extend(bro_ids)
+        
+    #     return duplicates
 
     def rank_duplicates(self):
         ## 2. IMBRO is better than IMBRO/A (after 01-01-2021)
@@ -53,6 +102,9 @@ class GMWDuplicatesHandler:
         ## 5. take the latest registration time
         ## 6. empty ground level position is bad
         ## 7. check if it has a GLD
+        
+        ## 
+
 
         # --> For every test, rank the bro ids. Then take the average ranking.
         def get_duplicate_features(features: list[dict], bro_ids: list):
@@ -238,7 +290,7 @@ class GMWDuplicatesHandler:
             ranks = {}
             scores = {}
 
-            for prop, bro_ids in duplicates.items():
+            for (prop_name, prop), bro_ids in duplicates.items():
                 scores[prop] = {}
                 for bro_id in bro_ids:
                     score = score_feature(rankings[prop], bro_id)
@@ -284,7 +336,7 @@ class GMWDuplicatesHandler:
             
             ranks = convert_scores_to_ranks(scores, features)
 
-            for prop, bro_ids in duplicates.items():
+            for (prop_name, prop), bro_ids in duplicates.items():
                 for bro_id in bro_ids:
                     ranking = ranks[prop][bro_id]
                     feature = get_feature(features, bro_id)
@@ -357,7 +409,7 @@ class GMWDuplicatesHandler:
         ranking = {}
         duplicates = self.duplicates
 
-        for prop, bro_ids in duplicates.items():
+        for (prop_name, prop), bro_ids in duplicates.items():
             features = get_duplicate_features(self.features, bro_ids)
             ranking[prop] = {}
             ranking[prop][RANKING.NAMES.TUBE_RANKING] = amount_of_tubes_ranking(features)
@@ -375,11 +427,19 @@ class GMWDuplicatesHandler:
     def store_duplicates(self):
 
         duplicates = self.duplicates
-        well_codes = sorted(duplicates.keys())
-        well_code_ordering = {key: index for index, key in enumerate(well_codes)}
+        sorted_keys = sorted(duplicates.keys(), key=lambda x: str(x[1]))
 
         features_ranked  = self.features_ranked
-        features = sorted(features_ranked, key=lambda d:well_code_ordering.get(d["properties"]["well_code"], len(well_code_ordering)))
+        features_dict = {
+            feature["properties"].get("bro_id"): feature
+            for feature in features_ranked
+        }
+        features = []
+        for prop, value in sorted_keys:
+            bro_ids = duplicates[(prop, value)]
+            for bro_id in bro_ids:
+                feature = features_dict[bro_id]
+                features.append(feature)
 
         # Prepare the CSV file
         json_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "ranking_output.json"

@@ -37,7 +37,7 @@ def run(kvk_number=None, bro_type: str = "gmw", handler: str = "ogc"):
         raise Exception("Set use_bbox to true and set ogc as handler")
     
     GMWDH = GMWDuplicatesHandler(DR.bro_features)
-    GMWDH.get_duplicates(properties=["well_code"])
+    GMWDH.get_duplicates(properties=["well_code", "nitg_code"])
     GMWDH.rank_duplicates()
     GMWDH.store_duplicates()
     # GMWDH.omit_duplicates()

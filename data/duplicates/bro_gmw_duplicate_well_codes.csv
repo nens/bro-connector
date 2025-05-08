@@ -1,4 +1,10 @@
 gm_gmw_pk,bro_id,delivery_accountable_party,quality_regime,object_registration_time,latest_addition_time,registration_completion_time,latest_correction_time,under_review_time,deregistration_time,number_of_monitoring_tubes,nitg_code,well_code,owner,well_construction_date,well_removal_date,construction_standard,initial_function,well_head_protector,local_vertical_reference_point,ground_level_position,imbro_xml_url,delivered_location,ranking,coordinates
+75039,GMW000000087104,50200097,IMBRO/A,2024-12-17T17:04:52+01:00,,,,,,1,B49G0197,GMW55E146846,50200097,1995-03-23,,onbekend,brandput,pot,NAP,12.16,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087104,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>85830.000 374690.000</gml:pos>
+</gml:Point>",1,(4.394135187 51.357176568)
+75091,GMW000000087156,50200097,IMBRO/A,2024-12-17T17:08:20+01:00,2024-12-17T17:08:20+01:00,2024-12-17T17:08:20+01:00,,,,1,B49G0197,GMW55E146847,50200097,1951-11-14,1995-03-23,onbekend,brandput,pot,NAP,,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087156,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
+  <gml:pos>85830.000 374690.000</gml:pos>
+</gml:Point>",2,(4.394135187 51.357176568)
 48013,GMW000000057269,20168636,IMBRO/A,2021-11-03T16:04:02+01:00,2021-11-03T16:04:02+01:00,,,,,1,B42B0156,GMW42B000156,20168636,2017-04-19,,onbekend,stand,onbekend,NAP,6.19,https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057269,"<gml:Point xmlns:gml=""http://www.opengis.net/gml/3.2"" srsName=""http://www.opengis.net/def/crs/EPSG/0/28992"" srsDimension=""2"">
   <gml:pos>37140.000 412573.000</gml:pos>
 </gml:Point>",1,(3.682613167 51.689519062)
