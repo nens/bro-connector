@@ -11,12 +11,14 @@ class GMWSerializer(serializers.ModelSerializer):
     well_head_protector = serializers.SerializerMethodField()
     picture = serializers.SerializerMethodField()
     nitg_code = serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
         fields = [
             "groundwater_monitoring_well_static_id",
             "bro_id",
+            "label",
             "well_code",
             "deliver_gmw_to_bro",
             "complete_bro",
@@ -30,6 +32,9 @@ class GMWSerializer(serializers.ModelSerializer):
             "groundlevel_position",
             "well_head_protector",
         ]
+
+    def get_label(self, obj):
+        return obj.__str__()
 
     def get_x(self, obj):
         return obj.lat

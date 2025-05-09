@@ -193,15 +193,15 @@ const myTextLayer = new deck.MapboxLayer({
   type: deck.TextLayer,
 
   getPosition: (well) => [well.y, well.x],
-  // FUTURE: Change to label
-  getText: (well) => well.bro_id + "",
+  getText: (well) => well.label + "",
   getAlignmentBaseline: "bottom",
   getColor: BLACK,
   getSize: 100,
   sizeUnits: "meters",
   sizeMaxPixels: 15,
-  getPixelOffset: [0, -10],
+  getPixelOffset: [50, -30],
   getTextAnchor: "middle",
+  getAngle: 30,
 });
 
 // Create the map
@@ -246,6 +246,40 @@ map.on("load", () => {
 
 // Remove popup on map click
 map.on("click", () => marker && marker.remove());
+
+// Get the toggle button element
+const toggleTextLayerButton = document.getElementById("toggle-text-layer-btn");
+
+// Variable to keep track of the layer's visibility state
+let isTextLayerVisible = true;
+
+// Function to toggle the visibility of the text layer
+const toggleTextLayerVisibility = () => {
+  try {
+    if (isTextLayerVisible) {
+      // If the text layer is visible, remove it from the map
+      if (map.getLayer("text-layer")) {  // Check if the layer exists before removing it
+        map.removeLayer("text-layer");
+      } else {
+        console.warn("Text layer not found, nothing to remove.");
+      }
+    } else {
+      // If the text layer is not visible, add it back to the map
+      if (!map.getLayer("text-layer")) {  // Check if the layer doesn't already exist
+        map.addLayer(myTextLayer);
+      } else {
+        console.warn("Text layer already exists on the map.");
+      }
+    }
+    // Toggle the visibility state
+    isTextLayerVisible = !isTextLayerVisible;
+  } catch (error) {
+    console.error("Error toggling the text layer visibility:", error);
+  }
+};
+
+// Attach the toggle function to the button click event
+toggleTextLayerButton.addEventListener("click", toggleTextLayerVisibility);
 
 // Set the cursor style
 const mapCanvas = map.getCanvas();
@@ -374,7 +408,6 @@ const onInputChange = (e) => {
   const value = e.target.value;
   searchOptionElements.forEach((option) => {
     const well = wellMap[option.dataset.id];
-    // FUTURE: add label
     const isMatch = option.dataset.keyword
       .toLowerCase()
       .includes(value.toLowerCase());
@@ -399,6 +432,5 @@ const handleSearchValue = (option) => {
   const well = wellMap[option.dataset.id];
   showWellPopupAndMove(well);
   hideOptions();
-  // FUTURE: change to label
-  searchInput.value = well.bro_id;
+  searchInput.value = well.label;
 };
