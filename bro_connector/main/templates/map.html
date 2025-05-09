@@ -1,6 +1,39 @@
 {% extends "admin/base_site.html" %} {% block content %} {% load static %}
 <!-- HTML -->
 <div id="deck-gl-canvas">
+  <!-- SEARCH -->
+  <div id="search-top-left">
+    <input
+      type="text"
+      id="search-input"
+      placeholder="Search well..."
+      title="You can search by bro id, well code, nitg code or label"
+    />
+    <div id="search-options" class="hide">
+      {% for well in wells %}
+      <div
+        data-keyword="`{{well.bro_id}} {{well.well_code}} {{well.nitg_code}}`"
+        class="search-option"
+        data-label="{{well.label}}"
+        data-id="{{well.groundwater_monitoring_well_static_id}}"
+        onclick="event.preventDefault(); handleSearchValue(this)"
+      >
+        {{well.label}}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="toggle-text-layer-btn">
+    <button
+        id="toggle-text-layer"
+        type="button"
+        onclick="event.stopPropagation(); toggleTextLayerVisibility()">
+        Labels
+    </button>
+  </div>
+
   <!-- This code handles the gmn hamburger menu -->
   <div id="legend-top">
     <div
@@ -47,10 +80,7 @@
       </div>
       <hr />
       <h4>GMN's:</h4>
-      <div
-        class="mapbox-checkbox-wrapper"
-        onclick="event.preventDefault();"
-      >
+      <div class="mapbox-checkbox-wrapper" onclick="event.preventDefault();">
         <label class="mapbox-button-deselect" for="checkbox-button-all">
           <button
             type="button"
