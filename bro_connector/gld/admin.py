@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
+from django.db.models import fields
 import os
 from . import models
 from main.settings.base import gld_SETTINGS
@@ -26,11 +27,45 @@ from gld.models import GroundwaterLevelDossier
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
+def get_searchable_fields(model_class):
+    return [
+        f.name
+        for f in model_class._meta.fields
+        if isinstance(f, (fields.CharField, fields.AutoField))
+    ]
 
 # %% GLD model registration
 
 gld = GldSyncHandler()
 
+
+class ObservationInline(admin.TabularInline):
+    model = models.Observation
+    show_change_link = True
+    search_fields = get_searchable_fields(models.Observation)
+    fields = (
+        "observation_type",
+        "all_measurements_validated",
+        "up_to_date_in_bro",
+        "observation_id_bro",
+        "observation_starttime",
+        "observation_endtime",
+        "result_time",   
+    )
+
+    readonly_fields = [
+        "observation_type",
+        "all_measurements_validated",
+        "up_to_date_in_bro",
+        "observation_id_bro",
+        "observation_starttime",
+        "observation_endtime",
+        "result_time",                              
+    ]
+
+    ordering = ["observation_starttime"]
+    extra = 0
+    max_num = 0
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -71,6 +106,10 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "tube_number",
         "most_recent_measurement",
     ]
+
+    inlines = (
+        ObservationInline,
+    )
 
     actions = ["deliver_to_bro", "check_status"]
 
@@ -523,14 +562,8 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 observation = models.Observation.objects.get(
                     observation_id=observation_id
                 )
-                (
-                    observation_source_document_data,
-                    addition_type,
-                ) = get_observation_gld_source_document_data(observation)
                 gld.generate_gld_addition_sourcedoc_data(
                     observation,
-                    observation_source_document_data,
-                    addition_type,
                 )
 
                 self.message_user(
@@ -568,7 +601,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 )
                 # Validate the sourcedocument for this observation
             else:
-                gld.validate_gld_addition_source_document(addition_log, filename)
+                gld.validate_gld_addition_source_document(addition_log)
                 self.message_user(
                     request, "Succesfully attemped document validation", messages.INFO
                 )
@@ -584,8 +617,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
 
-            filename = addition_log.file
-
             if addition_log.validation_status is None:
                 self.message_user(
                     request,
@@ -599,7 +630,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     messages.ERROR,
                 )
             else:
-                gld.deliver_gld_addition_source_document(addition_log, filename)
+                gld.deliver_gld_addition_source_document(addition_log)
                 self.message_user(
                     request, "Succesfully attemped document delivery", messages.INFO
                 )

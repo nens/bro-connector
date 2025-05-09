@@ -77,31 +77,32 @@ def get_timeseries_tvp_for_observation_id(observation):
     measurement_tvp = observation.measurement.all()
     measurements_list = []
     for measurement in measurement_tvp:
+        logger.info(f"Measurement: {measurement}; value: {measurement.calculated_value}; field_val: {measurement.field_value}")
+        logger.info(f"Measurement has metadata: {measurement.measurement_point_metadata}")
         if measurement.measurement_point_metadata:
             metadata = measurement.measurement_point_metadata.get_sourcedocument_data()
         else:
             continue
 
-        # discard a measurement with quality control type 1 (afgekeurd)
-        if metadata["StatusQualityControl"] == "afgekeurd":
-            continue
-
         # If the measurement value  is None, this value must have been censored
-        if measurement.field_value is None:
-            if metadata["censoredReason"] is None:
+        if measurement.calculated_value is None:
+            if metadata.get("censoredReason") is None:
                 # We can't include a missing value without a censoring reason
                 continue
 
         measurement_data = {
             "time": measurement.measurement_time.isoformat(),
-            "value": float(measurement.calculated_value),
+            "value": float(measurement.calculated_value) if measurement.calculated_value else None,
             "metadata": metadata,
         }
+        logger.info(f"Measurement data: {measurement_data}")
 
         measurements_list += [measurement_data]
 
-    measurements_list_ordered = _order_measurements_list(measurements_list)
+    logger.info(f"Pre-order: {measurements_list}")
 
+    measurements_list_ordered = _order_measurements_list(measurements_list)
+    logger.info(f"Post-order: {measurements_list_ordered}")
     return measurements_list_ordered
 
 
@@ -119,13 +120,13 @@ class GroundwaterLevelDossier(BaseModel):
         blank=False,
         related_name="groundwaterleveldossier",
     )
-    gld_bro_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    gld_bro_id = models.CharField(max_length=255, blank=True, null=True, unique=True, verbose_name="GLD BRO id")
     quality_regime = models.CharField(
-        choices=QUALITYREGIME, max_length=254, null=True, blank=True
+        choices=QUALITYREGIME, max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime"
     )
-    research_start_date = models.DateField(blank=True, null=True)
-    research_last_date = models.DateField(blank=True, null=True)
-    research_last_correction = models.DateTimeField(blank=True, null=True)
+    research_start_date = models.DateField(blank=True, null=True, verbose_name="Onderzoeksstartdatum")
+    research_last_date = models.DateField(blank=True, null=True, verbose_name="Onderzoekseinddatum")
+    research_last_correction = models.DateTimeField(blank=True, null=True, verbose_name="Laatste correctie")
 
     @property
     def gmw_bro_id(self):
@@ -222,13 +223,13 @@ class Observation(BaseModel):
         null=True,
         blank=True,
     )
-    observation_starttime = models.DateTimeField(blank=True, null=True)
-    result_time = models.DateTimeField(blank=True, null=True)
-    observation_endtime = models.DateTimeField(blank=True, null=True)
-    up_to_date_in_bro = models.BooleanField(default=False, editable=False)
+    observation_starttime = models.DateTimeField(blank=True, null=True, verbose_name="Starttijd")
+    result_time = models.DateTimeField(blank=True, null=True, verbose_name="Resultaat tijd")
+    observation_endtime = models.DateTimeField(blank=True, null=True, verbose_name="Eindtijd")
+    up_to_date_in_bro = models.BooleanField(default=False, editable=False, verbose_name="Up to date in BRO")
 
     observation_id_bro = models.CharField(
-        max_length=200, blank=True, null=True, editable=False
+        max_length=200, blank=True, null=True, editable=False, verbose_name="Observatie BRO ID"
     )  # Should also import this with the BRO-Import tool
 
     measurement: Manager["MeasurementTvp"]
@@ -268,6 +269,8 @@ class Observation(BaseModel):
         if self.observation_metadata:
             return self.observation_metadata.observation_type
         return "-"
+    
+    observation_type.fget.short_description = "Observatie type"
 
     @property
     def status(self):
@@ -304,6 +307,8 @@ class Observation(BaseModel):
             return "volledigBeoordeeld"
         else:
             return "onbekend"
+        
+    all_measurements_validated.fget.short_description = "Status validatie"
 
     @property
     def addition_type(self):
@@ -905,6 +910,14 @@ class gld_addition_log(BaseModel):
     ) -> str:
         observation_source_document_data = self.observation.get_sourcedocument_data()
         print(observation_source_document_data)
+        if len(observation_source_document_data["result"]) < 1:
+            logger.warning("No results in observation")
+            self.date_modified = datetime.datetime.now()
+            self.comments = f"No results in observation"
+            self.process_status = "failed_to_create_source_document"
+            self.save()
+            return
+
 
         first_timestamp_datetime = self.observation.timestamp_first_measurement
         final_timestamp_datetime = self.observation.timestamp_last_measurement
