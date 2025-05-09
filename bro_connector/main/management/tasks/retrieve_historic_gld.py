@@ -216,10 +216,10 @@ class InitializeData:
 
     def groundwater_level_dossier(self) -> None:
         tube = get_tube(self.gmw_dict["0_broId"][1], self.gmw_dict["0_tubeNumber"])
-        print(tube)
         self.groundwater_level_dossier_instance = (
             GroundwaterLevelDossier.objects.create(
                 gld_bro_id=self.gmw_dict["0_broId"][0],
+                quality_regime=self.gmw_dict.get("qualityRegime", "onbekend"),
                 groundwater_monitoring_tube=tube,
                 research_start_date=str_to_date(
                     self.gmw_dict.get("0_researchFirstDate", None)
@@ -263,45 +263,42 @@ class InitializeData:
         )
 
     def metadata_observation(self) -> None:
-        self.observation_metadate_instance, created = ObservationMetadata.objects.get_or_create(
-            observation_type=self.gmw_dict.get(
-                f"{self.observation_number}_ObservationType", None
-            ),
-            status=self.gmw_dict.get(f"{self.observation_number}_status", None),
-            responsible_party=self.responsible_party_instance,
+        self.observation_metadate_instance, created = (
+            ObservationMetadata.objects.get_or_create(
+                observation_type=self.gmw_dict.get(
+                    f"{self.observation_number}_ObservationType", None
+                ),
+                status=self.gmw_dict.get(f"{self.observation_number}_status", None),
+                responsible_party=self.responsible_party_instance,
+            )
         )
 
     def observation_process(self) -> None:
-        self.observation_process_instance, created = ObservationProcess.objects.get_or_create(
-            process_reference=self.gmw_dict.get(
-                f"{self.observation_number}_processReference", None
-            ),
-            measurement_instrument_type=self.gmw_dict.get(
-                f"{self.observation_number}_MeasurementInstrumentType", None
-            ),
-            process_type="algoritme",  # Standard, only option
-            evaluation_procedure=self.gmw_dict.get(
-                f"{self.observation_number}_EvaluationProcedure", None
-            ),
-            # air_pressure_compensation_type = self.gmw_dict.get(f"", None),    # Currently not known how to handle -> Not found in initial gld
+        self.observation_process_instance, created = (
+            ObservationProcess.objects.get_or_create(
+                process_reference=self.gmw_dict.get(
+                    f"{self.observation_number}_processReference", None
+                ),
+                measurement_instrument_type=self.gmw_dict.get(
+                    f"{self.observation_number}_MeasurementInstrumentType", None
+                ),
+                process_type="algoritme",  # Standard, only option
+                evaluation_procedure=self.gmw_dict.get(
+                    f"{self.observation_number}_EvaluationProcedure", None
+                ),
+                # air_pressure_compensation_type = self.gmw_dict.get(f"", None),    # Currently not known how to handle -> Not found in initial gld
+            )
         )
 
     def observation(self) -> None:
         start = self.gmw_dict.get(f"{self.observation_number}_beginPosition", None)
         end = self.gmw_dict.get(f"{self.observation_number}_endPosition", None)
-        interval = None
-        if start and end:
-            interval = datetime.datetime.strptime(
-                end, "%Y-%m-%d"
-            ) - datetime.datetime.strptime(start, "%Y-%m-%d")
-
         end = str_to_datetime(end)
         start = str_to_datetime(start)
         result_time = str_to_datetime(
             self.gmw_dict.get(f"{self.observation_number}_timePosition", None)
         )
         self.observation_instance = Observation.objects.create(
-            observationperiod=interval,
             observation_starttime=start,
             result_time=result_time,
             observation_endtime=end,
