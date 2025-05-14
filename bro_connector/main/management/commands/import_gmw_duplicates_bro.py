@@ -15,15 +15,26 @@ class Command(BaseCommand):
             help="Gebruik een KVK-nummer om de data in te spoelen",
         )
         parser.add_argument(
-            "--handler", type=str, help="API handler: kvk, ogc"
+            "--properties",
+            type=str,
+            nargs="+",
+            default=["well_code","nitg_code"],
+            help="Specificeer de properties om duplicaten op te filteren (default: well_code nitg_code)",
+        )
+        parser.add_argument(
+            "--logging",
+            type=str,
+            choices=["True", "False"],
+            default="True",
+            help="Enable or disable logging (True or False)"
         )
 
     def handle(self, *args, **options):
         kvk_number = options["kvk_number"]
-        handler = options["handler"]
-        print("KVK number: ",kvk_number)
+        properties = options["properties"]  
+        logging = options["logging"] == "True"
 
-        retrieve_duplicates_gmw.run(kvk_number=kvk_number,handler=handler)
+        retrieve_duplicates_gmw.run(kvk_number=kvk_number, properties=properties, logging=logging)
 
 
 

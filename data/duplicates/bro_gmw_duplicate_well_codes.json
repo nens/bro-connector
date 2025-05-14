@@ -457,7 +457,7 @@
             "ground_level_position": 0.5,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000043722",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56641.000 409837.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -710,7 +710,7 @@
             "ground_level_position": 0.35,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000044464",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>63518.000 409620.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -783,7 +783,7 @@
             "ground_level_position": 0.75,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000044865",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>57100.000 415690.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -964,7 +964,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045075",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>63518.000 409620.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -1181,7 +1181,7 @@
             "ground_level_position": 0.55,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045502",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56223.000 416783.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -1254,7 +1254,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045634",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56641.000 409837.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -1399,7 +1399,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000046028",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56223.000 416783.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -1436,7 +1436,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000046118",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>57100.000 415690.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -2085,7 +2085,7 @@
             "ground_level_position": 1.23,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050695",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>65030.000 409430.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -2122,7 +2122,7 @@
             "ground_level_position": 1.23,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050703",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>65030.000 409430.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -2447,7 +2447,7 @@
             "ground_level_position": 0.18,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050820",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>58466.000 411749.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -2484,7 +2484,7 @@
             "ground_level_position": -0.4,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050841",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59820.000 412910.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -2773,7 +2773,7 @@
             "ground_level_position": 0.5,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050927",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56218.000 416970.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -2882,7 +2882,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050955",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56218.000 416970.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -2955,7 +2955,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051057",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59820.000 412910.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -2992,7 +2992,7 @@
             "ground_level_position": 0.18,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051058",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>58466.000 411749.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -3029,7 +3029,7 @@
             "ground_level_position": 1.23,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051060",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>65030.000 409430.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -3174,7 +3174,7 @@
             "ground_level_position": 0.34,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057172",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>63314.000 409073.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -3247,7 +3247,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057196",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>55896.000 414781.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -3284,7 +3284,7 @@
             "ground_level_position": 0.25,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057198",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56883.000 413053.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -3357,7 +3357,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057209",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>63314.000 409073.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -3430,7 +3430,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057229",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56174.000 411064.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -3503,7 +3503,7 @@
             "ground_level_position": 0.55,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057235",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56174.000 411064.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -3540,7 +3540,7 @@
             "ground_level_position": -0.3,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057247",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>58742.000 410127.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -3649,7 +3649,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057255",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>58742.000 410127.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -3686,7 +3686,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057264",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56883.000 413053.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -3795,7 +3795,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057294",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>53750.000 409214.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -3832,7 +3832,7 @@
             "ground_level_position": 0.05,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057301",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>55896.000 414781.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -3941,7 +3941,7 @@
             "ground_level_position": -0.45,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057350",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>53750.000 409214.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -7758,7 +7758,7 @@
             "ground_level_position": 5.85,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040641",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>77506.300 394623.800</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -9055,7 +9055,7 @@
             "ground_level_position": 0.03,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066510",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>71270.000 397980.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -9092,7 +9092,7 @@
             "ground_level_position": -0.42,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066511",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>71270.000 397980.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -9129,7 +9129,7 @@
             "ground_level_position": -0.37,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066512",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>71270.000 397980.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -9346,7 +9346,7 @@
             "ground_level_position": -0.42,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000069515",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>75750.000 392610.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -9383,7 +9383,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000069519",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>75750.000 392610.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -10896,7 +10896,7 @@
             "ground_level_position": 5.85,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083572",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>77506.300 394623.800</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -14029,7 +14029,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000044561",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59653.000 407915.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -14102,7 +14102,7 @@
             "ground_level_position": -0.85,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045099",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59653.000 407915.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -14139,7 +14139,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045116",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56615.000 406965.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -14284,7 +14284,7 @@
             "ground_level_position": -0.5,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045647",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>56615.000 406965.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -17993,7 +17993,7 @@
             "ground_level_position": -0.14,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055760",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>54380.000 408100.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -18066,7 +18066,7 @@
             "ground_level_position": -0.68,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055802",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59700.000 407470.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -18139,7 +18139,7 @@
             "ground_level_position": -0.15,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055847",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>54380.000 408100.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -18212,7 +18212,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055891",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59700.000 407470.000</gml:pos>\n</gml:Point>",
-            "ranking": 4
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -18321,7 +18321,7 @@
             "ground_level_position": -0.55,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055942",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59700.000 407470.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 4
         },
         "geometry": {
             "type": "Point",
@@ -18358,7 +18358,7 @@
             "ground_level_position": -0.64,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055943",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59700.000 407470.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -18503,7 +18503,7 @@
             "ground_level_position": 0.08,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057180",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59918.000 405920.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -19116,7 +19116,7 @@
             "ground_level_position": 0.08,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057303",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59918.000 405920.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -19837,7 +19837,7 @@
             "ground_level_position": -0.57,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064978",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>67979.000 405260.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -19874,7 +19874,7 @@
             "ground_level_position": -0.54,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064979",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>67979.000 405260.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -19911,7 +19911,7 @@
             "ground_level_position": -0.62,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064980",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>67979.000 405260.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -20092,7 +20092,7 @@
             "ground_level_position": -0.18,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066498",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>68000.000 398090.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -20129,7 +20129,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066499",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>68000.000 398090.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -20166,7 +20166,7 @@
             "ground_level_position": -0.37,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066500",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>67960.000 398050.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -20203,7 +20203,7 @@
             "ground_level_position": -0.35,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066501",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>67960.000 398050.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -20240,7 +20240,7 @@
             "ground_level_position": -1.32,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066502",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>69800.000 398320.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -20529,7 +20529,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066608",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>69800.000 398320.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -28414,7 +28414,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045855",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>51310.000 418250.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -28451,7 +28451,7 @@
             "ground_level_position": 0.15,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000045858",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>51310.000 418250.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -29928,7 +29928,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050699",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42300.000 416910.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -32125,7 +32125,7 @@
             "ground_level_position": 5.16,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050847",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42540.000 416350.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -32450,7 +32450,7 @@
             "ground_level_position": -0.95,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050868",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>44290.000 413760.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -32523,7 +32523,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050875",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41071.000 410611.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -33820,7 +33820,7 @@
             "ground_level_position": -0.95,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050964",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>44290.000 413760.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -34253,7 +34253,7 @@
             "ground_level_position": 5.23,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050999",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42540.000 416350.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -34362,7 +34362,7 @@
             "ground_level_position": 4.74,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051012",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42300.000 416910.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -34435,7 +34435,7 @@
             "ground_level_position": 6.62,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051015",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41071.000 410611.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -35624,7 +35624,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055790",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41845.000 415610.000</gml:pos>\n</gml:Point>",
-            "ranking": 4
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -35733,7 +35733,7 @@
             "ground_level_position": 5.14,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055862",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40320.000 412820.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -35878,7 +35878,7 @@
             "ground_level_position": -0.58,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055886",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>44880.000 415840.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -35915,7 +35915,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055892",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41845.000 415610.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 4
         },
         "geometry": {
             "type": "Point",
@@ -35952,7 +35952,7 @@
             "ground_level_position": 0.22,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055899",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41840.000 411160.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -36097,7 +36097,7 @@
             "ground_level_position": 5.15,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055920",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40320.000 412820.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -36278,7 +36278,7 @@
             "ground_level_position": 5.95,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055953",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41845.000 415610.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -36315,7 +36315,7 @@
             "ground_level_position": 5.16,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000055957",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40320.000 412820.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -36352,7 +36352,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056019",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>44880.000 415840.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -36425,7 +36425,7 @@
             "ground_level_position": 5.96,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056033",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41845.000 415610.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -36462,7 +36462,7 @@
             "ground_level_position": 0.21,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056043",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41840.000 411160.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -36643,7 +36643,7 @@
             "ground_level_position": 0.12,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056211",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>35600.000 392600.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -37040,7 +37040,7 @@
             "ground_level_position": 0.22,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056344",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>35600.000 392600.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -37761,7 +37761,7 @@
             "ground_level_position": -0.91,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057248",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>46759.000 414531.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -37978,7 +37978,7 @@
             "ground_level_position": 6.07,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057261",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>37198.000 412637.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -38159,7 +38159,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057267",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>48211.000 416712.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -38196,7 +38196,7 @@
             "ground_level_position": 6.19,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057269",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>37140.000 412573.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -38413,7 +38413,7 @@
             "ground_level_position": -0.6,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057288",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>48211.000 416712.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -38486,7 +38486,7 @@
             "ground_level_position": 6.19,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057292",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>37140.000 412573.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -38847,7 +38847,7 @@
             "ground_level_position": 6.073,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057323",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>37198.000 412637.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -38992,7 +38992,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057336",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>44380.000 417879.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -39209,7 +39209,7 @@
             "ground_level_position": -0.83,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057351",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>46759.000 414531.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -39354,7 +39354,7 @@
             "ground_level_position": 0.5,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000057361",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>44380.000 417879.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -40471,7 +40471,7 @@
             "ground_level_position": 0.49,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064945",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42152.000 396177.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -40508,7 +40508,7 @@
             "ground_level_position": 0.43,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064946",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42152.000 396177.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -41085,7 +41085,7 @@
             "ground_level_position": 4.77,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066421",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40910.000 415100.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -41122,7 +41122,7 @@
             "ground_level_position": 4.83,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066422",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40910.000 415100.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -41159,7 +41159,7 @@
             "ground_level_position": -0.42,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066423",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42700.000 415590.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -41196,7 +41196,7 @@
             "ground_level_position": -0.45,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066424",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42700.000 415590.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -41233,7 +41233,7 @@
             "ground_level_position": -0.49,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066425",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42760.000 415510.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -41270,7 +41270,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066426",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42760.000 415510.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -41379,7 +41379,7 @@
             "ground_level_position": -0.87,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066429",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42830.000 415100.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -41416,7 +41416,7 @@
             "ground_level_position": -0.9,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066430",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42830.000 415100.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -41489,7 +41489,7 @@
             "ground_level_position": 0.08,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066432",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42180.000 414900.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -41526,7 +41526,7 @@
             "ground_level_position": 0.07,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066433",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42180.000 414900.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -41563,7 +41563,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066434",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>42180.000 414900.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -41744,7 +41744,7 @@
             "ground_level_position": 0.08,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066439",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41020.000 412650.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -41781,7 +41781,7 @@
             "ground_level_position": 0.07,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000066440",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41020.000 412650.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -43951,6 +43951,546 @@
             ]
         },
         "id": "1e8c284f-2d71-5aef-837c-2588b1c1fcc8"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78137,
+            "bro_id": "GMW000000092971",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T12:52:42+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151214",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 1.128,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092971",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>38160.000 392473.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.704075358,
+                51.509126511
+            ]
+        },
+        "id": "9a4a921a-24c8-5efe-bd0d-bbc7bb9332a2"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78142,
+            "bro_id": "GMW000000092993",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:20+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151236",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.308,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092993",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30573.000 392160.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.594942077,
+                51.504688558
+            ]
+        },
+        "id": "0acad801-605e-56fb-a922-e210cbc1cf5c"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78148,
+            "bro_id": "GMW000000092999",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:31+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151242",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.03,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092999",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>36051.000 392492.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.673700814,
+                51.508855572
+            ]
+        },
+        "id": "95d5cb36-c4d7-550c-9eeb-b3b3120545df"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78149,
+            "bro_id": "GMW000000093000",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:33+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151243",
+            "owner": "51041510",
+            "well_construction_date": "2023-03-07",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.54,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093000",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32270.000 392611.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.61921706,
+                51.509113281
+            ]
+        },
+        "id": "4622c167-2dba-5888-9972-6cc44cdd71d9"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78151,
+            "bro_id": "GMW000000093002",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:37+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151245",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.571,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093002",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31762.000 392983.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.611771904,
+                51.512344783
+            ]
+        },
+        "id": "ec2e7700-7c83-592c-9545-8711542a6b62"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78152,
+            "bro_id": "GMW000000093003",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:39+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151246",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.2,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093003",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30239.000 392044.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.590174561,
+                51.503572394
+            ]
+        },
+        "id": "ae0906ee-244c-550e-877d-188c4e323cdb"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78158,
+            "bro_id": "GMW000000093009",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:50+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151252",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.228,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093009",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30322.000 392346.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.591262338,
+                51.506304259
+            ]
+        },
+        "id": "15a46be8-ea1f-5b5f-b439-744d9406a604"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78162,
+            "bro_id": "GMW000000093013",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:57+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151256",
+            "owner": "51041510",
+            "well_construction_date": "2023-03-29",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "kokerNietMetaal",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.301,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093013",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31223.000 394438.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.603497423,
+                51.525299814
+            ]
+        },
+        "id": "b46f7e8f-cd28-5afa-a01f-065de2b6552b"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78164,
+            "bro_id": "GMW000000093015",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:01+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151258",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.451,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093015",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31437.000 392863.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.607134167,
+                51.511195335
+            ]
+        },
+        "id": "ef817f87-bc10-5fc4-9f32-b7bf79330a7f"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78172,
+            "bro_id": "GMW000000093023",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:16+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151266",
+            "owner": "51041510",
+            "well_construction_date": "2023-03-29",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.284,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093023",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31366.000 394341.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.605591356,
+                51.524459697
+            ]
+        },
+        "id": "b8f79930-37f1-5cbd-abe1-c3d7df0ec5ce"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78175,
+            "bro_id": "GMW000000093026",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:21+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151269",
+            "owner": "51041510",
+            "well_construction_date": "2023-03-29",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "kokerNietMetaal",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.41,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093026",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31273.000 394361.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.604244764,
+                51.52461896
+            ]
+        },
+        "id": "5d64e69c-eb31-5e43-85bb-d9a78bb7e970"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78176,
+            "bro_id": "GMW000000093027",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:23+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151270",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.041,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093027",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30649.000 392311.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.595982829,
+                51.506062089
+            ]
+        },
+        "id": "7f355a09-eece-56ad-a927-e20ad16665f0"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78178,
+            "bro_id": "GMW000000093029",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:27+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151272",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.307,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093029",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30385.000 392035.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.592279712,
+                51.503523855
+            ]
+        },
+        "id": "1e349d44-f3ef-5f46-826e-889e2b7b945b"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78180,
+            "bro_id": "GMW000000093031",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:30+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151274",
+            "owner": "51041510",
+            "well_construction_date": "2023-03-29",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.617,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093031",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31138.000 394398.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.602287205,
+                51.52492171
+            ]
+        },
+        "id": "70554f08-3738-5935-bd4d-5307f9a512a8"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78184,
+            "bro_id": "GMW000000093035",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:37+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151278",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.531,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093035",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31240.000 394540.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.603706323,
+                51.526220029
+            ]
+        },
+        "id": "e856c80f-a64d-5512-9077-47087698b902"
     },
     {
         "type": "Feature",
@@ -46498,7 +47038,7 @@
             "ground_level_position": -0.13,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000006775",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79286.000 381261.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -46787,7 +47327,7 @@
             "ground_level_position": -0.13,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000006889",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79286.000 381261.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -52080,7 +52620,7 @@
             "ground_level_position": 5.18,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040593",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80051.300 389343.200</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -52369,7 +52909,7 @@
             "ground_level_position": 1.66,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040609",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79265.600 388311.100</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -52694,7 +53234,7 @@
             "ground_level_position": 7.38,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040632",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>78183.700 390073.500</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -52947,7 +53487,7 @@
             "ground_level_position": 1.36,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040656",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79373.800 388211.700</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -53056,7 +53596,7 @@
             "ground_level_position": 13.25,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040664",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>78592.700 389932.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -53093,7 +53633,7 @@
             "ground_level_position": 1.47,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000040665",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>78812.900 388193.300</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -55362,7 +55902,7 @@
             "ground_level_position": 0.45,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050674",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>75960.000 383275.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -55543,7 +56083,7 @@
             "ground_level_position": 0.65,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050700",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>73205.000 382980.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -56084,7 +56624,7 @@
             "ground_level_position": 2.16,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050805",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>69120.000 379860.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -56373,7 +56913,7 @@
             "ground_level_position": 0.4,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050832",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>60060.000 386700.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -56410,7 +56950,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050833",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>73205.000 382980.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -56591,7 +57131,7 @@
             "ground_level_position": 0.6,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050878",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>75960.000 383275.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -57060,7 +57600,7 @@
             "ground_level_position": 0.4,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050958",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>60060.000 386700.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -57781,7 +58321,7 @@
             "ground_level_position": 2.21,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000051073",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>69120.000 379860.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -57854,7 +58394,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056058",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>66620.000 382680.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -57891,7 +58431,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056073",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>63360.000 382420.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -58036,7 +58576,7 @@
             "ground_level_position": 1.67,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056107",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>70400.000 381900.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -58109,7 +58649,7 @@
             "ground_level_position": -0.62,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056110",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>63360.000 382420.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -58182,7 +58722,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056117",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>51430.000 386460.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -58291,7 +58831,7 @@
             "ground_level_position": 0.28,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056126",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>51430.000 386460.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -58364,7 +58904,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056165",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>70400.000 381900.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -58689,7 +59229,7 @@
             "ground_level_position": 0.64,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056204",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>66620.000 382680.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -58870,7 +59410,7 @@
             "ground_level_position": 0.81,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056239",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>54720.000 388950.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -58979,7 +59519,7 @@
             "ground_level_position": 1.72,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056249",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>76220.000 382560.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -59016,7 +59556,7 @@
             "ground_level_position": 3.43,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056268",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79920.000 382640.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -59053,7 +59593,7 @@
             "ground_level_position": 0.75,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056269",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>66620.000 382680.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -59162,7 +59702,7 @@
             "ground_level_position": 0.7,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056287",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>54720.000 388950.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59235,7 +59775,7 @@
             "ground_level_position": 1.54,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056307",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>60390.000 377900.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59272,7 +59812,7 @@
             "ground_level_position": 1.69,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056309",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>76220.000 382560.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59489,7 +60029,7 @@
             "ground_level_position": 1.56,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056340",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>60390.000 377900.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -59562,7 +60102,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056351",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79920.000 382640.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59635,7 +60175,7 @@
             "ground_level_position": 15.25,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056369",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>86430.000 376330.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -59672,7 +60212,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056370",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80930.000 381790.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59709,7 +60249,7 @@
             "ground_level_position": 10.76,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056377",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>84980.000 375050.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -59782,7 +60322,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056435",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>81700.000 381750.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59819,7 +60359,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056439",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85890.000 375480.000</gml:pos>\n</gml:Point>",
-            "ranking": 4
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59928,7 +60468,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056469",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>84980.000 375050.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -59965,7 +60505,7 @@
             "ground_level_position": 21.4,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056492",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80930.000 382470.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -60002,7 +60542,7 @@
             "ground_level_position": 13.56,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056511",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85890.000 375480.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -60075,7 +60615,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056524",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85890.000 375480.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 4
         },
         "geometry": {
             "type": "Point",
@@ -60148,7 +60688,7 @@
             "ground_level_position": 21.78,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056528",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80930.000 381790.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -60185,7 +60725,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056535",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80930.000 382470.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -60294,7 +60834,7 @@
             "ground_level_position": 14.3,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056570",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>86490.000 375580.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -60367,7 +60907,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056605",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>86490.000 375580.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -60404,7 +60944,7 @@
             "ground_level_position": 15.43,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056614",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>86430.000 376330.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -60513,7 +61053,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056628",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85890.000 375480.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -60586,7 +61126,7 @@
             "ground_level_position": 25.06,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056643",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>81700.000 381750.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -60875,7 +61415,7 @@
             "ground_level_position": 1.69,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056704",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>58280.000 367860.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -60948,7 +61488,7 @@
             "ground_level_position": 1.98,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056722",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>55140.000 368150.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -61021,7 +61561,7 @@
             "ground_level_position": 1.7,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056751",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>68960.000 367770.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -61058,7 +61598,7 @@
             "ground_level_position": 0.15,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056764",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>64520.000 369180.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -61095,7 +61635,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056804",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>57370.000 373450.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -61132,7 +61672,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056824",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>68960.000 367770.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -61205,7 +61745,7 @@
             "ground_level_position": 1.57,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056838",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>58280.000 367860.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -61242,7 +61782,7 @@
             "ground_level_position": 1.97,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056867",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>55140.000 368150.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -61279,7 +61819,7 @@
             "ground_level_position": 1.16,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056879",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>57370.000 373450.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -61316,7 +61856,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056898",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>64520.000 369180.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -61461,7 +62001,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056917",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>57370.000 373450.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -64738,7 +65278,7 @@
             "ground_level_position": -1.41,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064984",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59552.000 389862.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -64775,7 +65315,7 @@
             "ground_level_position": -0.95,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064985",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59552.000 389862.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -64812,7 +65352,7 @@
             "ground_level_position": -1,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064986",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59420.000 389655.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -64849,7 +65389,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064987",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59420.000 389655.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -64886,7 +65426,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000064988",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>59420.000 389655.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -66903,7 +67443,7 @@
             "ground_level_position": 0.16,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000075847",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80028.000 381033.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -66940,7 +67480,7 @@
             "ground_level_position": 0.38,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000075848",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80027.000 381033.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -70865,7 +71405,7 @@
             "ground_level_position": 5.18,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083566",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>80051.300 389343.200</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -70902,7 +71442,7 @@
             "ground_level_position": 1.36,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083567",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79373.800 388211.700</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -70939,7 +71479,7 @@
             "ground_level_position": 1.66,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083568",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>79265.600 388311.100</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -70976,7 +71516,7 @@
             "ground_level_position": 1.47,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083569",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>78812.900 388193.300</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -71013,7 +71553,7 @@
             "ground_level_position": 13.25,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000083570",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>78592.700 389932.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -71050,7 +71590,7 @@
             "ground_level_position": 7.38,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000084326",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>78183.700 390073.500</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -71375,7 +71915,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000086973",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>77550.000 383620.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -71520,7 +72060,7 @@
             "ground_level_position": 12.16,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087104",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85830.000 374690.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -71701,7 +72241,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087156",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>85830.000 374690.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -72062,7 +72602,7 @@
             "ground_level_position": 1.17,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000087504",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>77550.000 383620.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -78471,7 +79011,7 @@
             "ground_level_position": 1.05,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050720",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40365.000 385895.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -79264,7 +79804,7 @@
             "ground_level_position": 1.04,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000050829",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40365.000 385895.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -81389,7 +81929,7 @@
             "ground_level_position": 1.54,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056062",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41370.000 388080.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -81498,7 +82038,7 @@
             "ground_level_position": 1.34,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056135",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41370.000 388080.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -81679,7 +82219,7 @@
             "ground_level_position": 1.52,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056215",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>46220.000 383180.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -81752,7 +82292,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056265",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>46220.000 383180.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -81897,7 +82437,7 @@
             "ground_level_position": 1.19,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056343",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41270.000 384200.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -81970,7 +82510,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056350",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>41270.000 384200.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -82043,7 +82583,7 @@
             "ground_level_position": 1.62,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056663",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30570.000 373820.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -82080,7 +82620,7 @@
             "ground_level_position": 2.24,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056668",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>43490.000 368320.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -82189,7 +82729,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056703",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30570.000 373820.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 4
         },
         "geometry": {
             "type": "Point",
@@ -82262,7 +82802,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056713",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40780.000 368520.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -82299,7 +82839,7 @@
             "ground_level_position": 1.29,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056727",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>20260.000 363750.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -82408,7 +82948,7 @@
             "ground_level_position": 2.23,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056740",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>22980.000 366560.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -82517,7 +83057,7 @@
             "ground_level_position": 1.19,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056769",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>27800.000 369040.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -82590,7 +83130,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056771",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>22980.000 366560.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -82627,7 +83167,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056777",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>24680.000 373780.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -82664,7 +83204,7 @@
             "ground_level_position": 1.14,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056780",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>49650.000 370710.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -82701,7 +83241,7 @@
             "ground_level_position": 1.11,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056785",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>27800.000 369040.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -82810,7 +83350,7 @@
             "ground_level_position": 1.32,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056802",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>49650.000 370710.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -82883,7 +83423,7 @@
             "ground_level_position": 1.31,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056806",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>24680.000 373780.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -82920,7 +83460,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056808",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>48390.000 369620.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -82993,7 +83533,7 @@
             "ground_level_position": 3.69,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056826",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>36400.000 372150.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -83030,7 +83570,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056846",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>43490.000 368320.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 4
         },
         "geometry": {
             "type": "Point",
@@ -83067,7 +83607,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056848",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30570.000 373820.000</gml:pos>\n</gml:Point>",
-            "ranking": 4
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -83140,7 +83680,7 @@
             "ground_level_position": 1.54,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056857",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30570.000 373820.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -83177,7 +83717,7 @@
             "ground_level_position": 2.22,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056858",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>43490.000 368320.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -83358,7 +83898,7 @@
             "ground_level_position": 1.48,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056874",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>24680.000 373780.000</gml:pos>\n</gml:Point>",
-            "ranking": 2
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -83431,7 +83971,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056896",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>20260.000 363750.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -83504,7 +84044,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056906",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>36400.000 372150.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -83541,7 +84081,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056909",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>43490.000 368320.000</gml:pos>\n</gml:Point>",
-            "ranking": 4
+            "rank": 3
         },
         "geometry": {
             "type": "Point",
@@ -83578,7 +84118,7 @@
             "ground_level_position": null,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056912",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>48390.000 369620.000</gml:pos>\n</gml:Point>",
-            "ranking": 3
+            "rank": 2
         },
         "geometry": {
             "type": "Point",
@@ -83615,7 +84155,7 @@
             "ground_level_position": 1.74,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056914",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>48390.000 369620.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -83652,7 +84192,7 @@
             "ground_level_position": 2.08,
             "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000056919",
             "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>40780.000 368520.000</gml:pos>\n</gml:Point>",
-            "ranking": 1
+            "rank": 1
         },
         "geometry": {
             "type": "Point",
@@ -91546,5 +92086,1265 @@
             ]
         },
         "id": "e5ef455b-6546-5d54-af80-9c03634ef9bd"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78138,
+            "bro_id": "GMW000000092972",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T12:52:44+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151215",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-06",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 1.394,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092972",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>36344.000 391590.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.678224429,
+                51.500812579
+            ]
+        },
+        "id": "d3c98f71-2d73-538f-b0c0-41b5a674b905"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78139,
+            "bro_id": "GMW000000092973",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T12:52:46+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151216",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-06",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.622,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092973",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>36087.000 391650.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.674504187,
+                51.501297489
+            ]
+        },
+        "id": "40d88bad-2268-5aff-8941-3716fb786b57"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78140,
+            "bro_id": "GMW000000092991",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:04:24+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151234",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.047,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092991",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>33365.000 390211.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.63581464,
+                51.487786355
+            ]
+        },
+        "id": "0e9ab4db-5bba-521c-90fb-b807ded2aeb1"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78141,
+            "bro_id": "GMW000000092992",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:18+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151235",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.021,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092992",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32939.000 390428.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.629608211,
+                51.489644012
+            ]
+        },
+        "id": "eb2a84d8-02b9-5ad1-b5d9-b9fa4a09eae0"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78143,
+            "bro_id": "GMW000000092994",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:22+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151237",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.529,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092994",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31037.000 390410.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.602239688,
+                51.489066969
+            ]
+        },
+        "id": "939f620d-4a2c-5758-bbf8-0635761c67bf"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78144,
+            "bro_id": "GMW000000092995",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:24+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151238",
+            "owner": "51041510",
+            "well_construction_date": "2023-03-28",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.041,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092995",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>33103.000 390677.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.631882304,
+                51.491916844
+            ]
+        },
+        "id": "04a9109a-8583-5d1e-b643-3af078217e60"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78145,
+            "bro_id": "GMW000000092996",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:26+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151239",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-06",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 1.489,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092996",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>35483.000 390210.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.666298183,
+                51.4882307
+            ]
+        },
+        "id": "de48336e-57bf-5c49-b3cf-8480a9bcf204"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78146,
+            "bro_id": "GMW000000092997",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:28+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151240",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 3.003,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092997",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31806.000 391158.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.613045419,
+                51.495956548
+            ]
+        },
+        "id": "80dd1058-c10f-58c2-894f-f44f7c383f0a"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78147,
+            "bro_id": "GMW000000092998",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:29+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151241",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 2.65,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000092998",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31435.000 391280.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.6076621,
+                51.496971467
+            ]
+        },
+        "id": "f705cd36-6f0b-5370-b0fc-3a3d06e37a6e"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78150,
+            "bro_id": "GMW000000093001",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:35+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151244",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 2.4,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093001",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32575.000 391774.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.623900413,
+                51.501659094
+            ]
+        },
+        "id": "b449386f-6794-5965-8437-ef4688bc8202"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78153,
+            "bro_id": "GMW000000093004",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:41+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151247",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-06",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.123,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093004",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32773.000 390510.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.627190497,
+                51.490344807
+            ]
+        },
+        "id": "162d7afe-5e45-5b91-96da-edaa0aff3015"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78154,
+            "bro_id": "GMW000000093005",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:42+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151248",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "kokerNietMetaal",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.503,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093005",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31411.000 389553.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.607923656,
+                51.481448869
+            ]
+        },
+        "id": "5fba48ad-bca0-5204-a338-f90bca08702a"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78155,
+            "bro_id": "GMW000000093006",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:44+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151249",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.253,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093006",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30810.000 389121.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.599427743,
+                51.477435162
+            ]
+        },
+        "id": "71b44760-40b8-5224-9938-fef95198314d"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78156,
+            "bro_id": "GMW000000093007",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:46+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151250",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.545,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093007",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30854.000 389759.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.599835687,
+                51.483177364
+            ]
+        },
+        "id": "11d38445-b64f-5cfc-b8c0-55ce7dcaaf7f"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78157,
+            "bro_id": "GMW000000093008",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:48+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151251",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.864,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093008",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32683.000 391886.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.625416257,
+                51.502688903
+            ]
+        },
+        "id": "c673ff2a-1aca-530a-8723-e751b337561a"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78159,
+            "bro_id": "GMW000000093010",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:52+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151253",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 2.231,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093010",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31605.000 391159.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.610151733,
+                51.495921535
+            ]
+        },
+        "id": "93648390-6e6c-570d-8b46-25665f0aa82d"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78160,
+            "bro_id": "GMW000000093011",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:53+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151254",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.142,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093011",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32673.000 391705.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.6253353,
+                51.501060412
+            ]
+        },
+        "id": "f2a423a4-39b7-516c-8c89-8b1c6555f824"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78161,
+            "bro_id": "GMW000000093012",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:55+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151255",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.305,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093012",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32235.000 390662.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.61939399,
+                51.491593567
+            ]
+        },
+        "id": "0a478597-6ce1-5f0d-8a56-cef986c7fb8d"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78163,
+            "bro_id": "GMW000000093014",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:05:59+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151257",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-06",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "kokerNietMetaal",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 1.864,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093014",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>35353.000 391468.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.663998951,
+                51.499506677
+            ]
+        },
+        "id": "b100aaf9-1fb4-5f01-8d6a-9a9cca7fec14"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78165,
+            "bro_id": "GMW000000093016",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:03+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151259",
+            "owner": "51041510",
+            "well_construction_date": "2023-03-08",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "kokerNietMetaal",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.38,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093016",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32803.000 391653.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.627224918,
+                51.500621406
+            ]
+        },
+        "id": "f47f1cee-c777-5345-97f1-c9ec91ba38ab"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78166,
+            "bro_id": "GMW000000093017",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:04+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151260",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.308,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093017",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30438.000 391811.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.593122159,
+                51.50152293
+            ]
+        },
+        "id": "7fcc7846-9ac2-5ec8-a712-8f9c7e804964"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78167,
+            "bro_id": "GMW000000093018",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:06+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151261",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.278,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093018",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30298.000 391813.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.591105963,
+                51.501509917
+            ]
+        },
+        "id": "a112148d-a2d8-5051-956c-f64447ea834f"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78168,
+            "bro_id": "GMW000000093019",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:08+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151262",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.469,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093019",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32712.000 391633.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.625921817,
+                51.500421949
+            ]
+        },
+        "id": "de7f8ddc-a70f-5c94-80db-5c74e9936060"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78169,
+            "bro_id": "GMW000000093020",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:10+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151263",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 3.217,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093020",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31963.000 391262.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.615268985,
+                51.496925321
+            ]
+        },
+        "id": "e151c995-5053-5473-a766-34b8af73c476"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78170,
+            "bro_id": "GMW000000093021",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:12+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151264",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.272,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093021",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32469.000 389768.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.623073572,
+                51.483611746
+            ]
+        },
+        "id": "a99dbe6d-5ec2-504a-b898-a49f748eea9f"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78171,
+            "bro_id": "GMW000000093022",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:14+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151265",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.193,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093022",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32759.000 391727.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.626565739,
+                51.501276761
+            ]
+        },
+        "id": "c938ffdc-990d-52aa-9c6b-d880ed66bf9b"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78173,
+            "bro_id": "GMW000000093024",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:17+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151267",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.76,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093024",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31371.000 391188.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.606773181,
+                51.496130792
+            ]
+        },
+        "id": "2140af09-170b-5bff-b120-a8181788dce2"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78174,
+            "bro_id": "GMW000000093025",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:19+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151268",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "kokerNietMetaal",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 1.952,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093025",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>33660.000 391675.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.639554996,
+                51.501004385
+            ]
+        },
+        "id": "a4d26d16-65a0-584c-b0d3-1aa2b7caf461"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78177,
+            "bro_id": "GMW000000093028",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:25+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151271",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 1.002,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093028",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32805.000 391686.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.627242235,
+                51.500918351
+            ]
+        },
+        "id": "82cc83e3-b48e-57e9-afbb-2ad502fa4718"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78179,
+            "bro_id": "GMW000000093030",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:28+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151273",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 3.194,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093030",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31906.000 391217.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.614464228,
+                51.496508535
+            ]
+        },
+        "id": "979581ae-8ba6-5a6c-844c-1d1d5d92ddb3"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78181,
+            "bro_id": "GMW000000093032",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:32+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151275",
+            "owner": "51041510",
+            "well_construction_date": "2024-06-24",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.175,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093032",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31122.000 391697.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.603009484,
+                51.500649501
+            ]
+        },
+        "id": "98ec1eec-f670-54d7-b62d-2ebd90c91e88"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78182,
+            "bro_id": "GMW000000093033",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:34+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151276",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 1.397,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093033",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32434.000 391875.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.621835264,
+                51.502535925
+            ]
+        },
+        "id": "d6d2ac35-390f-5d00-b0f4-b1649e3ce43c"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78183,
+            "bro_id": "GMW000000093034",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:36+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151277",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.509,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093034",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>31121.000 390774.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.603320401,
+                51.492356027
+            ]
+        },
+        "id": "f689e2d8-9fc1-510a-9573-4196d963df45"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78185,
+            "bro_id": "GMW000000093036",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:39+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151279",
+            "owner": "51041510",
+            "well_construction_date": "2023-01-05",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": -0.208,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093036",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>30514.000 390791.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.594577549,
+                51.492374963
+            ]
+        },
+        "id": "8cdc47a2-be0c-5eb8-8640-3bb3e755d1eb"
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "gm_gmw_pk": 78186,
+            "bro_id": "GMW000000093037",
+            "delivery_accountable_party": "51041510",
+            "quality_regime": "IMBRO",
+            "object_registration_time": "2025-05-08T13:06:41+02:00",
+            "latest_addition_time": null,
+            "registration_completion_time": null,
+            "latest_correction_time": null,
+            "under_review_time": null,
+            "deregistration_time": null,
+            "number_of_monitoring_tubes": 1,
+            "nitg_code": null,
+            "well_code": "GMW48B151280",
+            "owner": "51041510",
+            "well_construction_date": "2022-12-20",
+            "well_removal_date": null,
+            "construction_standard": "STOWAgwst",
+            "initial_function": "stand",
+            "well_head_protector": "potNietWaterdicht",
+            "local_vertical_reference_point": "NAP",
+            "ground_level_position": 0.41,
+            "imbro_xml_url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000093037",
+            "delivered_location": "<gml:Point xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/28992\" srsDimension=\"2\">\n  <gml:pos>32720.000 391802.000</gml:pos>\n</gml:Point>"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                3.625978176,
+                51.501942183
+            ]
+        },
+        "id": "e1e3923b-6934-58fc-9c7e-6da34395e367"
     }
 ]

@@ -1,53 +1,24 @@
-import requests
 import json
-import time
-import geopandas as gpd
-from shapely.geometry import Point
-from collections import Counter, defaultdict
+from collections import defaultdict
 import csv
 from pathlib import Path
 from datetime import datetime
-import json
 
-from gmw.models import GroundwaterMonitoringWellStatic
-
-class RANKING:
-    class NAMES:
-        TUBE_RANKING = "Tube Ranking"
-        QUALITY_RANKING = "Quality Regime Ranking"
-        UKNONWN_RANKING = "Unknwon Values Ranking"
-        EMPTY_RANKING = "Empty Values Ranking"
-        DATE_RANKING = "Construction Date Ranking"
-    class WEIGHTS:
-        TUBE_WEIGHT = 1
-        QUALTIY_WEIGHT = 1
-        UNKNOWN_WEIGHT = 1
-        EMPTY_WEIGHT = 1
-        DATE_WEIGHT = 1
+from ...utils.duplicate_checks import (
+    check_for_tubes,
+    check_for_dates,
+    check_for_data_quality,
+    rank_based_on_tubes,
+    rank_based_on_dates,
+    rank_based_on_quality,
+    rank_based_on_bro_id
+)
 
 class GMWDuplicatesHandler:
     def __init__(self, features):
         self.features = features
 
-    def get_duplicates(self, properties: list[str] = ["well_code"]):        
-        # duplicates = defaultdict(list)
-        # seen = defaultdict(list)
-
-        # for feature in self.features:
-        #     bro_id = feature["properties"].get("bro_id")
-        #     property_values = [feature["properties"].get(prop) for prop in properties]
-
-        #     for i,prop in enumerate(property_values):
-        #         if prop == None:
-        #             property_values[i] = ""
-        #     seen[property_values[0]].append(bro_id)
-
-        # for prop, bro_ids in seen.items():
-        #     if len(bro_ids) > 1:
-        #         duplicates[prop].extend(bro_ids)
-
-        # self.duplicates = dict(duplicates)
-
+    def get_duplicates(self, properties: list):        
         duplicates = defaultdict(list)
         seen = {prop: defaultdict(list) for prop in properties}
         assigned_bro_ids = set()
@@ -75,561 +46,38 @@ class GMWDuplicatesHandler:
 
         self.duplicates = duplicates
 
-    # def get_duplicates(self, properties: list[str] = ["well_code"]):
-    #     duplicates = defaultdict(list)
-
-    #     for prop in properties:
-    #         seen = defaultdict(list)
-    #         for feature in self.features:
-    #             bro_id = feature["properties"].get("bro_id")
-    #             value = feature["properties"].get(prop)
-                
-    #             if value is None or value == "":
-    #                 continue  # skip missing or empty values
-
-    #             seen[value].append(bro_id)
-            
-    #         for value, bro_ids in seen.items():
-    #             if len(bro_ids) > 1:
-    #                 duplicates[(prop, value)].extend(bro_ids)
-        
-    #     return duplicates
-
     def rank_duplicates(self):
-        ## 2. IMBRO is better than IMBRO/A (after 01-01-2021)
-        ## 3. least amount of onbekend is best
-        ## 4. most amount of tubes is best
-        ## 5. take the latest registration time
-        ## 6. empty ground level position is bad
-        ## 7. check if it has a GLD
 
         features = self.features
         duplicates = self.duplicates
         features_dict = {feature["properties"].get("bro_id",None): feature for feature in features}
+        self.features_ranked = []
 
-        def rank(data: dict):
-            ranking_sorted = sorted(data.items(), key=lambda x: x[1])
-            ranking = {}
-            current_rank = 1
-            i = 0
-            while i < len(ranking_sorted):
-                # Find all items with same value
-                val = ranking_sorted[i][1]
-                same_value_keys = [ranking_sorted[i][0]]
-                
-                j = i + 1
-                while j < len(ranking_sorted) and ranking_sorted[j][1] == val:
-                    same_value_keys.append(ranking_sorted[j][0])
-                    j += 1
-                
-                # Assign same rank to all those keys
-                for key in same_value_keys:
-                    ranking[key] = current_rank
-                
-                current_rank += 1
-                i = j
-            return ranking
-
-        def check_for_tubes(features):
-            tubes = [feature["properties"].get("number_of_monitoring_tubes") for feature in features]
-            return len(Counter(tubes)) == len(tubes)
-        
-        def check_for_dates(features):
-            construction_dates = [feature["properties"].get("well_construction_date") for feature in features]
-            removal_dates = [feature["properties"].get("well_removal_date") for feature in features]
-            return any(date is not None and date in removal_dates for date in construction_dates)
-
-        def check_for_data_quality(features):
-            unknowns = {}
-            empties = {}
-
-            for feature in features:
-                properties: dict = feature.get("properties", {})
-                bro_id = properties.get("bro_id")
-                unknown_count = 0
-                empty_count = 0
-
-                for prop, value in properties.items():
-                    if "date" in prop.lower() or "time" in prop.lower():
-                        continue
-                    if isinstance(value, str) and value.strip().lower() == "onbekend":
-                        unknown_count += 1
-                    if value is None or (isinstance(value, str) and value.strip() == ""):
-                        empty_count += 1
-                
-                unknowns[bro_id] = unknown_count
-                empties[bro_id] = empty_count
-
-            ranking_unknown = {}
-            prev_count = None
-            current_rank = 0
-            unknowns_sorted = sorted(unknowns.items(), key=lambda x: x[1])
-
-            for i, (bro_id, count) in enumerate(unknowns_sorted):
-                if count != prev_count:
-                    current_rank = i + 1
-                    prev_count = count
-                ranking_unknown[bro_id] = current_rank
-
-            ranking_empty = {}
-            prev_count = None
-            current_rank = 0
-            empties_sorted = sorted(empties.items(), key=lambda x: x[1])
-            for i, (bro_id, count) in enumerate(empties_sorted):
-                if count != prev_count:
-                    current_rank = i + 1
-                    prev_count = count
-                ranking_empty[bro_id] = current_rank
-
-            ranking_average = {}
-            bro_ids = [feature.get("properties").get("bro_id", None) for feature in features]
-            for bro_id in bro_ids:
-                weight_unknown = RANKING.WEIGHTS.UNKNOWN_WEIGHT
-                rank_unknown = ranking_unknown
-                weight_empty = RANKING.WEIGHTS.EMPTY_WEIGHT
-                rank_empty = ranking_empty
-
-                rank_weighted = sum([weight_unknown*rank_unknown, weight_empty*rank_empty]) / sum([weight_unknown, weight_empty])
-                ranking_average[bro_id] = rank_weighted
-
-            ranking = rank(ranking_average)
-
-            ranks = list(ranking.keys())
-            return len(Counter(ranks)) == len(ranks)
-
-        def rank_based_on_tubes(features_ranked, features, bro_ids):
-            tubes = {f["properties"].get("bro_id"): f["properties"].get("number_of_monitoring_tubes") for f in features}
-            ranks = rank(tubes)
-            
-            for feature in features_ranked:
-                bro_id = feature["properties"].get("bro_id")
-                if bro_id in bro_ids:
-                    feature["properties"].update({"rank": ranks[bro_id]})
-
-            return features_ranked
-        
-        def rank_based_on_dates(features_ranked, features, bro_ids):
-            dates = {f["properties"].get("bro_id"): f["properties"].get("well_construction_date") for f in features}
-            sorted_dates = sorted(set(dates.values()))  # Unique and sorted dates
-            rank_map = {date: rank + 1 for rank, date in enumerate(sorted_dates)}
-            ranks = {bro_id: rank_map[date] for bro_id, date in dates.items()}
-
-            for feature in features_ranked:
-                bro_id = feature["properties"].get("bro_id")
-                if bro_id in bro_ids:
-                    feature["properties"].update({"rank": ranks[bro_id]})
-
-            return features_ranked
-        
-        def rank_based_on_quality(features_ranked, features, bro_ids):
-            unknowns = {}
-            empties = {}
-
-            for feature in features:
-                properties: dict = feature.get("properties", {})
-                bro_id = properties.get("bro_id")
-                unknown_count = 0
-                empty_count = 0
-
-                for prop, value in properties.items():
-                    if "date" in prop.lower() or "time" in prop.lower():
-                        continue
-                    if isinstance(value, str) and value.strip().lower() == "onbekend":
-                        unknown_count += 1
-                    if value is None or (isinstance(value, str) and value.strip() == ""):
-                        empty_count += 1
-                
-                unknowns[bro_id] = unknown_count
-                empties[bro_id] = empty_count
-
-            ranking_unknown = {}
-            prev_count = None
-            current_rank = 0
-            unknowns_sorted = sorted(unknowns.items(), key=lambda x: x[1])
-
-            for i, (bro_id, count) in enumerate(unknowns_sorted):
-                if count != prev_count:
-                    current_rank = i + 1
-                    prev_count = count
-                ranking_unknown[bro_id] = current_rank
-
-            ranking_empty = {}
-            prev_count = None
-            current_rank = 0
-            empties_sorted = sorted(empties.items(), key=lambda x: x[1])
-            for i, (bro_id, count) in enumerate(empties_sorted):
-                if count != prev_count:
-                    current_rank = i + 1
-                    prev_count = count
-                ranking_empty[bro_id] = current_rank
-
-            ranking_average = {}
-            bro_ids = [feature.get("properties").get("bro_id", None) for feature in features]
-            for bro_id in bro_ids:
-                weight_unknown = RANKING.WEIGHTS.UNKNOWN_WEIGHT
-                rank_unknown = ranking_unknown
-                weight_empty = RANKING.WEIGHTS.EMPTY_WEIGHT
-                rank_empty = ranking_empty
-
-                rank_weighted = sum([weight_unknown*rank_unknown, weight_empty*rank_empty]) / sum([weight_unknown, weight_empty])
-                ranking_average[bro_id] = rank_weighted
-
-            ranks = rank(ranking_average)
-
-            for feature in features_ranked:
-                bro_id = feature["properties"].get("bro_id")
-                if bro_id in bro_ids:
-                    feature["properties"].update({"rank": ranks[bro_id]})
-
-            return features_ranked
-
-        def rank_based_on_bro_id(features_ranked, features, bro_ids):
-            bro_ids = [feature.get("properties").get("bro_id", None) for feature in features]
-            sorted_bro_ids = sorted(bro_ids)
-            ranks = {bro_id: rank + 1 for rank, bro_id in enumerate(sorted_bro_ids)}
-
-            for feature in features_ranked:
-                bro_id = feature["properties"].get("bro_id")
-                if bro_id in bro_ids:
-                    feature["properties"].update({"rank": ranks[bro_id]})
-
-            return features_ranked
-
-        features_ranked = self.features_ranked
+        logging = f"{datetime.now()} - INFO - Inputs" + f"\nBBOX: BBOX_PLACEHOLDER"  + f"\nProperties: PROPERTIES_PLACEHOLDER"+ f"\n{datetime.now()} - START - Log"
         for (prop, value), bro_ids in duplicates.items():
             features = [features_dict[bro_id] for bro_id in bro_ids]
             scenario_1 = check_for_tubes(features)
             scenario_2 = check_for_dates(features)
             scenario_3 = check_for_data_quality(features)
             
+            log = f"\n{prop} {value} | "
             if scenario_1:
-                self.features_ranked = rank_based_on_tubes(features_ranked, features, bro_ids)
+                logging += log + "Scenario 1: Tube number differs"
+                features_ranked = rank_based_on_tubes(features)
             elif scenario_2:
-                self.features_ranked = rank_based_on_dates(features_ranked, features, bro_ids)
+                logging += log + "Scenario 2: Dates allign"
+                features_ranked = rank_based_on_dates(features)
             elif scenario_3:
-                self.features_ranked = rank_based_on_quality(features_ranked, features, bro_ids)
+                logging += log + "Scenario 3: Data quality differs"
+                features_ranked = rank_based_on_quality(features)
             else:
-                self.features_ranked = rank_based_on_bro_id(features_ranked, features, bro_ids)
+                logging += log + "Scenario 4: All checks passed, BRO ID used for ranking"
+                features_ranked = rank_based_on_bro_id(features)
 
-        # # --> For every test, rank the bro ids. Then take the average ranking.
-        # def get_duplicate_features(features: list[dict], bro_ids: list):
-        #     duplicate_features = []
-        #     for feature in features:
-        #         bro_id = feature["properties"].get("bro_id",None)
-        #         if bro_id in bro_ids:
-        #             duplicate_features.append(feature)
-                    
-        #     return duplicate_features
-        
-        # def normalize_ranking(ranking: dict) -> dict:
-        #     # Normalize ranks to scores: score = 1 - (rank - 1) / (max_rank - 1)
-        #     normalized = {}
-        #     max_rank = max(ranking.values())
-        #     for bro_id, rank in ranking.items():
-        #         if max_rank == 1:
-        #             score = 1.0
-        #         else:
-        #             score = 1 - (rank - 1) / (max_rank - 1)
-        #         normalized[bro_id] = round(score, 4)
+            self.features_ranked.extend(features_ranked)
+            self.logging = logging + f"\n{datetime.now()} - END - Log"
 
-        #     return normalized
-        
-        # def isoformat(date_string: str):
-        #         if date_string:
-        #             if "-" not in date_string:
-        #                 return date_string + "-01-01"
-        #         return date_string
-
-        # def amount_of_tubes_ranking(features: list[dict]):
-        #     tubes = {}
-        #     ranking = {}
-
-        #     for feature in features:
-        #         properties: dict = feature.get("properties", {})
-        #         bro_id = properties.get("bro_id",None)
-        #         n_tubes = properties.get("number_of_monitoring_tubes",0)
-        #         tubes[bro_id] = n_tubes
-
-        #     prev_tubes = None
-        #     current_rank = 0
-        #     tubes_sorted = sorted(tubes.items(), key=lambda x: -x[1]) ## descending sorting for n_tubes
-        #     for i, (bro_id, n_tubes) in enumerate(tubes_sorted):
-        #         if n_tubes != prev_tubes:
-        #             current_rank = i + 1
-        #             prev_tubes = n_tubes
-        #         ranking[bro_id] = current_rank
-
-        #     return normalize_ranking(ranking)
-
-        # def quality_regime_ranking(features: list[dict]):
-        #     ranking = {}
-        #     ranking_tiers = defaultdict(list)
-
-        #     for feature in features:
-        #         properties: dict = feature.get("properties", {})
-        #         bro_id = properties.get("bro_id", None)
-        #         regime = properties.get("quality_regime", None)
-
-        #         # Extract relevant timestamps
-        #         ## get the latest data from the GLD
-
-        #         timestamps = [
-        #             # properties.get("object_registration_time", None),
-        #             # properties.get("latest_addition_time", None),
-        #             # properties.get("registration_completion_time", None)
-        #             isoformat(properties.get("well_construction_date", None))
-        #         ]
-        #         # Parse and find the most recent non-None datetime
-        #         dates = [datetime.fromisoformat(ts) for ts in timestamps if ts]
-        #         latest_date = max(dates) if dates else None
-
-        #         if regime == "IMBRO":
-        #             tier = "IMBRO"
-        #         elif regime == "IMBRO/A":
-        #             if latest_date and latest_date <= datetime(2021, 1, 1):#, tzinfo=latest_date.tzinfo):
-        #                 tier = "IMBRO/A_OLD"
-        #             else:
-        #                 tier = "IMBRO/A_NEW"
-        #         else:
-        #             tier = "OTHER"
-
-        #         ranking_tiers[tier].append(bro_id)
-
-        #     tier_priority = ["IMBRO", "IMBRO/A_OLD", "IMBRO/A_NEW", "OTHER"]
-
-        #     # Assign dynamic ranks
-        #     current_rank = 1
-        #     for tier in tier_priority:
-        #         if tier in ranking_tiers:
-        #             for bro_id in ranking_tiers[tier]:
-        #                 ranking[bro_id] = current_rank
-        #             current_rank += 1
-
-        #     return normalize_ranking(ranking)
-
-        # def unknown_values_ranking(features: list[dict]):
-        #     ranking = {}
-        #     unknowns = {}
-
-        #     for feature in features:
-        #         properties: dict = feature.get("properties", {})
-        #         bro_id = properties.get("bro_id")
-        #         unknown_count = 0
-
-        #         for prop, value in properties.items():
-        #             if "date" in prop.lower() or "time" in prop.lower():
-        #                 continue
-        #             if isinstance(value, str) and value.strip().lower() == "onbekend":
-        #                 unknown_count += 1
-
-        #         unknowns[bro_id] = unknown_count
-
-        #     prev_count = None
-        #     current_rank = 0
-        #     unkonwns_sorted = sorted(unknowns.items(), key=lambda x: x[1])
-        #     for i, (bro_id, count) in enumerate(unkonwns_sorted):
-        #         if count != prev_count:
-        #             current_rank = i + 1
-        #             prev_count = count
-        #         ranking[bro_id] = current_rank
-
-        #     return normalize_ranking(ranking)
-
-        # def empty_values_ranking(features: list[dict]):
-        #     ranking = {}
-        #     empties = {}
-
-        #     for feature in features:
-        #         properties: dict = feature.get("properties", {})
-        #         bro_id = properties.get("bro_id", None)
-        #         empty_count = 0
-
-        #         for key, value in properties.items():
-        #             if "date" in key.lower() or "time" in key.lower():
-        #                 continue
-        #             if value is None or (isinstance(value, str) and value.strip() == ""):
-        #                 empty_count += 1
-
-        #         empties[bro_id] = empty_count
-
-        #     prev_count = None
-        #     current_rank = 0
-        #     empties_sorted = sorted(empties.items(), key=lambda x: x[1])
-        #     for i, (bro_id, count) in enumerate(empties_sorted):
-        #         if count != prev_count:
-        #             current_rank = i + 1
-        #             prev_count = count
-        #         ranking[bro_id] = current_rank
-
-        #     return normalize_ranking(ranking)
-
-        # def well_construction_date_ranking(features: list[dict[str, dict]]):            
-        #     ranking = {}
-        #     dates = {}
-
-        #     for feature in features:
-        #         properties = feature.get("properties", {})
-        #         bro_id = properties.get("bro_id", None)
-        #         date_str = isoformat(properties.get("well_construction_date", None))
-
-        #         if date_str:
-        #             try:
-        #                 date_obj = datetime.fromisoformat(date_str)
-        #                 dates[bro_id] = date_obj
-        #             except ValueError:
-        #                 raise Exception("Something went wrong with converting to isoformat")
-
-        #     prev_date = None
-        #     current_rank = 0
-        #     dates_sorted = sorted(dates.items(), key=lambda x: x[1], reverse=True)
-        #     for i, (bro_id, date) in enumerate(dates_sorted):
-        #         if date != prev_date:
-        #             current_rank = i + 1
-        #             prev_date = date
-        #         ranking[bro_id] = current_rank
-
-        #     return normalize_ranking(ranking)
-
-        # def get_overall_ranking(features: list, duplicates: dict, rankings: dict):
-        #     features_ranked = []
-        #     ranks = {}
-        #     scores = {}
-
-        #     for (prop_name, prop), bro_ids in duplicates.items():
-        #         scores[prop] = {}
-        #         for bro_id in bro_ids:
-        #             score = score_feature(rankings[prop], bro_id)
-        #             scores[prop][bro_id] = score
-
-        #     def convert_scores_to_ranks(scores: dict[str, dict[str]], features: list[dict]) -> dict:
-        #         # Preprocess: Map bro_id to registration_time
-        #         times = {}
-        #         for feature in features:
-        #             bro_id = feature.get("properties", {}).get("bro_id")
-        #             time_str = feature.get("properties", {}).get("object_registration_time")
-        #             if bro_id and time_str:
-        #                 try:
-        #                     times[bro_id] = datetime.fromisoformat(time_str)
-        #                 except ValueError:
-        #                     times[bro_id] = datetime.min  # fallback to oldest if parse fails
-
-        #         ranks = {}
-
-        #         for prop, bro_scores in scores.items():
-        #             # Prepare sortable list: (bro_id, score, registration_time)
-        #             scored_items = [
-        #                 (bro_id, score, times.get(bro_id, datetime.min))
-        #                 for bro_id, score in bro_scores.items()
-        #             ]
-
-        #             # Sort: highest score first, then latest time first
-        #             sorted_items = sorted(scored_items, key=lambda x: (-x[1], -x[2].timestamp()))
-
-        #             prop_ranks = {}
-        #             prev_score, prev_time = None, None
-        #             current_rank = 0
-        #             for i, (bro_id, score, reg_time) in enumerate(sorted_items):
-        #                 if score != prev_score or reg_time != prev_time:
-        #                     current_rank = i + 1
-        #                     prev_score = score
-        #                     prev_time = reg_time
-        #                 prop_ranks[bro_id] = current_rank
-
-        #             ranks[prop] = prop_ranks
-
-        #         return ranks
-            
-        #     ranks = convert_scores_to_ranks(scores, features)
-
-        #     for (prop_name, prop), bro_ids in duplicates.items():
-        #         for bro_id in bro_ids:
-        #             ranking = ranks[prop][bro_id]
-        #             feature = get_feature(features, bro_id)
-        #             if feature:
-        #                 feature["properties"]["ranking"] = ranking
-        #                 features_ranked.append(feature)
-
-        #     return features_ranked
-
-        # def score_feature(ranking: dict, bro_id: str) -> float:
-        #     ranks_weighted = []
-        #     sum_weights = 0
-        #     for ranking_name, ranking_data in ranking.items():
-        #         # print(ranking_name)
-        #         # print(ranking_data)
-        #         ranking_data: dict
-        #         rank = ranking_data.get(bro_id, None)
-                
-        #         if rank != None:
-        #             match ranking_name:
-        #                 case RANKING.NAMES.TUBE_RANKING:
-        #                     weight = 0
-        #                     if ranking.get(RANKING.NAMES.TUBE_RANKING, None):
-        #                         weight = RANKING.WEIGHTS.TUBE_WEIGHT
-        #                     sum_weights += weight
-        #                     rank_weighted = weight*rank
-        #                     ranks_weighted.append(rank_weighted)
-        #                 case RANKING.NAMES.QUALITY_RANKING:
-        #                     weight = 0
-        #                     if ranking.get(RANKING.NAMES.QUALITY_RANKING, None):
-        #                         weight = RANKING.WEIGHTS.QUALTIY_WEIGHT
-        #                     sum_weights += weight
-        #                     rank_weighted = weight*rank
-        #                     ranks_weighted.append(rank_weighted)
-        #                 case RANKING.NAMES.UKNONWN_RANKING:
-        #                     weight = 0
-        #                     if ranking.get(RANKING.NAMES.UKNONWN_RANKING, None):
-        #                         weight = RANKING.WEIGHTS.UNKNOWN_WEIGHT
-        #                     sum_weights += weight
-        #                     rank_weighted = weight*rank
-        #                     ranks_weighted.append(rank_weighted)
-        #                 case RANKING.NAMES.EMPTY_RANKING:
-        #                     weight = 0
-        #                     if ranking.get(RANKING.NAMES.EMPTY_RANKING, None):
-        #                         weight = RANKING.WEIGHTS.EMPTY_WEIGHT
-        #                     sum_weights += weight
-        #                     rank_weighted = weight*rank
-        #                     ranks_weighted.append(rank_weighted)
-        #                 case RANKING.NAMES.DATE_RANKING:
-        #                     weight = 0
-        #                     if ranking.get(RANKING.NAMES.DATE_RANKING, None):
-        #                         weight = RANKING.WEIGHTS.DATE_WEIGHT
-        #                     sum_weights += weight
-        #                     rank_weighted = weight*rank
-        #                     ranks_weighted.append(rank_weighted)
-                
-        #     ranking = None
-        #     if ranks_weighted and sum_weights != 0:
-        #         ranking = sum(ranks_weighted) / sum_weights
-
-        #     return ranking  
-
-        # def get_feature(features: list, bro_id: str):
-        #     for feature in features:
-        #         if bro_id == feature["properties"].get("bro_id", None):
-        #             return feature
-                
-        #     return None
-            
-        # ranking = {}
-        # duplicates = self.duplicates
-
-        # for (prop_name, prop), bro_ids in duplicates.items():
-        #     features = get_duplicate_features(self.features, bro_ids)
-        #     ranking[prop] = {}
-        #     ranking[prop][RANKING.NAMES.TUBE_RANKING] = amount_of_tubes_ranking(features)
-        #     ranking[prop][RANKING.NAMES.QUALITY_RANKING] = quality_regime_ranking(features)
-        #     ranking[prop][RANKING.NAMES.UKNONWN_RANKING] = unknown_values_ranking(features)
-        #     ranking[prop][RANKING.NAMES.EMPTY_RANKING] = empty_values_ranking(features)
-        #     ranking[prop][RANKING.NAMES.DATE_RANKING] = well_construction_date_ranking(features)      
-
-        # duplicate_ids = [bro_id for bro_ids in duplicates.values() for bro_id in bro_ids]
-        # duplicate_features = get_duplicate_features(self.features, duplicate_ids)
-        # ranked_features = get_overall_ranking(duplicate_features, duplicates, ranking)
-        # self.features_ranked = ranked_features
-        # self.ranking = ranking
-
-    def store_duplicates(self):
+    def store_duplicates(self, logging: bool, bbox, properties):
 
         duplicates = self.duplicates
         sorted_keys = sorted(duplicates.keys(), key=lambda x: str(x[1]))
@@ -647,16 +95,11 @@ class GMWDuplicatesHandler:
                 features.append(feature)
 
         # Prepare the CSV file
-        json_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "ranking_output.json"
-        json_file1 = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "bro_gmw_duplicate_well_codes.json"
-        csv_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "bro_gmw_duplicate_well_codes.csv"
-
+        json_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "bro_gmw_duplicate_well_codes.json"       
         with open(json_file, "w") as f:
-            json.dump(self.ranking, f, indent=4)
-
-        with open(json_file1, "w") as f:
             json.dump(self.features, f, indent=4)
-
+        
+        csv_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "bro_gmw_duplicate_well_codes.csv"
         with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
             if not features:
                 raise ValueError("No features to write")
@@ -678,3 +121,10 @@ class GMWDuplicatesHandler:
                 
                 row['coordinates'] = coordinates
                 writer.writerow(row)
+
+        if logging:
+            logging_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "logging.txt"
+            with open(logging_file, "w", encoding="utf-8") as f:
+                self.logging = self.logging.replace("BBOX_PLACEHOLDER",str(bbox))
+                self.logging = self.logging.replace("PROPERTIES_PLACEHOLDER",str(properties))
+                f.write(self.logging)

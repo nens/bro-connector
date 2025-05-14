@@ -1,6 +1,6 @@
 from ..tasks.bro_handlers import GMWHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
-from .ogc_handler import DataRetrieverOGC
+from .bbox_handler import DataRetrieverBBOX
 from ..tasks.progressor import Progress
 from ..tasks import events_handler
 import reversion
@@ -49,10 +49,9 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
     shp = settings.POLYGON_SHAPEFILE
     if bbox_settings["use_bbox"] and handler == "ogc":
         print("bbox settings: ",bbox_settings)
-        DR = DataRetrieverOGC(bbox)
+        DR = DataRetrieverBBOX(bbox)
         DR.request_bro_ids(bro_type)
-        if kvk_number:
-            DR.filter_ids_kvk(kvk_number)
+        DR.filter_ids_kvk(kvk_number)
         DR.enforce_shapefile(shp,delete=False)
         DR.get_ids_ogc()
         gmw_ids = DR.gmw_ids

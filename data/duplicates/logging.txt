@@ -1,0 +1,103 @@
+2025-05-14 16:22:19.126402 - INFO - Inputs
+BBOX: [3.3583781888356805, 51.20016212162249, 4.431691671750893, 51.80561770444523]
+Properties: ['well_code', 'nitg_code']
+2025-05-14 16:22:19.126402 - START - Log
+well_code GMW42H000204 | Scenario 1: Tube number differs
+well_code GMW43C000059 | Scenario 1: Tube number differs
+well_code GMW42F000110 | Scenario 1: Tube number differs
+well_code GMW42F000134 | Scenario 1: Tube number differs
+well_code GMW43C000058 | Scenario 1: Tube number differs
+well_code GMW42H000051 | Scenario 1: Tube number differs
+well_code GMW42F000023 | Scenario 1: Tube number differs
+well_code GMW42F000107 | Scenario 1: Tube number differs
+well_code GMW43C000082 | Scenario 1: Tube number differs
+well_code GMW42F000112 | Scenario 1: Tube number differs
+well_code GMW42F000032 | Scenario 1: Tube number differs
+well_code GMW42H000113 | Scenario 1: Tube number differs
+well_code GMW42H000043 | Scenario 1: Tube number differs
+well_code GMW42H000041 | Scenario 1: Tube number differs
+well_code GMW49B002033 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49B000653 | Scenario 2: Dates allign
+well_code GMW49B000674 | Scenario 1: Tube number differs
+well_code GMW42H000206 | Scenario 1: Tube number differs
+well_code GMW42H000199 | Scenario 1: Tube number differs
+well_code GMW42H000214 | Scenario 2: Dates allign
+well_code GMW42H000213 | Scenario 2: Dates allign
+well_code GMW42H000138 | Scenario 1: Tube number differs
+well_code GMW43C000372 | Scenario 1: Tube number differs
+well_code GMW49A000259 | Scenario 2: Dates allign
+well_code GMW49A000261 | Scenario 2: Dates allign
+well_code GMW49A000262 | Scenario 2: Dates allign
+well_code GMW42F000025 | Scenario 1: Tube number differs
+well_code GMW42E000286 | Scenario 2: Dates allign
+well_code GMW42E000033 | Scenario 2: Dates allign
+well_code GMW42E000023 | Scenario 1: Tube number differs
+well_code GMW42G000096 | Scenario 3: Data quality differs
+well_code GMW42E000299 | Scenario 2: Dates allign
+well_code GMW42E000326 | Scenario 2: Dates allign
+well_code GMW42E000301 | Scenario 2: Dates allign
+well_code GMW42G000204 | Scenario 2: Dates allign
+well_code GMW48B000207 | Scenario 2: Dates allign
+well_code GMW42E000020 | Scenario 1: Tube number differs
+well_code GMW42B000157 | Scenario 2: Dates allign
+well_code GMW42E000042 | Scenario 1: Tube number differs
+well_code GMW42B000156 | Scenario 2: Dates allign
+well_code GMW42E000044 | Scenario 1: Tube number differs
+well_code GMW48E000288 | Scenario 2: Dates allign
+well_code GMW42E000304 | Scenario 2: Dates allign
+well_code GMW42E000306 | Scenario 2: Dates allign
+well_code GMW42E000307 | Scenario 2: Dates allign
+well_code GMW42E000310 | Scenario 2: Dates allign
+well_code GMW42E000314 | Scenario 2: Dates allign
+well_code GMW42E000327 | Scenario 2: Dates allign
+well_code GMW49D002058 | Scenario 1: Tube number differs
+well_code GMW49E001377 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49B002071 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49B002052 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49B002083 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49B002058 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49B002070 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49D000098 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49D000094 | Scenario 3: Data quality differs
+well_code GMW49C000139 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW49C000232 | Scenario 1: Tube number differs
+well_code GMW49C000253 | Scenario 2: Dates allign
+well_code GMW49C000245 | Scenario 2: Dates allign
+well_code GMW49D000434 | Scenario 2: Dates allign
+well_code GMW48H000322 | Scenario 2: Dates allign
+well_code GMW48F000225 | Scenario 2: Dates allign
+well_code GMW49D000404 | Scenario 2: Dates allign
+well_code GMW49D000382 | Scenario 2: Dates allign
+well_code GMW49C000248 | Scenario 2: Dates allign
+well_code GMW49G000422 | Scenario 2: Dates allign
+well_code GMW49G000397 | Scenario 2: Dates allign
+well_code GMW49G000427 | Scenario 2: Dates allign
+well_code GMW49G000449 | Scenario 2: Dates allign
+well_code GMW49G000425 | Scenario 2: Dates allign
+well_code GMW49G000377 | Scenario 2: Dates allign
+well_code GMW49G000431 | Scenario 2: Dates allign
+well_code GMW54F000102 | Scenario 2: Dates allign
+well_code GMW54F000105 | Scenario 2: Dates allign
+well_code GMW55A000370 | Scenario 2: Dates allign
+well_code GMW55A000367 | Scenario 2: Dates allign
+well_code GMW54F000103 | Scenario 2: Dates allign
+well_code GMW48F000236 | Scenario 1: Tube number differs
+well_code GMW48F000235 | Scenario 1: Tube number differs
+well_code GMW49G000460 | Scenario 2: Dates allign
+well_code GMW49D000397 | Scenario 2: Dates allign
+well_code GMW48G000060 | Scenario 4: All checks passed, BRO ID used for ranking
+well_code GMW48E000257 | Scenario 2: Dates allign
+well_code GMW48G000236 | Scenario 2: Dates allign
+well_code GMW48G000237 | Scenario 2: Dates allign
+well_code GMW54B000098 | Scenario 2: Dates allign
+well_code GMW54E000348 | Scenario 2: Dates allign
+well_code GMW54E000344 | Scenario 2: Dates allign
+well_code GMW54A000099 | Scenario 2: Dates allign
+well_code GMW54A000094 | Scenario 2: Dates allign
+well_code GMW54A000097 | Scenario 2: Dates allign
+well_code GMW54A000096 | Scenario 2: Dates allign
+well_code GMW54E000347 | Scenario 2: Dates allign
+well_code GMW54E000343 | Scenario 2: Dates allign
+well_code GMW54B000097 | Scenario 2: Dates allign
+nitg_code B49G0197 | Scenario 2: Dates allign
+2025-05-14 16:22:19.126402 - END - Log
