@@ -27,4 +27,4 @@ def run(kvk_number, properties, logging):
 
     GMWDH.get_duplicates(properties)
     GMWDH.rank_duplicates()
-    GMWDH.store_duplicates(logging,bbox.bbox,properties)
+    GMWDH.store_duplicates(logging, bbox.bbox, kvk_number, properties)

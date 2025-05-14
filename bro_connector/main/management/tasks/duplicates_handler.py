@@ -53,7 +53,7 @@ class GMWDuplicatesHandler:
         features_dict = {feature["properties"].get("bro_id",None): feature for feature in features}
         self.features_ranked = []
 
-        logging = f"{datetime.now()} - INFO - Inputs" + f"\nBBOX: BBOX_PLACEHOLDER"  + f"\nProperties: PROPERTIES_PLACEHOLDER"+ f"\n{datetime.now()} - START - Log"
+        logging = f"{datetime.now()} - INFO - Inputs" + f"\nBBOX: _BBOX" + f"\nKVK: _KVK" + f"\nProperties: _PROPERTIES"+ f"\n{datetime.now()} - START - Log"
         for (prop, value), bro_ids in duplicates.items():
             features = [features_dict[bro_id] for bro_id in bro_ids]
             scenario_1 = check_for_tubes(features)
@@ -77,7 +77,7 @@ class GMWDuplicatesHandler:
             self.features_ranked.extend(features_ranked)
             self.logging = logging + f"\n{datetime.now()} - END - Log"
 
-    def store_duplicates(self, logging: bool, bbox, properties):
+    def store_duplicates(self, logging: bool, bbox, kvk, properties):
 
         duplicates = self.duplicates
         sorted_keys = sorted(duplicates.keys(), key=lambda x: str(x[1]))
@@ -125,6 +125,7 @@ class GMWDuplicatesHandler:
         if logging:
             logging_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "logging.txt"
             with open(logging_file, "w", encoding="utf-8") as f:
-                self.logging = self.logging.replace("BBOX_PLACEHOLDER",str(bbox))
-                self.logging = self.logging.replace("PROPERTIES_PLACEHOLDER",str(properties))
+                self.logging = self.logging.replace("_BBOX",str(bbox))
+                self.logging = self.logging.replace("_KVK",str(kvk))
+                self.logging = self.logging.replace("_PROPERTIES",str(properties))
                 f.write(self.logging)

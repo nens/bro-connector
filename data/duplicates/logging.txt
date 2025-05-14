@@ -1,7 +1,8 @@
-2025-05-14 16:22:19.126402 - INFO - Inputs
-BBOX: [3.3583781888356805, 51.20016212162249, 4.431691671750893, 51.80561770444523]
+2025-05-14 16:29:02.487388 - INFO - Inputs
+    BBOX: [3.3583781888356805, 51.20016212162249, 4.431691671750893, 51.80561770444523]
+KVK: None
 Properties: ['well_code', 'nitg_code']
-2025-05-14 16:22:19.126402 - START - Log
+2025-05-14 16:29:02.487388 - START - Log
 well_code GMW42H000204 | Scenario 1: Tube number differs
 well_code GMW43C000059 | Scenario 1: Tube number differs
 well_code GMW42F000110 | Scenario 1: Tube number differs
@@ -100,4 +101,4 @@ well_code GMW54E000347 | Scenario 2: Dates allign
 well_code GMW54E000343 | Scenario 2: Dates allign
 well_code GMW54B000097 | Scenario 2: Dates allign
 nitg_code B49G0197 | Scenario 2: Dates allign
-2025-05-14 16:22:19.126402 - END - Log
+2025-05-14 16:29:02.489376 - END - Log
