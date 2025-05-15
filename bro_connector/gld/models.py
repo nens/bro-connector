@@ -34,6 +34,8 @@ from main.localsecret import DEMO
 import bro_exchange as brx
 from django.db.models import Manager
 from xml.etree import ElementTree as ET
+from datetime import timedelta
+from django.utils import timezone
 
 logger = getLogger(__file__)
 
@@ -77,8 +79,6 @@ def get_timeseries_tvp_for_observation_id(observation):
     measurement_tvp = observation.measurement.all()
     measurements_list = []
     for measurement in measurement_tvp:
-        logger.info(f"Measurement: {measurement}; value: {measurement.calculated_value}; field_val: {measurement.field_value}")
-        logger.info(f"Measurement has metadata: {measurement.measurement_point_metadata}")
         if measurement.measurement_point_metadata:
             metadata = measurement.measurement_point_metadata.get_sourcedocument_data()
         else:
@@ -92,17 +92,14 @@ def get_timeseries_tvp_for_observation_id(observation):
 
         measurement_data = {
             "time": measurement.measurement_time.isoformat(),
-            "value": float(measurement.calculated_value) if measurement.calculated_value else None,
+            "value": float(measurement.calculated_value)
+            if measurement.calculated_value
+            else None,
             "metadata": metadata,
         }
-        logger.info(f"Measurement data: {measurement_data}")
 
         measurements_list += [measurement_data]
-
-    logger.info(f"Pre-order: {measurements_list}")
-
     measurements_list_ordered = _order_measurements_list(measurements_list)
-    logger.info(f"Post-order: {measurements_list_ordered}")
     return measurements_list_ordered
 
 
@@ -120,13 +117,25 @@ class GroundwaterLevelDossier(BaseModel):
         blank=False,
         related_name="groundwaterleveldossier",
     )
-    gld_bro_id = models.CharField(max_length=255, blank=True, null=True, unique=True, verbose_name="GLD BRO id")
-    quality_regime = models.CharField(
-        choices=QUALITYREGIME, max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime"
+    gld_bro_id = models.CharField(
+        max_length=255, blank=True, null=True, unique=True, verbose_name="GLD BRO id"
     )
-    research_start_date = models.DateField(blank=True, null=True, verbose_name="Onderzoeksstartdatum")
-    research_last_date = models.DateField(blank=True, null=True, verbose_name="Onderzoekseinddatum")
-    research_last_correction = models.DateTimeField(blank=True, null=True, verbose_name="Laatste correctie")
+    quality_regime = models.CharField(
+        choices=QUALITYREGIME,
+        max_length=254,
+        null=True,
+        blank=True,
+        verbose_name="Kwaliteitsregime",
+    )
+    research_start_date = models.DateField(
+        blank=True, null=True, verbose_name="Onderzoeksstartdatum"
+    )
+    research_last_date = models.DateField(
+        blank=True, null=True, verbose_name="Onderzoekseinddatum"
+    )
+    research_last_correction = models.DateTimeField(
+        blank=True, null=True, verbose_name="Laatste correctie"
+    )
 
     @property
     def gmw_bro_id(self):
@@ -223,13 +232,25 @@ class Observation(BaseModel):
         null=True,
         blank=True,
     )
-    observation_starttime = models.DateTimeField(blank=True, null=True, verbose_name="Starttijd")
-    result_time = models.DateTimeField(blank=True, null=True, verbose_name="Resultaat tijd")
-    observation_endtime = models.DateTimeField(blank=True, null=True, verbose_name="Eindtijd")
-    up_to_date_in_bro = models.BooleanField(default=False, editable=False, verbose_name="Up to date in BRO")
+    observation_starttime = models.DateTimeField(
+        blank=True, null=True, verbose_name="Starttijd"
+    )
+    result_time = models.DateTimeField(
+        blank=True, null=True, verbose_name="Resultaat tijd"
+    )
+    observation_endtime = models.DateTimeField(
+        blank=True, null=True, verbose_name="Eindtijd"
+    )
+    up_to_date_in_bro = models.BooleanField(
+        default=False, editable=False, verbose_name="Up to date in BRO"
+    )
 
     observation_id_bro = models.CharField(
-        max_length=200, blank=True, null=True, editable=False, verbose_name="Observatie BRO ID"
+        max_length=200,
+        blank=True,
+        null=True,
+        editable=False,
+        verbose_name="Observatie BRO ID",
     )  # Should also import this with the BRO-Import tool
 
     measurement: Manager["MeasurementTvp"]
@@ -269,7 +290,7 @@ class Observation(BaseModel):
         if self.observation_metadata:
             return self.observation_metadata.observation_type
         return "-"
-    
+
     observation_type.fget.short_description = "Observatie type"
 
     @property
@@ -307,7 +328,7 @@ class Observation(BaseModel):
             return "volledigBeoordeeld"
         else:
             return "onbekend"
-        
+
     all_measurements_validated.fget.short_description = "Status validatie"
 
     @property
@@ -315,6 +336,13 @@ class Observation(BaseModel):
         if self.observation_type == "controlemeting":
             return "controlemeting"
         return f"regulier_{self.observation_type}"
+
+    @property
+    def active_measurement(self):
+        one_week_ago = timezone.now() - timedelta(weeks=1)
+        return MeasurementTvp.objects.filter(
+            observation=self, measurement_time__gte=one_week_ago
+        ).exists()
 
     def __str__(self):
         start = (
@@ -913,11 +941,10 @@ class gld_addition_log(BaseModel):
         if len(observation_source_document_data["result"]) < 1:
             logger.warning("No results in observation")
             self.date_modified = datetime.datetime.now()
-            self.comments = f"No results in observation"
+            self.comments = "No results in observation"
             self.process_status = "failed_to_create_source_document"
             self.save()
             return
-
 
         first_timestamp_datetime = self.observation.timestamp_first_measurement
         final_timestamp_datetime = self.observation.timestamp_last_measurement
