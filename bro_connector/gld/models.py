@@ -1108,9 +1108,9 @@ class gld_addition_log(BaseModel):
 
         try:
             delivery_info = brx.check_delivery_status(
-                bro_info["token"],
-                bro_info["projectnummer"],
-                self.delivery_id,
+                identifier=self.delivery_id,
+                token=bro_info["token"],
+                project_id=bro_info["projectnummer"],
                 demo=DEMO,
                 api="v2",
             )

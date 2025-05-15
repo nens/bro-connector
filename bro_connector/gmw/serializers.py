@@ -29,6 +29,7 @@ class GMWSerializer(serializers.ModelSerializer):
             "delivery_accountable_party",
             "linked_gmns",
             "nitg_code",
+            "label",
             "groundlevel_position",
             "well_head_protector",
         ]
@@ -69,6 +70,9 @@ class GMWSerializer(serializers.ModelSerializer):
 
     def get_nitg_code(self, obj):
         return obj.nitg_code
+    
+    def get_label(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+        return obj.__str__()
 
 
 class GLDSerializer(serializers.ModelSerializer):
