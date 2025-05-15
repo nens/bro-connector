@@ -3,15 +3,20 @@ import json
 import time
 import geopandas as gpd
 from shapely.geometry import Point
-from gmw.models import GroundwaterMonitoringWellStatic
+from collections import Counter, defaultdict
+import csv
+from pathlib import Path
 
-class DataRetrieverOGC:
-    def __init__(self, bbox):
+from gmw.models import GroundwaterMonitoringWellStatic
+from ...utils.bbox_extractor import BBOX_EXTRACTOR
+
+class DataRetrieverBBOX:
+    def __init__(self, bbox: BBOX_EXTRACTOR.BBOX):
         self.xmin = bbox.xmin
         self.xmax = bbox.xmax
         self.ymin = bbox.ymin
         self.ymax = bbox.ymax
-        self.bbox = (self.xmin, self.ymin, self.xmax, self.ymax)
+        self.bbox = bbox.bbox
         self.bro_ids = []
 
     def request_bro_ids(self, type):
@@ -19,32 +24,19 @@ class DataRetrieverOGC:
         if type.lower() not in options:
             raise Exception(f"Unknown type: {type}. Use a correct option: {options}.")
         
-
         features = process_request_for_bbox(type,self.bbox)
-        # basis_url = "https://api.pdok.nl"
-        # ogc_verzoek = requests.get(
-        #     f"{basis_url}/bzk/bro-gminsamenhang-karakteristieken/ogc/v1/collections/gm_{type}/items?bbox={self.xmin}%2C{self.ymin}%2C{self.xmax}%2C{self.ymax}&f=json&limit=1000"
-        # )
-        # print(f"{basis_url}/bzk/bro-gminsamenhang-karakteristieken/ogc/v1/collections/gm_{type}/items?{self.bbox}&f=json&limit=1000")
-        # features: list = json.loads(ogc_verzoek.text)["features"]
-        self.bro_ids = []
-        self.bro_coords = []
-        self.kvk_ids = []
-        if features:
-            print(f"{len(features)} received from bbox")
-            ## add a while loop that divides the bbox into smaller ones if the len = 1000
-            for feature in features:
-                self.bro_ids.append(feature["properties"]["bro_id"])
-                self.bro_coords.append(feature["geometry"]["coordinates"])
-                self.kvk_ids.append(feature["properties"]["delivery_accountable_party"])
+        self.features = features
+        self.bro_ids = [feature["properties"].get("bro_id",None) for feature in features]
 
     def filter_ids_kvk(self, kvk_number):
-        for bro_id, kvk_id in zip(self.bro_ids[:], self.kvk_ids):
-            if kvk_number != kvk_id:
-                #print("Removing ",bro_id)
-                self.bro_ids.remove(bro_id)
+        if kvk_number:
+            for feature in self.features:
+                kvk_id = feature["properties"].get("delivery_accountable_party",None)
+                if kvk_number != kvk_id:
+                    self.features.remove(feature)
+            self.bro_ids = [feature["properties"].get("bro_id",None) for feature in self.features]
         
-        print(f"{self.bro_ids} points after filtering for kvk {kvk_number}.")
+        print(f"{len(self.bro_ids)} points after filtering for kvk {kvk_number}.")
 
     def enforce_shapefile(self, shp, delete=False):
         gdf = gpd.read_file(shp)
@@ -54,13 +46,15 @@ class DataRetrieverOGC:
             gdf = gdf.to_crs(crs_bro)
 
         print("Number of bro ids before enforcing shapefile: ",len(self.bro_ids))
-        for id,coord in zip(self.bro_ids[:], self.bro_coords[:]):
+        for feature in self.features[:]:
+            coord = feature["geometry"].get("coordinates",None)
+            if not coord:
+                raise Exception("No coordinate data found in feature")
+            
             point = Point(coord[0], coord[1])
-            is_within = gdf.contains(point).item()
-
-            if not is_within:
-                self.bro_ids.remove(id)
-                self.bro_coords.remove(coord)
+            if not gdf.contains(point).item():
+                self.features.remove(feature)
+        self.bro_ids = [feature["properties"].get("bro_id",None) for feature in self.features]
 
         print("Number of bro ids after enforcing shapefile: ",len(self.bro_ids))
 
@@ -72,8 +66,7 @@ class DataRetrieverOGC:
                 if crs_shp != "EPSG:28992":
                     gdf = gdf.to_crs("EPSG:28992")
 
-                is_within = gdf.contains(point).item()
-                if not is_within:
+                if not gdf.contains(point).item():
                     well.delete()
 
     def get_ids_ogc(self):
@@ -103,7 +96,6 @@ class DataRetrieverOGC:
 
             else:
                 self.other_ids.append(id)
-
 
 def request_from_pdok(type,bbox) -> list:
     basis_url = "https://api.pdok.nl"
