@@ -1,8 +1,8 @@
 from django.db import transaction
 from django.core.management.base import BaseCommand
 from django.db.models import Count
-from gld.models import Observation
-
+from gld.models import Observation, MeasurementTvp
+import time
 
 def split_large_observations(max_measurements_per_observation=7000):
     """
@@ -42,13 +42,13 @@ def split_large_observations(max_measurements_per_observation=7000):
         # Add more fields as needed
     ]
 
-    for observation in large_observations:
+    for observation in large_observations:        
         measurements = observation.measurement.order_by("measurement_time")
         total_measurements = measurements.count()
         num_new_observations = (
             total_measurements + max_measurements_per_observation - 1
         ) // max_measurements_per_observation
-
+        
         with transaction.atomic():
             # Prepare values to copy
             base_data = {field: getattr(observation, field) for field in FIELDS_TO_COPY}
@@ -58,11 +58,13 @@ def split_large_observations(max_measurements_per_observation=7000):
             ]
 
             # Distribute measurements across new observations
+            updated = []
             for i, measurement in enumerate(measurements):
                 target_index = i // max_measurements_per_observation
                 measurement.observation = new_observations[target_index]
-                measurement.save()
+                updated.append(measurement)
 
+            MeasurementTvp.objects.bulk_update(updated, ["observation"])
             observation.delete()
 
             split_summary["observations_split"] += 1
