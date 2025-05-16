@@ -1,7 +1,7 @@
-
 <img src=../static/img/broconnector.png width="140">
 
-# Klassendiagram voor Grondwaterstand dossiers (GLD) #
+# Klassendiagram voor Grondwaterstand dossiers (GLD)
+
 ```mermaid
 classDiagram
     class GroundwaterLevelDossier{
@@ -62,7 +62,7 @@ classDiagram
         int measurement_point_metadata_id
         str status_quality_control
         str censor_reason
-        str censor_Reason_artesia
+        str censor_reason_datalens
         float value_limit
         str interpolation_code
     }
@@ -123,16 +123,25 @@ classDiagram
         int bro_token
     }
 ```
-# Beschrijving #
+
+# Beschrijving
+
 Onder het registratieobject kun je de volgende objecten beheren: GrondwaterstandsDossiers, Observaties, Meetpunt metadata, Meting en tijdwaarde paren, Ovservatie metadata, GLD registratie logs, GLD toevoegings logs
-# Functies #
+
+# Functies
+
 Voor ieder object kun je in de Bro-connector een CRUD vinden waarin je gemakkelijk alle registratieobjecten kunt beheren.
-# Commando's #
-### gld_additions_qc_quality_control ###
+
+# Commando's
+
+### gld_additions_qc_quality_control
+
 Gebruikswijze:
-```python python manage.py gld_additions_qc_quality_control```
-### gld_sync_to_bro ###
+`python python manage.py gld_additions_qc_quality_control`
+
+### gld_sync_to_bro
+
 Gebruikswijze:
-```python python manage.py gld_sync_to_bro```
+`python python manage.py gld_sync_to_bro`
 Omschrijving:
 Dit commando synchroniseert alle onderliggende objecten naar BRO.
