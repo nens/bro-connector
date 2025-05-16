@@ -39,10 +39,11 @@ def split_large_observations(max_measurements_per_observation=7000):
         "groundwater_level_dossier",
         "observation_metadata",
         "observation_process",
+        "up_to_date_in_bro",
         # Add more fields as needed
     ]
 
-    for observation in large_observations:        
+    for observation in large_observations:    
         measurements = observation.measurement.order_by("measurement_time")
         total_measurements = measurements.count()
         num_new_observations = (
