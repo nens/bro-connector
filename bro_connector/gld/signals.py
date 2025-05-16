@@ -94,6 +94,7 @@ def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     if metadata:
         metadata.delete()
 
+
 @receiver(pre_save, sender=Observation)
 def pre_save_observation(sender, instance: Observation, **kwargs):
     if instance.observation_endtime:
@@ -122,7 +123,7 @@ def on_save_observation(sender, instance: Observation, **kwargs):
     )
     if open_observations.count() == 0:
         last_observation: Observation = (
-            gld.observation.all(
+            gld.observation.filter(
                 observation_process=instance.observation_process,
                 observation_metadata=instance.observation_metadata,
             )
