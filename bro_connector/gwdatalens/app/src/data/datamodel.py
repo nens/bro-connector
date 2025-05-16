@@ -90,5 +90,5 @@ class MeasurementPointMetadata(Base):
     measurement_point_metadata_id: Mapped[int] = mapped_column(primary_key=True)
     status_quality_control: Mapped[str]
     censor_reason: Mapped[str]
-    censor_reason_artesia: Mapped[str]
+    censor_reason_datalens: Mapped[str]
     value_limit: Mapped[float]
