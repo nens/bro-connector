@@ -43,7 +43,8 @@ def split_large_observations(max_measurements_per_observation=7000):
         # Add more fields as needed
     ]
 
-    for observation in large_observations:    
+    for i,observation in enumerate(large_observations):
+        print(f"Splitting observation {int(i+1)}/{len(large_observations)}")   
         measurements = observation.measurement.order_by("measurement_time")
         total_measurements = measurements.count()
         num_new_observations = (
