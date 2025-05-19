@@ -1171,7 +1171,6 @@ class GldSyncHandler:
 class Command(BaseCommand):
     def handle(self, *args, **options):
         gld = GldSyncHandler()
-
         # Check the database for new wells/tubes and start a GLD registration for these objects if its it needed
         gld.handle_all_start_registrations()
 
