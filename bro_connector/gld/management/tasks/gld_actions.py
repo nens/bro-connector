@@ -27,11 +27,14 @@ def is_broid(bro_id: str) -> bool:
     """
     Check if the given bro_id is a valid BRO ID.
     """
-    return (
-        bro_id.startswith(("GMW", "GMN", "GLD", "FRD"))
-        and len(bro_id) == 15
-        and bro_id[3:].isdigit()
-    )
+    if bro_id:
+        return (
+            bro_id.startswith(("GMW", "GMN", "GLD", "FRD"))
+            and len(bro_id) == 15
+            and bro_id[3:].isdigit()
+        )
+    
+    return False
 
 
 def create_registrations_folder():
@@ -193,8 +196,13 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
     if tube.deliver_gld_to_bro is False:
         print(f"deliver tube to BRO: {tube.deliver_gld_to_bro}")
         return
+    
+    if not tube.groundwater_monitoring_well_static.bro_id:
+        print(f"No BRO ID for well {tube.groundwater_monitoring_tube_static_id}. Skipping dossier {dossier.groundwater_level_dossier_id}")
+        return
 
     # Create GLD Registration Log
+    print(f"Check and deliver for dossier {dossier.groundwater_level_dossier_id}")
     if is_broid(dossier.gld_bro_id):
         gld_start_registration = gld_registration_log.objects.update_or_create(
             gmw_bro_id=dossier.gmw_bro_id,

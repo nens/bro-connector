@@ -9,7 +9,6 @@ from reversion_compare.helpers import patch_admin
 import reversion
 from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
-    get_observation_gld_source_document_data,
 )
 from .custom_filters import (
     HasOpenObservationFilter,
@@ -27,12 +26,14 @@ from gld.models import GroundwaterLevelDossier
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
+
 def get_searchable_fields(model_class):
     return [
         f.name
         for f in model_class._meta.fields
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
+
 
 # %% GLD model registration
 
@@ -50,7 +51,7 @@ class ObservationInline(admin.TabularInline):
         "observation_id_bro",
         "observation_starttime",
         "observation_endtime",
-        "result_time",   
+        "result_time",
     )
 
     readonly_fields = [
@@ -60,12 +61,13 @@ class ObservationInline(admin.TabularInline):
         "observation_id_bro",
         "observation_starttime",
         "observation_endtime",
-        "result_time",                              
+        "result_time",
     ]
 
     ordering = ["observation_starttime"]
     extra = 0
     max_num = 0
+
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -107,9 +109,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "most_recent_measurement",
     ]
 
-    inlines = (
-        ObservationInline,
-    )
+    inlines = (ObservationInline,)
 
     actions = ["deliver_to_bro", "check_status"]
 
@@ -178,7 +178,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
     list_max_show_all = 1000  # Prevents loading all records
 
-    search_fields = ["measurement_point_metadata_id", "censor_reason_artesia"]
+    search_fields = ["measurement_point_metadata_id", "censor_reason_datalens"]
     list_display = ("__str__",)
 
     list_filter = (
