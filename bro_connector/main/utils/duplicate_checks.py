@@ -64,16 +64,16 @@ def rank_scores(data: dict):
         i = j
     return ranking
 
-def check_for_tubes(features):
+def scenario_1(features):
     tubes = [feature["properties"].get("number_of_monitoring_tubes") for feature in features]
     return len(set(tubes)) > 1
 
-def check_for_dates(features):           
+def scenario_2(features):           
     construction_dates = [feature["properties"].get("well_construction_date") for feature in features]
     removal_dates = [feature["properties"].get("well_removal_date") for feature in features]
     return any(date is not None and date in removal_dates for date in construction_dates)
 
-def check_for_data_quality(features):
+def scenario_3(features):
     unknowns = {}
     empties = {}
 

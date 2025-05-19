@@ -5,9 +5,9 @@ from pathlib import Path
 from datetime import datetime
 
 from ...utils.duplicate_checks import (
-    check_for_tubes,
-    check_for_dates,
-    check_for_data_quality,
+    scenario_1,
+    scenario_2,
+    scenario_3,
     rank_based_on_tubes,
     rank_based_on_dates,
     rank_based_on_quality,
@@ -55,19 +55,15 @@ class GMWDuplicatesHandler:
 
         logging = f"{datetime.now()} - INFO - Inputs" + f"\nBBOX: _BBOX" + f"\nKVK: _KVK" + f"\nProperties: _PROPERTIES"+ f"\n{datetime.now()} - START - Log"
         for (prop, value), bro_ids in duplicates.items():
-            features = [features_dict[bro_id] for bro_id in bro_ids]
-            scenario_1 = check_for_tubes(features)
-            scenario_2 = check_for_dates(features)
-            scenario_3 = check_for_data_quality(features)
-            
+            features = [features_dict[bro_id] for bro_id in bro_ids]            
             log = f"\n{prop} {value} | "
-            if scenario_1:
+            if scenario_1(features):
                 logging += log + "Scenario 1: Tube number differs"
                 features_ranked = rank_based_on_tubes(features)
-            elif scenario_2:
+            elif scenario_2(features):
                 logging += log + "Scenario 2: Dates allign"
                 features_ranked = rank_based_on_dates(features)
-            elif scenario_3:
+            elif scenario_3(features):
                 logging += log + "Scenario 3: Data quality differs"
                 features_ranked = rank_based_on_quality(features)
             else:
@@ -95,11 +91,16 @@ class GMWDuplicatesHandler:
                 features.append(feature)
 
         # Prepare the CSV file
-        json_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "bro_gmw_duplicate_well_codes.json"       
+        downloads_folder = Path.home() / "Downloads"
+        date_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+        duplicates_folder = downloads_folder / f"duplicates_bro_{date_time}"
+        duplicates_folder.mkdir(parents=True, exist_ok=True)
+        
+        json_file = duplicates_folder / "bro_gmw_duplicate_well_codes.json"       
         with open(json_file, "w") as f:
             json.dump(self.features, f, indent=4)
         
-        csv_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "bro_gmw_duplicate_well_codes.csv"
+        csv_file = duplicates_folder / "bro_gmw_duplicate_well_codes.csv"
         with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
             if not features:
                 raise ValueError("No features to write")
@@ -123,7 +124,7 @@ class GMWDuplicatesHandler:
                 writer.writerow(row)
 
         if logging:
-            logging_file = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "duplicates" / "logging.txt"
+            logging_file = duplicates_folder / "logging.txt"
             with open(logging_file, "w", encoding="utf-8") as f:
                 self.logging = self.logging.replace("_BBOX",str(bbox))
                 self.logging = self.logging.replace("_KVK",str(kvk))
