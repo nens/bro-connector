@@ -9,8 +9,11 @@ from gwdatalens.app.src.data import DataInterface
 from gwdatalens.app.src.utils import conditional_cache
 
 try:
-    mapbox_access_token = open(MAPBOX_ACCESS_TOKEN, "r").read()
+    with open(MAPBOX_ACCESS_TOKEN, "r") as f:
+        mapbox_access_token = f.read()
 except FileNotFoundError:
+    if settings["USE_MAPBOX"]:
+        print(f"Error: Mapbox access token not found: {MAPBOX_ACCESS_TOKEN}")
     mapbox_access_token = None
 
 
