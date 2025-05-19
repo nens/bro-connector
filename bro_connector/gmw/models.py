@@ -381,6 +381,20 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         blank=True,
         verbose_name="Beschermconstructie subtype",
     )
+    foundation = models.CharField(
+        max_length=254,
+        choices=FOUNDATIONS,
+        null=True,
+        blank=True,
+        verbose_name="Fundering",
+    )
+    collision_protection = models.CharField(
+        max_length=254,
+        choices=COLLISION_PROTECTION_TYPES,
+        null=True,
+        blank=True,
+        verbose_name="Aanrijbescherming",
+    )
     lock = models.CharField(
         max_length=254, choices=LOCKS, null=True, blank=True, verbose_name="Slot"
     )
@@ -394,25 +408,12 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=254, null=True, blank=True, verbose_name="Straat"
     )
     location_description = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Beschrijving locatie"
+        max_length=254, null=True, blank=True, verbose_name="Toegankelijkheid"
     )
     label = models.CharField(
         max_length=254, choices=LABELS, null=True, blank=True, verbose_name="Label"
     )
-    foundation = models.CharField(
-        max_length=254,
-        choices=FOUNDATIONS,
-        null=True,
-        blank=True,
-        verbose_name="Fundering",
-    )
-    collision_protection = models.CharField(
-        max_length=254,
-        choices=COLLISION_PROTECTION_TYPES,
-        null=True,
-        blank=True,
-        verbose_name="Bots bescherming",
-    )
+
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
@@ -570,7 +571,6 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         db_table = 'gmw"."groundwater_monitoring_tube_static'
         verbose_name = "Grondwatermonitoring Filter - Statisch"
         verbose_name_plural = "Grondwatermonitoring Filters - Statisch"
-
 
 class GroundwaterMonitoringTubeDynamic(BaseModel):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)

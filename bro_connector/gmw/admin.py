@@ -69,6 +69,7 @@ class EventsInline(admin.TabularInline):
 class PicturesInline(ImageUploaderInline):
     model = gmw_models.Picture
 
+    classes = ("Foto",) 
     fields = ["picture"]
 
     extra = 0
@@ -238,45 +239,35 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
             "",
             {
                 "fields": [
+                    "well_code",
                     "internal_id",
-                    "project",
                     "bro_id",
+                    "bro_loket_link",
                     "delivery_accountable_party",
                     "delivery_responsible_party",
+                    "in_management",
+                    "deliver_gmw_to_bro",
+                    "complete_bro",
                     "quality_regime",
+                    "nitg_code",
+                    "olga_code",                    
+                    "project",
                     "delivery_context",
                     "construction_standard",
                     "initial_function",
-                    "nitg_code",
-                    "olga_code",
-                    "well_code",
                     "monitoring_pdok_id",
                     "horizontal_positioning_method",
                     "local_vertical_reference_point",
                     "well_offset",
                     "vertical_datum",
                     "last_horizontal_positioning_date",
-                    "in_management",
-                    "deliver_gmw_to_bro",
-                    "complete_bro",
                     "report",
                     "bro_actions",
+                    "x", 
+                    "y", 
+                    "lat", 
+                    "lon"
                 ],
-            },
-        ),
-        (
-            "BRO-loket", {"fields": ["bro_loket_link"]},
-        ),
-        (
-            "Coordinates",
-            {
-                "fields": ["x", "y", "lat", "lon"],
-            },
-        ),
-        (
-            "Construction Coordinates",
-            {
-                "fields": ["cx", "cy"],
             },
         ),
     ]
