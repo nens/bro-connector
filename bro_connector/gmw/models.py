@@ -986,7 +986,7 @@ class Picture(BaseModel):
         
     def save(self, *args, **kwargs):
         # If no recording_datetime is set and there's an image
-        if self.picture:
+        if self.picture and not self.recording_datetime:
             try:
                 timestamp = None
                 image = Image.open(self.picture)
