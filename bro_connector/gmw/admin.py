@@ -1,11 +1,10 @@
 from django.contrib import admin, messages
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
-from image_uploader_widget.admin import ImageUploaderInline
 import reversion
 from reversion_compare.helpers import patch_admin
 import logging
-
+from django import forms
 from django.utils.html import format_html
 
 
@@ -66,14 +65,17 @@ class EventsInline(admin.TabularInline):
     max_num = 0
 
 
-class PicturesInline(ImageUploaderInline):
+class PicturesInline(admin.TabularInline):
     model = gmw_models.Picture
+    form = gmw_forms.PictureForm
 
-    classes = ("Foto",) 
-    fields = ["picture"]
+    fields = ("picture", "recording_datetime", "description")
+    
+    ordering = ["-recording_datetime"]
+    readonly_fields = []
 
-    extra = 0
-    max_num = 0
+    extra = 1
+    max_num = None
 
 
 class WellDynamicInline(admin.TabularInline):
