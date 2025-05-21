@@ -4,8 +4,6 @@ from django.db.models import fields
 import reversion
 from reversion_compare.helpers import patch_admin
 import logging
-from django import forms
-from django.utils.html import format_html
 
 
 from . import models as gmw_models
@@ -48,7 +46,7 @@ def get_searchable_fields(model_class):
 
 
 class EventsInline(admin.TabularInline):
-    model = gmw_models.Event    
+    model = gmw_models.Event
     show_change_link = True
     search_fields = get_searchable_fields(gmw_models.Event)
     fields = (
@@ -56,13 +54,38 @@ class EventsInline(admin.TabularInline):
         "event_date",
         "delivered_to_bro",
         "bro_actions",
-        )
+    )
 
     ordering = ["event_date"]
-    readonly_fields = ["delivered_to_bro","bro_actions"]
+    readonly_fields = ["delivered_to_bro", "bro_actions"]
 
     extra = 0
     max_num = 0
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return (
+                "event_name",
+                "event_date",
+                "delivered_to_bro",
+                "bro_actions",
+            )
+        return []
+
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
 
 
 class PicturesInline(admin.TabularInline):
@@ -70,12 +93,32 @@ class PicturesInline(admin.TabularInline):
     form = gmw_forms.PictureForm
 
     fields = ("picture", "recording_datetime", "description")
-    
+
     ordering = ["-recording_datetime"]
     readonly_fields = []
 
     extra = 1
     max_num = None
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return ("picture", "recording_datetime", "description")
+        return []
+
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
 
 
 class WellDynamicInline(admin.TabularInline):
@@ -92,10 +135,39 @@ class WellDynamicInline(admin.TabularInline):
         "comment",
     )
     ordering = ["date_from"]
-    readonly_fields = ["date_from","date_till","number_of_standpipes","comment"]
+    readonly_fields = ["date_from", "date_till", "number_of_standpipes", "comment"]
 
     extra = 0
     max_num = 0
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return (
+                "date_from",
+                "date_till",
+                "well_head_protector",
+                "ground_level_position",
+                "ground_level_positioning_method",
+                "number_of_standpipes",
+                "comment",
+            )
+        return []
+
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
 
 class WellStaticInline(admin.TabularInline):
     model = gmw_models.GroundwaterMonitoringWellStatic
@@ -110,6 +182,7 @@ class WellStaticInline(admin.TabularInline):
     extra = 0
     max_num = 0
 
+
 class TubeStaticInline(admin.TabularInline):
     model = gmw_models.GroundwaterMonitoringTubeStatic
     show_change_link = True
@@ -123,10 +196,43 @@ class TubeStaticInline(admin.TabularInline):
         "report",
     )
     ordering = ["tube_number"]
-    readonly_fields = ["tube_number","number_of_geo_ohm_cables","bro_actions","report"]
+    readonly_fields = [
+        "tube_number",
+        "number_of_geo_ohm_cables",
+        "bro_actions",
+        "report",
+    ]
 
     extra = 0
     max_num = 0
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return (
+                "deliver_gld_to_bro",
+                "tube_number",
+                "tube_type",
+                "number_of_geo_ohm_cables",
+                "bro_actions",
+                "report",
+            )
+        return []
+
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.in_management is False:
+            return False
+        return True
+
 
 class TubeDynamicInline(admin.TabularInline):
     model = gmw_models.GroundwaterMonitoringTubeDynamic
@@ -142,10 +248,11 @@ class TubeDynamicInline(admin.TabularInline):
     )
     show_change_link = True
 
-    readonly_fields = ["date_from","date_till","comment"]
+    readonly_fields = ["date_from", "date_till", "comment"]
 
     extra = 0
     max_num = 0
+
 
 class GeoOhmCableInline(admin.TabularInline):
     model = gmw_models.GeoOhmCable
@@ -165,6 +272,7 @@ class GeoOhmCableInline(admin.TabularInline):
 
     extra = 0
     max_num = 0
+
 
 class ElectrodeInline(admin.TabularInline):
     model = gmw_models.Electrode
@@ -191,7 +299,7 @@ class ElectrodeInline(admin.TabularInline):
 class GLDInline(admin.TabularInline):
     model = GroundwaterLevelDossier
     search_fields = get_searchable_fields(GroundwaterLevelDossier)
-    fields = (        
+    fields = (
         "gld_bro_id",
         "groundwater_monitoring_net",
         "research_start_date",
@@ -200,7 +308,7 @@ class GLDInline(admin.TabularInline):
     )
     show_change_link = True
 
-    readonly_fields = [        
+    readonly_fields = [
         "gld_bro_id",
         "research_start_date",
         "research_last_date",
@@ -210,9 +318,10 @@ class GLDInline(admin.TabularInline):
     extra = 0
     max_num = 0
 
+
 class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
-    change_form_template = "admin\change_form_well.html"
+    change_form_template = r"admin\change_form_well.html"
 
     search_fields = ("groundwater_monitoring_well_static_id", "well_code", "bro_id")
 
@@ -234,7 +343,14 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "well_code",
         "in_management",
     )
-    readonly_fields = ("lat", "lon", "report", "complete_bro", "bro_actions", "bro_loket_link")
+    readonly_fields = (
+        "lat",
+        "lon",
+        "report",
+        "complete_bro",
+        "bro_actions",
+        "bro_loket_link",
+    )
 
     fieldsets = [
         (
@@ -252,7 +368,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "complete_bro",
                     "quality_regime",
                     "nitg_code",
-                    "olga_code",                    
+                    "olga_code",
                     "project",
                     "delivery_context",
                     "construction_standard",
@@ -265,10 +381,10 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "last_horizontal_positioning_date",
                     "report",
                     "bro_actions",
-                    "x", 
-                    "y", 
-                    "lat", 
-                    "lon"
+                    "x",
+                    "y",
+                    "lat",
+                    "lon",
                 ],
             },
         ),
@@ -585,9 +701,7 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
 
     readonly_fields = ["electrode_count"]
 
-    inlines = (
-        ElectrodeInline,
-    )
+    inlines = (ElectrodeInline,)
 
     def save_model(self, request, obj: gmw_models.GeoOhmCable, form, change):
         is_valid, report = validate_geo_ohm_cable(obj)
