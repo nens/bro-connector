@@ -860,7 +860,7 @@ class gld_registration_log(BaseModel):
             )
             delivery_status = delivery_info.json()["status"]
             self.date_modified = datetime.datetime.now()
-            self.comments = f"Delivery status: {delivery_status}"
+            self.comments = f"Delivery info: {delivery_info}"
             self.delivery_status = delivery_status
             self.last_changed = delivery_info.json()["lastChanged"]
             self.process_status = "delivery_status_checked"
@@ -1116,7 +1116,7 @@ class gld_addition_log(BaseModel):
             )
             delivery_status = delivery_info.json()["status"]
             self.date_modified = datetime.datetime.now()
-            self.comments = f"Delivery status: {delivery_status}"
+            self.comments = f"Delivery info: {delivery_info}"
             self.delivery_status = delivery_status
             self.last_changed = delivery_info.json()["lastChanged"]
             self.process_status = "delivery_status_checked"
