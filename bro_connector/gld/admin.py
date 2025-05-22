@@ -18,6 +18,8 @@ from .custom_filters import (
     OrganisationFilter,
     ObservationFilter,
 )
+from ..main.constants import *
+
 import datetime
 from gmw.models import GroundwaterMonitoringWellStatic
 from gld.models import GroundwaterLevelDossier
@@ -324,92 +326,98 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         "check_status_startregistration",
     ]
 
-    @admin.action(description="Regenerate startregistration sourcedocument")
+    @admin.action(description=RegistrationLog.Action.REGENERATE)
     def regenerate_start_registration_sourcedocument(self, request, queryset: list[models.gld_registration_log]):
         for registration_log in queryset:
-            if registration_log.delivery_id is not None:
+            if (
+                registration_log.validation_status == RegistrationLog.ValidationStatus.VALID or
+                registration_log.delivery_status in [RegistrationLog.DeliveryStatus.DELIVERED, RegistrationLog.DeliveryStatus.ADDED]
+            ):
                 self.message_user(
                     request,
-                    "Can't generate startregistration sourcedocuments for an existing registration",
+                    RegistrationLog.Message.GENERATE_ERROR,
                     messages.ERROR,
                 )
             else:
                 registration_log.generate_sourcedocument()
+                print("delivery id after generating: ",registration_log.delivery_id)
                 self.message_user(
                     request,
-                    "Attempted startregistration sourcedocument regeneration",
+                    RegistrationLog.Message.GENERATE_SUCCESS,
                     messages.INFO,
                 )
 
-    @admin.action(description="Validate startregistration sourcedocument")
+    @admin.action(description=RegistrationLog.Action.VALIDATE)
     def validate_startregistration_sourcedocument(self, request, queryset: list[models.gld_registration_log]):
         for registration_log in queryset:
-            if registration_log.process_status == "failed_to_generate_source_documents":
+            if registration_log.process_status == RegistrationLog.ProcessStatus.GENERATE_FAIL:
                 self.message_user(
                     request,
-                    "Can't validate a startregistration that failed to generate",
+                    RegistrationLog.Message.VALIDATE_ERROR_GENERATE,
                     messages.ERROR,
                 )
-            elif registration_log.delivery_id is not None:
+            elif (
+                registration_log.delivery_id is not None or 
+                registration_log.delivery_status in [RegistrationLog.DeliveryStatus.DELIVERED, RegistrationLog.DeliveryStatus.ADDED]
+            ):
                 self.message_user(
                     request,
-                    "Can't validate a document that has already been delivered",
+                    RegistrationLog.Message.VALIDATE_ERROR_VALIDATE,
                     messages.ERROR,
                 )
             else:
                 registration_log.validate_sourcedocument()
                 self.message_user(
                     request,
-                    "Succesfully validated startregistration sourcedocument",
+                    RegistrationLog.Message.VALIDATE_SUCCESS,
                     messages.INFO,
                 )
 
-    @admin.action(description="Deliver startregistration sourcedocument")
+    @admin.action(description=RegistrationLog.Action.DELIVER)
     def deliver_startregistration_sourcedocument(self, request, queryset: list[models.gld_registration_log]):
         for registration_log in queryset:
-            if registration_log.delivery_id is not None:
+            if registration_log.process_status == RegistrationLog.ProcessStatus.GENERATE_FAIL:
                 self.message_user(
                     request,
-                    "Can't deliver a registration that has already been delivered",
+                    RegistrationLog.Message.DELIVER_ERROR_GENERATE,
                     messages.ERROR,
                 )
-            elif registration_log.validation_status == "NIET_VALIDE":
+            if (
+                registration_log.delivery_id is not None or 
+                registration_log.delivery_status in [RegistrationLog.DeliveryStatus.DELIVERED, RegistrationLog.DeliveryStatus.ADDED]
+            ):
                 self.message_user(
                     request,
-                    "Can't deliver an invalid document or not yet validated document",
+                    RegistrationLog.Message.DELIVER_ERROR_ALREADY_DELIVERED,
                     messages.ERROR,
                 )
-            elif registration_log.delivery_status in [
-                "AANGELEVERD",
-                "OPGENOM EN_LVBRO",
-            ]:
+            elif registration_log.validation_status == RegistrationLog.ValidationStatus.INVALID:
                 self.message_user(
                     request,
-                    "Can't deliver a document that has been already been delivered",
+                    RegistrationLog.Message.DELIVER_ERROR_NOT_VALID,
                     messages.ERROR,
                 )
             else:
                 registration_log.deliver_sourcedocument()
-
                 self.message_user(
                     request,
-                    "Attempted registration sourcedocument delivery",
+                    RegistrationLog.Message.DELIVER_SUCCESS,
                     messages.INFO,
                 )
 
-    @admin.action(description="Check status of startregistration")
+    @admin.action(description=RegistrationLog.Action.CHECK)
     def check_status_startregistration(self, request, queryset: list[models.gld_registration_log]):
         for registration_log in queryset:
             if registration_log.delivery_id is None:
                 self.message_user(
                     request,
-                    "Can't check status of a delivery with no 'delivery_id'",
+                    RegistrationLog.Message.CHECK_ERROR,
                     messages.ERROR,
                 )
             else:
                 registration_log.check_delivery_status()
                 self.message_user(
-                    request, "Attempted registration status check", messages.INFO
+                    request, RegistrationLog.Message.CHECK_SUCCESS, messages.INFO
                 )
 
     list_display = (
@@ -502,13 +510,16 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     # Regenerate addition sourcedocuments
 
     # Check the current status before it is allowed
-    @admin.action(description="Regenerate sourcedocuments")
+    @admin.action(description=AdditionLog.Action.GENERATE)
     def regenerate_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         for addition_log in queryset:
-            if addition_log.delivery_id is not None:
+            if (
+                addition_log.validation_status == AdditionLog.ValidationStatus.VALID or
+                addition_log.delivery_status in [AdditionLog.DeliveryStatus.DELIVERED, AdditionLog.DeliveryStatus.APPROVED, AdditionLog.DeliveryStatus.VALIDATED]
+            ):
                 self.message_user(
                     request,
-                    "Can't create new sourcedocuments for an observation that has already been delivered",
+                    AdditionLog.Message.GENERATE_ERROR,
                     messages.ERROR,
                 )
             else:
@@ -516,70 +527,81 @@ class gld_addition_log_Admin(admin.ModelAdmin):
 
                 self.message_user(
                     request,
-                    "Succesfully attempted sourcedocument regeneration",
+                    AdditionLog.Message.GENERATE_SUCCESS,
                     messages.INFO,
                 )
 
     # Retry validate sourcedocuments (only if file is present)
-    @admin.action(description="Validate sourcedocuments")
+    @admin.action(description=AdditionLog.Action.VALIDATE)
     def validate_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         for addition_log in queryset:
-            if addition_log.delivery_id is not None:
+            if addition_log.process_status == AdditionLog.ProcessStatus.GENERATE_FAIL:
                 self.message_user(
                     request,
-                    "Can't revalidate document for an observation that has already been delivered",
+                    AdditionLog.Message.VALIDATE_ERROR_GENERATE,
+                    messages.ERROR,
+                )
+            if (
+                addition_log.delivery_id is not None or 
+                addition_log.delivery_status in [AdditionLog.DeliveryStatus.DELIVERED, AdditionLog.DeliveryStatus.APPROVED, AdditionLog.DeliveryStatus.VALIDATED]
+            ):
+                self.message_user(
+                    request,
+                    AdditionLog.Message.VALIDATE_ERROR_VALIDATE,
                     messages.ERROR,
                 )
                 # Validate the sourcedocument for this observation
             else:
                 addition_log.validate_sourcedocument()
                 self.message_user(
-                    request, "Succesfully attemped document validation", messages.INFO
+                    request, AdditionLog.Message.VALIDATE_SUCCESS, messages.INFO
                 )
 
     # Retry deliver sourcedocuments
-    @admin.action(description="Deliver sourcedocuments")
-    def deliver_sourcedocuments(self, request, queryset):
-        gld = GldSyncHandler()
+    @admin.action(description=AdditionLog.Action.DELIVER)
+    def deliver_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         for addition_log in queryset:
-            groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
-                gld_bro_id=addition_log.broid_registration
-            )
-            well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
-            gld._set_bro_info(well)
-
-            if addition_log.validation_status is None:
+            if addition_log.process_status == AdditionLog.ProcessStatus.GENERATE_FAIL:
                 self.message_user(
                     request,
-                    "Can't deliver an invalid document or not yet validated document",
+                    AdditionLog.Message.DELIVER_ERROR_GENERATE,
                     messages.ERROR,
                 )
-            elif addition_log.delivery_status in ["AANGELEVERD", "OPGENOM EN_LVBRO"]:
+            elif (
+                addition_log.delivery_id is not None or 
+                addition_log.delivery_status in [AdditionLog.DeliveryStatus.DELIVERED, AdditionLog.DeliveryStatus.APPROVED, AdditionLog.DeliveryStatus.VALIDATED]
+            ):
                 self.message_user(
                     request,
-                    "Can't deliver a document that has been already been delivered",
+                    AdditionLog.Message.DELIVER_ERROR_ALREADY_DELIVERED,
+                    messages.ERROR,
+                )
+            elif addition_log.validation_status in [AdditionLog.ValidationStatus.INVALID, AdditionLog.ValidationStatus.PENDING]:
+                self.message_user(
+                    request,
+                    AdditionLog.Message.DELIVER_ERROR_NOT_VALID,
                     messages.ERROR,
                 )
             else:
-                gld.deliver_gld_addition_source_document(addition_log)
+                addition_log.deliver_sourcedocument()
                 self.message_user(
-                    request, "Succesfully attemped document delivery", messages.INFO
+                    request, AdditionLog.Message.DELIVER_SUCCESS, messages.INFO
                 )
 
     # Check status of a delivery
-    @admin.action(description="Check status delivery")
+    @admin.action(description=AdditionLog.Action.DELIVER)
     def check_status_delivery(self, request, queryset: list[models.gld_addition_log]):
         for addition_log in queryset:
             if addition_log.delivery_id is None:
                 self.message_user(
                     request,
-                    "Can't check status of a delivery with no 'delivery_id'",
+                    AdditionLog.Message.CHECK_ERROR,
                     messages.ERROR,
                 )
             else:
                 addition_log.check_delivery_status()
                 self.message_user(
-                    request, "Succesfully attemped status check", messages.INFO
+                    request, AdditionLog.Message.CHECK_SUCCESS, messages.INFO
                 )
 
 

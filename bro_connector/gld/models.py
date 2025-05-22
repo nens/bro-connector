@@ -1022,11 +1022,11 @@ class gld_addition_log(BaseModel):
 
             else:
                 comments = "Succesfully validated sourcedocument, no errors"
+                self.process_status = "source_document_validation_succeeded"
 
             self.date_modified = datetime.datetime.now()
             self.comments = comments[0:20000]
             self.validation_status = validation_status
-            self.process_status = "source_document_validation_succeeded"
 
         except Exception as e:
             self.date_modified = datetime.datetime.now()
