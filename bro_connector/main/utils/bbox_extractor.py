@@ -12,12 +12,12 @@ class BBOX_EXTRACTOR:
             crs_shp = gdf.crs.to_string()
             if crs_shp != crs_bro:
                 gdf = gdf.to_crs(crs_bro)
-            bbox = gdf.total_bounds.tolist()
+            self.bbox = gdf.total_bounds.tolist()
 
-            self.xmin = bbox[0]
-            self.ymin = bbox[1]
-            self.xmax = bbox[2]
-            self.ymax = bbox[3]
+            self.xmin = self.bbox[0]
+            self.ymin = self.bbox[1]
+            self.xmax = self.bbox[2]
+            self.ymax = self.bbox[3]
        
     def get_bbox_settings(self,use_bbox):
         return {
