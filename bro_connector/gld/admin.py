@@ -77,8 +77,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "gld_bro_id",
         "quality_regime",
         "first_measurement",
-        "completely_delivered",
         "has_open_observation",
+        "completely_delivered",
         "monitoring_networks",
     )
     list_filter = (

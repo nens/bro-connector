@@ -120,7 +120,7 @@ const showWellPopupAndMove = (well) => {
   const popup = createPopup(well);
   const lngLat = [well.y, well.x];
 
-  const newMarker = new mapboxgl.Marker(popup, { anchor: "bottom" })
+  const newMarker = new mapboxgl.Marker(popup, { anchor: "top", offset: [-150,-200] })
     .setLngLat(lngLat)
     .addTo(map);
   setTimeout(() => (marker = newMarker));

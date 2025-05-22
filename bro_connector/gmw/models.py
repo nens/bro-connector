@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Manager
 import django.contrib.gis.db.models as geo_models
 from django.utils.html import format_html
+from django.utils import timezone
 from gmw.choices import (
     WELLHEADPROTECTOR_SUBTYPES,
     WELLHEADPROTECTOR,
@@ -39,7 +40,9 @@ from bro.models import Organisation, BROProject
 import datetime
 from gmw.utils import generate_put_code
 from main.models import BaseModel
-
+from PIL import Image
+from PIL.ExifTags import TAGS
+import os
 
 def _get_token(owner: Organisation):
     return {
@@ -381,6 +384,20 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         blank=True,
         verbose_name="Beschermconstructie subtype",
     )
+    foundation = models.CharField(
+        max_length=254,
+        choices=FOUNDATIONS,
+        null=True,
+        blank=True,
+        verbose_name="Fundering",
+    )
+    collision_protection = models.CharField(
+        max_length=254,
+        choices=COLLISION_PROTECTION_TYPES,
+        null=True,
+        blank=True,
+        verbose_name="Aanrijbescherming",
+    )
     lock = models.CharField(
         max_length=254, choices=LOCKS, null=True, blank=True, verbose_name="Slot"
     )
@@ -394,25 +411,12 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=254, null=True, blank=True, verbose_name="Straat"
     )
     location_description = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Beschrijving locatie"
+        max_length=254, null=True, blank=True, verbose_name="Toegankelijkheid"
     )
     label = models.CharField(
         max_length=254, choices=LABELS, null=True, blank=True, verbose_name="Label"
     )
-    foundation = models.CharField(
-        max_length=254,
-        choices=FOUNDATIONS,
-        null=True,
-        blank=True,
-        verbose_name="Fundering",
-    )
-    collision_protection = models.CharField(
-        max_length=254,
-        choices=COLLISION_PROTECTION_TYPES,
-        null=True,
-        blank=True,
-        verbose_name="Bots bescherming",
-    )
+
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
@@ -570,7 +574,6 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         db_table = 'gmw"."groundwater_monitoring_tube_static'
         verbose_name = "Grondwatermonitoring Filter - Statisch"
         verbose_name_plural = "Grondwatermonitoring Filters - Statisch"
-
 
 class GroundwaterMonitoringTubeDynamic(BaseModel):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)
@@ -966,11 +969,11 @@ class Picture(BaseModel):
         verbose_name="Put",
         related_name="picture",
     )
-    recording_datetime = models.DateTimeField(blank=True, null=True)
+    recording_datetime = models.DateTimeField(blank=True, null=True, verbose_name="Fotomoment")
     picture = models.ImageField(
-        upload_to="static/gmw/pictures/", blank=True, null=True, editable=True
+        upload_to="static/gmw/pictures/", blank=True, null=True, editable=True, verbose_name="Foto"
     )
-    description = models.CharField(max_length=254, null=True, blank=True)
+    description = models.CharField(max_length=254, null=True, blank=True, verbose_name="Beschrijving")
 
     @property
     def image_tag(self):
@@ -980,6 +983,44 @@ class Picture(BaseModel):
             )
         else:
             return format_html("No image available.")
+        
+    def save(self, *args, **kwargs):
+        # If no recording_datetime is set and there's an image
+        if self.picture and not self.recording_datetime:
+            try:
+                timestamp = None
+                image = Image.open(self.picture)
+
+                if image.format.lower() in ["jpeg", "jpg"]:
+                    exif_data = image._getexif()
+                    if exif_data:
+                        readable = {TAGS.get(tag): val for tag, val in exif_data.items()}
+                        timestamp_str = readable.get("DateTimeOriginal") or readable.get("DateTime")
+                        if timestamp_str:
+                            timestamp = datetime.datetime.strptime(timestamp_str, "%Y:%m:%d %H:%M:%S")
+
+                elif image.format.lower() == "png":
+                    info = image.info
+                    for key in ["date:create", "Creation Time", "creation_time"]:
+                        timestamp_str = info.get(key)
+                        if timestamp_str:
+                            try:
+                                timestamp = datetime.datetime.fromisoformat(timestamp_str)
+                                break
+                            except ValueError:
+                                print("PNG timestamp not in isoformat")
+                                pass
+
+                if not timestamp:
+                    timestamp = datetime.datetime.now()
+
+                self.recording_datetime = timestamp
+
+            except Exception as e:
+                print(f"Error extracting time stamp: {e}")
+                self.recording_datetime = None
+
+        super().save(*args, **kwargs)
 
     class Meta:
         managed = True

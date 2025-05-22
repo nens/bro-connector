@@ -242,7 +242,6 @@ ADMIN_REORDER = (
             "gmw.GeoOhmCable",
             "gmw.Electrode",
             "gmw.Event",
-            "gmw.Picture",
             "gmw.MaintenanceParty",
             "gmw.Maintenance",
             "gmw.gmw_registration_log",
@@ -420,7 +419,6 @@ JAZZMIN_SETTINGS = {
         "gmw.GeoOhmCable",
         "gmw.Electrode",
         "gmw.Event",
-        "gmw.Picture",
         "gmw.MaintenanceParty",
         "gmw.Maintenance",
         "gld",
@@ -505,7 +503,7 @@ JAZZMIN_SETTINGS = {
         # "gmw.GroundwaterMonitoringTubes": "fas fa-prescription-bottle",
         "tools": "fas fa-wrench",
     },
-    "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "single"},
+    "changeform_format_overrides": {"gmw.GroundwaterMonitoringWellStatic": "tab"},
 }
 
 GRAPH_MODELS = {

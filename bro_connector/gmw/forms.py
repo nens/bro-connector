@@ -1,4 +1,5 @@
 import django.forms as forms
+from image_uploader_widget.widgets import ImageUploaderWidget
 from . import models
 
 
@@ -106,6 +107,15 @@ class GroundwaterMonitoringTubeDynamicForm(forms.ModelForm):
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
                 field.disabled = True
+
+
+class PictureForm(forms.ModelForm):
+    class Meta:
+        model = models.Picture
+        fields = "__all__"
+        widgets = {
+            "picture": ImageUploaderWidget(),  # This gives the drag-drop upload
+        }
 
 
 class GeoOhmCableForm(forms.ModelForm):
