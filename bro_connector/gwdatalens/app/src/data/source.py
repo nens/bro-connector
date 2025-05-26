@@ -183,7 +183,10 @@ class PostgreSQLDataSource(DataSourceTemplate):
             # NOTE: use for background callbacks
             # self.engine.dispose()
         except Exception as e:
-            logger.error(f"Database not connected successfully: {e}")
+            self.engine = None
+            msg = f"Database not connected successfully: {e}"
+            logger.error(msg)
+            raise Exception(msg) from e
 
         self.value_column = "calculated_value"
         self.qualifier_column = "status_quality_control"
@@ -236,6 +239,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         stmt = (
             select(
                 datamodel.Well.bro_id,
+                datamodel.Well.well_code,
                 datamodel.Well.nitg_code,
                 datamodel.TubeStatic.tube_number,
                 datamodel.TubeDynamic.tube_top_position,
@@ -263,6 +267,9 @@ class PostgreSQLDataSource(DataSourceTemplate):
         gdf["screen_bot"] = gdf["screen_top"] - gdf["screen_length"]
 
         gdf["name"] = gdf.loc[:, ["bro_id", "tube_number"]].apply(
+            lambda p: f"{p.iloc[0]}-{p.iloc[1]:03g}", axis=1
+        )
+        gdf["wellcode_name"] = gdf.loc[:, ["well_code", "tube_number"]].apply(
             lambda p: f"{p.iloc[0]}-{p.iloc[1]:03g}", axis=1
         )
 
@@ -300,14 +307,14 @@ class PostgreSQLDataSource(DataSourceTemplate):
     def list_locations(self) -> List[str]:
         """Return a list of locations that contain groundwater level dossiers.
 
-        Each location is defines by a tuple of length 2: bro-id and tube_id.
+        Each location is defines by a tuple of length 2: bro_id/well_code and tube_id.
 
         Returns
         -------
         List[str]
             List of measurement location names.
         """
-        # get all grundwater level dossiers
+        # get all groundwater level dossiers
         stmt = (
             select(
                 datamodel.Well.bro_id,
@@ -331,6 +338,27 @@ class PostgreSQLDataSource(DataSourceTemplate):
             f"{t[0]}-{t[1]:03g}" for t in loc_df.itertuples(index=False, name=None)
         ]
         return locations
+
+    def get_wellcode(self, name):
+        well_code = self.gmw_gdf.at[name, "well_code"]
+        if isinstance(well_code, str) and len(well_code) > 0:
+            return well_code + f"-{name.split('-')[-1]}"
+        else:
+            return ""
+
+    def wellcode_to_broid(self, well_code):
+        bro_id = self.gmw_gdf.loc[self.gmw_gdf["well_code"] == well_code, "bro_id"]
+        if bro_id.empty:
+            raise KeyError(f"Well code '{well_code}' not found in the database.")
+        else:
+            return bro_id.iloc[0]
+
+    def broid_to_wellcode(self, bro_id):
+        well_code = self.gmw_gdf.loc[self.gmw_gdf["bro_id"] == bro_id, "well_code"]
+        if well_code.empty:
+            raise KeyError(f"Well code '{well_code}' not found in the database.")
+        else:
+            return well_code.iloc[0]
 
     def list_locations_sorted_by_distance(self, name) -> List[str]:
         """List locations sorted by their distance from a given location.
@@ -380,7 +408,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         tube_id: Optional[int] = None,
         observation_type="reguliereMeting",
         column: Optional[Union[List[str], str]] = None,
-    ) -> pd.Series:
+    ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series for the measurements for given bro-id and tube-id.
 
         Values returned im m. Return None when there are no measurements.
@@ -473,7 +501,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         else:
             return df
 
-    def count_measurements_per_filter(self) -> pd.Series:
+    def count_measurements_per_filter(self) -> pd.Series | pd.DataFrame:
         """Count the number of measurements per filter.
 
         Returns
