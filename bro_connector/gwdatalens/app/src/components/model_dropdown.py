@@ -22,8 +22,8 @@ def render(data, selected_data):
         A Dash HTML Div component containing a Dropdown for selecting a location.
     """
     locs = data.db.list_locations()
-
-    options = [{"label": f"{i}{data.db.get_nitg_code(i)}", "value": i} for i in locs]
+    locs = sorted(locs, key=lambda n: data.db.gmw_gdf.loc[n, "wellcode_name"])
+    options = [{"label": f"{data.db.get_wellcode(i)}", "value": i} for i in locs]
 
     if selected_data is not None and len(selected_data) == 1:
         value = selected_data[0]

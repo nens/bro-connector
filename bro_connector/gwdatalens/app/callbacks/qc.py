@@ -22,6 +22,9 @@ from dash import (
 )
 from dash import __version__ as DASH_VERSION
 from dash.exceptions import PreventUpdate
+from packaging.version import parse as parse_version
+from traval import rulelib
+
 from gwdatalens.app.settings import settings
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.components.overview_chart import plot_obs
@@ -30,8 +33,6 @@ from gwdatalens.app.src.components.qc_rules_form import (
     generate_kwargs_from_func,
     generate_traval_rule_components,
 )
-from packaging.version import parse as parse_version
-from traval import rulelib
 
 
 # %% TRAVAL TAB
@@ -156,7 +157,11 @@ def register_qc_callbacks(app, data):
             # value[1] = int(value[1])
             locs = data.db.list_locations_sorted_by_distance(value)
             options = [
-                {"label": i + f" ({row.distance / 1e3:.1f} km)", "value": i}
+                {
+                    "label": data.db.get_wellcode(i)
+                    + f" ({row.distance / 1e3:.1f} km)",
+                    "value": i,
+                }
                 for i, row in locs.iterrows()
             ]
             return False, options
@@ -425,7 +430,7 @@ def register_qc_callbacks(app, data):
         Raises
         ------
         PreventUpdate
-            If `n_clicks`  is None.
+            If `n_clicks` is None.
         """
         if n_clicks is not None:
             form_components = []
@@ -459,7 +464,7 @@ def register_qc_callbacks(app, data):
         Returns
         -------
         bool
-            False if the value  is not None, otherwise True.
+            False if the value is not None, otherwise True.
         """
         if value is not None:
             return False

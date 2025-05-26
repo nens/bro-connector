@@ -12,6 +12,7 @@ class Well(Base):
     __tablename__ = "groundwater_monitoring_well_static"
     groundwater_monitoring_well_static_id: Mapped[int] = mapped_column(primary_key=True)
     bro_id: Mapped[str]
+    well_code: Mapped[str]
     nitg_code: Mapped[str]
     coordinates: Mapped[str]
     reference_system: Mapped[str]

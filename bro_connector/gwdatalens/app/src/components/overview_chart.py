@@ -65,7 +65,7 @@ def plot_obs(names, data):
 
     Notes
     -----
-    - If `names`  is None, returns a layout with a title indicating no plot.
+    - If `names` is None, returns a layout with a title indicating no plot.
     - If a name is not found in the database, it is skipped.
     - For a single name, plots the timeseries data with different qualifiers and manual
       observations.
@@ -101,7 +101,7 @@ def plot_obs(names, data):
             continue
 
         df[data.db.qualifier_column] = df.loc[:, data.db.qualifier_column].fillna("")
-
+        wellcode = data.db.get_wellcode(name)
         if len(names) == 1:
             no_data.append(False)
             ts = df[data.db.value_column]
@@ -110,8 +110,8 @@ def plot_obs(names, data):
                 y=ts.values,
                 mode="lines",
                 line={"width": 1, "color": "gray"},
-                name=name + data.db.get_nitg_code(name),
-                legendgroup=f"{name}-{tube_nr}",
+                name=wellcode,
+                legendgroup=wellcode,
                 showlegend=True,
             )
             traces.append(trace_i)
@@ -169,8 +169,8 @@ def plot_obs(names, data):
                 mode="markers+lines",
                 line={"width": 1},
                 marker={"size": 3},
-                name=name,
-                legendgroup=f"{name}-{tube_nr}",
+                name=wellcode,
+                legendgroup=wellcode,
                 showlegend=True,
             )
             traces.append(trace_i)

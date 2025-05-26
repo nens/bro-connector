@@ -293,8 +293,8 @@ class TravalInterface:
         except Exception as _:
             ml = None
 
-        # little modification to add NITG code to figure
-        detector.series.name += self.db.get_nitg_code(name)
+        # little modification to set wellcode as name
+        detector.series.name = self.db.get_wellcode(name)
 
         manual_obs = self.db.get_timeseries(
             gmw_id, tube_id, observation_type="controlemeting"
