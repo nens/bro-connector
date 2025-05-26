@@ -91,4 +91,4 @@ class MeasurementPointMetadata(Base):
     status_quality_control: Mapped[str]
     censor_reason: Mapped[str]
     censor_reason_datalens: Mapped[str]
-    value_limit: Mapped[float]
+    value_limit: Mapped[str]
