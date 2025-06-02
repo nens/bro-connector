@@ -204,7 +204,7 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
     # Create GLD Registration Log
     print(f"Check and deliver for dossier {dossier.groundwater_level_dossier_id}")
     if is_broid(dossier.gld_bro_id):
-        gld_start_registration = gld_registration_log.objects.update_or_create(
+        gld_registration_log.objects.get_or_create(
             gmw_bro_id=dossier.gmw_bro_id,
             gld_bro_id=dossier.gld_bro_id,
             filter_number=dossier.tube_number,
@@ -218,7 +218,7 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
                 delivery_status="OPGENOMEN_LVBRO",
                 comments="Imported into BRO-Connector.",
             ),
-        )[0]
+        )
     else:
         gld_start_registration = gld_registration_log.objects.update_or_create(
             gmw_bro_id=dossier.gmw_bro_id,

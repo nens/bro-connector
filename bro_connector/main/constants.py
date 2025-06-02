@@ -29,6 +29,7 @@ class RegistrationLog:
 
     class Message:
         GENERATE_SUCCESS = "Attempted startregistration sourcedocument regeneration"
+        GENERATE_ERROR_INPUT = "No GMW ID or filter number provided"
         GENERATE_ERROR = "Can't generate startregistration sourcedocuments for an existing registration"
         VALIDATE_SUCCESS = "Succesfully validated startregistration sourcedocument"
         VALIDATE_ERROR_GENERATE = "Can't validate a startregistration that failed to generate"

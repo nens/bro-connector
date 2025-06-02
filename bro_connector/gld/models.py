@@ -682,11 +682,6 @@ class gld_registration_log(BaseModel):
     def generate_sourcedocument(
         self,
     ) -> str:
-        if self.gmw_bro_id is None or self.filter_number is None:
-            self.comments = "No GMW ID or filter number provided"
-            self.save()
-            return
-
         gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         tube = gmw.tube.get(tube_number=self.filter_number)
         filternumber = self.filter_number
@@ -744,11 +739,6 @@ class gld_registration_log(BaseModel):
         """
         Validate the generated GLD sourcedoc
         """
-        if not self.file:
-            self.comments = "No file to validate"
-            self.save()
-            return
-
         gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         source_doc_file = os.path.join(REGISTRATIONS_DIR, self.file)
         payload = open(source_doc_file)
@@ -784,11 +774,6 @@ class gld_registration_log(BaseModel):
         """
         Deliver the generated GLD sourcedoc
         """
-        if not self.file:
-            self.comments = "No file to deliver"
-            self.save()
-            return
-
         # If the delivery fails, use the this to indicate how many attempts were made
         delivery_status = self.delivery_status
         if delivery_status is None:
@@ -844,9 +829,6 @@ class gld_registration_log(BaseModel):
         """
         Check the delivery status of the generated GLD sourcedoc
         """
-        if not self.delivery_id:
-            return
-
         gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         bro_info = gmw.get_bro_info()
 

@@ -18,12 +18,14 @@ from .custom_filters import (
     OrganisationFilter,
     ObservationFilter,
 )
-from ..main.constants import *
+from main.constants import *
 
 import datetime
 from gmw.models import GroundwaterMonitoringWellStatic
 from gld.models import GroundwaterLevelDossier
 
+from logging import getLogger
+logger = getLogger(__file__)
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
@@ -338,6 +340,12 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     RegistrationLog.Message.GENERATE_ERROR,
                     messages.ERROR,
                 )
+            elif registration_log.gmw_bro_id is None or registration_log.filter_number is None:
+                self.message_user(
+                    request,
+                    RegistrationLog.Message.GENERATE_ERROR_INPUT,
+                    messages.ERROR,
+                )
             else:
                 registration_log.generate_sourcedocument()
                 print("delivery id after generating: ",registration_log.delivery_id)
@@ -350,7 +358,11 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     @admin.action(description=RegistrationLog.Action.VALIDATE)
     def validate_startregistration_sourcedocument(self, request, queryset: list[models.gld_registration_log]):
         for registration_log in queryset:
-            if registration_log.process_status == RegistrationLog.ProcessStatus.GENERATE_FAIL:
+            if (
+                registration_log.file is None or
+                registration_log.process_status == RegistrationLog.ProcessStatus.GENERATE_FAIL
+
+            ):
                 self.message_user(
                     request,
                     RegistrationLog.Message.VALIDATE_ERROR_GENERATE,
@@ -376,7 +388,10 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     @admin.action(description=RegistrationLog.Action.DELIVER)
     def deliver_startregistration_sourcedocument(self, request, queryset: list[models.gld_registration_log]):
         for registration_log in queryset:
-            if registration_log.process_status == RegistrationLog.ProcessStatus.GENERATE_FAIL:
+            if (
+                registration_log.file is None or
+                registration_log.process_status == RegistrationLog.ProcessStatus.GENERATE_FAIL
+            ):
                 self.message_user(
                     request,
                     RegistrationLog.Message.DELIVER_ERROR_GENERATE,
@@ -513,7 +528,13 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     @admin.action(description=AdditionLog.Action.GENERATE)
     def regenerate_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         for addition_log in queryset:
-            if (
+            if len(addition_log.observation.get_sourcedocument_data().get("result")) < 1:
+                logger.warning("No results in observation")
+                addition_log.date_modified = datetime.datetime.now()
+                addition_log.comments = "No results in observation"
+                addition_log.process_status = "failed_to_create_source_document"
+                addition_log.save()
+            elif (
                 addition_log.validation_status == AdditionLog.ValidationStatus.VALID or
                 addition_log.delivery_status in [AdditionLog.DeliveryStatus.DELIVERED, AdditionLog.DeliveryStatus.APPROVED, AdditionLog.DeliveryStatus.VALIDATED]
             ):
@@ -524,7 +545,6 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                 )
             else:
                 addition_log.generate_sourcedocument()
-
                 self.message_user(
                     request,
                     AdditionLog.Message.GENERATE_SUCCESS,
