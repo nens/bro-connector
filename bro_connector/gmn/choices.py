@@ -63,8 +63,9 @@ LEVERINGSTATUS_CHOICES = [
 ]
 
 EVENT_TYPE_CHOICES = [
-    ("GMN_StartRegistration", "Start Registration"),
-    ("GMN_MeasuringPoint", "Add MeasuringPoint"),
-    ("GMN_MeasuringPointEndDate", "Remove MeasuringPoint"),
-    ("GMN_Closure", "GMN Closure"),
+    ("GMN_StartRegistration", "Startregistratie"),
+    ("GMN_MeasuringPoint", "Meetpunt toevoegen"),
+    ("GMN_MeasuringPointEndDate", "Einddatum meetpunt"),
+    ("GMN_TubeReference", "Buis vervangen"),
+    ("GMN_Closure", "Meetnet afsluiten"),
 ]
