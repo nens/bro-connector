@@ -1,12 +1,14 @@
-
 from ..tasks.duplicates_handler import GMWDuplicatesHandler
 from .bbox_handler import DataRetrieverBBOX
 from django.conf import settings
 
+
 def run(kvk_number, properties, logging):
     if not properties:
-        raise Exception("Specificeer minimaal 1 feature property om duplicaten voor te zoeken")
-    
+        raise Exception(
+            "Specificeer minimaal 1 feature property om duplicaten voor te zoeken"
+        )
+
     bbox_settings = settings.BBOX_SETTINGS
     bbox = settings.BBOX
     shp = settings.POLYGON_SHAPEFILE
@@ -14,10 +16,10 @@ def run(kvk_number, properties, logging):
         DR = DataRetrieverBBOX(bbox)
         DR.request_bro_ids("gmw")
         DR.filter_ids_kvk(kvk_number)
-        DR.enforce_shapefile(shp,delete=False)
+        DR.enforce_shapefile(shp, delete=False)
     else:
         raise Exception("Set use_bbox to true")
-    
+
     GMWDH = GMWDuplicatesHandler(DR.features)
     if GMWDH.features:
         for feature in GMWDH.features:

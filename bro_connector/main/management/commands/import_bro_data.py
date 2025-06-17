@@ -22,18 +22,16 @@ class Command(BaseCommand):
         parser.add_argument(
             "--type", type=str, help="Type BRO bericht: gmw, gld, gar, gmn, frd"
         )
-        parser.add_argument(
-            "--handler", type=str, help="API handler: kvk, ogc"
-        )
+        parser.add_argument("--handler", type=str, help="API handler: kvk, ogc")
 
     def handle(self, *args, **options):
         kvk_number = options["kvk_number"]
         bro_type = options["type"]
         handler = options["handler"]
-        print("KVK number: ",kvk_number)
+        print("KVK number: ", kvk_number)
 
         if bro_type == "gmw":
-            retrieve_historic_gmw.run(kvk_number=kvk_number,handler=handler)
+            retrieve_historic_gmw.run(kvk_number=kvk_number, handler=handler)
 
         elif bro_type == "gld":
             retrieve_historic_gld.run(kvk_number=kvk_number)

@@ -2,9 +2,11 @@ class Ranking:
     class Names:
         unknown_ranking = "Unknwon Values Ranking"
         empty_ranking = "Empty Values Ranking"
+
     class Weights:
         unknown_weight = 1
         empty_weight = 1
+
 
 def score_data_quality(features: list, unkown_data: dict, empty_data: dict):
     ranking_unknown = {}
@@ -36,10 +38,13 @@ def score_data_quality(features: list, unkown_data: dict, empty_data: dict):
         weight_empty = Ranking.Weights.empty_weight
         rank_empty = ranking_empty[bro_id]
 
-        rank_weighted = sum([weight_unknown*rank_unknown, weight_empty*rank_empty]) / sum([weight_unknown, weight_empty])
+        rank_weighted = sum(
+            [weight_unknown * rank_unknown, weight_empty * rank_empty]
+        ) / sum([weight_unknown, weight_empty])
         scores[bro_id] = rank_weighted
 
     return scores
+
 
 def rank_scores(data: dict):
     ranking_sorted = sorted(data.items(), key=lambda x: x[1])
@@ -50,28 +55,39 @@ def rank_scores(data: dict):
         # Find all items with same value
         val = ranking_sorted[i][1]
         same_value_keys = [ranking_sorted[i][0]]
-        
+
         j = i + 1
         while j < len(ranking_sorted) and ranking_sorted[j][1] == val:
             same_value_keys.append(ranking_sorted[j][0])
             j += 1
-        
+
         # Assign same rank to all those keys
         for key in same_value_keys:
             ranking[key] = current_rank
-        
+
         current_rank += 1
         i = j
     return ranking
 
+
 def scenario_1(features):
-    tubes = [feature["properties"].get("number_of_monitoring_tubes") for feature in features]
+    tubes = [
+        feature["properties"].get("number_of_monitoring_tubes") for feature in features
+    ]
     return len(set(tubes)) > 1
 
-def scenario_2(features):           
-    construction_dates = [feature["properties"].get("well_construction_date") for feature in features]
-    removal_dates = [feature["properties"].get("well_removal_date") for feature in features]
-    return any(date is not None and date in removal_dates for date in construction_dates)
+
+def scenario_2(features):
+    construction_dates = [
+        feature["properties"].get("well_construction_date") for feature in features
+    ]
+    removal_dates = [
+        feature["properties"].get("well_removal_date") for feature in features
+    ]
+    return any(
+        date is not None and date in removal_dates for date in construction_dates
+    )
+
 
 def scenario_3(features):
     unknowns = {}
@@ -90,19 +106,24 @@ def scenario_3(features):
                 unknown_count += 1
             if value is None or (isinstance(value, str) and value.strip() == ""):
                 empty_count += 1
-        
+
         unknowns[bro_id] = unknown_count
         empties[bro_id] = empty_count
 
-    scores = score_data_quality(features, unknowns, empties)          
+    scores = score_data_quality(features, unknowns, empties)
     return len(set(scores.values())) > 1
+
 
 def rank_based_on_tubes(features):
     return rank_based_on_dates(features)
 
+
 def rank_based_on_dates(features):
     bro_ids = [feature.get("properties").get("bro_id", None) for feature in features]
-    dates = {f["properties"].get("bro_id"): f["properties"].get("well_construction_date") for f in features}
+    dates = {
+        f["properties"].get("bro_id"): f["properties"].get("well_construction_date")
+        for f in features
+    }
     sorted_dates = sorted(set(dates.values()))  # Unique and sorted dates
     rank_map = {date: rank + 1 for rank, date in enumerate(sorted_dates)}
     ranks = {bro_id: rank_map[date] for bro_id, date in dates.items()}
@@ -114,8 +135,9 @@ def rank_based_on_dates(features):
 
     return features
 
+
 def rank_based_on_quality(features):
-    bro_ids = [feature.get("properties").get("bro_id", None) for feature in features]            
+    bro_ids = [feature.get("properties").get("bro_id", None) for feature in features]
     unknowns = {}
     empties = {}
 
@@ -132,7 +154,7 @@ def rank_based_on_quality(features):
                 unknown_count += 1
             if value is None or (isinstance(value, str) and value.strip() == ""):
                 empty_count += 1
-        
+
         unknowns[bro_id] = unknown_count
         empties[bro_id] = empty_count
 
@@ -145,6 +167,7 @@ def rank_based_on_quality(features):
             feature["properties"].update({"rank": ranks[bro_id]})
 
     return features
+
 
 def rank_based_on_bro_id(features):
     bro_ids = [feature.get("properties").get("bro_id", None) for feature in features]

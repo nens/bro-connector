@@ -1,12 +1,13 @@
 import geopandas as gpd
 
+
 class BBOX_EXTRACTOR:
-    def __init__(self,shp,use_bbox):
+    def __init__(self, shp, use_bbox):
         self.bbox = self.BBOX(shp)
         self.bbox_settings = self.get_bbox_settings(use_bbox)
-    
+
     class BBOX:
-        def __init__(self,shp):
+        def __init__(self, shp):
             gdf = gpd.read_file(shp)
             crs_bro = "EPSG:4326"
             crs_shp = gdf.crs.to_string()
@@ -18,8 +19,8 @@ class BBOX_EXTRACTOR:
             self.ymin = self.bbox[1]
             self.xmax = self.bbox[2]
             self.ymax = self.bbox[3]
-       
-    def get_bbox_settings(self,use_bbox):
+
+    def get_bbox_settings(self, use_bbox):
         return {
             "use_bbox": use_bbox,
             "xmin": self.bbox.xmin,

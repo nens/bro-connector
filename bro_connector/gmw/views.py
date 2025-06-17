@@ -38,3 +38,31 @@ def gmw_map_context(request):
         "organisations": instanties,
     }
     return render(request, "map.html", context)
+
+
+def gmw_map_detail_context(request):
+    # Pre-fetch related data to reduce database hits
+    id = request.GET.get("id", None)
+    if id is None:
+        gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
+            Prefetch(
+                "tube__measuring_point",  # Adjust the related field names
+                queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
+            )
+        )
+    else:
+        gmw_qs = GroundwaterMonitoringWellStatic.objects.filter(
+            groundwater_monitoring_well_static_id=id
+        ).prefetch_related(
+            Prefetch(
+                "tube__measuring_point",  # Adjust the related field names
+                queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
+            )
+        )
+
+    # Serialize GroundwaterMonitoringWellStatic with only required fields
+    wells = serializers.GMWSerializer(gmw_qs, many=True).data
+    context = {
+        "wells": wells,
+    }
+    return render(request, "detail_map.html", context)

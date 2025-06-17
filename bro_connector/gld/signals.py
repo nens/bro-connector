@@ -61,8 +61,7 @@ def on_save_gld_registration_log(
             tube_number=instance.filter_number,
         )
         gld = GroundwaterLevelDossier.objects.get(
-            groundwater_monitoring_tube=tube,
-            quality_regime=instance.quality_regime
+            groundwater_monitoring_tube=tube, quality_regime=instance.quality_regime
         )
         if gld.gld_bro_id != instance.gld_bro_id:
             with reversion.create_revision():

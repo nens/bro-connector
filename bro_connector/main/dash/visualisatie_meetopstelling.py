@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 from dash import dcc, html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 from django.shortcuts import get_object_or_404
 from django_plotly_dash import DjangoDash
 from plotly.subplots import make_subplots
@@ -562,17 +562,6 @@ app.layout = html.Div(
         ),
     ]
 )
-
-
-@app.callback(
-    Output("collapse", "is_open"),
-    [Input("collapse-button", "n_clicks")],
-    [State("collapse", "is_open")],
-)
-def toggle_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
 
 
 @app.callback(

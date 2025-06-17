@@ -30,7 +30,7 @@ const hexToRgb = (hex) => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
-  return [r, g, b];
+  return [r, g, b, 200];
 };
 
 // Add color and visible map for each organisation
@@ -60,9 +60,8 @@ const createPopup = (well) => {
   const frdPageUrl = `/admin/frd/formationresistancedossier/?q=${well.bro_id}`;
   const popupContent = `
               <div id="popup-content">
-                <a href="${objectPageUrl}" target="_blank"><strong style="font-size: 18px;">${
-    well.well_code
-  }</strong></a>
+                <a href="${objectPageUrl}" target="_blank"><strong style="font-size: 18px;">${well.well_code
+    }</strong></a>
                 <hr width="100%" size="2">
                 <div class="well-item">
                   <span class="label">BRO-ID:</span>
@@ -75,8 +74,8 @@ const createPopup = (well) => {
                 <div class="well-item">
                   <span class="label">GMW naar BRO:</span>
                   <span class="value">${checkOrCross(
-                    well.deliver_gmw_to_bro
-                  )}</span>
+      well.deliver_gmw_to_bro
+    )}</span>
                 </div>
                 <div class="well-item">
                   <span class="label">BRO compleet:</span>
@@ -120,7 +119,7 @@ const showWellPopupAndMove = (well) => {
   const popup = createPopup(well);
   const lngLat = [well.y, well.x];
 
-  const newMarker = new mapboxgl.Marker(popup, { anchor: "top", offset: [-150,-200] })
+  const newMarker = new mapboxgl.Marker(popup, { anchor: "top", offset: [-150, -200] })
     .setLngLat(lngLat)
     .addTo(map);
   setTimeout(() => (marker = newMarker));
@@ -187,22 +186,24 @@ const myScatterplotLayer = new deck.MapboxLayer({
   },
 });
 
-const myTextLayer = new deck.MapboxLayer({
-  id: "text-layer",
-  data: wells,
-  type: deck.TextLayer,
-
-  getPosition: (well) => [well.y, well.x],
-  getText: (well) => well.label + "",
-  getAlignmentBaseline: "bottom",
-  getColor: BLACK,
-  getSize: 100,
-  sizeUnits: "meters",
-  sizeMaxPixels: 15,
-  getPixelOffset: [50, -30],
-  getTextAnchor: "middle",
-  getAngle: 30,
-});
+function createTextLayer(visible) {
+  return new deck.MapboxLayer({
+    id: "text-layer",
+    data: wells,
+    type: deck.TextLayer,
+    getPosition: (well) => [well.y, well.x],
+    getText: (well) => well.label + "",
+    getAlignmentBaseline: "bottom",
+    getColor: BLACK,
+    getSize: 100,
+    sizeUnits: "meters",
+    sizeMaxPixels: 15,
+    getPixelOffset: [50, -30],
+    getTextAnchor: "middle",
+    getAngle: 30,
+    visible: visible,
+  });
+}
 
 // Create the map
 const map = new mapboxgl.Map({
@@ -241,7 +242,20 @@ const map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl(), "bottom-left");
 map.on("load", () => {
   map.addLayer(myScatterplotLayer);
-  map.addLayer(myTextLayer);
+});
+
+
+map.on("zoom", () => {
+  const zoom = map.getZoom();
+  const shouldShowText = zoom >= 12;
+  isTextLayerVisible = shouldShowText;
+  // Remove the old layer if it exists
+  if (map.getLayer("text-layer")) {
+    map.removeLayer("text-layer");
+  }
+  // Add it back with correct visibility
+  const newTextLayer = createTextLayer(shouldShowText);
+  map.addLayer(newTextLayer);
 });
 
 // Remove popup on map click
@@ -255,6 +269,9 @@ let isTextLayerVisible = true;
 
 // Function to toggle the visibility of the text layer
 const toggleTextLayerVisibility = () => {
+  const zoom = map.getZoom();
+  const shouldShowText = zoom >= 12;
+  const newTextLayer = createTextLayer(shouldShowText);
   try {
     if (isTextLayerVisible) {
       // If the text layer is visible, remove it from the map
@@ -266,7 +283,7 @@ const toggleTextLayerVisibility = () => {
     } else {
       // If the text layer is not visible, add it back to the map
       if (!map.getLayer("text-layer")) {  // Check if the layer doesn't already exist
-        map.addLayer(myTextLayer);
+        map.addLayer(newTextLayer);
       } else {
         console.warn("Text layer already exists on the map.");
       }

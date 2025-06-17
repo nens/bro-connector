@@ -1,7 +1,6 @@
 from django.db.models.signals import (
     pre_save,
 )
-from datetime import datetime
 import polars as pl
 import numpy as np
 from .models import GLDImport, GMNImport
@@ -22,10 +21,9 @@ from gld.models import (
     MeasurementPointMetadata,
     ObservationProcess,
     ObservationMetadata,
-    GroundwaterLevelDossier
+    GroundwaterLevelDossier,
 )
 from gld.choices import STATUSQUALITYCONTROL, CENSORREASON
-from .utils import detect_csv_separator
 
 
 logger = getLogger("general")
@@ -107,7 +105,7 @@ def process_csv_file(instance: GLDImport):
     time_col = "time" if "time" in reader.columns else "tijd"
     value_col = "value" if "value" in reader.columns else "waarde"
     gld = GroundwaterLevelDossier.objects.filter(
-        groundwater_monitoring_tube = instance.groundwater_monitoring_tube
+        groundwater_monitoring_tube=instance.groundwater_monitoring_tube
         # quality_regime = instance.quality_regime
     ).first()
     if instance.validated:
@@ -135,7 +133,7 @@ def process_csv_file(instance: GLDImport):
         # Create Observation
         print("starting obs")
         Obs = Observation.objects.update_or_create(
-            groundwater_level_dossier = gld,
+            groundwater_level_dossier=gld,
             observation_metadata=Obs_Meta,
             observation_process=Obs_Pro,
             observation_starttime=first_datetime,
@@ -149,9 +147,7 @@ def process_csv_file(instance: GLDImport):
             time = row[time_col]
 
             # create basic MeasurementPointMetadata
-            mp_meta = MeasurementPointMetadata.objects.create(
-                value_limit = None
-            )
+            mp_meta = MeasurementPointMetadata.objects.create(value_limit=None)
 
             # Add the present fields to the metadata if they are given in the CSV
             st_quality_control_tvp = row.get("status_quality_control", None)
@@ -178,14 +174,14 @@ def process_csv_file(instance: GLDImport):
                 field_value_unit=instance.field_value_unit,
                 measurement_point_metadata=mp_meta,
             )
-    
+
         instance.executed = True
 
 
 def validate_csv(file, filename: str, instance: GLDImport):
     time_col = None
-    seperator = ","# detect_csv_separator(file)
-    print("Separator: ",seperator)
+    seperator = ","  # detect_csv_separator(file)
+    print("Separator: ", seperator)
     reader = pd.read_csv(file, header=0, index_col=False, sep=seperator)
     print(reader)
     required_columns = ["time", "value"]

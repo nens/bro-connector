@@ -18,7 +18,7 @@ class Command(BaseCommand):
             "--properties",
             type=str,
             nargs="+",
-            default=["well_code","nitg_code"],
+            default=["well_code", "nitg_code"],
             help="Specificeer de properties om duplicaten op te filteren (default: well_code nitg_code)",
         )
         parser.add_argument(
@@ -26,15 +26,14 @@ class Command(BaseCommand):
             type=str,
             choices=["True", "False"],
             default="True",
-            help="Enable or disable logging (True or False)"
+            help="Enable or disable logging (True or False)",
         )
 
     def handle(self, *args, **options):
         kvk_number = options["kvk_number"]
-        properties = options["properties"]  
+        properties = options["properties"]
         logging = options["logging"] == "True"
 
-        retrieve_duplicates_gmw.run(kvk_number=kvk_number, properties=properties, logging=logging)
-
-
-
+        retrieve_duplicates_gmw.run(
+            kvk_number=kvk_number, properties=properties, logging=logging
+        )

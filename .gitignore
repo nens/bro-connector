@@ -19,3 +19,4 @@ bro_connector/.pi_cache/
 /fieldforms/**
 .pixi
 **/pastasdb/**
+staticfiles/

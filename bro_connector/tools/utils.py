@@ -33,9 +33,7 @@ def detect_csv_separator(file):
             # Validate by trying to parse with the detected delimiter
             file.seek(0)  # Reset file pointer
             try:
-                dialect = csv.Sniffer().sniff(
-                    sample, delimiters=possible_delimiters
-                )
+                dialect = csv.Sniffer().sniff(sample, delimiters=possible_delimiters)
                 if dialect.delimiter in possible_delimiters:
                     return dialect.delimiter
                 else:

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from gmw import models as gmw_models
 from gld import models as gld_models
-from django.utils.html import format_html, format_html_join
+from django.utils.html import format_html_join
+
 
 class GMWSerializer(serializers.ModelSerializer):
     x = serializers.SerializerMethodField()
@@ -62,23 +63,29 @@ class GMWSerializer(serializers.ModelSerializer):
         return last_state.well_head_protector
 
     def get_picture(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
-        pictures = obj.picture.order_by("-recording_datetime","-picture_id")
+        pictures = obj.picture.order_by("-recording_datetime", "-picture_id")
         if pictures:
             # return picture.image_tag
             return format_html_join(
                 "",
                 '<div style="margin-bottom: 0.5em;"><img src="{}" style="max-width:100px; max-height:100px;"><br><small>{}</small></div>',
                 [
-                    (pic.picture.url, pic.recording_datetime.strftime("%Y-%m-%d %H:%M") if pic.recording_datetime else "No timestamp")
-                    for pic in pictures if pic.picture
-                ]
+                    (
+                        pic.picture.url,
+                        pic.recording_datetime.strftime("%Y-%m-%d %H:%M")
+                        if pic.recording_datetime
+                        else "No timestamp",
+                    )
+                    for pic in pictures
+                    if pic.picture
+                ],
             )
         else:
             return "..."
 
     def get_nitg_code(self, obj):
         return obj.nitg_code
-    
+
     def get_label(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return obj.__str__()
 

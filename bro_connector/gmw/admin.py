@@ -127,11 +127,9 @@ class WellDynamicInline(admin.TabularInline):
     search_fields = get_searchable_fields(gmw_models.GroundwaterMonitoringWellDynamic)
     fields = (
         "date_from",
-        "date_till",
         "well_head_protector",
         "ground_level_position",
         "ground_level_positioning_method",
-        "number_of_standpipes",
         "comment",
     )
     ordering = ["date_from"]
@@ -191,20 +189,28 @@ class TubeStaticInline(admin.TabularInline):
         "deliver_gld_to_bro",
         "tube_number",
         "tube_type",
-        "number_of_geo_ohm_cables",
         "bro_actions",
-        "report",
     )
     ordering = ["tube_number"]
     readonly_fields = [
         "tube_number",
-        "number_of_geo_ohm_cables",
+        "number_of_geo_ohm_cables_display",
         "bro_actions",
-        "report",
+        "report_display",
     ]
 
     extra = 0
     max_num = 0
+
+    def number_of_geo_ohm_cables_display(self, instance):
+        return instance.number_of_geo_ohm_cables
+
+    number_of_geo_ohm_cables_display.short_description = "Aantal kabels"
+
+    def report_display(self, instance):
+        return instance.report
+
+    report_display.short_description = "Verslag"
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -350,6 +356,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "complete_bro",
         "bro_actions",
         "bro_loket_link",
+        "map_preview",
     )
 
     fieldsets = [
@@ -385,6 +392,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "y",
                     "lat",
                     "lon",
+                    "map_preview",
                 ],
             },
         ),
@@ -514,7 +522,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     list_filter = (WellFilter, "owner")
 
-    readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
+    readonly_fields = ["date_till", "number_of_standpipes", "deliver_gld_to_bro"]
 
     # inlines = (WellStaticInline,)
 
