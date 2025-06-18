@@ -207,8 +207,13 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
     list_max_show_all = 1000  # Prevents loading all records
 
     list_display = ("__str__",)
+    ordering = ("-measurement_time",)
     autocomplete_fields = ("measurement_point_metadata",)
     list_filter = (ObservationFilter,)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.only("measurement_time", "observation")
 
 
 class ObservationAdmin(admin.ModelAdmin):
