@@ -1,26 +1,28 @@
-from django.contrib import admin
-from django.contrib import messages
-from django.db.models import fields
+import datetime
 import os
-from . import models
-from main.settings.base import gld_SETTINGS
-from gld.management.tasks import gld_actions
-from reversion_compare.helpers import patch_admin
+from collections import Counter
+
 import reversion
+from django.contrib import admin, messages
+from django.db.models import fields
 from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
 )
-from .custom_filters import (
-    HasOpenObservationFilter,
-    CompletelyDeliveredFilter,
-    TubeFilter,
-    GLDFilter,
-    OrganisationFilter,
-    ObservationFilter,
-)
-import datetime
-from gmw.models import GroundwaterMonitoringWellStatic
+from gld.management.tasks import gld_actions
 from gld.models import GroundwaterLevelDossier
+from gmw.models import GroundwaterMonitoringWellStatic
+from main.settings.base import gld_SETTINGS
+from reversion_compare.helpers import patch_admin
+
+from . import models
+from .custom_filters import (
+    CompletelyDeliveredFilter,
+    GLDFilter,
+    HasOpenObservationFilter,
+    ObservationFilter,
+    OrganisationFilter,
+    TubeFilter,
+)
 
 
 def _register(model, admin_class):
@@ -31,9 +33,23 @@ def get_searchable_fields(model_class):
     return [
         f.name
         for f in model_class._meta.fields
-        if isinstance(f, (fields.CharField, fields.AutoField))
+        if isinstance(f, fields.CharField | fields.AutoField)
     ]
 
+def send_pending_messages(self, request, message_counter):
+    for (msg_text, msg_level), count in message_counter.items():
+        if count > 1:
+            self.message_user(
+                request,
+                f"{msg_text} (Occurred {count} times)",
+                msg_level,
+            )
+        else:
+            self.message_user(
+                request,
+                msg_text,
+                msg_level,
+            )
 
 # %% GLD model registration
 
@@ -316,142 +332,6 @@ class ObservationProcessAdmin(admin.ModelAdmin):
 
 
 class gld_registration_logAdmin(admin.ModelAdmin):
-    # Retry generate startregistration
-    actions = [
-        "regenerate_start_registration_sourcedocument",
-        "validate_startregistration_sourcedocument",
-        "deliver_startregistration_sourcedocument",
-        "check_status_startregistration",
-    ]
-
-    @admin.action(description="Regenerate startregistration sourcedocument")
-    def regenerate_start_registration_sourcedocument(self, request, queryset):
-        gld = GldSyncHandler()
-        for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gmw_bro_id
-            )
-            gld._set_bro_info(well)
-
-            if registration_log.delivery_id is not None:
-                self.message_user(
-                    request,
-                    "Can't generate startregistration sourcedocuments for an existing registration",
-                    messages.ERROR,
-                )
-            else:
-                gld.create_start_registration_sourcedocs(
-                    well, registration_log.filter_number
-                )
-                self.message_user(
-                    request,
-                    "Attempted startregistration sourcedocument regeneration",
-                    messages.INFO,
-                )
-
-    @admin.action(description="Validate startregistration sourcedocument")
-    def validate_startregistration_sourcedocument(self, request, queryset):
-        gld = GldSyncHandler()
-
-        for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gmw_bro_id,
-            )
-            gld._set_bro_info(well)
-
-            sourcedoc_file = os.path.join(
-                gld_SETTINGS["startregistrations_dir"], registration_log.file
-            )
-
-            if registration_log.process_status == "failed_to_generate_source_documents":
-                self.message_user(
-                    request,
-                    "Can't validate a startregistration that failed to generate",
-                    messages.ERROR,
-                )
-            elif registration_log.file is None or not os.path.exists(sourcedoc_file):
-                self.message_user(
-                    request,
-                    "There is no sourcedocument file for this startregistration",
-                    messages.ERROR,
-                )
-            elif registration_log.delivery_id is not None:
-                self.message_user(
-                    request,
-                    "Can't validate a document that has already been delivered",
-                    messages.ERROR,
-                )
-            else:
-                gld.validate_gld_startregistration_request(
-                    registration_log,
-                )
-                self.message_user(
-                    request,
-                    "Succesfully validated startregistration sourcedocument",
-                    messages.INFO,
-                )
-
-    @admin.action(description="Deliver startregistration sourcedocument")
-    def deliver_startregistration_sourcedocument(self, request, queryset):
-        for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gmw_bro_id
-            )
-            gld._set_bro_info(well)
-
-            if registration_log.delivery_id is not None:
-                self.message_user(
-                    request,
-                    "Can't deliver a registration that has already been delivered",
-                    messages.ERROR,
-                )
-            elif registration_log.validation_status == "NIET_VALIDE":
-                self.message_user(
-                    request,
-                    "Can't deliver an invalid document or not yet validated document",
-                    messages.ERROR,
-                )
-            elif registration_log.delivery_status in [
-                "AANGELEVERD",
-                "OPGENOM EN_LVBRO",
-            ]:
-                self.message_user(
-                    request,
-                    "Can't deliver a document that has been already been delivered",
-                    messages.ERROR,
-                )
-            else:
-                gld.deliver_startregistration_sourcedocuments(registration_log)
-
-                self.message_user(
-                    request,
-                    "Attempted registration sourcedocument delivery",
-                    messages.INFO,
-                )
-
-    @admin.action(description="Check status of startregistration")
-    def check_status_startregistration(self, request, queryset):
-        gld = GldSyncHandler()
-
-        for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gmw_bro_id
-            )
-            gld._set_bro_info(well)
-
-            delivery_id = registration_log.delivery_id
-            if delivery_id is None:
-                self.message_user(
-                    request,
-                    "Can't check status of a delivery with no 'delivery_id'",
-                    messages.ERROR,
-                )
-            else:
-                gld.check_delivery_status_levering(registration_log)
-                self.message_user(
-                    request, "Attempted registration status check", messages.INFO
-                )
-
     list_display = (
         "date_modified",
         "gld_bro_id",
@@ -490,6 +370,150 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         "file",
         "process_status",
     )
+    # Retry generate startregistration
+    actions = [
+        "regenerate_start_registration_sourcedocument",
+        "validate_startregistration_sourcedocument",
+        "deliver_startregistration_sourcedocument",
+        "check_status_startregistration",
+    ]
+
+    @admin.action(description="Regenerate startregistration sourcedocument")
+    def regenerate_start_registration_sourcedocument(self, request, queryset):
+        gld = GldSyncHandler()
+        # Collect messages to deduplicate later
+        pending_messages = []
+
+        for registration_log in queryset:
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gmw_bro_id
+            )
+            gld._set_bro_info(well)
+
+            if registration_log.delivery_id is not None:
+                pending_messages.append((
+                    "Can't generate startregistration sourcedocuments for an existing registration",
+                    messages.ERROR,
+                ))
+            else:
+                gld.create_start_registration_sourcedocs(
+                    well, registration_log.filter_number
+                )
+                pending_messages.append((
+                    "Attempted startregistration sourcedocument regeneration",
+                    messages.INFO,
+                ))
+
+        # Deduplicate and emit messages
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
+        
+
+    @admin.action(description="Validate startregistration sourcedocument")
+    def validate_startregistration_sourcedocument(self, request, queryset):
+        gld = GldSyncHandler()
+        pending_messages = []
+        for registration_log in queryset:
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gmw_bro_id,
+            )
+            gld._set_bro_info(well)
+
+            sourcedoc_file = os.path.join(
+                gld_SETTINGS["startregistrations_dir"], registration_log.file
+            )
+
+            if registration_log.process_status == "failed_to_generate_source_documents":
+                pending_messages.append((
+                    "Can't validate a startregistration that failed to generate",
+                    messages.ERROR,
+                ))
+            elif registration_log.file is None or not os.path.exists(sourcedoc_file):
+                pending_messages.append((
+                    "There is no sourcedocument file for this startregistration",
+                    messages.ERROR,
+                ))
+            elif registration_log.delivery_id is not None:
+                pending_messages.append((
+                    "Can't validate a document that has already been delivered",
+                    messages.ERROR,
+                ))
+            else:
+                gld.validate_gld_startregistration_request(
+                    registration_log,
+                )
+                pending_messages.append((
+                    "Succesfully validated startregistration sourcedocument",
+                    messages.INFO,
+                ))
+        
+        # Deduplicate and display
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
+
+    @admin.action(description="Deliver startregistration sourcedocument")
+    def deliver_startregistration_sourcedocument(self, request, queryset):
+        pending_messages = []
+        for registration_log in queryset:
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gmw_bro_id
+            )
+            gld._set_bro_info(well)
+
+            if registration_log.delivery_id is not None:
+                pending_messages.append((
+                    "Can't deliver a registration that has already been delivered",
+                    messages.ERROR,
+                ))
+            elif registration_log.validation_status == "NIET_VALIDE":
+                pending_messages.append((
+                    "Can't deliver an invalid document or not yet validated document",
+                    messages.ERROR,
+                ))
+            elif registration_log.delivery_status in [
+                "AANGELEVERD",
+                "OPGENOM EN_LVBRO",
+            ]:
+                pending_messages.append((
+                    "Can't deliver a document that has been already been delivered",
+                    messages.ERROR,
+                ))
+            else:
+                gld.deliver_startregistration_sourcedocuments(registration_log)
+                pending_messages.append((
+                    "Attempted registration sourcedocument delivery",
+                    messages.INFO,
+                ))
+        
+        # Deduplicate and display
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
+
+    @admin.action(description="Check status of startregistration")
+    def check_status_startregistration(self, request, queryset):
+        gld = GldSyncHandler()
+        pending_messages = []
+        for registration_log in queryset:
+            well = GroundwaterMonitoringWellStatic.objects.get(
+                bro_id=registration_log.gmw_bro_id
+            )
+            gld._set_bro_info(well)
+
+            delivery_id = registration_log.delivery_id
+            if delivery_id is None:
+                pending_messages.append((
+                    "Can't check status of a delivery with no 'delivery_id'",
+                    messages.ERROR,
+                ))
+            else:
+                gld.check_delivery_status_levering(registration_log)
+                pending_messages.append(("Attempted registration status check", messages.INFO
+                ))
+
+        # Deduplicate and display
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
+
 
 
 class gld_addition_log_Admin(admin.ModelAdmin):
@@ -543,39 +567,44 @@ class gld_addition_log_Admin(admin.ModelAdmin):
 
     # Check the current status before it is allowed
     @admin.action(description="Regenerate sourcedocuments")
-    def regenerate_sourcedocuments(self, request, queryset):
+    def regenerate_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
+        # Temp list to collect messages
+        pending_messages = []
+
         for addition_log in queryset:
             groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
                 gld_bro_id=addition_log.broid_registration
             )
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
+
             if addition_log.delivery_id is not None:
-                self.message_user(
-                    request,
+                pending_messages.append((
                     "Can't create new sourcedocuments for an observation that has already been delivered",
                     messages.ERROR,
-                )
+                ))
             else:
                 observation_id = addition_log.observation_id
                 observation = models.Observation.objects.get(
                     observation_id=observation_id
                 )
-                gld.generate_gld_addition_sourcedoc_data(
-                    observation,
-                )
+                gld.generate_gld_addition_sourcedoc_data(observation)
 
-                self.message_user(
-                    request,
+                pending_messages.append((
                     "Succesfully attempted sourcedocument regeneration",
                     messages.INFO,
-                )
+                ))
+
+        # Deduplicate and display
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
 
     # Retry validate sourcedocuments (only if file is present)
     @admin.action(description="Validate sourcedocuments")
-    def validate_sourcedocuments(self, request, queryset):
+    def validate_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
+        pending_messages = []
         for addition_log in queryset:
             groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
                 gld_bro_id=addition_log.broid_registration
@@ -588,28 +617,31 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             filename = addition_log.file
             addition_file_path = os.path.join(additions_dir, filename)
             if addition_log.delivery_id is not None:
-                self.message_user(
-                    request,
+                pending_messages.append((
                     "Can't revalidate document for an observation that has already been delivered",
                     messages.ERROR,
-                )
+                ))
             elif not os.path.exists(addition_file_path):
-                self.message_user(
-                    request,
+                pending_messages.append((
                     "Source document file does not exists in the file system",
                     messages.ERROR,
-                )
+                ))
                 # Validate the sourcedocument for this observation
             else:
                 gld.validate_gld_addition_source_document(addition_log)
-                self.message_user(
-                    request, "Succesfully attemped document validation", messages.INFO
-                )
+                pending_messages.append((
+                    "Succesfully attemped document validation", messages.INFO
+                ))
+        
+        # Deduplicate and display
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
 
     # Retry deliver sourcedocuments
     @admin.action(description="Deliver sourcedocuments")
-    def deliver_sourcedocuments(self, request, queryset):
+    def deliver_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
+        pending_messages = []
         for addition_log in queryset:
             groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
                 gld_bro_id=addition_log.broid_registration
@@ -618,27 +650,30 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             gld._set_bro_info(well)
 
             if addition_log.validation_status is None:
-                self.message_user(
-                    request,
+                pending_messages.append((
                     "Can't deliver an invalid document or not yet validated document",
                     messages.ERROR,
-                )
+                ))
             elif addition_log.delivery_status in ["AANGELEVERD", "OPGENOM EN_LVBRO"]:
-                self.message_user(
-                    request,
+                pending_messages.append((
                     "Can't deliver a document that has been already been delivered",
                     messages.ERROR,
-                )
+                ))
             else:
                 gld.deliver_gld_addition_source_document(addition_log)
-                self.message_user(
-                    request, "Succesfully attemped document delivery", messages.INFO
-                )
+                pending_messages.append(("Succesfully attemped document delivery", messages.INFO
+                ))
+
+        
+        # Deduplicate and display
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
 
     # Check status of a delivery
     @admin.action(description="Check status delivery")
-    def check_status_delivery(self, request, queryset):
+    def check_status_delivery(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
+        pending_messages = []
         for addition_log in queryset:
             groundwaterleveldossier = GroundwaterLevelDossier.objects.get(
                 gld_bro_id=addition_log.broid_registration
@@ -646,17 +681,19 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             well = groundwaterleveldossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
 
-            if addition_log.delivery_id is None:
-                self.message_user(
-                    request,
+            if addition_log.delivery_id is None or addition_log.observation is None:
+                pending_messages.append((
                     "Can't check status of a delivery with no 'delivery_id'",
                     messages.ERROR,
-                )
+                ))
             else:
                 gld.check_status_gld_addition(addition_log)
-                self.message_user(
-                    request, "Succesfully attemped status check", messages.INFO
-                )
+                pending_messages.append(("Succesfully attemped status check", messages.INFO
+                ))
+            
+        # Deduplicate and display
+        message_counter = Counter(pending_messages)
+        send_pending_messages(self, request, message_counter)
 
 
 _register(models.GroundwaterLevelDossier, GroundwaterLevelDossierAdmin)
