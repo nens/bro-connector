@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
 from .models import (
     GroundwaterMonitoringNet,
     Subgroup,
@@ -19,11 +21,11 @@ def _register(model, admin_class):
 
 class MeasuringPointsInline(admin.TabularInline):
     model = MeasuringPoint
-    fields = ("subgroup", "groundwater_monitoring_tube", "code", "monitoring_networks")
+    fields = ("measuring_point", "groundwater_monitoring_tube", "subgroup", "monitoring_networks")
     readonly_fields = (
         "subgroup",
         "groundwater_monitoring_tube",
-        "code",
+        "measuring_point",
         "monitoring_networks",
     )
 
@@ -34,6 +36,14 @@ class MeasuringPointsInline(admin.TabularInline):
         "groundwater_monitoring_tube",
     )
 
+    def measuring_point(self, obj):
+        if obj.code:
+            url = reverse('admin:gmn_measuringpoint_change', args=[obj.id])
+            return format_html('<a href="{}">{}</a>', url, obj.code)
+        return ""
+    
+    measuring_point.short_description = "Meetpunt"
+         
     def monitoring_networks(self, obj):
         nets = []
         for meetpunt in obj.groundwater_monitoring_tube.measuring_point.all().exclude(

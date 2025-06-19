@@ -143,7 +143,7 @@ def process_request_for_bbox(type,bbox):
 
         idx += 1
         if idx > 1e4:
-            raise Exception("Forced an exception because amount of iterations was too high (>1000).")
+            raise Exception("Forced an exception because amount of iterations was too high (>10000).")
 
         time.sleep(0.01)
 

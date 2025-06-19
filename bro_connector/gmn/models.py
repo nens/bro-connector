@@ -273,6 +273,9 @@ class MeasuringPoint(models.Model):
             self.code = f"{self.groundwater_monitoring_tube.groundwater_monitoring_well_static.well_code}_{self.groundwater_monitoring_tube.tube_number}"
 
         is_new = self._state.adding
+        if not is_new:
+            old = MeasuringPoint.objects.get(pk=self.pk)
+
         super().save(*args, **kwargs)
 
         # Create GMN_MeasuringPoint event if new measuringpoint is created
@@ -285,6 +288,16 @@ class MeasuringPoint(models.Model):
                 measuring_point=self,
                 deliver_to_bro=self.gmn.deliver_to_bro,
             )
+        else:
+            if self.groundwater_monitoring_tube != old.groundwater_monitoring_tube:
+                IntermediateEvent.objects.create(
+                    gmn=self.gmn,
+                    event_type="GMN_TubeReference",
+                    event_date=self.added_to_gmn_date,
+                    synced_to_bro=False,
+                    measuring_point=self,
+                    deliver_to_bro=self.gmn.deliver_to_bro,
+                )
 
         # Create GMN_MeasuringPointEndDate event if MP is deleted
         if (
@@ -299,6 +312,8 @@ class MeasuringPoint(models.Model):
                 measuring_point=self,
                 deliver_to_bro=self.gmn.deliver_to_bro,
             )
+            ## remove the meetpunt from the meetnet in question
+            ## OR: meetpunt will stay but has end date and will not be used therefore?
 
     def list_subgroups(self):
         return ", ".join([subgroup.name for subgroup in self.subgroup.all()])
