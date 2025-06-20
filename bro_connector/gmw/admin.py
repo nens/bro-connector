@@ -57,7 +57,6 @@ class EventsInline(admin.TabularInline):
     )
 
     ordering = ["event_date"]
-    readonly_fields = ["delivered_to_bro", "bro_actions"]
 
     extra = 0
     max_num = 0
@@ -70,7 +69,7 @@ class EventsInline(admin.TabularInline):
                 "delivered_to_bro",
                 "bro_actions",
             )
-        return []
+        return ["delivered_to_bro", "bro_actions"]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -95,7 +94,6 @@ class PicturesInline(admin.TabularInline):
     fields = ("picture", "recording_datetime", "description")
 
     ordering = ["-recording_datetime"]
-    readonly_fields = []
 
     extra = 1
     max_num = None
@@ -135,7 +133,6 @@ class WellDynamicInline(admin.TabularInline):
         "comment",
     )
     ordering = ["date_from"]
-    readonly_fields = ["date_from", "date_till", "number_of_standpipes", "comment"]
 
     extra = 0
     max_num = 0
@@ -151,7 +148,7 @@ class WellDynamicInline(admin.TabularInline):
                 "number_of_standpipes",
                 "comment",
             )
-        return []
+        return ["date_from", "date_till", "number_of_standpipes", "comment"]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -391,7 +388,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     inlines = (
         PicturesInline,
-        # WellDynamicInline,
+        WellDynamicInline,
         TubeStaticInline,
         EventsInline,
     )
