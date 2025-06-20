@@ -196,12 +196,6 @@ class TubeStaticInline(admin.TabularInline):
         "report",
     )
     ordering = ["tube_number"]
-    readonly_fields = [
-        "tube_number",
-        "number_of_geo_ohm_cables",
-        "bro_actions",
-        "report",
-    ]
 
     extra = 0
     max_num = 0
@@ -216,7 +210,12 @@ class TubeStaticInline(admin.TabularInline):
                 "bro_actions",
                 "report",
             )
-        return []
+        return [
+            "tube_number",
+            "number_of_geo_ohm_cables",
+            "bro_actions",
+            "report",
+        ]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -392,7 +391,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     inlines = (
         PicturesInline,
-        WellDynamicInline,
+        # WellDynamicInline,
         TubeStaticInline,
         EventsInline,
     )
@@ -514,7 +513,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     list_filter = (WellFilter, "owner")
 
-    readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro"]
+    readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "date_till"]
 
     # inlines = (WellStaticInline,)
 
