@@ -42,7 +42,10 @@ def transform_electrodedata_to_df(electrodedata):
             columns=["filter", "kabel", "elektrode", "positie"]
         )
     else:
-        electrode_dataframe = pd.DataFrame(electrodedata)
+        electrode_dataframe = pd.DataFrame(electrodedata).replace({None: np.nan})
+
+    electrode_dataframe = electrode_dataframe.replace({None: np.nan})
+
     return electrode_dataframe
 
 
@@ -97,7 +100,6 @@ def transform_putdata_to_df(putdata):
                 event["filters"][i]["bovenkant ingeplaatst deel"]
                 - event["filters"][i]["lengte ingeplaatst deel"]
             )
-
             row["lengte ingeplaatst deel"] = event["filters"][i][
                 "lengte ingeplaatst deel"
             ]
@@ -105,12 +107,13 @@ def transform_putdata_to_df(putdata):
             row["bovenkant ingeplaatst deel"] = np.nan
             row["onderkant ingeplaatst deel"] = np.nan
             row["lengte ingeplaatst deel"] = np.nan
-
         df.loc[df.shape[0]] = row
     return df
 
 
 def generate_graph(selection, selection_electrode, event, options, referentie):
+    print("selection: \n", selection.to_dict())
+    print("electrode: ", selection_electrode.to_dict())
     try:
         if referentie == "m t.o.v. mv":
             selection["meetinstrumentsdiepte"] = selection["meetinstrumentsdiepte"]
@@ -156,10 +159,16 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             selection["positie meetinstrument"] = selection[
                 "positie meetinstrument"
             ].round(3)
-
+            selection["diepte meetinstrument"] = (
+                selection["positie meetinstrument"]
+                - selection["maaiveldhoogte"].values[0]
+            )
+            selection["positie meetinstrument"] = selection[
+                "positie meetinstrument"
+            ].round(3)
             try:
                 selection_electrode["positie"] = (
-                    selection_electrode["positie"]
+                    selection_electrode["positie"].astype(float)
                     - selection["maaiveldhoogte"].values[0]
                 )
                 selection_electrode["positie"] = selection_electrode["positie"].round(3)
@@ -217,7 +226,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         )
 
         print("NOT SCATTER")
-
+        print("customdata")
+        print(np.transpose([stijgbuis, bk_stijgbuis, ok_stijgbuis]))
         buis = go.Bar(
             x=list(range(1, len(startpunten) + 3)),
             y=stijgbuis,
@@ -325,10 +335,17 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                 subselection = selection_electrode[
                     selection_electrode["kabel"] == i + 1
                 ]
+                filternummer = list(selection["filternummer"].values)
+                x_pos = []
+                for x,f in zip(list(subselection["x"].values),list(subselection["filter"].values)):
+                    index = filternummer.index(f) 
+                    x_floor = np.floor(x)
+                    pos = index + 1 + x - x_floor
+                    x_pos.append(pos)
 
                 barchart.add_trace(
                     go.Scatter(
-                        x=subselection["x"],
+                        x=x_pos,
                         y=subselection["positie"],
                         mode="markers",
                         name=f"elektr. kabel {str(i + 1)}",
@@ -361,6 +378,77 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         )
 
         print("NOT TRACES 2")
+
+        barchart.update_traces(
+            marker=dict(
+                size=8,
+                symbol="arrow-bar-left",
+                line=dict(width=2, color="DarkSlateGrey"),
+            ),
+            selector=dict(mode="markers"),
+        )
+
+        # Meetinstrument dieptes
+        nans = False
+        idx = 0
+        for i,f in enumerate(selection["filternummer"]):
+            bovenkant_buis = selection["bovenkant buis"][
+                selection["filternummer"] == f
+            ].values[0]
+            positie_meetinstrument = selection["positie meetinstrument"][
+                selection["filternummer"] == f
+            ].values[0]
+            print(positie_meetinstrument)
+            if pd.isna(positie_meetinstrument):
+                nans = True
+                continue
+   
+            x = [i+1,i+1]
+            y = [bovenkant_buis, positie_meetinstrument]
+            if f == 1:
+                showlegend = True
+            else:
+                if nans:
+                    showlegend = True
+                    nans = False
+                else:
+                    showlegend = False
+
+            if referentie == "m t.o.v. mv":
+                name = "Inhangdiepte -t.o.v. maaiveld"
+            else:
+                name = "Inhangdiepte - t.o.v. mNAP"
+
+            print("customdata")
+            print(idx)
+            trans = [
+                    [selection["positie meetinstrument"].values[idx]],
+                    [selection["diepte meetinstrument"].values[idx]],
+            ]
+            print(trans)
+            print(trans[1])
+
+            barchart.add_trace(
+                go.Scatter(
+                    x=x,
+                    y=y,
+                    legendgroup="diepte druksensor",
+                    showlegend=showlegend,
+                    name=f"druksensor",
+                    text=name,
+                    marker=dict(
+                        color="purple",
+                        size=10,
+                        symbol="arrow-bar-up",
+                        angleref="previous",
+                    ),
+                ),
+                row=1,
+                col=1,
+            )
+            idx += 1
+
+        print("NOT TRACES 3")
 
         # Voeg een gekleurd vak op de achtergrond toe
         y_position = selection["maaiveldhoogte"].values[
@@ -587,7 +675,8 @@ def toggle_collapse(n, is_open):
 )
 def update_output_div(data_tube, data_electrodes, event, options, referentie):
     selection = pd.DataFrame(data_tube)
-    selection_electrode = pd.DataFrame(data_electrodes)
+    selection_electrode = pd.DataFrame(data_electrodes).replace({None: np.nan})
+    print("sel elec",selection_electrode)
     fig = generate_graph(selection, selection_electrode, event, options, referentie)
 
     return fig
@@ -714,7 +803,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
                 # Onderkant buis wordt niet geregistreerd, daarom neem ik aan dat de onderkant van het filter de onderkant van de buis is.
                 "onderkant buis": filtr_history.screen_bottom_position,
                 # Meet instrument diepte wordt op het moment ook nog niet geregistreerd (dummy waarde)
-                "diepte meetinstrument": filtr_history.screen_top_position,
+                "diepte meetinstrument": filtr_history.sensor_depth,
                 # Zandvang wordt op het moment nog niks mee gedaan
                 "zandvang": filtr.sediment_sump_present,
                 "zandvang lengte": filtr.sediment_sump_length,
@@ -725,7 +814,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
         print(filt_dict)
 
         if filtr_history.tube_inserted:
-            filt_dict.update(
+            filt_dict[0].update(
                 {
                     "bovenkant ingeplaatst deel": filtr_history.tube_top_position,
                     "lengte ingeplaatst deel": filtr_history.inserted_part_length,
@@ -756,7 +845,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
         putdataframe = pd.DataFrame()
 
     electrodedataframe = transform_electrodedata_to_df(elektrode_data)
-
+    print(electrodedataframe)
     event_dates = list(putdataframe["datum"].unique())
 
     event = event_dates[0]

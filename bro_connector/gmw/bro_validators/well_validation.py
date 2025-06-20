@@ -1,5 +1,5 @@
 from gmw.bro_validators import well, tube, electrode
-
+from gmw.models import Electrode, GeoOhmCable
 
 class WellValidation:
     def __init__(self):
@@ -11,26 +11,9 @@ class WellValidation:
             self.bro_act += bro_act_obj
             self.com_bro = False
 
-    def electrode_dynamic(self, electrode_static):
-        # electrode dynamic query
-        electrode_dynamic_query = electrode_static.electrodedynamic_set.all()
-        for electrode_dynamic in electrode_dynamic_query:
-            # electrode dynamic validation
-            com_bro_el_dyn, bro_act_el_dyn = electrode.validate_electrode_dynamic(
-                electrode_dynamic
-            )
-            if not com_bro_el_dyn:
-                self.bro_act += (
-                    "------------------------------------------------------------------------------------------------\n"
-                    + "Electrode - Dynamisch: "
-                    + str(electrode_dynamic)
-                    + "\n"
-                )
-            self.add_to_report(com_bro_el_dyn, bro_act_el_dyn)
-
-    def electrode_static(self, geo_ohm_cable):
+    def electrode(self, geo_ohm_cable: GeoOhmCable):
         # electrode static query
-        electorde_static_query = geo_ohm_cable.electrodestatic_set.all()
+        electorde_static_query = geo_ohm_cable.electrode.all()
         for electrode_static in electorde_static_query:
             # electrode static validation
             com_bro_el_stat, bro_act_el_stat = electrode.validate_electrode(
@@ -44,9 +27,6 @@ class WellValidation:
                     + "\n"
                 )
             self.add_to_report(com_bro_el_stat, bro_act_el_stat)
-
-            # electrode dynamic check
-            self.electrode_dynamic(electrode_static)
 
     def geo_ohm_cable(self, tube_static):
         # geo ohm cable query
@@ -66,7 +46,7 @@ class WellValidation:
             self.add_to_report(com_bro_geo_ohm, bro_act_geo_ohm)
 
             # electrode static check
-            self.electrode_static(geo_ohm_cable)
+            self.electrode(geo_ohm_cable)
 
     def tube_dynamic(self, tube_static):
         # tube dynamic query
