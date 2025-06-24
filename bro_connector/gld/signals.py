@@ -33,12 +33,15 @@ def _calculate_value(field_value: float, unit: str) -> float | None:
 
 
 def _calculate_value_tube(
-    field_value: float, unit: str, tube_top_position: float
+    field_value: float, unit: str, tube_top_position: float | None
 ) -> float | None:
     """
     For now only supports m tov bkb / cm tov bkb / mm tov bkb.
     Conversion to mNAP
     """
+    if tube_top_position is None:
+        return None
+
     if unit == "m t.o.v. bkb":
         return field_value + tube_top_position
     elif unit == "cm t.o.v. bkb":
