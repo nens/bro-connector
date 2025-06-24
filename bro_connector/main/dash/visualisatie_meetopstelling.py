@@ -782,7 +782,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
             .order_by("date_from")
             .last()
         )
-
+        print(filtr_history.date_from)
         filt_dict = (
             {
                 "nummer": filtr.tube_number,

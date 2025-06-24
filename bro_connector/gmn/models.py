@@ -289,6 +289,15 @@ class MeasuringPoint(models.Model):
                 deliver_to_bro=self.gmn.deliver_to_bro,
             )
         else:
+            if self.gmn.name != old.gmn.name:
+                IntermediateEvent.objects.create(
+                gmn=self.gmn,
+                event_type="GMN_MeasuringPoint",
+                event_date=self.added_to_gmn_date,
+                synced_to_bro=False,
+                measuring_point=self,
+                deliver_to_bro=self.gmn.deliver_to_bro,
+            )
             if self.groundwater_monitoring_tube != old.groundwater_monitoring_tube:
                 IntermediateEvent.objects.create(
                     gmn=self.gmn,

@@ -42,8 +42,10 @@ class Command(BaseCommand):
         delete = True if options["delete"] == "Yes" else False
         gmn_grouped = group_monitoring_nets()
         for group, gmn_data in gmn_grouped.items():
-            if delete:
-                gmn_data = delete_base(group, gmn_data)
+            # if group != "GAR_combined":
+            #     continue
+            # if delete:
+            #     gmn_data = delete_base(group, gmn_data)
             gmn = create_monitoring_net(group, gmn_data)
             update_monitoring_net(gmn, gmn_data)
             # if delete:
@@ -77,7 +79,10 @@ def group_monitoring_nets():
     # Step 2: Identify "bare" prefix entries (no suffix)
     for id, name in zip(gmn_ids,gmn_names):
         if name in grouped.keys():
-            grouped[name].append(("0", id, name))  # Assign suffix '0' to treat as oldest
+            if name == "kwr_kwantiteit":
+                grouped[name].append(("2006", id, name))
+            else:
+                grouped[name].append(("0", id, name))  # Assign suffix '2006' to treat as specific use case for krw_kwantiteit, else "0" (oldest)
 
     # Step 3: Sort each group's items: bare < years < extra
     ## If monitoring_nets have the same name, take the one that is created first as oldest
@@ -96,6 +101,8 @@ def group_monitoring_nets():
         group_sorted = sorted(grouped[prefix], key=sort_key)
         grouped[prefix] = [(val[1], val[2]) for val in group_sorted]
 
+    grouped = {f"{key}_combined": value for key, value in grouped.items()}
+
     return grouped
 
 def create_monitoring_net(group, gmn_data):
@@ -113,7 +120,6 @@ def create_monitoring_net(group, gmn_data):
         }
         field_values.update(gmn_bro_id=None)
         gmn = GroundwaterMonitoringNet.objects.create(**field_values)
-        measuring_points = MeasuringPoint.objects.filter(gmn=base).all()
     else:
         oldest = GroundwaterMonitoringNet.objects.filter(id=gmn_ids[0]).first()
         field_names = [
@@ -126,7 +132,6 @@ def create_monitoring_net(group, gmn_data):
         }
         field_values.update(name=group, gmn_bro_id=None)
         gmn = GroundwaterMonitoringNet.objects.create(**field_values)
-        measuring_points = MeasuringPoint.objects.filter(gmn=oldest).all()
 
     return gmn
 
@@ -153,7 +158,7 @@ def update_measuring_points(gmn: GroundwaterMonitoringNet, next_gmn: Groundwater
             for measuring_point in next_measuring_points:
                 if measuring_point.code not in measuring_point_codes:
                     measuring_point.gmn = gmn
-                    measuring_point.added_to_gmn_date = next_gmn.start_date_monitoring
+                    measuring_point.added_to_gmn_date = get_gmn_start_date(next_gmn)
                     measuring_point.save()
                     print(measuring_point.added_to_gmn_date)
                     print("Added and saved")
@@ -168,7 +173,7 @@ def update_measuring_points(gmn: GroundwaterMonitoringNet, next_gmn: Groundwater
         if check:
             for measuring_point in measuring_points:
                 if measuring_point.code not in next_measuring_point_codes and not measuring_point.deleted_from_gmn_date:
-                    measuring_point.deleted_from_gmn_date = next_gmn.start_date_monitoring - timedelta(days=1)
+                    measuring_point.deleted_from_gmn_date = get_gmn_start_date(next_gmn) - timedelta(days=1)
                     measuring_point.save()
         
         return check
@@ -180,4 +185,20 @@ def update_measuring_points(gmn: GroundwaterMonitoringNet, next_gmn: Groundwater
     removal_check = case_measuring_point_needs_to_be_removed(measuring_points, next_measuring_points)
 
     return addition_check, removal_check
+
+def get_gmn_start_date(gmn: GroundwaterMonitoringNet):
+
+    start_date = gmn.start_date_monitoring
+
+    if not start_date:
+        name = gmn.name
+        year = name[-4:]
+        if year.isdigit():
+            year = int(year)
+        else:
+            year = 2006 # use case: krw_kantiteit
+
+        start_date = datetime(year, 1, 1)
     
+    return start_date
+        
