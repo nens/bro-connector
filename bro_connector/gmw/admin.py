@@ -57,7 +57,6 @@ class EventsInline(admin.TabularInline):
     )
 
     ordering = ["event_date"]
-    readonly_fields = ["delivered_to_bro", "bro_actions"]
 
     extra = 0
     max_num = 0
@@ -70,7 +69,7 @@ class EventsInline(admin.TabularInline):
                 "delivered_to_bro",
                 "bro_actions",
             )
-        return []
+        return ["delivered_to_bro", "bro_actions"]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -95,7 +94,6 @@ class PicturesInline(admin.TabularInline):
     fields = ("picture", "recording_datetime", "description")
 
     ordering = ["-recording_datetime"]
-    readonly_fields = []
 
     extra = 1
     max_num = None
@@ -133,7 +131,6 @@ class WellDynamicInline(admin.TabularInline):
         "comment",
     )
     ordering = ["date_from"]
-    readonly_fields = ["date_from", "date_till", "number_of_standpipes", "comment"]
 
     extra = 0
     max_num = 0
@@ -149,7 +146,7 @@ class WellDynamicInline(admin.TabularInline):
                 "number_of_standpipes",
                 "comment",
             )
-        return []
+        return ["date_from", "date_till", "number_of_standpipes", "comment"]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -192,12 +189,6 @@ class TubeStaticInline(admin.TabularInline):
         "bro_actions",
     )
     ordering = ["tube_number"]
-    readonly_fields = [
-        "tube_number",
-        "number_of_geo_ohm_cables_display",
-        "bro_actions",
-        "report_display",
-    ]
 
     extra = 0
     max_num = 0
@@ -222,7 +213,12 @@ class TubeStaticInline(admin.TabularInline):
                 "bro_actions",
                 "report",
             )
-        return []
+        return [
+            "tube_number",
+            "number_of_geo_ohm_cables",
+            "bro_actions",
+            "report",
+        ]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -522,7 +518,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     list_filter = (WellFilter, "owner")
 
-    readonly_fields = ["date_till", "number_of_standpipes", "deliver_gld_to_bro"]
+    readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "date_till"]
 
     # inlines = (WellStaticInline,)
 

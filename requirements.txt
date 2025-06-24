@@ -28,8 +28,10 @@ django_reversion_compare==0.17.0
 django_static_jquery==2.1.4
 django_utils2==2.12.1
 djangorestframework==3.15.1
-dpd_components==0.1.0
-dpd_static_support==0.0.5
+dpd-components==0.1.0
+dpd-static-support==0.0.5
+executing==2.1.0
+factory-boy==3.3.3
 Flask==3.0.3
 flask_caching
 geopandas
@@ -59,7 +61,10 @@ Pygments==2.17.2
 PyNaCl==1.5.0
 pyproj==3.6.1
 pysftp==0.2.9
+pytest==8.3.5
+pytest-django==4.11.1
 python_dateutil==2.9.0.post0
+python-dotenv==1.1.0
 python_utils==3.8.2
 pytz==2024.1
 requests==2.31.0
