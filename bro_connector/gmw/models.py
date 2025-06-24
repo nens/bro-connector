@@ -2,7 +2,8 @@ from django.db import models
 from django.db.models import Manager
 import django.contrib.gis.db.models as geo_models
 from django.utils.html import format_html
-from django.utils import timezone
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 from gmw.choices import (
     WELLHEADPROTECTOR_SUBTYPES,
     WELLHEADPROTECTOR,
@@ -42,7 +43,7 @@ from gmw.utils import generate_put_code
 from main.models import BaseModel
 from PIL import Image
 from PIL.ExifTags import TAGS
-import os
+
 
 def _get_token(owner: Organisation):
     return {
@@ -284,16 +285,39 @@ class GroundwaterMonitoringWellStatic(BaseModel):
 
     def cy(self):
         return self.construction_coordinates.y
-    
 
     @property
     def bro_loket_link(self):
         if self.bro_id:
-            bro_loket = f"https://www.broloket.nl/ondergrondgegevens?bro-id={self.bro_id}"
+            bro_loket = (
+                f"https://www.broloket.nl/ondergrondgegevens?bro-id={self.bro_id}"
+            )
             return format_html(f'<a href="{bro_loket}">{bro_loket}</a>')
         return "-"
-    
+
     bro_loket_link.fget.short_description = "Link:"
+
+    @property
+    def map_preview(self):
+        """
+        Render the map preview HTML snippet for this well.
+        """
+        if self.lat and self.lon:
+            context = {
+                "lat": self.lat,
+                "lon": self.lon,
+                "id": self.groundwater_monitoring_well_static_id,
+            }
+            html = render_to_string("partials/map_preview_iframe.html", context)
+            return mark_safe(html)
+        else:
+            return mark_safe("""
+                <div style="padding: 20px; text-align: center; color: #666; border: 1px dashed #ddd; border-radius: 4px;">
+                    📍 Enter coordinates above to see the location on the map
+                </div>
+            """)
+
+    map_preview.fget.short_description = "Location Preview"
 
     def __str__(self):
         if self.well_code:
@@ -445,7 +469,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         if next_dynamic:
             return next_dynamic.date_from
         return None
-    
+
     date_till.fget.short_description = "Datum tot"
 
     @property
@@ -453,7 +477,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         return GroundwaterMonitoringTubeStatic.objects.filter(
             groundwater_monitoring_well_static=self.groundwater_monitoring_well_static
         ).count()
-    
+
     number_of_standpipes.fget.short_description = "Aantal buizen"
 
     @property
@@ -481,7 +505,9 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         related_name="tube",
         verbose_name="Put",
     )
-    deliver_gld_to_bro = models.BooleanField(blank=True, default=False, verbose_name="Lever GLD aan naar BRO")
+    deliver_gld_to_bro = models.BooleanField(
+        blank=True, default=False, verbose_name="Lever GLD aan naar BRO"
+    )
     tube_number = models.IntegerField(
         blank=True,
         null=True,
@@ -552,7 +578,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         return GeoOhmCable.objects.filter(
             groundwater_monitoring_tube_static=self
         ).count()
-    
+
     number_of_geo_ohm_cables.fget.short_description = "Aantal geo ohm kabels"
 
     @property
@@ -574,6 +600,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         db_table = 'gmw"."groundwater_monitoring_tube_static'
         verbose_name = "Grondwatermonitoring Filter - Statisch"
         verbose_name_plural = "Grondwatermonitoring Filters - Statisch"
+
 
 class GroundwaterMonitoringTubeDynamic(BaseModel):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True)
@@ -681,7 +708,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         if next_dynamic:
             return next_dynamic.date_from
         return None
-    
+
     date_till.fget.short_description = "Datum tot"
 
     @property
@@ -774,7 +801,7 @@ class GeoOhmCable(BaseModel):
             return "minimaal aantal elektrodes van 2 nog niet gelinkt aan Geo-ohmkabel"
         else:
             return number_of_electrodes
-        
+
     electrode_count.fget.short_description = "Aantal electrodes"
 
     class Meta:
@@ -868,7 +895,9 @@ class Event(BaseModel):
         verbose_name="Electrodes",
         related_name="event",
     )
-    delivered_to_bro = models.BooleanField(blank=True, default=False, verbose_name="Aangeleverd aan BRO")
+    delivered_to_bro = models.BooleanField(
+        blank=True, default=False, verbose_name="Aangeleverd aan BRO"
+    )
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
@@ -969,11 +998,19 @@ class Picture(BaseModel):
         verbose_name="Put",
         related_name="picture",
     )
-    recording_datetime = models.DateTimeField(blank=True, null=True, verbose_name="Fotomoment")
-    picture = models.ImageField(
-        upload_to="static/gmw/pictures/", blank=True, null=True, editable=True, verbose_name="Foto"
+    recording_datetime = models.DateTimeField(
+        blank=True, null=True, verbose_name="Fotomoment"
     )
-    description = models.CharField(max_length=254, null=True, blank=True, verbose_name="Beschrijving")
+    picture = models.ImageField(
+        upload_to="static/gmw/pictures/",
+        blank=True,
+        null=True,
+        editable=True,
+        verbose_name="Foto",
+    )
+    description = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Beschrijving"
+    )
 
     @property
     def image_tag(self):
@@ -983,7 +1020,7 @@ class Picture(BaseModel):
             )
         else:
             return format_html("No image available.")
-        
+
     def save(self, *args, **kwargs):
         # If no recording_datetime is set and there's an image
         if self.picture and not self.recording_datetime:
@@ -994,10 +1031,16 @@ class Picture(BaseModel):
                 if image.format.lower() in ["jpeg", "jpg"]:
                     exif_data = image._getexif()
                     if exif_data:
-                        readable = {TAGS.get(tag): val for tag, val in exif_data.items()}
-                        timestamp_str = readable.get("DateTimeOriginal") or readable.get("DateTime")
+                        readable = {
+                            TAGS.get(tag): val for tag, val in exif_data.items()
+                        }
+                        timestamp_str = readable.get(
+                            "DateTimeOriginal"
+                        ) or readable.get("DateTime")
                         if timestamp_str:
-                            timestamp = datetime.datetime.strptime(timestamp_str, "%Y:%m:%d %H:%M:%S")
+                            timestamp = datetime.datetime.strptime(
+                                timestamp_str, "%Y:%m:%d %H:%M:%S"
+                            )
 
                 elif image.format.lower() == "png":
                     info = image.info
@@ -1005,7 +1048,9 @@ class Picture(BaseModel):
                         timestamp_str = info.get(key)
                         if timestamp_str:
                             try:
-                                timestamp = datetime.datetime.fromisoformat(timestamp_str)
+                                timestamp = datetime.datetime.fromisoformat(
+                                    timestamp_str
+                                )
                                 break
                             except ValueError:
                                 print("PNG timestamp not in isoformat")

@@ -30,11 +30,14 @@ MODULES = ["gmw", "frd", "gld", "gmn"]
 #     "ymax": 420000,
 # }
 POLYGON_SHAPEFILE = (
-    Path(__file__).resolve().parent.parent.parent.parent / "data" / "shapefile" / "ProvincieZeeland_BrabantseWal_GeoNAM.shp"
+    Path(__file__).resolve().parent.parent.parent.parent
+    / "data"
+    / "shapefile"
+    / "ProvincieZeeland_BrabantseWal_GeoNAM.shp"
 )
 print(POLYGON_SHAPEFILE)
-BBOX_SETTINGS = BBOX_EXTRACTOR(shp=POLYGON_SHAPEFILE,use_bbox=True).bbox_settings
-BBOX = BBOX_EXTRACTOR(shp=POLYGON_SHAPEFILE,use_bbox=True).bbox
+BBOX_SETTINGS = BBOX_EXTRACTOR(shp=POLYGON_SHAPEFILE, use_bbox=True).bbox_settings
+BBOX = BBOX_EXTRACTOR(shp=POLYGON_SHAPEFILE, use_bbox=True).bbox
 
 KVK_USER = "20168636"
 

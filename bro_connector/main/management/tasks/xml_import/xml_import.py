@@ -6,7 +6,9 @@ import datetime
 from string import punctuation, whitespace
 from django.contrib.gis.geos import Point
 import os
-os.environ['PROJ_LIB'] = r'C:\OSGeo4W\share\proj'
+
+os.environ["PROJ_LIB"] = r"C:\OSGeo4W\share\proj"
+
 
 def import_xml(file: str, path: str) -> tuple:
     gmw = GMWHandler()

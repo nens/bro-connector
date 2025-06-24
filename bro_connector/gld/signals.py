@@ -33,12 +33,15 @@ def _calculate_value(field_value: float, unit: str) -> float | None:
 
 
 def _calculate_value_tube(
-    field_value: float, unit: str, tube_top_position: float
+    field_value: float, unit: str, tube_top_position: float | None
 ) -> float | None:
     """
     For now only supports m tov bkb / cm tov bkb / mm tov bkb.
     Conversion to mNAP
     """
+    if tube_top_position is None:
+        return None
+
     if unit == "m t.o.v. bkb":
         return field_value + tube_top_position
     elif unit == "cm t.o.v. bkb":
@@ -61,8 +64,7 @@ def on_save_gld_registration_log(
             tube_number=instance.filter_number,
         )
         gld = GroundwaterLevelDossier.objects.get(
-            groundwater_monitoring_tube=tube,
-            quality_regime=instance.quality_regime
+            groundwater_monitoring_tube=tube, quality_regime=instance.quality_regime
         )
         if gld.gld_bro_id != instance.gld_bro_id:
             with reversion.create_revision():

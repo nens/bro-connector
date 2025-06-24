@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %} {% block content %} {% load static %}
+<!-- HTML -->
+<div id="deck-gl-canvas">
+
+  <!-- SEARCH -->
+  <div id="toggle-text-layer-btn">
+    <button
+        id="toggle-text-layer"
+        type="button"
+        onclick="event.stopPropagation(); toggleTextLayerVisibility()">
+        Labels
+    </button>
+  </div>
+</div>
+
+<!-- Add json information -->
+<div class="json">{{ wells|json_script:"wells_json" }}</div>
+
+<!-- Link to css -->
+<link href="{% static 'gmw/gmw_map.css' %}" rel="stylesheet" />
+
+<!-- Link to packages -->
+<link
+  href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css"
+  rel="stylesheet"
+/>
+<script src="
+https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
+<script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+
+<!-- Link to javascript -->
+<script src="{% static 'gmw/gmw_map_detail.js' %}"></script>
+
+{% endblock %}

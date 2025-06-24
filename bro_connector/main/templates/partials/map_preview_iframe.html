@@ -1,0 +1,30 @@
+<div style="border: 1px solid #ddd; border-radius: 1px; overflow: hidden;">
+    <iframe
+        src="/map/detail/?lat={{ lat }}&lon={{ lon }}&id={{ id }}"
+        width="100%"
+        height="450"
+        frameborder="0"
+        style="display: block;">
+    </iframe>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const latField = document.querySelector('input[name="latitude"]');
+        const lonField = document.querySelector('input[name="longitude"]');
+        const iframe = document.querySelector('iframe[src*="/map/"]');
+
+        function updateMap() {
+            const lat = parseFloat(latField.value);
+            const lon = parseFloat(lonField.value);
+
+            if (!isNaN(lat) && !isNaN(lon) && iframe) {
+                iframe.src = `/map/?lat=${lat}&lon=${lon}`;
+            }
+        }
+
+        if (latField && lonField) {
+            latField.addEventListener('blur', updateMap);
+            lonField.addEventListener('blur', updateMap);
+        }
+    });
+</script>

@@ -33,7 +33,7 @@ def is_broid(bro_id: str) -> bool:
             and len(bro_id) == 15
             and bro_id[3:].isdigit()
         )
-    
+
     return False
 
 
@@ -196,9 +196,11 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
     if tube.deliver_gld_to_bro is False:
         print(f"deliver tube to BRO: {tube.deliver_gld_to_bro}")
         return
-    
+
     if not tube.groundwater_monitoring_well_static.bro_id:
-        print(f"No BRO ID for well {tube.groundwater_monitoring_tube_static_id}. Skipping dossier {dossier.groundwater_level_dossier_id}")
+        print(
+            f"No BRO ID for well {tube.groundwater_monitoring_tube_static_id}. Skipping dossier {dossier.groundwater_level_dossier_id}"
+        )
         return
 
     # Create GLD Registration Log
