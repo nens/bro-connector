@@ -2,6 +2,7 @@ import i18n
 import numpy as np
 import plotly.graph_objs as go
 from dash import dcc
+
 from gwdatalens.app.settings import MAPBOX_ACCESS_TOKEN, settings
 from gwdatalens.app.src.cache import TIMEOUT, cache
 from gwdatalens.app.src.components import ids
@@ -9,11 +10,11 @@ from gwdatalens.app.src.data import DataInterface
 from gwdatalens.app.src.utils import conditional_cache
 
 try:
-    with open(MAPBOX_ACCESS_TOKEN, "r") as f:
+    with open(MAPBOX_ACCESS_TOKEN, "r", encoding="utf-8") as f:
         mapbox_access_token = f.read()
 except FileNotFoundError:
     if settings["USE_MAPBOX"]:
-        print(f"Error: Mapbox access token not found: {MAPBOX_ACCESS_TOKEN}")
+        print(f"Mapbox access token not found: {MAPBOX_ACCESS_TOKEN}")
     mapbox_access_token = None
 
 
@@ -85,7 +86,7 @@ def draw_map(
         "name": i18n.t("general.monitoring_wells"),
         # customdata=df.loc[:, "z"],
         "type": "scattermap",
-        "text": df.loc[:, "name"].tolist(),
+        "text": df.loc[:, "wellcode_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
@@ -125,7 +126,7 @@ def draw_map(
         "name": i18n.t("general.no_data"),
         # customdata=df.loc[~mask, "z"],
         "type": "scattermap",
-        "text": df.loc[~mask, "name"].tolist(),
+        "text": df.loc[~mask, "wellcode_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
@@ -214,6 +215,10 @@ def draw_map_mapbox(
     ----------
     df : pandas.DataFrame
         data to plot
+    mapbox_access_token : str
+        mapbox access token
+    selected_data : list, optional
+        list of selected data points
 
     Returns
     -------
@@ -240,7 +245,7 @@ def draw_map_mapbox(
         "name": i18n.t("general.monitoring_wells"),
         # customdata=df.loc[:, "z"],
         "type": "scattermapbox",
-        "text": df.loc[:, "name"].tolist(),
+        "text": df.loc[:, "wellcode_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
@@ -280,7 +285,7 @@ def draw_map_mapbox(
         "name": i18n.t("general.no_data"),
         # customdata=df.loc[~mask, "z"],
         "type": "scattermapbox",
-        "text": df.loc[~mask, "name"].tolist(),
+        "text": df.loc[~mask, "wellcode_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",

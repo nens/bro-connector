@@ -34,7 +34,7 @@ def render(data: DataInterface, selected_data=None):
     usecols = [
         "id",
         "bro_id",
-        "nitg_code",
+        "wellcode_name",
         "tube_number",
         "screen_top",
         "screen_bot",
@@ -50,13 +50,13 @@ def render(data: DataInterface, selected_data=None):
                 data=df.loc[:, usecols].to_dict("records"),
                 columns=[
                     {
-                        "id": "bro_id",
-                        "name": "Naam",
+                        "id": "wellcode_name",
+                        "name": "Putcode",
                         "type": "text",
                     },
                     {
-                        "id": "nitg_code",
-                        "name": "NITG",
+                        "id": "bro_id",
+                        "name": "BRO-ID",
                         "type": "text",
                     },
                     {
@@ -113,11 +113,11 @@ def render(data: DataInterface, selected_data=None):
                         "if": {"column_id": c},
                         "textAlign": "left",
                     }
-                    for c in ["bro_id"]
+                    for c in ["bro_id", "wellcode_name"]
                 ]
                 + [
-                    {"if": {"column_id": "bro_id"}, "width": "15%"},
-                    {"if": {"column_id": "nitg_code"}, "width": "10%"},
+                    {"if": {"column_id": "wellcode_name"}, "width": "15%"},
+                    {"if": {"column_id": "bro_id"}, "width": "10%"},
                     {"if": {"column_id": "tube_number"}, "width": "10%"},
                     {"if": {"column_id": "screen_top"}, "width": "15%"},
                     {"if": {"column_id": "screen_bot"}, "width": "15%"},

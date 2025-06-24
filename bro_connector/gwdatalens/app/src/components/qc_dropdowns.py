@@ -27,7 +27,8 @@ def render_selection_series_dropdown(
         A Dash HTML Div component containing the dropdown.
     """
     locs = data.db.list_locations()
-    options = [{"label": f"{i}{data.db.get_nitg_code(i)}", "value": i} for i in locs]
+    locs = sorted(locs, key=lambda n: data.db.gmw_gdf.loc[n, "wellcode_name"])
+    options = [{"label": f"{data.db.get_wellcode(i)}", "value": i} for i in locs]
 
     if selected_data is not None and len(selected_data) == 1:
         value = selected_data[0]
@@ -70,7 +71,10 @@ def render_additional_series_dropdown(data: DataInterface, selected_data):
     if selected_data is not None:
         locs = data.db.list_locations_sorted_by_distance(selected_data[0])
         options = [
-            {"label": i + f" ({row.distance / 1e3:.1f} km)", "value": i}
+            {
+                "label": data.db.get_wellcode(i) + f" ({row.distance / 1e3:.1f} km)",
+                "value": i,
+            }
             for i, row in locs.iterrows()
         ]
     else:
