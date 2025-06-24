@@ -41,9 +41,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         delete = True if options["delete"] == "Yes" else False
         gmn_grouped = group_monitoring_nets()
+        print(gmn_grouped)
+        
         for group, gmn_data in gmn_grouped.items():
-            # if group != "GAR_combined":
-            #     continue
+            if GroundwaterMonitoringNet.objects.filter(name=group).all():
+                print(f"{group} already exists")
+                continue
+            
+            # if group != "krw_kwantiteit_combined":
+                # continue
             # if delete:
             #     gmn_data = delete_base(group, gmn_data)
             gmn = create_monitoring_net(group, gmn_data)
@@ -64,7 +70,7 @@ def delete_base(group, gmn_data):
 def group_monitoring_nets():
     gmn_names = GroundwaterMonitoringNet.objects.all().values_list('name', flat=True)
     gmn_ids = GroundwaterMonitoringNet.objects.all().values_list('id', flat=True)
-    pattern = re.compile(r'^(.*?)[_]?(\d{4}|extra)$')
+    pattern = re.compile(r'^(.*?)[_]?(\d{4})$')
 
     # Step 1: Identify all prefix-suffix pairs
     grouped = defaultdict(list)
