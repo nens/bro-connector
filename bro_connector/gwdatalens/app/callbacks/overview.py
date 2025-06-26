@@ -32,7 +32,7 @@ def register_overview_callbacks(app, data):
         if selected_data is not None:
             pts = pd.DataFrame(selected_data["points"])
             if not pts.empty:
-                names = pts["text"].tolist()
+                names = [data.db.wellcode_to_broid(i) for i in pts["text"].tolist()]
                 return names
             else:
                 return None if current_value is None else current_value
@@ -113,7 +113,7 @@ def register_overview_callbacks(app, data):
 
             # get selected points
             if not pts.empty:
-                names = pts["text"].tolist()
+                names = [data.db.wellcode_to_broid(i) for i in pts["text"].tolist()]
             else:
                 names = None
 
