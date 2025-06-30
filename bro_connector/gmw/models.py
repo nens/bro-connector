@@ -810,7 +810,6 @@ class GeoOhmCable(BaseModel):
         verbose_name = "Geo Ohm Kabel"
         verbose_name_plural = "Geo Ohm Kabels"
 
-
 class Electrode(BaseModel):
     electrode_static_id = models.AutoField(primary_key=True)
     geo_ohm_cable = models.ForeignKey(
@@ -1000,6 +999,9 @@ class Picture(BaseModel):
     )
     recording_datetime = models.DateTimeField(
         blank=True, null=True, verbose_name="Fotomoment"
+    )
+    is_main = models.BooleanField(
+        blank=True, default=False, verbose_name="Hoofdfoto"
     )
     picture = models.ImageField(
         upload_to="static/gmw/pictures/",

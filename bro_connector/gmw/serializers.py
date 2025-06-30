@@ -63,21 +63,24 @@ class GMWSerializer(serializers.ModelSerializer):
         return last_state.well_head_protector
 
     def get_picture(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
-        pictures = obj.picture.order_by("-recording_datetime", "-picture_id")
-        if pictures:
+        main_pictures = obj.picture.order_by("-recording_datetime", "-picture_id").filter(is_main=True).all()
+        if main_pictures:
+            picture = main_pictures.first()
+        else:
+            picture = obj.picture.order_by("-recording_datetime", "-picture_id").first()
+            
+        if picture:
             # return picture.image_tag
             return format_html_join(
                 "",
                 '<div style="margin-bottom: 0.5em;"><img src="{}" style="max-width:100px; max-height:100px;"><br><small>{}</small></div>',
                 [
                     (
-                        pic.picture.url,
-                        pic.recording_datetime.strftime("%Y-%m-%d %H:%M")
-                        if pic.recording_datetime
+                        picture.picture.url,
+                        picture.recording_datetime.strftime("%Y-%m-%d %H:%M")
+                        if picture.recording_datetime
                         else "No timestamp",
                     )
-                    for pic in pictures
-                    if pic.picture
                 ],
             )
         else:

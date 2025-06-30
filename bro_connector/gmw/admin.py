@@ -91,7 +91,7 @@ class PicturesInline(admin.TabularInline):
     model = gmw_models.Picture
     form = gmw_forms.PictureForm
 
-    fields = ("picture", "recording_datetime", "description")
+    fields = ("picture", "is_main", "recording_datetime", "description")
 
     ordering = ["-recording_datetime"]
 
@@ -100,7 +100,7 @@ class PicturesInline(admin.TabularInline):
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.in_management is False:
-            return ("picture", "recording_datetime", "description")
+            return ("picture", "is_main", "recording_datetime", "description")
         return []
 
     def has_add_permission(self, request, obj=None):
@@ -130,7 +130,7 @@ class WellDynamicInline(admin.TabularInline):
         "ground_level_positioning_method",
         "comment",
     )
-    ordering = ["date_from"]
+    ordering = ["-date_from"]
 
     extra = 0
     max_num = 0
@@ -251,6 +251,8 @@ class TubeDynamicInline(admin.TabularInline):
     show_change_link = True
 
     readonly_fields = ["date_from", "date_till", "comment"]
+    
+    ordering = ["-date_from"]
 
     extra = 0
     max_num = 0
@@ -330,10 +332,10 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_well_static_id",
         "bro_id",
-        "delivery_accountable_party",
-        "initial_function",
         "nitg_code",
         "well_code",
+        "delivery_accountable_party",
+        "initial_function",
         "coordinates",
         "in_management",
     )
@@ -364,14 +366,14 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "internal_id",
                     "bro_id",
                     "bro_loket_link",
+                    "nitg_code",
+                    "olga_code",
                     "delivery_accountable_party",
                     "delivery_responsible_party",
                     "in_management",
                     "deliver_gmw_to_bro",
                     "complete_bro",
                     "quality_regime",
-                    "nitg_code",
-                    "olga_code",
                     "project",
                     "delivery_context",
                     "construction_standard",

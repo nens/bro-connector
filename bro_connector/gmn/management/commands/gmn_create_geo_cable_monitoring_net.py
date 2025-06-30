@@ -21,7 +21,6 @@ class Command(BaseCommand):
         - GMN_MeasuringPointEndDate
         - GMN_Closure
 
-
     GMNs:
     - krw_kwal_{year}
     - GAR_{year}
@@ -71,6 +70,7 @@ def create_monitoring_net(name, tubes):
     )
     if created:
         gmn.start_date_monitoring = datetime.now()
+        gmn.save()
     
     for tube in tubes:
         measuring_point, created = MeasuringPoint.objects.get_or_create(
@@ -79,4 +79,5 @@ def create_monitoring_net(name, tubes):
         )
         if created: 
             measuring_point.added_to_gmn_date = datetime.now()
+            measuring_point.save()
         
