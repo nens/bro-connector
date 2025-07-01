@@ -33,7 +33,7 @@ class BroImporter(BaseModel):
     class Meta:
         managed = True
         db_table = 'tools"."bro_importer'
-        verbose_name = "Importer"
+        verbose_name = "BRO Importer"
         verbose_name_plural = "BRO Importer"
 
     def save(self, *args, **kwargs) -> None:
@@ -70,8 +70,8 @@ class XMLImport(BaseModel):
     class Meta:
         managed = True
         db_table = 'tools"."xml_importer'
-        verbose_name = "XML Import"
-        verbose_name_plural = "XML Imports"
+        verbose_name = "XML Importer"
+        verbose_name_plural = "XML Importer"
 
 
 class GLDImport(BaseModel):
@@ -139,8 +139,8 @@ class GLDImport(BaseModel):
     class Meta:
         managed = True
         db_table = 'tools"."gld_importer'
-        verbose_name = "GLD Import"
-        verbose_name_plural = "GLD Imports"
+        verbose_name = "GLD Importer"
+        verbose_name_plural = "GLD Importer"
 
     def __str__(self) -> str:
         return f"{self.name} ({self.date_created.date()})"
@@ -214,8 +214,8 @@ class GMNImport(BaseModel):
     class Meta:
         managed = True
         db_table = 'tools"."gmn_importer'
-        verbose_name = "GMN Import"
-        verbose_name_plural = "GMN Imports"
+        verbose_name = "GMN Importer"
+        verbose_name_plural = "GMN Importer"
 
     def clean(self):
         if self.file.path.endswith(".zip") or self.file.path.endswith(".csv"):
@@ -253,8 +253,8 @@ class GMWImport(BaseModel):
     class Meta:
         managed = True
         db_table = 'tools"."gmw_importer'
-        verbose_name = "GMW Import"
-        verbose_name_plural = "GMW Imports"
+        verbose_name = "GMW Importer"
+        verbose_name_plural = "GMW Importer"
 
     def clean(self):
         if self.file.path.endswith(".zip") or self.file.path.endswith(".csv"):

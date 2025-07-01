@@ -824,18 +824,6 @@ class EventAdmin(admin.ModelAdmin):
         obj.save()
 
 
-class PictureAdmin(admin.ModelAdmin):
-    list_display = (
-        "groundwater_monitoring_well_static",
-        "recording_datetime",
-        "image_tag",
-    )
-    list_filter = (
-        WellFilter,
-        "recording_datetime",
-    )
-
-
 class MaintenancePartyAdmin(admin.ModelAdmin):
     list_display = (
         "first_name",
@@ -913,7 +901,6 @@ _register(
 _register(gmw_models.GeoOhmCable, GeoOhmCableAdmin)
 _register(gmw_models.Electrode, ElectrodeStaticAdmin)
 _register(gmw_models.Event, EventAdmin)
-_register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
 _register(gmw_models.gmw_registration_log, GmwSyncLogAdmin)
@@ -925,7 +912,6 @@ patch_admin(gmw_models.GroundwaterMonitoringTubeDynamic)
 patch_admin(gmw_models.GeoOhmCable)
 patch_admin(gmw_models.Electrode)
 patch_admin(gmw_models.Event)
-patch_admin(gmw_models.Picture)
 patch_admin(gmw_models.MaintenanceParty)
 patch_admin(gmw_models.Maintenance)
 patch_admin(gmw_models.gmw_registration_log)

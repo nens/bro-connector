@@ -198,8 +198,8 @@ class Subgroup(models.Model):
     class Meta:
         managed = True
         db_table = 'gmn"."subgroup'
-        verbose_name = "Subgroup"
-        verbose_name_plural = "Subgroups"
+        verbose_name = "Subgroep"
+        verbose_name_plural = "Subgroepen"
         ordering = ("name",)
 
 
