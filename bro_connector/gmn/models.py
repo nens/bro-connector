@@ -26,12 +26,13 @@ def get_color_value():
 
 # Create your models here.
 class GroundwaterMonitoringNet(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, verbose_name="DB ID")
     project = models.ForeignKey(
         BROProject,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        verbose_name="Project"
     )
     deliver_to_bro = models.BooleanField(
         blank=False, null=True, verbose_name="Leveren aan BRO?"
@@ -41,7 +42,7 @@ class GroundwaterMonitoringNet(models.Model):
         null=True,
         blank=True,
         editable=True,
-        verbose_name="BRO-ID GMN",
+        verbose_name="GMN BRO ID",
         unique=True,
     )
     delivery_accountable_party = models.ForeignKey(
@@ -50,6 +51,7 @@ class GroundwaterMonitoringNet(models.Model):
         null=True,
         blank=True,
         related_name="delivery_accountable_party_gmn",
+        verbose_name="Bronhouder"
     )
     delivery_responsible_party = models.ForeignKey(
         Organisation,
@@ -57,6 +59,7 @@ class GroundwaterMonitoringNet(models.Model):
         null=True,
         blank=True,
         related_name="delivery_responsible_party_gmn",
+        verbose_name="Dataleverancier"
     )
     quality_regime = models.CharField(
         choices=(
@@ -128,10 +131,12 @@ class GroundwaterMonitoringNet(models.Model):
             return self.project.project_number
         else:
             None
+    project_number.fget.short_description = "Projectnummer"
 
     @property
     def measuring_point_count(self):
         return MeasuringPoint.objects.filter(gmn=self).count()
+    measuring_point_count.fget.short_description = "Aantal meetpunten"
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -173,14 +178,14 @@ class Subgroup(models.Model):
         GroundwaterMonitoringNet,
         related_name="subgroups",
         on_delete=models.CASCADE,
-        verbose_name="GMN",
+        verbose_name="Meetnet",
     )
     name = models.CharField(
         max_length=100, null=False, blank=False, verbose_name="Naam"
     )
-    code = models.CharField(max_length=25, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    color = models.CharField(max_length=50, null=True, blank=True)
+    code = models.CharField(max_length=25, null=True, blank=True, verbose_name="Code")
+    description = models.TextField(null=True, blank=True, verbose_name="Beschrijving")
+    color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleur")
 
     def __str__(self) -> str:
         if self.name:
@@ -215,13 +220,14 @@ class MeasuringPoint(models.Model):
         related_name="measuring_point",
         blank=True,
         help_text="Optional value to define smaller groups within a network.",
+        verbose_name="Subgroep"
     )
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
         blank=False,
-        verbose_name="Grondwatermonitoring buis",
+        verbose_name="Filter",
         related_name="measuring_point",
     )
     code = models.CharField(
@@ -393,40 +399,42 @@ class IntermediateEvent(models.Model):
 
 
 class gmn_bro_sync_log(models.Model):
-    date_modified = models.DateField(null=True, blank=True)
+    date_modified = models.DateField(null=True, blank=True, verbose_name="Datum aangepast")
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
         null=True,
         max_length=25,
+        verbose_name="Gebeurtenis type"
     )
     gmn_bro_id = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="BRO-ID GMN"
+        max_length=254, null=True, blank=True, verbose_name="GMN BRO ID"
     )
     object_id_accountable_party = models.CharField(
-        max_length=255, null=True, blank=True
+        max_length=255, null=True, blank=True, verbose_name="Intern ID"
     )
-    validation_status = models.CharField(max_length=254, null=True, blank=True)
-    delivery_id = models.CharField(max_length=254, null=True, blank=True)
+    validation_status = models.CharField(max_length=254, null=True, blank=True, verbose_name="Validatiestatus")
+    delivery_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="Levering ID")
     delivery_type = models.CharField(
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
         default="register",
+        verbose_name="Levering type"
     )
     delivery_status = models.CharField(
-        choices=LEVERINGSTATUS_CHOICES, max_length=10, null=True, blank=True, default=0
+        choices=LEVERINGSTATUS_CHOICES, max_length=10, null=True, blank=True, default=0, verbose_name="Levering status"
     )
-    delivery_status_info = models.CharField(max_length=254, null=True, blank=True)
-    comments = models.CharField(max_length=10000, null=True, blank=True)
-    last_changed = models.CharField(max_length=254, null=True, blank=True)
-    corrections_applied = models.BooleanField(blank=True, null=True)
-    timestamp_end_registration = models.DateTimeField(blank=True, null=True)
-    quality_regime = models.CharField(max_length=254, null=True, blank=True)
-    file = models.CharField(max_length=254, null=True, blank=True)
-    process_status = models.CharField(max_length=254, null=True, blank=True)
+    delivery_status_info = models.CharField(max_length=254, null=True, blank=True, verbose_name="Levering status info")
+    comments = models.CharField(max_length=10000, null=True, blank=True, verbose_name="Commentaar")
+    last_changed = models.CharField(max_length=254, null=True, blank=True, verbose_name="Laatst veranderd")
+    corrections_applied = models.BooleanField(blank=True, null=True, verbose_name="Correcties toegepast")
+    timestamp_end_registration = models.DateTimeField(blank=True, null=True, verbose_name="Moment einde registratie")
+    quality_regime = models.CharField(max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime")
+    file = models.CharField(max_length=254, null=True, blank=True, verbose_name="Bestand")
+    process_status = models.CharField(max_length=254, null=True, blank=True, verbose_name="Proces status")
     measuringpoint = models.ForeignKey(
-        MeasuringPoint, blank=True, null=True, on_delete=models.CASCADE
+        MeasuringPoint, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Meetpunt"
     )
 
     def __str__(self):

@@ -4,7 +4,7 @@ from .models import Event
 
 
 class EventTypeFilter(SimpleListFilter):
-    title = "Event Type"  # Display name in the admin filter sidebar
+    title = "Gebeurtenis type"  # Display name in the admin filter sidebar
     parameter_name = "event_type"  # The URL query parameter
 
     def lookups(self, request, model_admin):

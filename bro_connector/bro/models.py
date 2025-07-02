@@ -71,10 +71,10 @@ class SecureCharField(CharField):
 
 class Organisation(BaseModel):
     name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Naam")
-    company_number = models.IntegerField(blank=True, verbose_name="KVK")
-    color = models.CharField(max_length=50, null=True, blank=True)
-    bro_user = SecureCharField()
-    bro_token = SecureCharField()
+    company_number = models.IntegerField(blank=True, verbose_name="KvK")
+    color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleurcode")
+    bro_user = SecureCharField(verbose_name="BRO Gebruiker")
+    bro_token = SecureCharField(verbose_name="BRO Token")
 
     class Meta:
         managed = True
@@ -98,14 +98,15 @@ class Organisation(BaseModel):
 
 
 class BROProject(BaseModel):
-    name = models.CharField(max_length=50, null=True, blank=True)
-    project_number = models.IntegerField(null=False, blank=False)
+    name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Projectnaam")
+    project_number = models.IntegerField(null=False, blank=False, verbose_name="Projectnummer")
     owner = models.ForeignKey(
         Organisation,
         on_delete=models.SET_NULL,
         null=True,
         blank=False,
         related_name="owner",
+        verbose_name="Eigenaar"
     )
     authorized = models.ManyToManyField(
         Organisation, blank=True, related_name="authorized_company"

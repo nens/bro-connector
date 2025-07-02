@@ -104,11 +104,11 @@ def get_timeseries_tvp_for_observation_id(observation):
 
 
 class GroundwaterLevelDossier(BaseModel):
-    groundwater_level_dossier_id = models.AutoField(primary_key=True)
+    groundwater_level_dossier_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     groundwater_monitoring_net = models.ManyToManyField(
         GroundwaterMonitoringNet,
         blank=True,
-        verbose_name="Meetnetten",
+        verbose_name="Meetnet",
     )
     groundwater_monitoring_tube = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
@@ -116,9 +116,10 @@ class GroundwaterLevelDossier(BaseModel):
         null=True,
         blank=False,
         related_name="groundwaterleveldossier",
+        verbose_name="Filter"
     )
     gld_bro_id = models.CharField(
-        max_length=255, blank=True, null=True, unique=True, verbose_name="GLD BRO id"
+        max_length=255, blank=True, null=True, unique=True, verbose_name="GLD BRO ID"
     )
     quality_regime = models.CharField(
         choices=QUALITYREGIME,
@@ -142,10 +143,12 @@ class GroundwaterLevelDossier(BaseModel):
         if self.groundwater_monitoring_tube is not None:
             return self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id
         return None
+    gmw_bro_id.fget.short_description = "GMW BRO ID"
 
     @property
     def tube_number(self):
         return self.groundwater_monitoring_tube.tube_number
+    tube_number.fget.short_description = "Filternummer"
 
     @property
     def first_measurement(self):
@@ -159,6 +162,7 @@ class GroundwaterLevelDossier(BaseModel):
         )
 
         return first_measurement_date
+    first_measurement.fget.short_description = "Eerste meetdatum"
 
     @property
     def most_recent_measurement(self):
@@ -179,6 +183,7 @@ class GroundwaterLevelDossier(BaseModel):
                 return most_recent_measurement.measurement_time
 
         return None
+    most_recent_measurement.fget.short_description = "Meest recente meetmoment"
 
     @property
     def completely_delivered(self):
@@ -191,6 +196,7 @@ class GroundwaterLevelDossier(BaseModel):
         if nr_of_observations_groundwaterleveldossier == 0:
             return True
         return False
+    completely_delivered.fget.short_description = "Volledig geleverd"
 
     @property
     def has_open_observation(self):
@@ -202,6 +208,7 @@ class GroundwaterLevelDossier(BaseModel):
         if nr_of_observations_groundwaterleveldossier == 0:
             return False
         return True
+    has_open_observation.fget.short_description = "Heeft open observatie(s)"
 
     def __str__(self):
         return f"GLD_{self.groundwater_monitoring_tube.__str__()}"
@@ -214,9 +221,9 @@ class GroundwaterLevelDossier(BaseModel):
 
 
 class Observation(BaseModel):
-    observation_id = models.AutoField(primary_key=True, null=False, blank=False)
+    observation_id = models.AutoField(primary_key=True, null=False, blank=False, verbose_name="DB ID")
     groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE, related_name="observation"
+        "GroundwaterLevelDossier", on_delete=models.CASCADE, related_name="observation", verbose_name="GLD"
     )
     observation_metadata = models.ForeignKey(
         "ObservationMetadata",
@@ -224,6 +231,7 @@ class Observation(BaseModel):
         default=None,
         null=True,
         blank=True,
+        verbose_name="Observatie Metadata"
     )
     observation_process = models.ForeignKey(
         "ObservationProcess",
@@ -231,6 +239,7 @@ class Observation(BaseModel):
         default=None,
         null=True,
         blank=True,
+        verbose_name="Observatie Proces"
     )
     observation_starttime = models.DateTimeField(
         blank=True, null=True, verbose_name="Starttijd"
@@ -250,7 +259,7 @@ class Observation(BaseModel):
         blank=True,
         null=True,
         editable=False,
-        verbose_name="Observatie BRO ID",
+        verbose_name="BRO ID",
     )  # Should also import this with the BRO-Import tool
 
     measurement: Manager["MeasurementTvp"]
@@ -266,6 +275,7 @@ class Observation(BaseModel):
         if mtvp is not None:
             return mtvp.measurement_time
         return None
+    timestamp_first_measurement.fget.short_description = "Moment eerste meting"
 
     @property
     def timestamp_last_measurement(self):
@@ -278,19 +288,20 @@ class Observation(BaseModel):
         if mtvp is not None:
             return mtvp.measurement_time
         return None
+    timestamp_last_measurement.fget.short_description = "Moment laatste meting"
 
     @property
     def measurement_type(self):
         if self.observation_process:
             return self.observation_process.measurement_instrument_type
         return "-"
+    measurement_type.fget.short_description = "Meting type"
 
     @property
     def observation_type(self):
         if self.observation_metadata:
             return self.observation_metadata.observation_type
         return "-"
-
     observation_type.fget.short_description = "Observatie type"
 
     @property
@@ -298,18 +309,21 @@ class Observation(BaseModel):
         if self.observation_metadata:
             return self.observation_metadata.status
         return "-"
+    status.fget.short_description = "Status Metadata"
 
     @property
     def observationperiod(self):
         if self.observation_starttime and self.observation_endtime:
             return self.observation_endtime - self.observation_starttime
         return None
+    observationperiod.fget.short_description = "Observatie periode"
 
     @property
     def date_stamp(self):
         if self.result_time:
             return self.result_time.date()
         return None
+    date_stamp.fget.short_description = "Datum resultaattijd"
 
     @property
     def all_measurements_validated(self):
@@ -329,13 +343,14 @@ class Observation(BaseModel):
         else:
             return "onbekend"
 
-    all_measurements_validated.fget.short_description = "Status validatie"
+    all_measurements_validated.fget.short_description = "Alle metingen gevalideerd"
 
     @property
     def addition_type(self):
         if self.observation_type == "controlemeting":
             return "controlemeting"
         return f"regulier_{self.observation_type}"
+    addition_type.fget.short_description = "Toevoegingstype"
 
     @property
     def active_measurement(self):
@@ -343,6 +358,7 @@ class Observation(BaseModel):
         return MeasurementTvp.objects.filter(
             observation=self, measurement_time__gte=one_week_ago
         ).exists()
+    active_measurement.fget.short_description = "Actieve meting"
 
     def __str__(self):
         start = (
@@ -408,11 +424,11 @@ class Observation(BaseModel):
 
 
 class ObservationMetadata(BaseModel):
-    observation_metadata_id = models.AutoField(primary_key=True)
+    observation_metadata_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     observation_type = models.CharField(
-        choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True
+        choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Observatie type"
     )
-    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True)
+    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True, verbose_name="Status metadata")
     responsible_party = models.ForeignKey(
         Organisation,
         on_delete=models.SET_NULL,
@@ -439,23 +455,22 @@ class ObservationMetadata(BaseModel):
             )
         ]
 
-
 class ObservationProcess(BaseModel):
-    observation_process_id = models.AutoField(primary_key=True)
+    observation_process_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     process_reference = models.CharField(
-        choices=PROCESSREFERENCE, max_length=200, blank=True, null=True
+        choices=PROCESSREFERENCE, max_length=200, blank=True, null=True, verbose_name="Proces referentie"
     )
     measurement_instrument_type = models.CharField(
-        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False
+        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False, verbose_name="meetintrument type"
     )
     air_pressure_compensation_type = models.CharField(
-        choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True
+        choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Luchtdrukcompensatie type"
     )
     process_type = models.CharField(
-        choices=PROCESSTYPE, max_length=200, blank=True, null=True
+        choices=PROCESSTYPE, max_length=200, blank=True, null=True, verbose_name="Proces type"
     )
     evaluation_procedure = models.CharField(
-        choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False
+        choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False, verbose_name="Evaluatie procedure"
     )
 
     def __str__(self):
@@ -510,7 +525,7 @@ class ObservationProcess(BaseModel):
 
 # MEASUREMENT TIME VALUE PAIR
 class MeasurementTvp(BaseModel):
-    measurement_tvp_id = models.AutoField(primary_key=True)
+    measurement_tvp_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     observation = models.ForeignKey(
         Observation,
         on_delete=models.CASCADE,
@@ -586,12 +601,13 @@ class MeasurementPointMetadata(BaseModel):
         blank=True,
         null=True,
         default="nogNietBeoordeeld",
+        verbose_name="Status kwaliteitscontrole"
     )
     censor_reason = models.CharField(
-        choices=CENSORREASON, max_length=200, blank=True, null=True, default=None
+        choices=CENSORREASON, max_length=200, blank=True, null=True, default=None, verbose_name="Censuurreden"
     )
-    censor_reason_datalens = models.CharField(max_length=200, blank=True, null=True)
-    value_limit = models.CharField(max_length=50, blank=True, null=True, default=None)
+    censor_reason_datalens = models.CharField(max_length=200, blank=True, null=True, verbose_name="Censuurreden Datalens")
+    value_limit = models.CharField(max_length=50, blank=True, null=True, default=None, verbose_name="Limietwaarde")
 
     class Meta:
         managed = True
@@ -607,6 +623,7 @@ class MeasurementPointMetadata(BaseModel):
     @property
     def interpolation_code(self):
         return "discontinu"
+    interpolation_code.fget.short_description = "Interpolatie code"
 
     def __str__(self):
         return f"{self.measurement_point_metadata_id} {self.status_quality_control}"
@@ -656,10 +673,10 @@ class gld_registration_log(BaseModel):
     last_changed = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Laatste wijziging"
     )
-    corrections_applied = models.BooleanField(blank=True, null=True)
-    timestamp_end_registration = models.DateTimeField(blank=True, null=True)
+    corrections_applied = models.BooleanField(blank=True, null=True, verbose_name="Correcties toegepast")
+    timestamp_end_registration = models.DateTimeField(blank=True, null=True, verbose_name="Moment einde registratie")
     quality_regime = models.CharField(
-        choices=QUALITYREGIME, max_length=254, null=True, blank=True
+        choices=QUALITYREGIME, max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime"
     )
     file = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Bestand"

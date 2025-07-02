@@ -478,17 +478,17 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         # Sla het model op
         obj.save()
 
-    @admin.action(description="Deliver GMW to BRO")
+    @admin.action(description="Lever GMW aan BRO")
     def deliver_to_bro(self, request, queryset):
         for well in queryset:
             gmw_actions.check_and_deliver(well)
 
-    @admin.action(description="Check GMW status from BRO")
+    @admin.action(description="Check GMW status uit BRO")
     def check_status(self, request, queryset):
         for well in queryset:
             gmw_actions.check_status(well)
 
-    @admin.action(description="Generate FRD FieldForm")
+    @admin.action(description="Genereer FRD FieldForm")
     def generate_fieldform(self, request, queryset):
         generator = FieldFormGenerator()
         generator.inputfields = ["weerstand", "opmerking"]
@@ -521,6 +521,33 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     list_filter = (WellFilter, "owner")
 
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "date_till"]
+
+    fields = [
+        "groundwater_monitoring_well_static",
+        "date_from",
+        "date_till",
+        "comment",
+        "bro_actions",
+        "complete_bro",
+        "deliver_gld_to_bro",
+        "ground_level_position",
+        "ground_level_positioning_method",
+        "ground_level_stable",
+        "well_stability",
+        "owner",
+        "maintenance_responsible_party",
+        "well_head_protector",
+        "well_head_protector_subtype",
+        "foundation",
+        "collision_protection",
+        "lock",
+        "key",
+        "place",
+        "street",
+        "location_description",
+        "label",
+        "number_of_standpipes",
+    ]
 
     # inlines = (WellStaticInline,)
 
@@ -608,7 +635,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
                     "Set deliver_gld_to_bro to True by manual action."
                 )
 
-    deliver_gld_to_true.short_description = "Deliver GLD to True"
+    deliver_gld_to_true.short_description = "Stel GLD naar BRO in op AAN"
 
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringTubeStatic, form, change
@@ -654,7 +681,30 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     )
     list_filter = (TubeFilter,)
 
-    readonly_fields = ["screen_top_position", "screen_bottom_position"]
+    readonly_fields = ["date_till", "screen_top_position", "screen_bottom_position"]
+
+    fields = [
+        "groundwater_monitoring_tube_static",
+        "date_from",
+        "date_till",
+        "comment",
+        "bro_actions",
+        "tube_top_diameter",
+        "variable_diameter",
+        "tube_status",
+        "tube_top_position",
+        "sensor_depth",
+        "sensor_id",
+        "tube_top_positioning_method",
+        "tube_packing_material",
+        "glue",
+        "plain_tube_part_length",
+        "inserted_part_diameter",
+        "inserted_part_length",
+        "inserted_part_material",
+        "screen_top_position",
+        "screen_bottom_position",        
+    ]
 
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringTubeDynamic, form, change

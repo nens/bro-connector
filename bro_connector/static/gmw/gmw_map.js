@@ -248,14 +248,15 @@ map.on("load", () => {
 map.on("zoom", () => {
   const zoom = map.getZoom();
   const shouldShowText = zoom >= 12;
-  isTextLayerVisible = shouldShowText;
   // Remove the old layer if it exists
   if (map.getLayer("text-layer")) {
     map.removeLayer("text-layer");
   }
   // Add it back with correct visibility
-  const newTextLayer = createTextLayer(shouldShowText);
-  map.addLayer(newTextLayer);
+  if (shouldShowText && isTextLayerVisible) {
+    const newTextLayer = createTextLayer(true);
+    map.addLayer(newTextLayer);
+  }
 });
 
 // Remove popup on map click
@@ -265,13 +266,13 @@ map.on("click", () => marker && marker.remove());
 const toggleTextLayerButton = document.getElementById("toggle-text-layer-btn");
 
 // Variable to keep track of the layer's visibility state
-let isTextLayerVisible = true;
+let isTextLayerVisible = false;
 
 // Function to toggle the visibility of the text layer
 const toggleTextLayerVisibility = () => {
   const zoom = map.getZoom();
   const shouldShowText = zoom >= 12;
-  const newTextLayer = createTextLayer(shouldShowText);
+  
   try {
     if (isTextLayerVisible) {
       // If the text layer is visible, remove it from the map
@@ -283,6 +284,7 @@ const toggleTextLayerVisibility = () => {
     } else {
       // If the text layer is not visible, add it back to the map
       if (!map.getLayer("text-layer")) {  // Check if the layer doesn't already exist
+        const newTextLayer = createTextLayer(shouldShowText);
         map.addLayer(newTextLayer);
       } else {
         console.warn("Text layer already exists on the map.");

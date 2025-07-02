@@ -23,12 +23,11 @@ class BroImporter(BaseModel):
         max_length=100,
         choices=BRO_TYPES,
         null=False,
+        verbose_name="BRO type"
     )
-    kvk_number = models.CharField(max_length=8, null=False)
-    import_date = models.DateTimeField(editable=False)
-    created_date = models.DateTimeField(editable=False)
-    import_date = models.DateTimeField(editable=False)
-    created_date = models.DateTimeField(editable=False)
+    kvk_number = models.CharField(max_length=8, null=False, verbose_name="KvK")
+    import_date = models.DateTimeField(editable=False, verbose_name="Datum geïmporteerd")
+    created_date = models.DateTimeField(editable=False, verbose_name="Datum gecreëerd")
 
     class Meta:
         managed = True
@@ -44,13 +43,14 @@ class BroImporter(BaseModel):
 
 
 class XMLImport(BaseModel):
-    id = models.AutoField(primary_key=True)
-    created = models.DateTimeField(auto_now_add=True, editable=False)
-    file = models.FileField(upload_to="bulk", validators=[])
+    id = models.AutoField(primary_key=True, verbose_name="ID")
+    created = models.DateTimeField(auto_now_add=True, editable=False, verbose_name="Datum aangemaakt")
+    file = models.FileField(upload_to="bulk", validators=[], verbose_name="Bestand")
     report = models.TextField(
         help_text="process description",
         blank=True,
         null=True,
+        verbose_name="Rapportage"
     )
     checked = models.BooleanField(
         help_text="checked",
@@ -58,9 +58,10 @@ class XMLImport(BaseModel):
         default=False,
         blank=True,
         null=True,
+        verbose_name="Gecheckt"
     )
     imported = models.BooleanField(
-        verbose_name="fully imported",
+        verbose_name="Volledig geïmporteerd",
         default=False,
         editable=False,
         blank=True,
@@ -81,6 +82,7 @@ class GLDImport(BaseModel):
         validators=[],
         null=True,
         blank=True,
+        verbose_name="Bestand"
     )
     name = models.CharField(max_length=255, null=True, blank=False, verbose_name="Naam")
     groundwater_monitoring_tube = models.ForeignKey(
@@ -88,12 +90,13 @@ class GLDImport(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=False,
+        verbose_name="Filter"
     )
     responsible_party = models.ForeignKey(
-        Organisation, on_delete=models.SET_NULL, null=True, blank=True
+        Organisation, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Bronhouder"
     )
     observation_type = models.CharField(
-        choices=OBSERVATIONTYPE, max_length=200, blank=False, null=False
+        choices=OBSERVATIONTYPE, max_length=200, blank=False, null=False, verbose_name="Observatie type"
     )
     field_value_unit = models.CharField(
         choices=UNIT_CHOICES,
@@ -105,17 +108,17 @@ class GLDImport(BaseModel):
     )
 
     status = models.CharField(
-        choices=STATUSCODE, max_length=200, blank=False, null=False
+        choices=STATUSCODE, max_length=200, blank=False, null=False, verbose_name="Status"
     )
 
     process_reference = models.CharField(
-        choices=PROCESSREFERENCE, max_length=200, blank=False, null=False
+        choices=PROCESSREFERENCE, max_length=200, blank=False, null=False, verbose_name="Proces referentie"
     )
     measurement_instrument_type = models.CharField(
-        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False
+        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False, verbose_name="Meetinstrument type"
     )
     air_pressure_compensation_type = models.CharField(
-        choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True
+        choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Luchtdrukcompensatie type"
     )
     process_type = models.CharField(
         choices=PROCESSTYPE,
@@ -123,17 +126,19 @@ class GLDImport(BaseModel):
         blank=False,
         null=False,
         default="algoritme",
+        verbose_name="Proces type"
     )
     evaluation_procedure = models.CharField(
-        choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False
+        choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False, verbose_name="Evaluatieprocedure"
     )
 
-    validated = models.BooleanField(null=True, blank=True, default=True, editable=False)
-    executed = models.BooleanField(null=True, blank=True, default=False, editable=False)
+    validated = models.BooleanField(null=True, blank=True, default=True, editable=False, verbose_name="Gevalideerd")
+    executed = models.BooleanField(null=True, blank=True, default=False, editable=False, verbose_name="Uitgevoerd")
     report = models.TextField(
         help_text="Information on GLD Import",
         blank=True,
         null=True,
+        verbose_name="Rapportage"
     )
 
     class Meta:
@@ -161,7 +166,7 @@ class GMNImport(BaseModel):
         verbose_name="Meetpunten bestand",
     )
     name = models.CharField(
-        max_length=255, null=True, blank=False, verbose_name="Meetnet naam"
+        max_length=255, null=True, blank=False, verbose_name="Meetnet"
     )
     delivery_context = models.CharField(
         blank=False,

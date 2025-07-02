@@ -6,8 +6,8 @@
     <input
       type="text"
       id="search-input"
-      placeholder="Search well..."
-      title="You can search by bro id, well code, nitg code or label"
+      placeholder="Zoek naar een put..."
+      title="Je kunt zoeken op BRO id, putcode, nitg code of label"
     />
     <div id="search-options" class="hide">
       {% for well in wells %}
@@ -47,7 +47,7 @@
       </div>
     </div>
     <div id="gmn-wrapper">
-      <h4>Other:</h4>
+      <h4>Overig:</h4>
       <div
         class="mapbox-checkbox-wrapper"
         onclick="event.preventDefault(); handleWellValue('complete_bro', this)"
@@ -60,7 +60,7 @@
             name="checkbox-complete_bro"
             onclick="handleWellValueCheckboxClick(this)"
           />
-          Complete bro
+          Compleet in BRO
         </label>
       </div>
       <div
@@ -75,7 +75,7 @@
             name="checkbox-deliver_gmw_to_bro"
             onclick="handleWellValueCheckboxClick(this)"
           />
-          Deliver GMW to BRO
+          GMWs aan BRO aanleveren
         </label>
       </div>
       <hr />
@@ -86,7 +86,7 @@
             type="button"
             onclick="event.stopPropagation(); deselectAllCheckboxes()"
           >
-            Deselect All
+            (De)selecteer alles
           </button>
         </label>
       </div>
@@ -103,7 +103,7 @@
             checked
             onclick="handleCheckboxClick(this)"
           />
-          No linked GMN
+          Niet in een GMN
         </label>
       </div>
       {% for gmn in gmns %}
@@ -128,7 +128,7 @@
   </div>
 
   <div id="legend-bottom">
-    <h4>Organisations:</h4>
+    <h4>Organisaties:</h4>
     {% for organisation in organisations %}
     <div
       class="mapbox-checkbox-wrapper"

@@ -95,7 +95,7 @@ class BroImporterAdmin(admin.ModelAdmin):
         self.message_user(request, message_info["message"], level=message_info["level"])
         obj.save()
 
-    @admin.action(description="Re-import values from the BRO.")
+    @admin.action(description="Importeer waardes opnieuw uit de BRO")
     def update_import(self, request, queryset):
         pass
 

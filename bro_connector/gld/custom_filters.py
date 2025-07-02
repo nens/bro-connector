@@ -5,19 +5,19 @@ from bro.models import Organisation
 
 
 class GLDFilter(AutocompleteFilter):
-    title = "groundwater level dossier"
+    title = "GLD"
     field_name = "groundwater_level_dossier"
     is_placeholder_title = True
 
 
 class ObservationFilter(AutocompleteFilter):
-    title = "observation"
+    title = "Observatie"
     field_name = "observation"
     is_placeholder_title = True
 
 
 class OrganisationFilter(SimpleListFilter):
-    title = "Organisation"
+    title = "Organisatie"
     parameter_name = "responsible_party"
 
     def lookups(self, request, model_admin):
@@ -33,7 +33,7 @@ class OrganisationFilter(SimpleListFilter):
 
 
 class TubeFilter(AutocompleteFilter):
-    title = "groundwater monitoring tube"
+    title = "Filter"
     field_name = "groundwater_monitoring_tube"
     is_placeholder_title = True
 
@@ -49,7 +49,7 @@ class PropertyFilterMixin:
 
 
 class CompletelyDeliveredFilter(admin.SimpleListFilter, PropertyFilterMixin):
-    title = "Fully Delivered"
+    title = "Volledig geleverd"
     parameter_name = "completely_delivered"
 
     def lookups(self, request, model_admin):
@@ -67,7 +67,7 @@ class CompletelyDeliveredFilter(admin.SimpleListFilter, PropertyFilterMixin):
 
 
 class HasOpenObservationFilter(admin.SimpleListFilter, PropertyFilterMixin):
-    title = "Active Measurements"
+    title = "Actieve metingen"
     parameter_name = "has_open_observation"
 
     def lookups(self, request, model_admin):
