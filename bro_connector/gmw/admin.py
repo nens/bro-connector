@@ -4,7 +4,9 @@ from django.db.models import fields
 import reversion
 from reversion_compare.helpers import patch_admin
 import logging
-
+from django.urls import reverse
+from django.utils.html import format_html
+from urllib.parse import urlencode
 
 from . import models as gmw_models
 from gld.models import GroundwaterLevelDossier
@@ -129,6 +131,7 @@ class WellDynamicInline(admin.TabularInline):
         "ground_level_position",
         "ground_level_positioning_method",
         "comment",
+        "comment_processed",
     )
     ordering = ["-date_from"]
 
@@ -145,8 +148,9 @@ class WellDynamicInline(admin.TabularInline):
                 "ground_level_positioning_method",
                 "number_of_standpipes",
                 "comment",
+                "comment_processed",
             )
-        return ["date_from", "date_till", "number_of_standpipes", "comment"]
+        return ["date_from", "date_till", "number_of_standpipes", "comment", "comment_processed"]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -247,10 +251,11 @@ class TubeDynamicInline(admin.TabularInline):
         "tube_top_positioning_method",
         "tube_status",
         "comment",
+        "comment_processed",
     )
     show_change_link = True
 
-    readonly_fields = ["date_from", "date_till", "comment"]
+    readonly_fields = ["date_from", "date_till", "comment", "comment_processed"]
     
     ordering = ["-date_from"]
 
@@ -355,6 +360,10 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "bro_actions",
         "bro_loket_link",
         "map_preview",
+        "open_comments_well_ids",
+        "open_comments_tube_ids",
+        "well_link",
+        "tube_link",
     )
 
     fieldsets = [
@@ -384,6 +393,10 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "well_offset",
                     "vertical_datum",
                     "last_horizontal_positioning_date",
+                    "open_comments_well_ids",
+                    "open_comments_tube_ids",
+                    "well_link",
+                    "tube_link",
                     "report",
                     "bro_actions",
                     "x",
@@ -404,6 +417,30 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     )
 
     actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
+
+    def well_link(self, obj):
+        filter_ids = obj.open_comments_well_ids
+        if not filter_ids:
+            return "-"
+        
+        url = (
+            reverse('admin:gmw_groundwatermonitoringwelldynamic_changelist')
+            + "?"
+            + urlencode({"groundwater_monitoring_well_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
+        )
+        return format_html('<a href="{}" target="_blank">Dynamische putten met openstaand commentaar</a>', url)
+
+    def tube_link(self, obj):
+        filter_ids = obj.open_comments_tube_ids
+        if not filter_ids:
+            return "-"
+        
+        url = (
+            reverse('admin:gmw_groundwatermonitoringtubedynamic_changelist')
+            + "?"
+            + urlencode({"groundwater_monitoring_tube_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
+        )
+        return format_html('<a href="{}" target="_blank">Dynamische filters met openstaand commentaar</a>', url)
 
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringWellStatic, form, change
@@ -527,6 +564,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "date_from",
         "date_till",
         "comment",
+        "comment_processed",
         "bro_actions",
         "complete_bro",
         "deliver_gld_to_bro",
@@ -688,6 +726,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
         "date_from",
         "date_till",
         "comment",
+        "comment_processed",
         "bro_actions",
         "tube_top_diameter",
         "variable_diameter",

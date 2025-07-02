@@ -4,6 +4,7 @@ import django.contrib.gis.db.models as geo_models
 from django.utils.html import format_html
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.contrib import admin
 from gmw.choices import (
     WELLHEADPROTECTOR_SUBTYPES,
     WELLHEADPROTECTOR,
@@ -319,6 +320,52 @@ class GroundwaterMonitoringWellStatic(BaseModel):
 
     map_preview.fget.short_description = "Preview locatie"
 
+    @property
+    def open_comments_well_ids(self):
+        filter_ids = []
+        wells_dynamic_unprocessed = GroundwaterMonitoringWellDynamic.objects.filter(
+            groundwater_monitoring_well_static=self,
+            comment_processed=False,
+        ).all()
+        if wells_dynamic_unprocessed:
+            for well_dynamic in wells_dynamic_unprocessed:
+                id = well_dynamic.groundwater_monitoring_well_dynamic_id
+                filter_ids.append(id)
+
+        print("Well filter IDs: ",filter_ids)
+
+        return filter_ids
+    
+    @admin.display(boolean=True, description="Openstaand commentaar")
+    def has_open_comments_well(self):
+        if self.open_comments_well_ids:
+            return True
+        return False
+    
+    @property
+    def open_comments_tube_ids(self):
+        tubes_static = GroundwaterMonitoringTubeStatic.objects.filter(groundwater_monitoring_well_static=self).all()
+        filter_ids = []
+        for tube in tubes_static:
+            tubes_dynamic_unprocessed = GroundwaterMonitoringTubeDynamic.objects.filter(
+                groundwater_monitoring_tube_static=tube,
+                comment_processed=False,
+            ).all()
+            if tubes_dynamic_unprocessed:
+                for tube_dynamic in tubes_dynamic_unprocessed:
+                    id = tube_dynamic.groundwater_monitoring_tube_dynamic_id
+                    filter_ids.append(id)
+
+        print("Tube filter IDs: ",filter_ids)
+
+        return filter_ids
+    
+    @property
+    def has_open_comments_tube(self):
+        if self.open_comments_tube_ids:
+            return True
+        return False
+
     def __str__(self):
         if self.well_code:
             return str(self.well_code)
@@ -443,6 +490,9 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
     )
 
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
+    comment_processed = models.BooleanField(
+        blank=True, default=False, verbose_name="Commentaar verwerkt"
+    )
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
@@ -471,7 +521,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
             return next_dynamic.date_from
         return None
 
-    date_till.fget.short_description = "Datum tot"
+    date_till.fget.short_description = "Geldig tot"
 
     @property
     def number_of_standpipes(self):
@@ -610,7 +660,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         related_name="state",
-        verbose_name="Buis",
+        verbose_name="Filter",
     )
     date_from = models.DateTimeField(
         help_text="formaat: YYYY-MM-DD", verbose_name="Geldig vanaf"
@@ -690,6 +740,9 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         max_length=200, blank=True, null=True, verbose_name="Materiaal ingeplaatst deel"
     )
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
+    comment_processed = models.BooleanField(
+        blank=True, default=False, verbose_name="Commentaar verwerkt"
+    )
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
