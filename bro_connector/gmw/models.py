@@ -332,15 +332,8 @@ class GroundwaterMonitoringWellStatic(BaseModel):
                 id = well_dynamic.groundwater_monitoring_well_dynamic_id
                 filter_ids.append(id)
 
-        print("Well filter IDs: ",filter_ids)
-
         return filter_ids
-    
-    @admin.display(boolean=True, description="Openstaand commentaar")
-    def has_open_comments_well(self):
-        if self.open_comments_well_ids:
-            return True
-        return False
+    open_comments_well_ids.fget.short_description = "Dynamische putten met openstaand commentaar"
     
     @property
     def open_comments_tube_ids(self):
@@ -356,13 +349,12 @@ class GroundwaterMonitoringWellStatic(BaseModel):
                     id = tube_dynamic.groundwater_monitoring_tube_dynamic_id
                     filter_ids.append(id)
 
-        print("Tube filter IDs: ",filter_ids)
-
         return filter_ids
+    open_comments_tube_ids.fget.short_description = "Dynamische filters met openstaand commentaar"
     
     @property
-    def has_open_comments_tube(self):
-        if self.open_comments_tube_ids:
+    def has_open_comments(self):
+        if self.open_comments_well_ids or self.open_comments_tube_ids:
             return True
         return False
 

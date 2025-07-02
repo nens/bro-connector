@@ -2,7 +2,9 @@ from rest_framework import serializers
 from gmw import models as gmw_models
 from gld import models as gld_models
 from django.utils.html import format_html_join
-
+from django.urls import reverse
+from django.utils.html import format_html
+from urllib.parse import urlencode
 
 class GMWSerializer(serializers.ModelSerializer):
     x = serializers.SerializerMethodField()
@@ -13,6 +15,9 @@ class GMWSerializer(serializers.ModelSerializer):
     picture = serializers.SerializerMethodField()
     nitg_code = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
+    # url_open_comments_wells = serializers.SerializerMethodField()
+    # url_open_comments_tubes = serializers.SerializerMethodField()
+    has_open_comments = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
@@ -33,6 +38,9 @@ class GMWSerializer(serializers.ModelSerializer):
             "label",
             "groundlevel_position",
             "well_head_protector",
+            # "url_open_comments_wells",
+            # "url_open_comments_tubes",
+            "has_open_comments",
         ]
 
     def get_label(self, obj):
@@ -91,6 +99,33 @@ class GMWSerializer(serializers.ModelSerializer):
 
     def get_label(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return obj.__str__()
+    
+    # def get_url_open_comments_wells(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+    #     well_ids = obj.open_comments_well_ids
+    #     if not well_ids:
+    #         return "-"
+        
+    #     url = (
+    #         reverse('admin:gmw_groundwatermonitoringwelldynamic_changelist')
+    #         + "?"
+    #         + urlencode({"groundwater_monitoring_well_dynamic_id__in": ",".join(str(id) for id in well_ids)})
+    #     )
+    #     return format_html('<a href="{}" target="_blank">Openstaand commentaar</a>', url)
+
+    # def get_url_open_comments_tubes(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+    #     tube_ids = obj.open_comments_tube_ids
+    #     if not tube_ids:
+    #         return "-"
+        
+    #     url = (
+    #         reverse('admin:gmw_groundwatermonitoringtubedynamic_changelist')
+    #         + "?"
+    #         + urlencode({"groundwater_monitoring_tube_dynamic_id__in": ",".join(str(id) for id in tube_ids)})
+    #     )
+    #     return format_html('<a href="{}" target="_blank">Openstaand commentaar</a>', url)
+
+    def get_has_open_comments(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+        return obj.has_open_comments
 
 
 class GLDSerializer(serializers.ModelSerializer):
