@@ -307,7 +307,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
     def list_locations(self) -> List[str]:
         """Return a list of locations that contain groundwater level dossiers.
 
-        Each location is defines by a tuple of length 2: bro_id and tube_id.
+        Each location is defined by a tuple of length 2: bro_id and tube_id.
 
         Returns
         -------
@@ -347,11 +347,18 @@ class PostgreSQLDataSource(DataSourceTemplate):
             return ""
 
     def wellcode_to_broid(self, well_code):
+        if "-" in well_code:
+            # split well_code into bro_id and tube_id
+            parts = well_code.split("-")
+            well_code, tube_id = parts
+            tube_id = "-" + tube_id
+        else:
+            tube_id = ""
         bro_id = self.gmw_gdf.loc[self.gmw_gdf["well_code"] == well_code, "bro_id"]
         if bro_id.empty:
             raise KeyError(f"Well code '{well_code}' not found in the database.")
         else:
-            return bro_id.iloc[0]
+            return bro_id.iloc[0] + tube_id
 
     def broid_to_wellcode(self, bro_id):
         well_code = self.gmw_gdf.loc[self.gmw_gdf["bro_id"] == bro_id, "well_code"]
@@ -513,21 +520,17 @@ class PostgreSQLDataSource(DataSourceTemplate):
             select(
                 datamodel.Well.bro_id,
                 datamodel.TubeStatic.tube_number,
-                func.count(datamodel.MeasurementTvp.measurement_tvp_id).label(
-                    "Metingen"
-                ),
+                func.count(
+                    func.distinct(datamodel.MeasurementTvp.measurement_time)
+                ).label("Metingen"),
             )
-            .join(datamodel.MeasurementPointMetadata)
             .join(datamodel.Observation)
             .join(datamodel.ObservationMetadata)
             .join(datamodel.GroundwaterLevelDossier)
             .join(datamodel.TubeStatic)
             .join(datamodel.Well)
-            .group_by(
-                datamodel.Well.bro_id,
-                datamodel.TubeStatic.tube_number,
-            )
-            .filter(datamodel.ObservationMetadata.observation_type == "reguliereMeting")
+            .where(datamodel.ObservationMetadata.observation_type == "reguliereMeting")
+            .group_by(datamodel.Well.bro_id, datamodel.TubeStatic.tube_number)
         )
         with self.engine.connect() as con:
             count = pd.read_sql(stmt, con=con)
