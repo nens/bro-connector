@@ -5,7 +5,6 @@ import logging
 from . import forms as bro_forms
 from . import models as bro_models
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,7 +34,6 @@ class CompanyAdmin(admin.ModelAdmin):
         "company_number",
     )
 
-
 class BROProjectAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -47,7 +45,6 @@ class BROProjectAdmin(admin.ModelAdmin):
         "owner",
         "project_number",
     )
-
 
 _register(bro_models.Organisation, CompanyAdmin)
 _register(bro_models.BROProject, BROProjectAdmin)

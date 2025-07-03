@@ -187,8 +187,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         for dossier in queryset:
             gld_actions.check_status(dossier)
 
-    deliver_to_bro.short_description = "Deliver GLD to BRO"
-    check_status.short_description = "Check GLD status from BRO"
+    deliver_to_bro.short_description = "Lever GLD aan naar BRO"
+    check_status.short_description = "Check GLD status in BRO"
 
 
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
@@ -265,7 +265,7 @@ class ObservationAdmin(admin.ModelAdmin):
                 return obj.observation_metadata.observation_type
         return "-"
 
-    @admin.action(description="Close Observation")
+    @admin.action(description="Sluit Observatie")
     def close_observation(self, request, queryset):
         for item in queryset.filter(observation_endtime__isnull=True):
             with reversion.create_revision():
@@ -276,7 +276,7 @@ class ObservationAdmin(admin.ModelAdmin):
                 item.save(update_fields=["observation_endtime", "result_time"])
                 reversion.set_comment("Closed the observation with a manual action.")
 
-    @admin.action(description="Change up-to-date status.")
+    @admin.action(description="Verander up-to-date status.")
     def change_up_to_date_status(self, request, queryset):
         for item in queryset:
             with reversion.create_revision():
@@ -383,7 +383,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         "check_status_startregistration",
     ]
 
-    @admin.action(description="Regenerate startregistration sourcedocument")
+    @admin.action(description="Genereer startregistratie brondocument")
     def regenerate_start_registration_sourcedocument(self, request, queryset):
         gld = GldSyncHandler()
         # Collect messages to deduplicate later
@@ -414,7 +414,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         send_pending_messages(self, request, message_counter)
         
 
-    @admin.action(description="Validate startregistration sourcedocument")
+    @admin.action(description="Valideer startregistratie brondocument")
     def validate_startregistration_sourcedocument(self, request, queryset):
         gld = GldSyncHandler()
         pending_messages = []
@@ -456,7 +456,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         message_counter = Counter(pending_messages)
         send_pending_messages(self, request, message_counter)
 
-    @admin.action(description="Deliver startregistration sourcedocument")
+    @admin.action(description="Lever startregistratie brondocument")
     def deliver_startregistration_sourcedocument(self, request, queryset):
         pending_messages = []
         for registration_log in queryset:
@@ -494,7 +494,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         message_counter = Counter(pending_messages)
         send_pending_messages(self, request, message_counter)
 
-    @admin.action(description="Check status of startregistration")
+    @admin.action(description="Check status startregistratie")
     def check_status_startregistration(self, request, queryset):
         gld = GldSyncHandler()
         pending_messages = []
@@ -571,7 +571,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     # Regenerate addition sourcedocuments
 
     # Check the current status before it is allowed
-    @admin.action(description="Regenerate sourcedocuments")
+    @admin.action(description="Genereer brondocumenten")
     def regenerate_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
         # Temp list to collect messages
@@ -606,7 +606,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         send_pending_messages(self, request, message_counter)
 
     # Retry validate sourcedocuments (only if file is present)
-    @admin.action(description="Validate sourcedocuments")
+    @admin.action(description="Valideer brondocumenten")
     def validate_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
         pending_messages = []
@@ -643,7 +643,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         send_pending_messages(self, request, message_counter)
 
     # Retry deliver sourcedocuments
-    @admin.action(description="Deliver sourcedocuments")
+    @admin.action(description="Lever brondocumenten aan BRO")
     def deliver_sourcedocuments(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
         pending_messages = []
@@ -675,7 +675,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
         send_pending_messages(self, request, message_counter)
 
     # Check status of a delivery
-    @admin.action(description="Check status delivery")
+    @admin.action(description="Check status levering")
     def check_status_delivery(self, request, queryset: list[models.gld_addition_log]):
         gld = GldSyncHandler()
         pending_messages = []

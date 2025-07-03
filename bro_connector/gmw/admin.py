@@ -4,7 +4,9 @@ from django.db.models import fields
 import reversion
 from reversion_compare.helpers import patch_admin
 import logging
-
+from django.urls import reverse
+from django.utils.html import format_html
+from urllib.parse import urlencode
 
 from . import models as gmw_models
 from gld.models import GroundwaterLevelDossier
@@ -91,7 +93,7 @@ class PicturesInline(admin.TabularInline):
     model = gmw_models.Picture
     form = gmw_forms.PictureForm
 
-    fields = ("picture", "recording_datetime", "description")
+    fields = ("picture", "is_main", "recording_datetime", "description")
 
     ordering = ["-recording_datetime"]
 
@@ -100,7 +102,7 @@ class PicturesInline(admin.TabularInline):
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.in_management is False:
-            return ("picture", "recording_datetime", "description")
+            return ("picture", "is_main", "recording_datetime", "description")
         return []
 
     def has_add_permission(self, request, obj=None):
@@ -129,8 +131,9 @@ class WellDynamicInline(admin.TabularInline):
         "ground_level_position",
         "ground_level_positioning_method",
         "comment",
+        "comment_processed",
     )
-    ordering = ["date_from"]
+    ordering = ["-date_from"]
 
     extra = 0
     max_num = 0
@@ -145,8 +148,9 @@ class WellDynamicInline(admin.TabularInline):
                 "ground_level_positioning_method",
                 "number_of_standpipes",
                 "comment",
+                "comment_processed",
             )
-        return ["date_from", "date_till", "number_of_standpipes", "comment"]
+        return ["date_from", "date_till", "number_of_standpipes", "comment", "comment_processed"]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -247,10 +251,13 @@ class TubeDynamicInline(admin.TabularInline):
         "tube_top_positioning_method",
         "tube_status",
         "comment",
+        "comment_processed",
     )
     show_change_link = True
 
-    readonly_fields = ["date_from", "date_till", "comment"]
+    readonly_fields = ["date_from", "date_till", "comment", "comment_processed"]
+    
+    ordering = ["-date_from"]
 
     extra = 0
     max_num = 0
@@ -330,10 +337,10 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_well_static_id",
         "bro_id",
-        "delivery_accountable_party",
-        "initial_function",
         "nitg_code",
         "well_code",
+        "delivery_accountable_party",
+        "initial_function",
         "coordinates",
         "in_management",
     )
@@ -353,6 +360,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "bro_actions",
         "bro_loket_link",
         "map_preview",
+        "well_link",
+        "tube_link",
     )
 
     fieldsets = [
@@ -364,14 +373,14 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "internal_id",
                     "bro_id",
                     "bro_loket_link",
+                    "nitg_code",
+                    "olga_code",
                     "delivery_accountable_party",
                     "delivery_responsible_party",
                     "in_management",
                     "deliver_gmw_to_bro",
                     "complete_bro",
                     "quality_regime",
-                    "nitg_code",
-                    "olga_code",
                     "project",
                     "delivery_context",
                     "construction_standard",
@@ -382,6 +391,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "well_offset",
                     "vertical_datum",
                     "last_horizontal_positioning_date",
+                    "well_link",
+                    "tube_link",
                     "report",
                     "bro_actions",
                     "x",
@@ -402,6 +413,32 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     )
 
     actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
+
+    def well_link(self, obj):
+        filter_ids = obj.open_comments_well_ids
+        if not filter_ids:
+            return "Geen openstaand commentaar"
+        
+        url = (
+            reverse('admin:gmw_groundwatermonitoringwelldynamic_changelist')
+            + "?"
+            + urlencode({"groundwater_monitoring_well_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
+        )
+        return format_html('<a href="{}" target="_blank">Link naar putobjecten</a>', url)
+    well_link.short_description = "Openstaand commentaar dynamische putten"
+
+    def tube_link(self, obj):
+        filter_ids = obj.open_comments_tube_ids
+        if not filter_ids:
+            return "Geen openstaand commentaar"
+        
+        url = (
+            reverse('admin:gmw_groundwatermonitoringtubedynamic_changelist')
+            + "?"
+            + urlencode({"groundwater_monitoring_tube_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
+        )
+        return format_html('<a href="{}" target="_blank">Link naar filterobjecten</a>', url)
+    tube_link.short_description = "Openstaand commentaar dynamische filters"
 
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringWellStatic, form, change
@@ -476,17 +513,17 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         # Sla het model op
         obj.save()
 
-    @admin.action(description="Deliver GMW to BRO")
+    @admin.action(description="Lever GMW aan BRO")
     def deliver_to_bro(self, request, queryset):
         for well in queryset:
             gmw_actions.check_and_deliver(well)
 
-    @admin.action(description="Check GMW status from BRO")
+    @admin.action(description="Check GMW status uit BRO")
     def check_status(self, request, queryset):
         for well in queryset:
             gmw_actions.check_status(well)
 
-    @admin.action(description="Generate FRD FieldForm")
+    @admin.action(description="Genereer FRD FieldForm")
     def generate_fieldform(self, request, queryset):
         generator = FieldFormGenerator()
         generator.inputfields = ["weerstand", "opmerking"]
@@ -519,6 +556,34 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     list_filter = (WellFilter, "owner")
 
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "date_till"]
+
+    fields = [
+        "groundwater_monitoring_well_static",
+        "date_from",
+        "date_till",
+        "comment",
+        "comment_processed",
+        "bro_actions",
+        "complete_bro",
+        "deliver_gld_to_bro",
+        "ground_level_position",
+        "ground_level_positioning_method",
+        "ground_level_stable",
+        "well_stability",
+        "owner",
+        "maintenance_responsible_party",
+        "well_head_protector",
+        "well_head_protector_subtype",
+        "foundation",
+        "collision_protection",
+        "lock",
+        "key",
+        "place",
+        "street",
+        "location_description",
+        "label",
+        "number_of_standpipes",
+    ]
 
     # inlines = (WellStaticInline,)
 
@@ -606,7 +671,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
                     "Set deliver_gld_to_bro to True by manual action."
                 )
 
-    deliver_gld_to_true.short_description = "Deliver GLD to True"
+    deliver_gld_to_true.short_description = "Stel GLD naar BRO in op AAN"
 
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringTubeStatic, form, change
@@ -652,7 +717,31 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     )
     list_filter = (TubeFilter,)
 
-    readonly_fields = ["screen_top_position", "screen_bottom_position"]
+    readonly_fields = ["date_till", "screen_top_position", "screen_bottom_position"]
+
+    fields = [
+        "groundwater_monitoring_tube_static",
+        "date_from",
+        "date_till",
+        "comment",
+        "comment_processed",
+        "bro_actions",
+        "tube_top_diameter",
+        "variable_diameter",
+        "tube_status",
+        "tube_top_position",
+        "sensor_depth",
+        "sensor_id",
+        "tube_top_positioning_method",
+        "tube_packing_material",
+        "glue",
+        "plain_tube_part_length",
+        "inserted_part_diameter",
+        "inserted_part_length",
+        "inserted_part_material",
+        "screen_top_position",
+        "screen_bottom_position",        
+    ]
 
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringTubeDynamic, form, change
@@ -822,18 +911,6 @@ class EventAdmin(admin.ModelAdmin):
         obj.save()
 
 
-class PictureAdmin(admin.ModelAdmin):
-    list_display = (
-        "groundwater_monitoring_well_static",
-        "recording_datetime",
-        "image_tag",
-    )
-    list_filter = (
-        WellFilter,
-        "recording_datetime",
-    )
-
-
 class MaintenancePartyAdmin(admin.ModelAdmin):
     list_display = (
         "first_name",
@@ -911,7 +988,6 @@ _register(
 _register(gmw_models.GeoOhmCable, GeoOhmCableAdmin)
 _register(gmw_models.Electrode, ElectrodeStaticAdmin)
 _register(gmw_models.Event, EventAdmin)
-_register(gmw_models.Picture, PictureAdmin)
 _register(gmw_models.MaintenanceParty, MaintenancePartyAdmin)
 _register(gmw_models.Maintenance, MaintenanceAdmin)
 _register(gmw_models.gmw_registration_log, GmwSyncLogAdmin)
@@ -923,7 +999,6 @@ patch_admin(gmw_models.GroundwaterMonitoringTubeDynamic)
 patch_admin(gmw_models.GeoOhmCable)
 patch_admin(gmw_models.Electrode)
 patch_admin(gmw_models.Event)
-patch_admin(gmw_models.Picture)
 patch_admin(gmw_models.MaintenanceParty)
 patch_admin(gmw_models.Maintenance)
 patch_admin(gmw_models.gmw_registration_log)

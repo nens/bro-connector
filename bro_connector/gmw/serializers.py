@@ -2,7 +2,9 @@ from rest_framework import serializers
 from gmw import models as gmw_models
 from gld import models as gld_models
 from django.utils.html import format_html_join
-
+from django.urls import reverse
+from django.utils.html import format_html
+from urllib.parse import urlencode
 
 class GMWSerializer(serializers.ModelSerializer):
     x = serializers.SerializerMethodField()
@@ -13,6 +15,9 @@ class GMWSerializer(serializers.ModelSerializer):
     picture = serializers.SerializerMethodField()
     nitg_code = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
+    # url_open_comments_wells = serializers.SerializerMethodField()
+    # url_open_comments_tubes = serializers.SerializerMethodField()
+    has_open_comments = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
@@ -33,6 +38,9 @@ class GMWSerializer(serializers.ModelSerializer):
             "label",
             "groundlevel_position",
             "well_head_protector",
+            # "url_open_comments_wells",
+            # "url_open_comments_tubes",
+            "has_open_comments",
         ]
 
     def get_label(self, obj):
@@ -63,21 +71,24 @@ class GMWSerializer(serializers.ModelSerializer):
         return last_state.well_head_protector
 
     def get_picture(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
-        pictures = obj.picture.order_by("-recording_datetime", "-picture_id")
-        if pictures:
+        main_pictures = obj.picture.order_by("-recording_datetime", "-picture_id").filter(is_main=True).all()
+        if main_pictures:
+            picture = main_pictures.first()
+        else:
+            picture = obj.picture.order_by("-recording_datetime", "-picture_id").first()
+            
+        if picture:
             # return picture.image_tag
             return format_html_join(
                 "",
                 '<div style="margin-bottom: 0.5em;"><img src="{}" style="max-width:100px; max-height:100px;"><br><small>{}</small></div>',
                 [
                     (
-                        pic.picture.url,
-                        pic.recording_datetime.strftime("%Y-%m-%d %H:%M")
-                        if pic.recording_datetime
+                        picture.picture.url,
+                        picture.recording_datetime.strftime("%Y-%m-%d %H:%M")
+                        if picture.recording_datetime
                         else "No timestamp",
                     )
-                    for pic in pictures
-                    if pic.picture
                 ],
             )
         else:
@@ -88,6 +99,33 @@ class GMWSerializer(serializers.ModelSerializer):
 
     def get_label(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return obj.__str__()
+    
+    # def get_url_open_comments_wells(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+    #     well_ids = obj.open_comments_well_ids
+    #     if not well_ids:
+    #         return "-"
+        
+    #     url = (
+    #         reverse('admin:gmw_groundwatermonitoringwelldynamic_changelist')
+    #         + "?"
+    #         + urlencode({"groundwater_monitoring_well_dynamic_id__in": ",".join(str(id) for id in well_ids)})
+    #     )
+    #     return format_html('<a href="{}" target="_blank">Openstaand commentaar</a>', url)
+
+    # def get_url_open_comments_tubes(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+    #     tube_ids = obj.open_comments_tube_ids
+    #     if not tube_ids:
+    #         return "-"
+        
+    #     url = (
+    #         reverse('admin:gmw_groundwatermonitoringtubedynamic_changelist')
+    #         + "?"
+    #         + urlencode({"groundwater_monitoring_tube_dynamic_id__in": ",".join(str(id) for id in tube_ids)})
+    #     )
+    #     return format_html('<a href="{}" target="_blank">Openstaand commentaar</a>', url)
+
+    def get_has_open_comments(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+        return obj.has_open_comments
 
 
 class GLDSerializer(serializers.ModelSerializer):

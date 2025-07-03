@@ -186,10 +186,53 @@ const myScatterplotLayer = new deck.MapboxLayer({
   },
 });
 
+function filterByCheckbox(wellValue, checkboxId) {
+  const checkbox = document.getElementById(`checkbox-${checkboxId}`);
+  if (!checkbox) return true; // Default to show if checkbox missing
+
+  const checked = checkbox.checked;
+  const indeterminate = checkbox.indeterminate;
+
+  if (wellValue === true) {
+    // true wells show if checkbox is checked or indeterminate
+    return checked || indeterminate;
+  } else {
+    // false wells show if checkbox is unchecked or indeterminate
+    return !checked || indeterminate;
+  }
+}
+
 function createTextLayer(visible) {
+  const visibleWells = wells.filter(well => {
+    // Filter based on wellValue checkboxes:
+    if (!filterByCheckbox(well.complete_bro, 'complete_bro')) return false;
+    if (!filterByCheckbox(well.has_open_comments, 'open_comments')) return false;
+    if (!filterByCheckbox(well.deliver_gmw_to_bro, 'deliver_gmw_to_bro')) return false;
+
+    // Filter based on linked_gmns & noLinked checkbox
+    if (!well.linked_gmns || well.linked_gmns.length === 0) {
+      if (visibleMap.gmns.noLinked !== true) {
+        return false; // noLinked is off, exclude wells without GMNs
+      }
+    } else if (!well.linked_gmns.some(gmn => visibleMap.gmns[gmn] === true)) {
+      return false; // none of linked GMNs enabled, exclude well
+    }
+
+    // Filter based on organisations delivery_accountable_party
+    if (
+      well.delivery_accountable_party && // only check if attribute present
+      visibleMap.organisations[well.delivery_accountable_party] === false
+    ) {
+      return false; // delivery accountable party is off, exclude well
+    }
+
+    // Passed all filters, include the well
+    return true;
+  });
+
   return new deck.MapboxLayer({
     id: "text-layer",
-    data: wells,
+    data: visibleWells,
     type: deck.TextLayer,
     getPosition: (well) => [well.y, well.x],
     getText: (well) => well.label + "",
@@ -204,6 +247,16 @@ function createTextLayer(visible) {
     visible: visible,
   });
 }
+
+function updateTextLayer() {
+  if (map.getLayer("text-layer")) {
+    map.removeLayer("text-layer"); // remove old layer
+  }
+
+  visible = isTextLayerVisible && shouldShowText
+  textLayer = createTextLayer(visible); // create new layer with updated filtering
+  map.addLayer(textLayer); // add to your deck/map instance
+};
 
 // Create the map
 const map = new mapboxgl.Map({
@@ -247,15 +300,17 @@ map.on("load", () => {
 
 map.on("zoom", () => {
   const zoom = map.getZoom();
-  const shouldShowText = zoom >= 12;
-  isTextLayerVisible = shouldShowText;
+  shouldShowText = zoom >= 12;
   // Remove the old layer if it exists
   if (map.getLayer("text-layer")) {
     map.removeLayer("text-layer");
   }
   // Add it back with correct visibility
-  const newTextLayer = createTextLayer(shouldShowText);
-  map.addLayer(newTextLayer);
+  if (shouldShowText && isTextLayerVisible) {
+    // const newTextLayer = createTextLayer(true);
+    // map.addLayer(newTextLayer);
+    updateTextLayer()
+  }
 });
 
 // Remove popup on map click
@@ -265,31 +320,16 @@ map.on("click", () => marker && marker.remove());
 const toggleTextLayerButton = document.getElementById("toggle-text-layer-btn");
 
 // Variable to keep track of the layer's visibility state
-let isTextLayerVisible = true;
-
+let isTextLayerVisible = false;
+let shouldShowText = false;
 // Function to toggle the visibility of the text layer
 const toggleTextLayerVisibility = () => {
   const zoom = map.getZoom();
-  const shouldShowText = zoom >= 12;
-  const newTextLayer = createTextLayer(shouldShowText);
+  shouldShowText = zoom >= 12;
+  
   try {
-    if (isTextLayerVisible) {
-      // If the text layer is visible, remove it from the map
-      if (map.getLayer("text-layer")) {  // Check if the layer exists before removing it
-        map.removeLayer("text-layer");
-      } else {
-        console.warn("Text layer not found, nothing to remove.");
-      }
-    } else {
-      // If the text layer is not visible, add it back to the map
-      if (!map.getLayer("text-layer")) {  // Check if the layer doesn't already exist
-        map.addLayer(newTextLayer);
-      } else {
-        console.warn("Text layer already exists on the map.");
-      }
-    }
-    // Toggle the visibility state
     isTextLayerVisible = !isTextLayerVisible;
+    updateTextLayer()
   } catch (error) {
     console.error("Error toggling the text layer visibility:", error);
   }
@@ -337,7 +377,48 @@ const handleWellValue = (id, element) => {
     checkbox.indeterminate = false;
   }
   updateGetRadius();
+  updateTextLayer();
 };
+
+const deselectAllCheckboxes = () => {
+  if (!visibleMap || !visibleMap.gmns) {
+    console.warn("❌ visibleMap.gmns not defined");
+    return;
+  }
+
+  const gmns = visibleMap.gmns;
+  console.log("🔍 Current visibleMap.gmns state:", gmns);
+
+  // Check if any GMN is false
+  const anyFalse = Object.values(gmns).some(value => value === false);
+  console.log(`❓ Any GMN false? ${anyFalse}`);
+
+  // Decide the new state: if any false => set all true; else set all false
+  const newState = anyFalse ? true : false;
+  console.log(`➡️ Setting all GMNs to: ${newState}`);
+
+  // Update visibleMap.gmns
+  Object.keys(gmns).forEach(key => {
+    gmns[key] = newState;
+  });
+
+  // Sync checkboxes with visibleMap.gmns state
+  Object.keys(gmns).forEach(key => {
+    let searchKey = key === "noLinked" ? "no-linked" : key;
+    const escapedKey = CSS.escape(searchKey);
+    const checkbox = document.querySelector(`#checkbox-${escapedKey}`);
+    if (checkbox) {
+      checkbox.checked = newState;
+      console.log(`✔️ Checkbox for '${searchKey}' set to ${newState}`);
+    } else {
+      console.warn(`⚠️ Checkbox #checkbox-${searchKey} not found in DOM`);
+    }
+  });
+
+  updateGetRadius();
+  updateTextLayer();
+};
+
 
 // Handle if someone toggles an gmn
 const handleGmnClick = (id, element) => {
@@ -346,6 +427,7 @@ const handleGmnClick = (id, element) => {
   gmns[id] = !gmns[id];
   checkbox.checked = gmns[id];
   updateGetRadius();
+  updateTextLayer();
 };
 
 // Handle if someone toggles an organisation
@@ -355,6 +437,7 @@ const handleOrganisationClick = (id, element) => {
   organisations[id] = !organisations[id];
   checkbox.checked = organisations[id];
   updateGetRadius();
+  updateTextLayer();
 };
 
 const updateGetRadius = () => {
