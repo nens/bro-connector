@@ -333,7 +333,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
                 filter_ids.append(id)
 
         return filter_ids
-    open_comments_well_ids.fget.short_description = "Dynamische putten met openstaand commentaar"
+    open_comments_well_ids.fget.short_description = "Dynamische put ids met openstaand commentaar"
     
     @property
     def open_comments_tube_ids(self):
@@ -350,7 +350,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
                     filter_ids.append(id)
 
         return filter_ids
-    open_comments_tube_ids.fget.short_description = "Dynamische filters met openstaand commentaar"
+    open_comments_tube_ids.fget.short_description = "Dynamische filter ids met openstaand commentaar"
     
     @property
     def has_open_comments(self):
@@ -483,7 +483,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
 
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
     comment_processed = models.BooleanField(
-        blank=True, default=False, verbose_name="Commentaar verwerkt"
+        blank=True, default=True, verbose_name="Commentaar verwerkt"
     )
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
@@ -733,7 +733,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
     )
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
     comment_processed = models.BooleanField(
-        blank=True, default=False, verbose_name="Commentaar verwerkt"
+        blank=True, default=True, verbose_name="Commentaar verwerkt"
     )
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"

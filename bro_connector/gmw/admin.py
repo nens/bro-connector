@@ -360,8 +360,6 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "bro_actions",
         "bro_loket_link",
         "map_preview",
-        "open_comments_well_ids",
-        "open_comments_tube_ids",
         "well_link",
         "tube_link",
     )
@@ -393,8 +391,6 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "well_offset",
                     "vertical_datum",
                     "last_horizontal_positioning_date",
-                    "open_comments_well_ids",
-                    "open_comments_tube_ids",
                     "well_link",
                     "tube_link",
                     "report",
@@ -421,26 +417,28 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     def well_link(self, obj):
         filter_ids = obj.open_comments_well_ids
         if not filter_ids:
-            return "-"
+            return "Geen openstaand commentaar"
         
         url = (
             reverse('admin:gmw_groundwatermonitoringwelldynamic_changelist')
             + "?"
             + urlencode({"groundwater_monitoring_well_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
         )
-        return format_html('<a href="{}" target="_blank">Dynamische putten met openstaand commentaar</a>', url)
+        return format_html('<a href="{}" target="_blank">Link naar putobjecten</a>', url)
+    well_link.short_description = "Openstaand commentaar dynamische putten"
 
     def tube_link(self, obj):
         filter_ids = obj.open_comments_tube_ids
         if not filter_ids:
-            return "-"
+            return "Geen openstaand commentaar"
         
         url = (
             reverse('admin:gmw_groundwatermonitoringtubedynamic_changelist')
             + "?"
             + urlencode({"groundwater_monitoring_tube_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
         )
-        return format_html('<a href="{}" target="_blank">Dynamische filters met openstaand commentaar</a>', url)
+        return format_html('<a href="{}" target="_blank">Link naar filterobjecten</a>', url)
+    tube_link.short_description = "Openstaand commentaar dynamische filters"
 
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringWellStatic, form, change
