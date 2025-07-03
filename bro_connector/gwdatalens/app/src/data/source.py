@@ -520,21 +520,17 @@ class PostgreSQLDataSource(DataSourceTemplate):
             select(
                 datamodel.Well.bro_id,
                 datamodel.TubeStatic.tube_number,
-                func.count(datamodel.MeasurementTvp.measurement_tvp_id).label(
-                    "Metingen"
-                ),
+                func.count(
+                    func.distinct(datamodel.MeasurementTvp.measurement_time)
+                ).label("Metingen"),
             )
-            .join(datamodel.MeasurementPointMetadata)
             .join(datamodel.Observation)
             .join(datamodel.ObservationMetadata)
             .join(datamodel.GroundwaterLevelDossier)
             .join(datamodel.TubeStatic)
             .join(datamodel.Well)
-            .group_by(
-                datamodel.Well.bro_id,
-                datamodel.TubeStatic.tube_number,
-            )
-            .filter(datamodel.ObservationMetadata.observation_type == "reguliereMeting")
+            .where(datamodel.ObservationMetadata.observation_type == "reguliereMeting")
+            .group_by(datamodel.Well.bro_id, datamodel.TubeStatic.tube_number)
         )
         with self.engine.connect() as con:
             count = pd.read_sql(stmt, con=con)
