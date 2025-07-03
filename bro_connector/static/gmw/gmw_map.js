@@ -341,6 +341,45 @@ const handleWellValue = (id, element) => {
   updateGetRadius();
 };
 
+const deselectAllCheckboxes = () => {
+  if (!visibleMap || !visibleMap.gmns) {
+    console.warn("❌ visibleMap.gmns not defined");
+    return;
+  }
+
+  const gmns = visibleMap.gmns;
+  console.log("🔍 Current visibleMap.gmns state:", gmns);
+
+  // Check if any GMN is false
+  const anyFalse = Object.values(gmns).some(value => value === false);
+  console.log(`❓ Any GMN false? ${anyFalse}`);
+
+  // Decide the new state: if any false => set all true; else set all false
+  const newState = anyFalse ? true : false;
+  console.log(`➡️ Setting all GMNs to: ${newState}`);
+
+  // Update visibleMap.gmns
+  Object.keys(gmns).forEach(key => {
+    gmns[key] = newState;
+  });
+
+  // Sync checkboxes with visibleMap.gmns state
+  Object.keys(gmns).forEach(key => {
+    let searchKey = key === "noLinked" ? "no-linked" : key;
+    const escapedKey = CSS.escape(searchKey);
+    const checkbox = document.querySelector(`#checkbox-${escapedKey}`);
+    if (checkbox) {
+      checkbox.checked = newState;
+      console.log(`✔️ Checkbox for '${searchKey}' set to ${newState}`);
+    } else {
+      console.warn(`⚠️ Checkbox #checkbox-${searchKey} not found in DOM`);
+    }
+  });
+
+  updateGetRadius();
+};
+
+
 // Handle if someone toggles an gmn
 const handleGmnClick = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
