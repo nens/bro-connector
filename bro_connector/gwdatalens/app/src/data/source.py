@@ -307,7 +307,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
     def list_locations(self) -> List[str]:
         """Return a list of locations that contain groundwater level dossiers.
 
-        Each location is defines by a tuple of length 2: bro_id and tube_id.
+        Each location is defined by a tuple of length 2: bro_id and tube_id.
 
         Returns
         -------

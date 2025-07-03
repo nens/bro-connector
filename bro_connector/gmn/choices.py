@@ -16,6 +16,28 @@ KADER_AANLEVERING_GMN = (
     ("wetNatuurbescherming", "wetNatuurbescherming"),
 )
 
+PROVINCIE_NAMEN = (
+    ("Prov DR", "Drenthe"),
+    ("Prov FL", "Flevoland"),
+    ("Prov FR", "Friesland"),
+    ("Prov GE", "Gelderland"),
+    ("Prov GR", "Groningen"),
+    ("Prov LB", "Limburg"),
+    ("Prov NB", "Noord-Brabant"),
+    ("Prov NH", "Noord-Holland"),
+    ("Prov OV", "Overijssel"),
+    ("Prov UT", "Utrecht"),
+    ("Prov ZH", "Zuid-Holland"),
+    ("Prov ZL", "Zeeland"),
+)
+
+BRO_DOMEINEN = (
+    ("GMW", "GMW"),
+    ("GLD", "GLD"),
+    ("FRD", "FRD"),
+    ("GAR", "GAR"),
+)
+
 MONITORINGDOEL = (
     ("strategischBeheerKwaliteitLandelijk", "strategischBeheerKwaliteitLandelijk"),
     ("strategischBeheerKwantiteitLandelijk", "strategischBeheerKwantiteitLandelijk"),
