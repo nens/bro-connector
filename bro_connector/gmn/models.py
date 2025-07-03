@@ -198,7 +198,7 @@ class Subgroup(models.Model):
     )
     code = models.CharField(max_length=25, null=True, blank=True, verbose_name="Code")
     description = models.TextField(null=True, blank=True, verbose_name="Beschrijving")
-    color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleur")
+    color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleurcode")
 
     def __str__(self) -> str:
         if self.name:

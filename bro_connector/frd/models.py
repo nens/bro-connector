@@ -178,7 +178,7 @@ class FormationResistanceDossier(BaseModel):
 
 class ElectromagneticMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand Dossier [FRD]"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand dossier [FRD]"
     )
     measurement_date = models.DateField(null=False, blank=True, verbose_name="Meetdatum")
     measuring_responsible_party = models.ForeignKey(
@@ -202,7 +202,7 @@ class ElectromagneticMeasurementMethod(BaseModel):
 
 class InstrumentConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand Dossier [FRD]"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand dossier [FRD]"
     )
     configuration_name = models.CharField(max_length=40, null=False, blank=False, verbose_name="Configuratie")
     electromagnetic_measurement_method = models.ForeignKey(
@@ -262,7 +262,7 @@ class InstrumentConfiguration(BaseModel):
 
 class GeoOhmMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False, verbose_name="Formatieweerstand Dossier [FRD]"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False, verbose_name="Formatieweerstand dossier [FRD]"
     )
     measurement_date = models.DateField(null=False, blank=True, verbose_name="Meetdatum")
     measuring_responsible_party = models.ForeignKey(
@@ -345,7 +345,7 @@ class ElectrodePair(BaseModel):
 
 class MeasurementConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand Dossier [FRD]"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand dossier [FRD]"
     )
     configuration_name = models.CharField(
         max_length=40, null=False, blank=False, unique=True, verbose_name="Configuratie"
@@ -519,7 +519,7 @@ class FormationresistanceRecord(BaseModel):
     """
 
     series = models.ForeignKey(
-        FormationresistanceSeries, on_delete=models.CASCADE, null=True, blank=False, verbose_name="Formatieweerstand Series"
+        FormationresistanceSeries, on_delete=models.CASCADE, null=True, blank=False, verbose_name="Formatieweerstand series"
     )
 
     vertical_position = models.FloatField(
