@@ -13,6 +13,10 @@ if settings["LOCALE"] == "en":
     from ..data.qc_definitions import rule_explanation_en as rule_explanation
 elif settings["LOCALE"] == "nl":
     from ..data.qc_definitions import rule_explanation_nl as rule_explanation
+else:
+    raise ValueError(
+        f"Locale '{settings['LOCALE']}' not supported. Please choose 'en' or 'nl'."
+    )
 
 
 def generate_kwargs_from_func(func):
