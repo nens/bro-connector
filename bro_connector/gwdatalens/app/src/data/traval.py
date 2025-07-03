@@ -60,8 +60,8 @@ class TravalInterface:
         self.traval_figure = None
 
         # set ruleset in data object
-        self.ruleset = self.get_default_ruleset()
-        self._ruleset = deepcopy(self.ruleset)
+        self.ruleset = self.get_default_ruleset()  # original ruleset
+        self._ruleset = deepcopy(self.ruleset)  # this one is used to run traval
 
     def get_default_ruleset(self):
         """Generate the default ruleset for error detection.
@@ -109,7 +109,7 @@ class TravalInterface:
             traval.rulelib.rule_hardmax,
             apply_to=0,
             kwargs={
-                "threshold": get_tube_top_level,
+                "threshold": lambda name: get_tube_top_level(name),
             },
         )
         ruleset.add_rule(
