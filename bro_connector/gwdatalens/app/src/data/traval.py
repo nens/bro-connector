@@ -60,8 +60,8 @@ class TravalInterface:
         self.traval_figure = None
 
         # set ruleset in data object
-        self.ruleset = self.get_default_ruleset()
-        self._ruleset = deepcopy(self.ruleset)
+        self.ruleset = self.get_default_ruleset()  # original ruleset
+        self._ruleset = deepcopy(self.ruleset)  # this one is used to run traval
 
     def get_default_ruleset(self):
         """Generate the default ruleset for error detection.
@@ -109,7 +109,7 @@ class TravalInterface:
             traval.rulelib.rule_hardmax,
             apply_to=0,
             kwargs={
-                "threshold": get_tube_top_level,
+                "threshold": lambda name: get_tube_top_level(name),
             },
         )
         ruleset.add_rule(
@@ -253,25 +253,34 @@ class TravalInterface:
                 "incoming_status_quality_control"
             ].apply(lambda v: bro_nl_to_en[v])
 
-        # set current status to blank and mark suspect observations unreliable as
-        # suggestion
+        # start qc as blank
         df["status_quality_control"] = ""
+        # set current status to incoming for reliable, unreliable and undecided
+        mask = df["incoming_status_quality_control"].isin(
+            [
+                i18n.t("general.reliable"),
+                i18n.t("general.unreliable"),
+                i18n.t("general.undecided"),
+            ]
+        )
+        df.loc[mask, "status_quality_control"] = df.loc[
+            mask, "incoming_status_quality_control"
+        ]
+        # and mark suspect observations unreliable as suggestion
         df.loc[df["flagged"] == 1, "status_quality_control"] = i18n.t(
             "general.unreliable"
         )
+        # and mark all observations that are not flagged and not already
+        # labeled with reliable/unreliable/undecided as reliable.
+        df.loc[
+            (df["flagged"] == 0) & (df["status_quality_control"] == ""),
+            "status_quality_control",
+        ] = i18n.t("general.reliable")
 
         df["category"] = ""  # for QC Protocol category
 
         # filter out observations that were already checked
         if only_unvalidated:
-            mask = df["incoming_status_quality_control"].isin(
-                [
-                    i18n.t("general.reliable"),
-                    i18n.t("general.unreliable"),
-                    i18n.t("general.undecided"),
-                ]
-            )
-
             df.loc[mask, "flagged"] = -1  # set already checked to (-1)
             df.loc[mask, "comment"] = ""  # set comments already checked to empty
             df.loc[mask, "status_quality_control"] = ""  # set qc check to empty

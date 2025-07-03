@@ -32,7 +32,7 @@ def register_overview_callbacks(app, data):
         if selected_data is not None:
             pts = pd.DataFrame(selected_data["points"])
             if not pts.empty:
-                names = pts["text"].tolist()
+                names = [data.db.wellcode_to_broid(i) for i in pts["text"].tolist()]
                 return names
             else:
                 return None if current_value is None else current_value
@@ -89,6 +89,7 @@ def register_overview_callbacks(app, data):
             "id",
             "bro_id",
             # "nitg_code",
+            "wellcode_name",
             "tube_number",
             "screen_top",
             "screen_bot",
@@ -113,7 +114,7 @@ def register_overview_callbacks(app, data):
 
             # get selected points
             if not pts.empty:
-                names = pts["text"].tolist()
+                names = [data.db.wellcode_to_broid(i) for i in pts["text"].tolist()]
             else:
                 names = None
 
@@ -224,6 +225,7 @@ def register_overview_callbacks(app, data):
         dfm = data.db.gmw_gdf.reset_index().loc[pts].copy()
         dfm["curveNumber"] = 1  # all locs plotted in trace 1 for map highlighting
         mask = dfm.loc[:, "metingen"] > 0
+
         # update selected points
         mappatch = Patch()
         mappatch["data"][1]["selectedpoints"] = dfm.loc[:, "id"].tolist()
@@ -237,7 +239,7 @@ def register_overview_callbacks(app, data):
                     "pointIndex": dfm["id"].loc[i],
                     "lon": dfm["lon"].loc[i],
                     "lat": dfm["lat"].loc[i],
-                    "text": dfm["name"].loc[i],
+                    "text": dfm["wellcode_name"].loc[i],
                 }
                 for i in loc["id"]
             ]

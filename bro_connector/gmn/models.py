@@ -3,6 +3,8 @@ from django.db.models import Manager
 import random
 from .choices import (
     KADER_AANLEVERING_GMN,
+    BRO_DOMEINEN,
+    PROVINCIE_NAMEN,
     MONITORINGDOEL,
     DELIVERY_TYPE_CHOICES,
     LEVERINGSTATUS_CHOICES,
@@ -75,6 +77,9 @@ class GroundwaterMonitoringNet(models.Model):
         max_length=255, null=True, blank=False, verbose_name="Intern ID"
     )
     name = models.CharField(max_length=255, null=True, blank=False, verbose_name="Naam")
+    province_name = models.CharField(max_length=50, choices=PROVINCIE_NAMEN, verbose_name="Provincie", blank=False, null=False)
+    bro_domain = models.CharField(max_length=50, choices=BRO_DOMEINEN, verbose_name="BRO Domein", blank=False, null=False)
+    regio = models.CharField(max_length=100, verbose_name="Regio", blank=True, null=True)
     delivery_context = models.CharField(
         blank=False,
         max_length=235,
@@ -124,6 +129,14 @@ class GroundwaterMonitoringNet(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def bro_name(self):
+        name = f"{self.province_name} - {self.bro_domain} - {self.name}"
+        if self.regio:
+            name += f" - {self.regio}"
+        return name
+
 
     @property
     def project_number(self):
@@ -185,7 +198,7 @@ class Subgroup(models.Model):
     )
     code = models.CharField(max_length=25, null=True, blank=True, verbose_name="Code")
     description = models.TextField(null=True, blank=True, verbose_name="Beschrijving")
-    color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleur")
+    color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleurcode")
 
     def __str__(self) -> str:
         if self.name:

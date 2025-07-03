@@ -223,7 +223,7 @@ class GroundwaterLevelDossier(BaseModel):
 class Observation(BaseModel):
     observation_id = models.AutoField(primary_key=True, null=False, blank=False, verbose_name="DB ID")
     groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE, related_name="observation", verbose_name="GLD"
+        "GroundwaterLevelDossier", on_delete=models.CASCADE, related_name="observation", verbose_name="Grondwaterstand dossier [GLD]"
     )
     observation_metadata = models.ForeignKey(
         "ObservationMetadata",
@@ -461,7 +461,7 @@ class ObservationProcess(BaseModel):
         choices=PROCESSREFERENCE, max_length=200, blank=True, null=True, verbose_name="Proces referentie"
     )
     measurement_instrument_type = models.CharField(
-        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False, verbose_name="meetintrument type"
+        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False, verbose_name="Meetinstrument type"
     )
     air_pressure_compensation_type = models.CharField(
         choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Luchtdrukcompensatie type"

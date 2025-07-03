@@ -73,8 +73,8 @@ class Organisation(BaseModel):
     name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Naam")
     company_number = models.IntegerField(blank=True, verbose_name="KvK")
     color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleurcode")
-    bro_user = SecureCharField(verbose_name="BRO Gebruiker")
-    bro_token = SecureCharField(verbose_name="BRO Token")
+    bro_user = SecureCharField(verbose_name="BRO Gebruikerstoken")
+    bro_token = SecureCharField(verbose_name="BRO Wachtwoordtoken", help_text="Beide tokens komen uit het bronhoudersportaal.")
 
     class Meta:
         managed = True

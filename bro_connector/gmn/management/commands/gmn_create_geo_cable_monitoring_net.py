@@ -38,9 +38,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         name = options["naam"]
-        print(name)
-        stop
-
         tubes = get_tubes_with_geo_ohm_cable()
         gmn = create_monitoring_net(name, tubes)
 
@@ -64,6 +61,8 @@ def create_monitoring_net(name, tubes):
         deliver_to_bro=False,
         description="Meetnet dat alle putten met een zoutwachter weergeeft",
         quality_regime="IMBRO/A",
+        province_name="Prov ZL",
+        bro_domain="FRD",
         delivery_context="waterwetPeilbeheer",
         monitoring_purpose="strategischBeheerKwantiteitRegionaal",
         groundwater_aspect="kwaliteit",
