@@ -347,11 +347,18 @@ class PostgreSQLDataSource(DataSourceTemplate):
             return ""
 
     def wellcode_to_broid(self, well_code):
+        if "-" in well_code:
+            # split well_code into bro_id and tube_id
+            parts = well_code.split("-")
+            well_code, tube_id = parts
+            tube_id = "-" + tube_id
+        else:
+            tube_id = ""
         bro_id = self.gmw_gdf.loc[self.gmw_gdf["well_code"] == well_code, "bro_id"]
         if bro_id.empty:
             raise KeyError(f"Well code '{well_code}' not found in the database.")
         else:
-            return bro_id.iloc[0]
+            return bro_id.iloc[0] + tube_id
 
     def broid_to_wellcode(self, bro_id):
         well_code = self.gmw_gdf.loc[self.gmw_gdf["bro_id"] == bro_id, "well_code"]
