@@ -39,17 +39,19 @@ Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard
     - Maak een superuser met 'python manage.py createsuperuser' .
 
 ## Screenshots
-<img src=screenshots/bro_connector_login_screen.png>
+<img src=bro_connector/static/img/bro_connector_home.png>
 
-<img src=screenshots/bro_connector_dashboard_overview.png>
+<img src=bro_connector/static/img/bro_connector_gld_page.png>
 
-<img src=bro_connector/static/img/bro_connector_gld_log.PNG>
+<img src=bro_connector/static/img/bro_connector_map.PNG>
 
-<img src=screenshots/bro_connector_GMW_map_zeeland.png>
+<img src=bro_connector/static/img/bro_connector_map_well.png>
 
-<img src=screenshots/20241104_MeetopstellingVisualisatie.png>
+<img src=bro_connector/static/img/bro_connector_well_preview.png>
 
-<img src=screenshots/bro_connector_GMW_Datalens_overview.png>
+<img src=bro_connector/static/img/bro_connector_datalens.png>
+
+<img src=bro_connector/static/img/bro_connector_datalens_model.png>
 
 ## Initialisatie
 Na de installatie kun je de applicatie initialiseren zodat je direct alle data uit de BRO beschikbaar hebt in je eigen lokale omgeving. Hiervoor kun je de volgende stappen uitvoeren:

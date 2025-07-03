@@ -77,7 +77,7 @@ class GMWSerializer(serializers.ModelSerializer):
         else:
             picture = obj.picture.order_by("-recording_datetime", "-picture_id").first()
             
-        if picture:
+        if picture and picture.picture:
             # return picture.image_tag
             return format_html_join(
                 "",
