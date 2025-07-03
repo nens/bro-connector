@@ -43,7 +43,7 @@ Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard
 
 <img src=bro_connector/static/img/bro_connector_gld_page.png>
 
-<img src=bro_connector/static/img/bro_connector_map.PNG>
+<img src=bro_connector/static/img/bro_connector_map.png>
 
 <img src=bro_connector/static/img/bro_connector_map_well.png>
 
