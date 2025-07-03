@@ -366,11 +366,14 @@ def register_qc_callbacks(app, data):
 
         for i in range(1, nrules + 1):
             irule = data.traval._ruleset.get_rule(istep=i)
-            for k, v in irule["kwargs"].items():
-                if callable(v):
+            irule_orig = data.traval.ruleset.get_rule(istep=i)
+            for (k, v), (_, vorig) in zip(
+                irule["kwargs"].items(), irule_orig["kwargs"].items()
+            ):
+                if callable(vorig):
                     if name is not None:
                         try:
-                            v = v(name)
+                            v = vorig(name)
                         except Exception as e:
                             errors.append((f"{irule['name']}: {k}", e))
 
@@ -746,6 +749,7 @@ def register_qc_callbacks(app, data):
                     ),
                 )
             except Exception as e:
+                # raise(e)
                 return (
                     # {"layout": {"title": "Running TRAVAL..."}},  # figure
                     no_update,
