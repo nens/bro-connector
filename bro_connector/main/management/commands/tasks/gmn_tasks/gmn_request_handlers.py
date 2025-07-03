@@ -161,7 +161,7 @@ class StartRegistrationGMN:
             # Create source docs
             srcdocdata = {
                 "objectIdAccountableParty": self.monitoring_network.object_id_accountable_party,
-                "name": self.monitoring_network.name,
+                "name": self.monitoring_network.bro_name,
                 "deliveryContext": self.monitoring_network.delivery_context,
                 "monitoringPurpose": self.monitoring_network.monitoring_purpose,
                 "groundwaterAspect": self.monitoring_network.groundwater_aspect,
