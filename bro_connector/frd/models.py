@@ -81,9 +81,9 @@ class FormationResistanceDossier(BaseModel):
     )
 
     deliver_to_bro = models.BooleanField(blank=False, null=True, verbose_name="Leveren aan BRO")
-    closure_date = models.DateField(blank=True, null=True, editable=False, verbose_name="Datum BRO Compleet")
+    closure_date = models.DateField(blank=True, null=True, editable=False, verbose_name="Sluitingsdatum meetnet")
     closed_in_bro = models.BooleanField(
-        blank=False, null=False, editable=True, default=False, verbose_name="BRO Compleet"
+        blank=False, null=False, editable=True, default=False, verbose_name="Afgesloten in de BRO"
     )
 
     @property
@@ -178,7 +178,7 @@ class FormationResistanceDossier(BaseModel):
 
 class ElectromagneticMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="FRD"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand Dossier [FRD]"
     )
     measurement_date = models.DateField(null=False, blank=True, verbose_name="Meetdatum")
     measuring_responsible_party = models.ForeignKey(
@@ -202,7 +202,7 @@ class ElectromagneticMeasurementMethod(BaseModel):
 
 class InstrumentConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="FRD"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand Dossier [FRD]"
     )
     configuration_name = models.CharField(max_length=40, null=False, blank=False, verbose_name="Configuratie")
     electromagnetic_measurement_method = models.ForeignKey(
@@ -262,7 +262,7 @@ class InstrumentConfiguration(BaseModel):
 
 class GeoOhmMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False, verbose_name="FRD"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False, verbose_name="Formatieweerstand Dossier [FRD]"
     )
     measurement_date = models.DateField(null=False, blank=True, verbose_name="Meetdatum")
     measuring_responsible_party = models.ForeignKey(
@@ -345,7 +345,7 @@ class ElectrodePair(BaseModel):
 
 class MeasurementConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="FRD"
+        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand Dossier [FRD]"
     )
     configuration_name = models.CharField(
         max_length=40, null=False, blank=False, unique=True, verbose_name="Configuratie"
@@ -398,7 +398,7 @@ class GeoOhmMeasurementValue(BaseModel):
     geo_ohm_measurement_method = models.ForeignKey(
         GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Geo Ohm Meetmethode"
     )
-    formationresistance = models.FloatField(validators=[MinValueValidator(0)], verbose_name="Formatieweerstand")
+    formationresistance = models.FloatField(validators=[MinValueValidator(0)], verbose_name="Formatieweerstand", help_text="Ohm")
     measurement_configuration = models.ForeignKey(
         MeasurementConfiguration, on_delete=models.CASCADE, null=False, blank=False, verbose_name="Configuratie"
     )
@@ -530,7 +530,8 @@ class FormationresistanceRecord(BaseModel):
 
     formationresistance = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(10000)],
-        verbose_name="Formatieweerstand"
+        verbose_name="Formatieweerstand",
+        help_text="Ohm.m"
     )  # Unit = ohm.m
 
     status_qualitycontrol = models.CharField(
