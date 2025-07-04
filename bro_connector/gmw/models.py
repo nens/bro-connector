@@ -492,6 +492,11 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         blank=True, default=False, verbose_name="BRO Compleet"
     )  # Is the data in the table complete as required for the BRO
 
+    def save(self, *args, **kwargs):
+        if self.comment in [None, ""]:
+            self.comment_processed = True
+        super().save(*args, **kwargs)
+
     def __str__(self):
         if self.date_till:
             till = self.date_till.date()
@@ -740,6 +745,12 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
     )
 
     event: Manager["Event"]
+
+    def save(self, *args, **kwargs):
+        if self.comment in [None, ""]:
+            self.comment_processed = True
+        super().save(*args, **kwargs)
+
 
     @property
     def date_till(self):

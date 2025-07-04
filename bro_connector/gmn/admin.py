@@ -68,6 +68,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "id",
         "gmn_bro_id",
         "name",
+        "bro_name",
         "measuring_point_count",
         "groundwater_aspect",
         "start_date_monitoring",
@@ -81,6 +82,8 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "groundwater_aspect",
         "deliver_to_bro",
     )
+
+    readonly_fields = ("bro_name",)
 
     inlines = (MeasuringPointsInline,)
 

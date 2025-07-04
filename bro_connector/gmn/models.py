@@ -137,6 +137,7 @@ class GroundwaterMonitoringNet(models.Model):
             name += f" - {self.regio}"
         return name
 
+    bro_name.fget.short_description = "BRO Naam"
 
     @property
     def project_number(self):
