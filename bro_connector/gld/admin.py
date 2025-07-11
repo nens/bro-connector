@@ -116,8 +116,6 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
     ]
 
-    autocomplete_fields = ("groundwater_monitoring_tube",)
-
     readonly_fields = [
         "gld_bro_id",
         "gmw_bro_id",

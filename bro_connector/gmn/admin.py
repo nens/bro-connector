@@ -82,6 +82,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "groundwater_aspect",
         "deliver_to_bro",
     )
+    
 
     readonly_fields = ("bro_name",)
 
@@ -142,6 +143,14 @@ class MeasuringPointAdmin(admin.ModelAdmin):
         "subgroup",
         "code",
     )
+
+    autocomplete_fields = ("groundwater_monitoring_tube",)
+
+    search_fields = [
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
+        "groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+    ]
 
 
 class IntermediateEventAdmin(admin.ModelAdmin):
