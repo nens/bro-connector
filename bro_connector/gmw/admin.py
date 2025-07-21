@@ -716,7 +716,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
         "plain_tube_part_length",
     )
     list_filter = (TubeFilter,)
-
+    autocomplete_fields = ["groundwater_monitoring_tube_static"]
     readonly_fields = ["date_till", "screen_top_position", "screen_bottom_position"]
 
     fields = [

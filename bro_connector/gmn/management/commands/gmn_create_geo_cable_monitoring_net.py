@@ -56,7 +56,7 @@ def create_monitoring_net(name, tubes):
     if not name:
         name = "Zoutwachter Meetnet"
 
-    gmn, created = GroundwaterMonitoringNet.objects.update_or_create(
+    gmn, created = GroundwaterMonitoringNet.objects.get_or_create(
         name=name,
         deliver_to_bro=False,
         description="Meetnet dat alle putten met een zoutwachter weergeeft",
