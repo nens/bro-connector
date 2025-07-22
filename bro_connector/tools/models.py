@@ -164,7 +164,7 @@ class GLDImport(BaseModel):
 class GMNImport(BaseModel):
     file = models.FileField(
         upload_to="gmn",
-        help_text="Bestand: .csv, .zip; bevat kolommen: meetpuntcode, gmwBroId, buisNummer, datum, subgroep*; gescheiden met komma.",
+        help_text="Bestand: .csv; bevat kolommen: meetpuntcode, gmwBroId, buisNummer, datum, subgroep*; gescheiden met komma.",
         null=True,
         blank=True,
         verbose_name="Meetpunten bestand",
