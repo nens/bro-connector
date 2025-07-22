@@ -3,6 +3,7 @@ from django.db.models.signals import (
 )
 import polars as pl
 import numpy as np
+from datetime import datetime
 from .models import GLDImport, GMNImport
 from django.dispatch import receiver
 from io import BytesIO
@@ -270,6 +271,24 @@ def get_monitoring_tube(
         return None
 
 
+def read_csv_or_zip(file_field) -> pl.DataFrame:
+    filename = file_field.name.lower()
+    if filename.endswith(".zip"):
+        with zipfile.ZipFile(file_field, "r") as z:
+            dfs = []
+            for name in z.namelist():
+                if name.endswith(".csv"):
+                    with z.open(name) as f:
+                        dfs.append(pl.read_csv(f, has_header=True, separator=","))
+            if not dfs:
+                raise ValueError("No CSV files found in the ZIP archive.")
+            return pl.concat(dfs)
+    elif filename.endswith(".csv"):
+        return pl.read_csv(file_field, has_header=True, separator=",")
+    else:
+        raise ValueError("Unsupported file type. Must be CSV or ZIP.")
+
+
 @receiver(pre_save, sender=GMNImport)
 def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
     if instance.executed:
@@ -277,6 +296,9 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
 
     gmn = GroundwaterMonitoringNet.objects.create(
         name=instance.name,
+        province_name=instance.province_name,
+        bro_domain=instance.bro_domain,
+        regio=instance.regio,
         delivery_context=instance.delivery_context,
         monitoring_purpose=instance.monitoring_purpose,
         start_date_monitoring=instance.start_date_monitoring,
@@ -284,15 +306,21 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
         quality_regime=instance.quality_regime,
     )
 
-    subgroepen = False
-    df = pl.read_csv(instance.file, has_header=True, separator=",")
+    df = read_csv_or_zip(instance.file)
+
     if len(df.columns) < 4:
         instance.validated = False
         instance.report += "Missende kolommen. Gebruik: meetpuntcode, gmwBroId, buisNummer, datum, subgroep*. Subgroep is niet verplicht.\n"
 
+    # Create subgroups if column exists and has values
     if "subgroep" in df.columns:
         subgroepen = True
-        subgroups = df.select("subgroep").to_series(0).unique().to_list()
+        subgroups_series = df.select("subgroep").to_series()
+        # Filter out nulls
+        non_null_subgroups = subgroups_series.filter(subgroups_series.is_not_null())
+        unique_subgroups = non_null_subgroups.unique()
+        subgroups = unique_subgroups.to_list()
+
         for subgroup in subgroups:
             Subgroup.objects.create(
                 gmn=gmn,
@@ -300,7 +328,6 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
                 code=subgroup,
             )
 
-    # Create MeasuringPoints
     executed = True
     for row in df.iter_rows():
         monitoring_tube = get_monitoring_tube(row[1], row[2])
@@ -309,16 +336,17 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
             executed = False
             continue
 
-        subgroup = None
-        if subgroepen:
-            subgroup = Subgroup.objects.get(gmn=gmn, code=row[4])
-
-        MeasuringPoint.objects.create(
+        measuring_point = MeasuringPoint.objects.create(
             gmn=gmn,
             groundwater_monitoring_tube=monitoring_tube,
             code=row[0],
-            added_to_gmn_date=row[3],
-            subgroup=subgroup,
+            added_to_gmn_date=datetime.strptime(row[3], "%Y-%m-%d").date(),
         )
+
+        if subgroepen:
+            raw_subgroup = row[4]
+            if raw_subgroup is not None and str(raw_subgroup).strip() != "":
+                subgroup = Subgroup.objects.get(gmn=gmn, code=raw_subgroup)
+                measuring_point.subgroup.add(subgroup)
 
     instance.executed = executed

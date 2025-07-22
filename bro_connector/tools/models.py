@@ -11,6 +11,10 @@ from gld.choices import (
     PROCESSTYPE,
     EVALUATIONPROCEDURE,
 )
+from gmn.choices import (
+    PROVINCIE_NAMEN,
+    BRO_DOMEINEN
+)
 from bro.models import Organisation
 from django.core.exceptions import ValidationError
 from gmw.models import GroundwaterMonitoringTubeStatic
@@ -168,6 +172,9 @@ class GMNImport(BaseModel):
     name = models.CharField(
         max_length=255, null=True, blank=False, verbose_name="Meetnet"
     )
+    province_name = models.CharField(max_length=50, choices=PROVINCIE_NAMEN, verbose_name="Provincie", blank=False, null=False)
+    bro_domain = models.CharField(max_length=50, choices=BRO_DOMEINEN, verbose_name="BRO Domein", blank=False, null=False)
+    regio = models.CharField(max_length=100, verbose_name="Regio", blank=True, null=True)
     delivery_context = models.CharField(
         blank=False,
         max_length=235,
