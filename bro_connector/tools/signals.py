@@ -277,6 +277,9 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
 
     gmn = GroundwaterMonitoringNet.objects.create(
         name=instance.name,
+        province_name=instance.province_name,
+        bro_domain=instance.bro_domain,
+        regio=instance.regio,
         delivery_context=instance.delivery_context,
         monitoring_purpose=instance.monitoring_purpose,
         start_date_monitoring=instance.start_date_monitoring,
