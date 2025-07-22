@@ -18,6 +18,8 @@ class GMWSerializer(serializers.ModelSerializer):
     # url_open_comments_wells = serializers.SerializerMethodField()
     # url_open_comments_tubes = serializers.SerializerMethodField()
     has_open_comments = serializers.SerializerMethodField()
+    tubes = serializers.SerializerMethodField()
+    glds = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
@@ -41,6 +43,8 @@ class GMWSerializer(serializers.ModelSerializer):
             # "url_open_comments_wells",
             # "url_open_comments_tubes",
             "has_open_comments",
+            "tubes",
+            "glds",
         ]
 
     def get_label(self, obj):
@@ -100,35 +104,45 @@ class GMWSerializer(serializers.ModelSerializer):
     def get_label(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return obj.__str__()
     
-    # def get_url_open_comments_wells(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
-    #     well_ids = obj.open_comments_well_ids
-    #     if not well_ids:
-    #         return "-"
-        
-    #     url = (
-    #         reverse('admin:gmw_groundwatermonitoringwelldynamic_changelist')
-    #         + "?"
-    #         + urlencode({"groundwater_monitoring_well_dynamic_id__in": ",".join(str(id) for id in well_ids)})
-    #     )
-    #     return format_html('<a href="{}" target="_blank">Openstaand commentaar</a>', url)
-
-    # def get_url_open_comments_tubes(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
-    #     tube_ids = obj.open_comments_tube_ids
-    #     if not tube_ids:
-    #         return "-"
-        
-    #     url = (
-    #         reverse('admin:gmw_groundwatermonitoringtubedynamic_changelist')
-    #         + "?"
-    #         + urlencode({"groundwater_monitoring_tube_dynamic_id__in": ",".join(str(id) for id in tube_ids)})
-    #     )
-    #     return format_html('<a href="{}" target="_blank">Openstaand commentaar</a>', url)
-
     def get_has_open_comments(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return obj.has_open_comments
+    
+    def get_tubes(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+        tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
+            groundwater_monitoring_well_static=obj
+        )
+        if tubes:
+            return list(set([tube.groundwater_monitoring_tube_static_id for tube in tubes]))
+        
+        return []
+    
+    def get_glds(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+        tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
+            groundwater_monitoring_well_static=obj
+        )
+        if tubes:
+            gld_ids = []
+            for tube in tubes:
+                glds = gld_models.GroundwaterLevelDossier.objects.filter(
+                    groundwater_monitoring_tube=tube
+                )
+                if glds:
+                    gld_ids.extend([gld.groundwater_level_dossier_id for gld in glds])
 
+            return list(set(gld_ids))
+        
+        return []
 
 class GLDSerializer(serializers.ModelSerializer):
     class Meta:
         model = gld_models.GroundwaterLevelDossier
         fields = "__all__"
+
+    def get_last_date():
+        pass
+
+    def get_observation():
+        pass
+
+    def get_status():
+        pass

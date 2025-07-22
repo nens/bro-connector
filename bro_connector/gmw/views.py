@@ -5,6 +5,7 @@ from gmw.models import (
     GroundwaterMonitoringWellStatic,
 )
 from bro.models import Organisation
+from gld.models import GroundwaterLevelDossier
 import gmn.models as gmn_models
 from . import serializers
 import bro.serializers as bro_serializers
@@ -38,6 +39,43 @@ def gmw_map_context(request):
         "organisations": instanties,
     }
     return render(request, "map.html", context)
+
+
+def gmw_map_validation_status_context(request):
+    print(request)
+    # find a way to read the request and only load the wells that are shown in the main map
+
+    # Pre-fetch related data to reduce database hits
+    print("Prefetching gmw")
+    gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
+        Prefetch(
+            "tube__measuring_point",  # Adjust the related field names
+            queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
+        )
+    )
+    print(gmw_qs[0])
+    print(gmw_qs[0].quality_regime)
+    print("Serializing wells")
+    # Serialize GroundwaterMonitoringWellStatic with only required fields
+    wells = serializers.GMWSerializer(gmw_qs, many=True).data
+
+    gld_ids = set()
+    for well in wells:
+        ids = well.get("glds", None)
+        if ids:
+            for gld in ids:
+                gld_ids.add(gld)
+    print(gld_ids)
+
+    gld_qs = GroundwaterLevelDossier.objects.filter(groundwater_level_dossier_id__in=gld_ids)
+    glds = serializers.GLDSerializer(gld_qs, many=True).data
+
+    context = {
+        "wells": wells,
+        "groundwater_level_dossiers": glds,
+    }
+
+    return render(request, "map_validation_status.html", context)
 
 
 def gmw_map_detail_context(request):

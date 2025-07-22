@@ -15,7 +15,7 @@ Including another URLconf
 """
 
 from django.urls import path
-from gmw.views import gmw_map_context, gmw_map_detail_context
+from gmw.views import gmw_map_context, gmw_map_validation_status_context, gmw_map_detail_context
 from main.dash import visualisatie_meetopstelling
 from django.contrib import admin
 
@@ -25,5 +25,6 @@ visualisatie_meetopstelling  # noqa
 
 urlpatterns = [
     path("map/", gmw_map_context, name="gmw_map"),
+    path("map/validation/", gmw_map_validation_status_context, name="gmw_validation_status_map"),
     path("map/detail/", gmw_map_detail_context, name="gmw_detail_map"),
 ]

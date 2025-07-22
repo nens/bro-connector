@@ -1,34 +1,11 @@
 // Get information
-console.log("loading wells");
 const wells = JSON.parse(document.getElementById("wells_json").textContent);
-console.log("loading gmns");
-const gmns = JSON.parse(document.getElementById("gmns_json").textContent);
-console.log("loading organisations");
-const organisations = JSON.parse(
-  document.getElementById("organisations_json").textContent
-);
-console.log("loading glds");
 const glds = JSON.parse(
   document.getElementById("groundwater_level_dossiers_json").textContent
 );
-console.log("loading well maps");
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );
-console.log("loading done");
-
-// Visible mapping
-const visibleMap = {
-  gmns: {
-    noLinked: true,
-  },
-  organisations: {},
-  wellValue: {},
-};
-
-gmns.forEach((gmn) => {
-  visibleMap.gmns[gmn] = true;
-});
 
 const colorMap = {};
 
@@ -39,26 +16,29 @@ const hexToRgb = (hex) => {
   return [r, g, b, 200];
 };
 
-// Add color and visible map for each organisation
-Object.keys(organisations).forEach((orgKey) => {
-  const { color, id } = organisations[orgKey];
-
-  // Apply color to html checkbox
-  const organisationCheckbox = document.getElementById(`checkbox-${id}`);
-  organisationCheckbox.style.accentColor = color;
-  organisationCheckbox.style.background = color;
-
-  // Add color to color map
-  const rgbColor = hexToRgb(color);
-  colorMap[id] = rgbColor;
-  visibleMap.organisations[id] = true;
-});
-
 // Show check or cross
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
+const getGLD = (id) => {
+  return glds.find(gld => {
+    const match = String(gld.groundwater_level_dossier_id) === String(id);
+    // console.log(match ? "match" : "no match", " - gld id:", gld.groundwater_level_dossier_id, "vs", id);
+    return match;
+  });
+};
+
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
+  console.log(well);
+  if (well.glds.length > 0) {
+    for (let i = 0; i < well.glds.length; i++) {
+      const id = well.glds[i];
+      console.log("id: ",id)
+      const GLD = getGLD(id);
+      console.log(GLD);
+    }
+  }
+    // Filter based on wellValue checkboxes: 
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
@@ -135,26 +115,6 @@ const showWellPopupAndMove = (well) => {
 
 const wellIsShown = (well) => {
   // Hide if doenst have linked_gmns and notLinked is false or if visibileMap doesnt have any of the linked gmns
-  if (
-    (well.linked_gmns.length === 0 && !visibleMap.gmns.noLinked) ||
-    (well.linked_gmns.length &&
-      !well.linked_gmns.find((gmn) => visibleMap.gmns[gmn]))
-  )
-    return;
-
-  // Hide if organisation is hidden
-  if (!visibleMap.organisations[well.delivery_accountable_party]) return;
-
-  // Hide if one of the wellvalues is set to hidden
-  const wellValueKeys = Object.keys(visibleMap.wellValue);
-  if (
-    wellValueKeys.find(
-      (valueKey) =>
-        (visibleMap.wellValue[valueKey] === true && !well[valueKey]) ||
-        (visibleMap.wellValue[valueKey] === false && well[valueKey])
-    )
-  )
-    return;
   return true;
 };
 
@@ -192,49 +152,8 @@ const myScatterplotLayer = new deck.MapboxLayer({
   },
 });
 
-function filterByCheckbox(wellValue, checkboxId) {
-  const checkbox = document.getElementById(`checkbox-${checkboxId}`);
-  if (!checkbox) return true; // Default to show if checkbox missing
-
-  const checked = checkbox.checked;
-  const indeterminate = checkbox.indeterminate;
-
-  if (wellValue === true) {
-    // true wells show if checkbox is checked or indeterminate
-    return checked || indeterminate;
-  } else {
-    // false wells show if checkbox is unchecked or indeterminate
-    return !checked || indeterminate;
-  }
-}
-
 function createTextLayer(visible) {
-  const visibleWells = wells.filter(well => {
-    // Filter based on wellValue checkboxes:    
-    if (!filterByCheckbox(well.has_open_comments, 'open_comments')) return false;
-    if (!filterByCheckbox(well.complete_bro, 'complete_bro')) return false;
-    if (!filterByCheckbox(well.deliver_gmw_to_bro, 'deliver_gmw_to_bro')) return false;
-
-    // Filter based on linked_gmns & noLinked checkbox
-    if (!well.linked_gmns || well.linked_gmns.length === 0) {
-      if (visibleMap.gmns.noLinked !== true) {
-        return false; // noLinked is off, exclude wells without GMNs
-      }
-    } else if (!well.linked_gmns.some(gmn => visibleMap.gmns[gmn] === true)) {
-      return false; // none of linked GMNs enabled, exclude well
-    }
-
-    // Filter based on organisations delivery_accountable_party
-    if (
-      well.delivery_accountable_party && // only check if attribute present
-      visibleMap.organisations[well.delivery_accountable_party] === false
-    ) {
-      return false; // delivery accountable party is off, exclude well
-    }
-
-    // Passed all filters, include the well
-    return true;
-  });
+  const visibleWells = wells;
 
   return new deck.MapboxLayer({
     id: "text-layer",
@@ -265,13 +184,13 @@ function updateTextLayer() {
 };
 
 // Function to open validation map with current view
-function switchToValidationStatusMap() {
+function switchToBaseMap() {
   // Get current map center and zoom
   const center = map.getCenter();
   const zoom = map.getZoom();
   
   // Create URL with current view parameters
-  const url = `../map/validation/?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}`;
+  const url = `../?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}`;
   
   // Open in new tab
   window.location.href = url;
@@ -402,81 +321,18 @@ map.on("mousemove", (e) => {
 // Handle if someone toggles any other filter
 const handleWellValue = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
-  const { wellValue } = visibleMap;
-  // Well value can either be false, true or null
-  if (wellValue[id] === false) {
-    wellValue[id] = null;
-    checkbox.checked = false;
-    checkbox.indeterminate = true;
-  } else if (wellValue[id] === true) {
-    wellValue[id] = false;
-    checkbox.checked = false;
-    checkbox.indeterminate = false;
-  } else {
-    wellValue[id] = true;
-    checkbox.checked = true;
-    checkbox.indeterminate = false;
-  }
+  
   updateGetRadius();
   updateTextLayer();
 };
 
 const deselectAllCheckboxes = () => {
-  if (!visibleMap || !visibleMap.gmns) {
-    console.warn("❌ visibleMap.gmns not defined");
-    return;
-  }
-
-  const gmns = visibleMap.gmns;
-  console.log("🔍 Current visibleMap.gmns state:", gmns);
-
-  // Check if any GMN is false
-  const anyFalse = Object.values(gmns).some(value => value === false);
-  console.log(`❓ Any GMN false? ${anyFalse}`);
-
-  // Decide the new state: if any false => set all true; else set all false
-  const newState = anyFalse ? true : false;
-  console.log(`➡️ Setting all GMNs to: ${newState}`);
-
-  // Update visibleMap.gmns
-  Object.keys(gmns).forEach(key => {
-    gmns[key] = newState;
-  });
-
-  // Sync checkboxes with visibleMap.gmns state
-  Object.keys(gmns).forEach(key => {
-    let searchKey = key === "noLinked" ? "no-linked" : key;
-    const escapedKey = CSS.escape(searchKey);
-    const checkbox = document.querySelector(`#checkbox-${escapedKey}`);
-    if (checkbox) {
-      checkbox.checked = newState;
-      console.log(`✔️ Checkbox for '${searchKey}' set to ${newState}`);
-    } else {
-      console.warn(`⚠️ Checkbox #checkbox-${searchKey} not found in DOM`);
-    }
-  });
-
   updateGetRadius();
   updateTextLayer();
 };
-
 
 // Handle if someone toggles an gmn
-const handleGmnClick = (id, element) => {
-  const checkbox = element.querySelector('input[type="checkbox"]');
-  const { gmns } = visibleMap;
-  gmns[id] = !gmns[id];
-  checkbox.checked = gmns[id];
-  updateGetRadius();
-  updateTextLayer();
-};
-
-// Handle if someone toggles an organisation
-const handleOrganisationClick = (id, element) => {
-  const checkbox = element.querySelector('input[type="checkbox"]');
-  const { organisations } = visibleMap;
-  organisations[id] = !organisations[id];
-  checkbox.checked = organisations[id];
+const handleTypeClick = (id, element) => {
   updateGetRadius();
   updateTextLayer();
 };
@@ -491,31 +347,11 @@ const updateGetRadius = () => {
 };
 
 // Clicking the checkbox needs to switch the checkbox back because the above functions handle that
-const handleWellValueCheckboxClick = (checkbox) => {
-  setTimeout(() => {
-    if (!checkbox.checked && !checkbox.indeterminate) {
-      checkbox.indeterminate = true;
-    } else if (checkbox.checked && !checkbox.indeterminate) {
-      checkbox.checked = false;
-    } else {
-      checkbox.checked = true;
-      checkbox.indeterminate = false;
-    }
-  });
-};
-
-// Clicking the checkbox needs to switch the checkbox back because the above functions handle that
 const handleCheckboxClick = (checkbox) => {
   setTimeout(() => {
     checkbox.checked = !checkbox.checked;
   });
 };
-
-const defaultIndeterminate = document.querySelectorAll(
-  ".default-indeterminate"
-);
-
-defaultIndeterminate.forEach((checkbox) => (checkbox.indeterminate = true));
 
 // HANDLE SEARCH
 const searchBox = document.getElementById("search-top-left");

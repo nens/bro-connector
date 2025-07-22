@@ -126,7 +126,7 @@
   border: 1px solid black;
 }
 
-#gmn-wrapper {
+#type-wrapper {
   display: none;
   top: 50px;
   position: absolute;
@@ -139,7 +139,7 @@
   width: 200px;
 }
 
-.hamburger-open #gmn-wrapper {
+.hamburger-open #type-wrapper {
   display: flex;
 }
 
