@@ -3,6 +3,7 @@ from django.db.models.signals import (
 )
 import polars as pl
 import numpy as np
+from datetime import datetime
 from .models import GLDImport, GMNImport
 from django.dispatch import receiver
 from io import BytesIO
@@ -312,16 +313,17 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
             executed = False
             continue
 
-        subgroup = None
-        if subgroepen:
-            subgroup = Subgroup.objects.get(gmn=gmn, code=row[4])
-
-        MeasuringPoint.objects.create(
+        measuring_point = MeasuringPoint.objects.create(
             gmn=gmn,
             groundwater_monitoring_tube=monitoring_tube,
             code=row[0],
-            added_to_gmn_date=row[3],
-            subgroup=subgroup,
+            added_to_gmn_date=datetime.strptime(row[3], "%Y-%m-%d").date(),
         )
+
+        subgroup = None
+        if subgroepen:
+            subgroup = Subgroup.objects.get(gmn=gmn, code=row[4])
+            measuring_point.subgroup.add(subgroup)
+
 
     instance.executed = executed
