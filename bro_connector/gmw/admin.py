@@ -722,6 +722,34 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
         well.complete_bro = is_valid
         well.save()
 
+        cleaned_data = form.cleaned_data
+        aantal_geo_ohm_cables = cleaned_data.get("aantal_geo_ohm_cables", 0)
+        if aantal_geo_ohm_cables > obj.geo_ohm_cable.all().count():
+            self.message_user(
+                request,
+                "Het aantal GeoOhm kabels is aangepast.",
+                level="WARNING",
+            )
+            for index in range(obj.geo_ohm_cable.all().count(), aantal_geo_ohm_cables):
+                logger.info(
+                    f"Toevoegen van {index + 1}e GeoOhm kabel aan {obj.groundwater_monitoring_tube_static_id}"
+                )
+                gmw_models.GeoOhmCable.objects.create(
+                    groundwater_monitoring_tube_static=obj,
+                    cable_number=index + 1
+                )
+        elif aantal_geo_ohm_cables < obj.geo_ohm_cable.all().count():
+            self.message_user(
+                request,
+                "Het aantal GeoOhm kabels is aangepast.",
+                level="WARNING",
+            )
+            for index in range(obj.geo_ohm_cable.all().count(), aantal_geo_ohm_cables, -1):
+                logger.info(
+                    f"Verwijderen van {index}e GeoOhm kabel van {obj.groundwater_monitoring_tube_static_id}"
+                )
+                obj.geo_ohm_cable.all()[index-1].delete()
+
 
 class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringTubeDynamicForm

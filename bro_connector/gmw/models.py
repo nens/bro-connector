@@ -896,6 +896,18 @@ class GeoOhmCable(BaseModel):
         verbose_name = "Geo Ohm Kabel"
         verbose_name_plural = "Geo Ohm Kabels"
 
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        if is_new:
+            for i in range(26):  # Create two electrodes by default
+                Electrode.objects.create(
+                    geo_ohm_cable=self,
+                    electrode_number=i + 1,
+                    electrode_status="gebruiksklaar",
+                )
+
 class Electrode(BaseModel):
     electrode_static_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     geo_ohm_cable = models.ForeignKey(

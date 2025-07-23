@@ -77,6 +77,8 @@ class GroundwaterMonitoringWellDynamicForm(forms.ModelForm):
 
 
 class GroundwaterMonitoringTubeStaticForm(forms.ModelForm):
+    aantal_geo_ohm_cables = forms.IntegerField(required=False, label="Gewenste aantal geo-ohm kabels")
+
     class Meta:
         model = models.GroundwaterMonitoringTubeStatic
         fields = "__all__"
@@ -91,6 +93,8 @@ class GroundwaterMonitoringTubeStaticForm(forms.ModelForm):
             for name, field in self.fields.items():
                 field.widget.attrs["readonly"] = True
                 field.disabled = True
+
+    
 
 
 class GroundwaterMonitoringTubeDynamicForm(forms.ModelForm):
