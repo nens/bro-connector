@@ -368,6 +368,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
 
     def save(self, *args, **kwargs):
         # Call the parent class's save method
+        is_new = self.pk is None
         super().save(*args, **kwargs)
 
         if self.well_code is None and self.nitg_code is not None:
@@ -380,6 +381,21 @@ class GroundwaterMonitoringWellStatic(BaseModel):
             self.coordinates_4326 = self.coordinates.transform(4326, clone=True)
             # Save the updated instance
             super().save(update_fields=["coordinates_4326"])
+
+
+        if is_new:
+            # Create a time object for 12:00:00
+            if self.construction_date:
+                noon_time = datetime.time(12, 0, 0)
+                # Combine the date and time
+                datetime_obj = datetime.datetime.combine(self.construction_date, noon_time)
+            else:
+                datetime_obj = datetime.datetime.now()
+
+            GroundwaterMonitoringWellDynamic.objects.create(
+                groundwater_monitoring_well_static=self,
+                date_from=datetime_obj,
+            )
 
     class Meta:
         managed = True
@@ -650,6 +666,23 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         verbose_name = "Grondwatermonitoring Filter - Statisch"
         verbose_name_plural = "Grondwatermonitoring Filters - Statisch"
 
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new:
+            # Create a time object for 12:00:00
+            if self.groundwater_monitoring_well_static.construction_date:
+                noon_time = datetime.time(12, 0, 0)
+                # Combine the date and time
+                datetime_obj = datetime.datetime.combine(self.groundwater_monitoring_well_static.construction_date, noon_time)
+            else:
+                datetime_obj = datetime.datetime.now()
+
+            GroundwaterMonitoringTubeDynamic.objects.create(
+                groundwater_monitoring_tube_static=self,
+                date_from=datetime_obj,
+            )
+
 
 class GroundwaterMonitoringTubeDynamic(BaseModel):
     groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True, verbose_name="DB ID")
@@ -745,11 +778,6 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
     )
 
     event: Manager["Event"]
-
-    def save(self, *args, **kwargs):
-        if self.comment in [None, ""]:
-            self.comment_processed = True
-        super().save(*args, **kwargs)
 
 
     @property

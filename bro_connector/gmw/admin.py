@@ -375,6 +375,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "bro_loket_link",
                     "nitg_code",
                     "olga_code",
+                    "construction_date",
                     "delivery_accountable_party",
                     "delivery_responsible_party",
                     "in_management",
@@ -399,6 +400,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "y",
                     "lat",
                     "lon",
+                    "aantal_peilbuizen",
                     "map_preview",
                 ],
             },
@@ -443,6 +445,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringWellStatic, form, change
     ):
+
         # Haal de waarden van de afgeleide attributen op uit het formulier
 
         x = form.cleaned_data["x"]
@@ -510,8 +513,34 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 "Er zijn nog acties vereist om het BRO Compleet te maken",
             )
 
-        # Sla het model op
-        obj.save()
+        super().save_model(request, obj, form, change)
+        aantal_peilbuizen = form.cleaned_data["aantal_peilbuizen"]
+        if aantal_peilbuizen > obj.tube.all().count():
+            self.message_user(
+                request,
+                "Het aantal peilbuizen is aangepast.",
+                level="WARNING",
+            )
+            for index in range(obj.tube.all().count(), aantal_peilbuizen):
+                logger.info(
+                    f"Toevoegen van {index + 1}e peilbuis aan {obj.groundwater_monitoring_well_static_id}"
+                )
+                gmw_models.GroundwaterMonitoringTubeStatic.objects.create(
+                    groundwater_monitoring_well_static=obj,
+                    tube_number=index + 1
+                )
+        elif aantal_peilbuizen < obj.tube.all().count():
+            self.message_user(
+                request,
+                "Het aantal peilbuizen is aangepast.",
+                level="WARNING",
+            )
+            for index in range(obj.tube.all().count(), aantal_peilbuizen, -1):
+                logger.info(
+                    f"Verwijderen van {index}e peilbuis van {obj.groundwater_monitoring_well_static_id}"
+                )
+                obj.tube.all()[index-1].delete()
+
 
     @admin.action(description="Lever GMW aan BRO")
     def deliver_to_bro(self, request, queryset):

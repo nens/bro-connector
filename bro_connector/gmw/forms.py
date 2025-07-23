@@ -31,6 +31,7 @@ class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
     y = forms.CharField(required=True)
     cx = forms.CharField(required=False)
     cy = forms.CharField(required=False)
+    aantal_peilbuizen = forms.IntegerField(required=False)
 
     class Meta:
         model = models.GroundwaterMonitoringWellStatic
@@ -54,6 +55,9 @@ class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
         if self.instance.construction_coordinates:
             self.fields["cx"].initial = self.instance.cx
             self.fields["cy"].initial = self.instance.cy
+
+        if self.instance.groundwater_monitoring_well_static_id is not None:
+            self.fields["aantal_peilbuizen"].initial = self.instance.tube.all().count()
 
 
 class GroundwaterMonitoringWellDynamicForm(forms.ModelForm):
