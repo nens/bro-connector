@@ -95,6 +95,21 @@ MAP_WIDGETS = {
     "GOOGLE_MAP_API_KEY": "<google-api-key>",
 }
 
+# Caching configuration: file-based cache
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": f"{BASE_DIR}/.cache",  # You can change this path if needed
+        "TIMEOUT": 3600,  # 1 hour
+        "OPTIONS": {
+            "MAX_ENTRIES": 1000,
+            "CULL_FREQUENCY": 3,
+        },
+    }
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "admin_reorder.middleware.ModelAdminReorder",

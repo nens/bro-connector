@@ -80,7 +80,7 @@ class ObservationInline(admin.TabularInline):
         "result_time",
     ]
 
-    ordering = ["observation_starttime"]
+    ordering = ["-observation_starttime"]
     extra = 0
     max_num = 0
 
