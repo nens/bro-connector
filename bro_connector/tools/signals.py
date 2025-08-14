@@ -210,13 +210,13 @@ def validate_csv(file, filename: str, instance: GLDImport):
             f"Eerste kolom moet de tijd bevatten van {filename}: {str(e)}\n\n"
         )
 
-    # Validate 'values' column format (numeric values)
-    if "values" in reader.columns:
+    # Validate 'value' column format (numeric values)
+    if "value" in reader.columns:
         if (
-            not pd.to_numeric(reader["values"], errors="coerce").notnull().all()
+            not pd.to_numeric(reader["value"], errors="coerce").notnull().all()
         ):  # Check if all values are numeric
             instance.validated = False
-            instance.report += f"Fout in 'values' kolom van {filename}: Bevat niet-numerieke waarden.\n\n"
+            instance.report += f"Fout in 'value' kolom van {filename}: Bevat niet-numerieke waarden.\n\n"
 
     # validate the status_quality_control column if given in csv
     if "status_quality_control" in reader.columns:
