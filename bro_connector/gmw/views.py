@@ -15,6 +15,20 @@ import gld.models as gld_models
 import gmw.models as gmw_models
 from . import serializers
 import bro.serializers as bro_serializers
+from django.conf import settings
+
+def get_map_center(settings):
+    wells = GroundwaterMonitoringWellStatic.objects.all()
+
+    if settings.USE_WELLS_AS_MAP_CENTER and len(wells) > 0:
+        latitudes, longitudes = [w.lat for w in wells], [w.lon for w in wells]
+        center_coordinate = {"lat": sum(latitudes) / len(latitudes), "lon": sum(longitudes) / len(longitudes)}
+
+    else:
+        center_coordinate = {"lat": settings.MAP_CENTER[1], "lon": settings.MAP_CENTER[0]}
+
+    return center_coordinate
+
 import time
 
 def get_cache_key(request):
@@ -289,7 +303,6 @@ def gmw_map_validation_status_context(request):
     # find a way to read the request and only load the wells that are shown in the main map
 
     # Pre-fetch related data to reduce database hits
-    print("Prefetching gmw")
     gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
         Prefetch(
             "tube__measuring_point",  # Adjust the related field names
@@ -318,13 +331,10 @@ def gmw_map_validation_status_context(request):
     print("finished")
     context = {
         "wells": wells,
-        "groundwater_level_dossiers": glds,
+        "gmns": list(gmns),  # Convert set to list
+        "organisations": instanties,
     }
-    response = render(request, "map_validation_status.html", context)
-
-    cache.set(cache_key, response, timeout=3600)
-
-    return response
+    return render(request, "map.html", context)
 
 
 def gmw_map_detail_context(request):

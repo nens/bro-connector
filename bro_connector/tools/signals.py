@@ -3,11 +3,19 @@ from django.db.models.signals import (
 )
 import polars as pl
 import numpy as np
-from .models import GLDImport, GMNImport
+from .models import GLDImport, GMNImport, BroImport
 from django.dispatch import receiver
 from io import BytesIO
 import zipfile
 import pandas as pd
+import geopandas as gpd
+import tempfile
+import os
+from pathlib import Path
+from datetime import datetime
+import shutil
+
+from main.utils.bbox_extractor import BBOX_EXTRACTOR
 from gmn.models import (
     GroundwaterMonitoringNet,
     Subgroup,
@@ -24,10 +32,224 @@ from gld.models import (
     GroundwaterLevelDossier,
 )
 from gld.choices import STATUSQUALITYCONTROL, CENSORREASON
+from main.management.tasks import (
+    retrieve_historic_gmw,
+    retrieve_historic_frd,
+    retrieve_historic_gld,
+    retrieve_historic_gmn,
+)
 
 
 logger = getLogger("general")
 
+def format_message(handler: str, type: str, kvk: int, shp: str, count: int, imported: int) -> dict:
+    if type in ["gar", "gmn", "frd"]:
+        return {"message": f"BRO type {type} is nog niet geimplementeerd.", "level": "WARNING"}
+    elif count == 0:
+        if handler == "KvK":
+            return {"message": f"Geen {type}-objecten gevonden voor kvk {kvk}.", "level": "ERROR"}
+        if handler == "Shape":
+            if kvk:
+                return {"message": f"Geen {type}-objecten gevonden voor kvk {kvk} binnen {shp}.", "level": "ERROR"}
+            else:
+                return {"message": f"Geen {type}-objecten gevonden binnen {shp}.", "level": "ERROR"}
+    elif count == imported:
+        if handler == "KvK":
+            return {
+                "message": f"Alle {type}-objecten geimporteerd voor kvk {kvk}. ({imported})",
+                "level": "SUCCESS",
+            }
+        if handler == "Shape":
+            if kvk:
+                return {
+                    "message": f"Alle {type}-objecten geimporteerd voor kvk {kvk} binnen {shp}. ({imported})",
+                    "level": "SUCCESS",
+                }
+            else:
+                return {
+                    "message": f"Alle {type}-objecten geimporteerd binnen {shp}. ({imported})",
+                    "level": "SUCCESS",
+                }
+
+    elif imported == 0:
+        if handler == "KvK":
+            return {
+                "message": f"Geen {type}-objecten geimporteerd voor kvk {kvk}. {count} objecten gevonden.",
+                "level": "ERROR",
+            }
+        if handler == "Shape":
+            if kvk:
+                return {
+                    "message": f"Geen {type}-objecten geimporteerd voor kvk {kvk} binnen {shp}. {count} objecten gevonden.",
+                    "level": "ERROR",
+                }
+            else:
+                return {
+                    "message": f"Geen {type}-objecten geimporteerd binnen {shp}. {count} objecten gevonden.",
+                    "level": "ERROR",
+                }
+    elif count > imported:
+        if handler == "KvK":
+            return {
+                "message": f"{imported} van de {count} {type}-objecten geimporeerd voor kvk {kvk}.",
+                "level": "WARNING",
+            }
+        if handler == "Shape":
+            if kvk:
+                return {
+                    "message": f"{imported} van de {count} {type}-objecten geimporeerd voor kvk {kvk} binnen {shp}.",
+                    "level": "WARNING",
+                }
+            else:
+                return {
+                    "message": f"{imported} van de {count} {type}-objecten geimporeerd binnen {shp}.",
+                    "level": "WARNING",
+                }
+
+@receiver(pre_save, sender=BroImport)
+def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
+    # Reset the report field to start fresh for each save attempt
+    instance.report = """"""
+    instance.validated = True
+    instance.executed = False
+
+    if not instance.file:
+        instance.validated = False
+        instance.report += (
+            "Geen bestand geupload. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
+        )
+    elif instance.file.name.endswith(".zip"):
+        process_zip_bro_file(instance)  # Process the ZIP file and update 'instance' as needed
+    else:
+        instance.validated = False
+        instance.report += (
+            "Ongeldig bestandstype. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
+        )
+
+    # Log the validated state
+    # instance.report += f"instance.validated = {instance.validated}\n"
+def has_necessary_helper_files(filenames):
+    """
+    Check if the list of filenames contains exactly one file
+    for each of the required shapefile extensions.
+    """
+    required_extensions = [".dbf", ".prj", ".shx"]
+
+    # Count occurrences of each required extension
+    counts = {ext: 0 for ext in required_extensions}
+    for f in filenames:
+        ext = f.lower()[-4:]
+        if ext in counts:
+            counts[ext] += 1
+
+    # Check conditions
+    all_present = all(counts[ext] == 1 for ext in required_extensions)
+    return all_present, counts
+
+def process_zip_bro_file(instance: BroImport):
+    # Read ZIP file
+    zip_buffer = BytesIO(instance.file.read())
+    try:
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            # Get all files inside the ZIP
+            all_files = zip_file.namelist()
+
+            # Filter out CSV files
+            shp_files = [f for f in all_files if f.endswith(".shp")]
+            not_shp_files = [f for f in all_files if not f.endswith(".shp")]
+
+            if not shp_files:
+                instance.report += "Geen SHP-bestanden gevonden in het ZIP-bestand.\n"
+                instance.validated = False
+
+            if len(shp_files) > 1:
+                instance.report += "Meer dan 1 SHP-bestand gevonden in het ZIP-bestand. Maximaal 1 toegestaan.\n"
+                instance.validated = False
+
+            if not has_necessary_helper_files(not_shp_files):
+                instance.report += "Geen of meerdere SHX, DBF, or PRJ-bestanden gevonden in het ZIP-bestand. 1 van elk benodigd/toegestaan.\n"
+                instance.validated = False
+
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            basename = Path(shp_files[0]).stem
+            output_folder = (
+                Path(__file__).resolve().parent.parent.parent / "data" / "shapefile" / f"{basename}_{timestamp}"
+            )
+            output_folder.mkdir(parents=True, exist_ok=True)
+            shp_filename = shp_files[0]
+            extensions = [".shp", ".dbf", ".prj", ".shx"]
+            for ext in extensions:
+                filename = [f for f in all_files if f.endswith(ext)][0]
+                file_path = output_folder / Path(filename).name
+                with zip_file.open(filename) as src, open(file_path, "wb") as dst:
+                    shutil.copyfileobj(src, dst)
+
+            ## start a new loop and validate the shp file and then process it
+            POLYGON_SHAPEFILE = output_folder / Path(shp_filename).name
+            gdf = validate_shp(POLYGON_SHAPEFILE, instance)
+            if gdf is not None:
+                import_info = {}
+                if instance.bro_type.lower() == "gmw":
+                    import_info = retrieve_historic_gmw.run(
+                        kvk_number=instance.kvk_number, 
+                        handler=instance.handler,
+                        shp_file=POLYGON_SHAPEFILE,
+                        delete=instance.delete_outside,
+                    )
+            
+                report = format_message(
+                    handler=instance.handler, 
+                    type=instance.bro_type, 
+                    kvk=instance.kvk_number, 
+                    shp=shp_filename,
+                    count=import_info.get("ids_found"), 
+                    imported=import_info.get("imported"),
+                )
+                instance.report += report.get("message") + "\n"
+                instance.executed = True
+
+    except zipfile.BadZipFile:
+        instance.report += "Ongeldig ZIP-bestand.\n"
+        instance.validated = False
+    finally:
+        zip_buffer.close()
+
+def validate_shp(file_path, instance: BroImport):
+    """
+    Validate a shapefile using GeoPandas.
+    """
+
+    try:
+        # Try loading shapefile with geopandas
+        gdf = gpd.read_file(file_path)
+        filename = Path(file_path).stem
+
+        # Check if shapefile has rows
+        if gdf.empty:
+            instance.validated = False
+            instance.report += f"{filename} bevat geen geometrieën.\n"
+            return None
+
+        # Validate geometries
+        invalid_geoms = gdf[~gdf.geometry.is_valid]
+        if not invalid_geoms.empty:
+            instance.validated = False
+            instance.report += (
+                f"{filename} bevat {len(invalid_geoms)} ongeldige geometrieën.\n"
+            )
+            return None
+
+        # Optional: check if CRS is defined
+        if gdf.crs is None:
+            instance.report += f"Waarschuwing: {filename} heeft geen CRS (coördinaatreferentiesysteem).\n"
+            return None
+
+        return gdf
+
+    except Exception as e:
+        instance.validated = False
+        instance.report += f"{filename} is ongeldig of corrupt: {str(e)}\n"
+        return None    
 
 @receiver(pre_save, sender=GLDImport)
 def validate_and_process_file(sender, instance: GLDImport, **kwargs):

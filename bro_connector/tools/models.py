@@ -1,6 +1,7 @@
 from django.db import models
+from pathlib import Path
 import datetime
-from tools.choices import BRO_TYPES
+from tools.choices import BRO_TYPES, BRO_HANDLERS
 from gld.choices import (
     OBSERVATIONTYPE,
     UNIT_CHOICES,
@@ -18,16 +19,64 @@ from gmn.choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
 from main.models import BaseModel
 
 
-class BroImporter(BaseModel):
+class BroImport(BaseModel):
+    handler = models.CharField(
+        max_length=100,
+        choices=BRO_HANDLERS,
+        null=False,
+        verbose_name="Importeermethode",
+        help_text="KvK: Haal data op obv KvK-nummer. Shape: Haal data op obv SHP bestand.",
+    )
     bro_type = models.CharField(
         max_length=100,
         choices=BRO_TYPES,
         null=False,
-        verbose_name="BRO type"
+        verbose_name="BRO type",
+        help_text="Type BRO data om te importeren."
     )
-    kvk_number = models.CharField(max_length=8, null=False, verbose_name="KvK")
+    kvk_number = models.CharField(
+        max_length=8,
+        null=True, 
+        blank=True,
+        verbose_name="KvK nummer",
+        help_text="Is optioneel als je de importeert op basis van SHP bestand."
+    )
+
+    file = models.FileField(
+        upload_to="bulk",
+        help_text="Zip bestand met daarin [.shp, .dbf, .prj, .shx]-bestanden van het projectgebied.",
+        validators=[],
+        null=True,
+        blank=True,
+        verbose_name="Shape Bestand"
+    )
+    @property
+    def file_name(self):
+        if self.file:
+            return Path(self.file.name).stem + ".shp"
+        return "-"
+    file_name.fget.short_description = "Bestandsnaam"
+
+    delete_outside = models.BooleanField(
+        null=True, 
+        blank=True, 
+        default=False, 
+        editable=True, 
+        verbose_name="Punten verwijderen",
+        help_text="Verwijder punten die buiten het SHP bestand liggen"
+    )
+
     import_date = models.DateTimeField(editable=False, verbose_name="Datum geïmporteerd")
     created_date = models.DateTimeField(editable=False, verbose_name="Datum gecreëerd")
+
+    validated = models.BooleanField(null=True, blank=True, default=True, editable=False, verbose_name="Gevalideerd")
+    executed = models.BooleanField(null=True, blank=True, default=False, editable=False, verbose_name="Uitgevoerd")
+    report = models.TextField(
+        help_text="Informatie over de BRO Import",
+        blank=True,
+        null=True,
+        verbose_name="Rapportage"
+    )
 
     class Meta:
         managed = True

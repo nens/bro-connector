@@ -11,7 +11,8 @@ console.log("loading glds");
 const glds = JSON.parse(
   document.getElementById("groundwater_level_dossiers_json").textContent
 );
-console.log("loading well maps");
+const mapCenter = JSON.parse(document.getElementById("map_center_json").textContent);
+
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );
@@ -293,7 +294,7 @@ function setInitialViewFromURL() {
   
   // Return default view if no parameters
   return {
-    center: [3.945697, 51.522601], // Default Netherlands center
+    center: mapCenter, // Default Netherlands center
     zoom: 9
   };
 }

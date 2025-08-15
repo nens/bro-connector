@@ -6,6 +6,7 @@ from ..tasks import events_handler
 import reversion
 import datetime
 from django.conf import settings
+from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
@@ -21,45 +22,32 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# def within_bbox(coordinates) -> bool:
-#     print(f"x: {coordinates.x}, y: {coordinates.y}")
-#     if (
-#         coordinates.x > settings.BBOX_SETTINGS["xmin"]
-#         and coordinates.x < settings.BBOX_SETTINGS["xmax"]
-#         and coordinates.y > settings.BBOX_SETTINGS["ymin"]
-#         and coordinates.y < settings.BBOX_SETTINGS["ymax"]
-#     ):
-#         return True
-#     return False
+def run(kvk_number: str = None, bro_type: str = "gmw", handler: str = "shape", shp_file: str = None, delete: bool = False) -> dict:
+    if shp_file == None:
+        shp_file = settings.POLYGON_SHAPEFILE
+    shp = shp_file
+    bbox_settings = BBOX_EXTRACTOR(shp=shp, use_bbox=True).bbox_settings
+    bbox = BBOX_EXTRACTOR(shp=shp, use_bbox=True).bbox
 
-
-def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "ogc"):
     progressor = Progress()
     gmw = GMWHandler()
 
-    if kvk_number and handler == "kvk":
+    if kvk_number and handler.lower() == "kvk":
         DR = DataRetrieverKVK(kvk_number)
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
 
-    bbox_settings = settings.BBOX_SETTINGS
-    bbox = settings.BBOX
-    shp = settings.POLYGON_SHAPEFILE
-    if bbox_settings["use_bbox"] and handler == "ogc":
+    if bbox_settings["use_bbox"] and handler.lower() == "shape":
         print("bbox settings: ", bbox_settings)
         DR = DataRetrieverBBOX(bbox)
         DR.request_bro_ids(bro_type)
         DR.filter_ids_kvk(kvk_number)
-        DR.enforce_shapefile(shp, delete=False)
+        DR.enforce_shapefile(shp, delete=delete)
         DR.get_ids_ogc()
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
-
-    if gmw_ids_ini_count == 0:
-        print(f"No IDs found for kvk: {kvk_number}.")
-        return {"ids_found": gmw_ids_ini_count, "imported": gmw_ids_ini_count}
 
     print(f"{gmw_ids_ini_count} bro ids found for kvk {kvk_number}.")
 
@@ -119,7 +107,7 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
         "ids_found": gmw_ids_count,
         "imported": imported,
     }
-    print("run finished")
+    
     return info
 
 

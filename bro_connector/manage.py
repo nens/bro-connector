@@ -12,7 +12,7 @@ def main():
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.production")
     elif ENV == "staging":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.staging")
-    elif ENV == "development":
+    elif ENV == "development" or ENV == "demo":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.development")
 
     try:
