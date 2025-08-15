@@ -8,17 +8,23 @@ from bro.models import Organisation
 import gmn.models as gmn_models
 from . import serializers
 import bro.serializers as bro_serializers
+from django.conf import settings
 
+def get_map_center(settings):
+    wells = GroundwaterMonitoringWellStatic.objects.all()
+
+    if settings.USE_WELLS_AS_MAP_CENTER and len(wells) > 0:
+        latitudes, longitudes = [w.lat for w in wells], [w.lon for w in wells]
+        center_coordinate = {"lat": sum(latitudes) / len(latitudes), "lon": sum(longitudes) / len(longitudes)}
+
+    else:
+        center_coordinate = {"lat": settings.MAP_CENTER[1], "lon": settings.MAP_CENTER[0]}
+
+    return center_coordinate
 
 def gmw_map_context(request):
     # Pre-fetch related data to reduce database hits
-    wells = GroundwaterMonitoringWellStatic.objects.all()
-    latitudes = [w.lat for w in wells]
-    longitudes =  [w.lon for w in wells]
-    center_lat = sum(latitudes) / len(latitudes)
-    center_lon = sum(longitudes) / len(longitudes)
-    center_coordinate = [center_lon, center_lat]
-    print(center_coordinate)
+    map_center = get_map_center(settings)
 
     gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
         Prefetch(
@@ -44,8 +50,10 @@ def gmw_map_context(request):
         "wells": wells,
         "gmns": list(gmns),  # Convert set to list
         "organisations": instanties,
-        "center_coordinate": center_coordinate,
+        "groundwater_level_dossiers": {},
+        "map_center": map_center,
     }
+    print(context)
     return render(request, "map.html", context)
 
 

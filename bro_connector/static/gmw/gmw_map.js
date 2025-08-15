@@ -7,8 +7,8 @@ const organisations = JSON.parse(
 const glds = JSON.parse(
   document.getElementById("groundwater_level_dossiers_json").textContent
 );
-const mapCenter = JSON.parse(document.getElementById("center_coordinate_json").textContent);
-console.log(mapCenter)
+const mapCenter = JSON.parse(document.getElementById("map_center_json").textContent);
+
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );

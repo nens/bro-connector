@@ -65,8 +65,10 @@ class BroImportAdmin(admin.ModelAdmin):
             messages.success(request, f'De BRO Import "{obj}" is succesvol uitgevoerd.')
 
     @admin.action(description="Importeer waardes opnieuw uit de BRO")
-    def update_import(self, request, obj, queryset):
-        obj.save()
+    def update_import(self, request, queryset):
+        for obj in queryset:
+            obj.import_date = datetime.datetime.now()
+            obj.save()
 
 
 class XMLImportAdmin(admin.ModelAdmin):
