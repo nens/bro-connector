@@ -109,6 +109,12 @@ def process_csv_file(instance: GLDImport):
         groundwater_monitoring_tube=instance.groundwater_monitoring_tube
         # quality_regime = instance.quality_regime
     ).first()
+    if not gld:
+        gld = GroundwaterLevelDossier.objects.update_or_create(
+            groundwater_monitoring_tube = instance.groundwater_monitoring_tube
+        )[0]
+        instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
+    
     if instance.validated:
         print("validated")
         # Create ObservationProces
