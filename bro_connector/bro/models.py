@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import random
 from main.models import BaseModel
+from main.utils.kvk_company_name import KVK_COMPANY_NAME
 
 
 def get_color_value():
@@ -20,6 +21,17 @@ def get_color_value():
     color_code = "#{:02x}{:02x}{:02x}".format(red, green, blue)
 
     return color_code
+
+def get_company_name(company_number: int):
+    # Extract company based on known company kvks. Manually extracted from: https://basisregistratieondergrond.nl/service-contact/formulieren/aangemeld-bro/
+    for kvk, company in KVK_COMPANY_NAME.items():
+        if int(kvk) == company_number:
+            return company
+        
+    print(company)
+    print(len(company))
+        
+    return None
 
 
 class SecureCharField(CharField):
@@ -70,7 +82,7 @@ class SecureCharField(CharField):
 
 
 class Organisation(BaseModel):
-    name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Naam")
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Naam")
     company_number = models.IntegerField(blank=True, verbose_name="KvK")
     color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleurcode")
     bro_user = SecureCharField(verbose_name="BRO Gebruikerstoken")
@@ -94,6 +106,10 @@ class Organisation(BaseModel):
         # Set a default color only if it's not already set
         if not self.color:
             self.color = get_color_value()
+        if not self.name and self.company_number:
+            self.name = get_company_name(self.company_number)
+            print(self.name)
+            print(len(self.name))
         super().save(*args, **kwargs)
 
 

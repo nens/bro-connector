@@ -16,6 +16,7 @@ import gmw.models as gmw_models
 from . import serializers
 import bro.serializers as bro_serializers
 from django.conf import settings
+import time
 
 def get_map_center(settings):
     wells = GroundwaterMonitoringWellStatic.objects.all()
@@ -28,8 +29,6 @@ def get_map_center(settings):
         center_coordinate = {"lat": settings.MAP_CENTER[1], "lon": settings.MAP_CENTER[0]}
 
     return center_coordinate
-
-import time
 
 def get_cache_key(request):
     if request.path.startswith("/map/validation"):
@@ -169,28 +168,30 @@ def gmw_map_context(request):
         print("already cached")
         return response
     
-    gld_qs = get_glds_with_latest_data_fast()
-    for gld in gld_qs:
-        obs = gld.latest_observation
-        meas = obs.latest_measurement if obs else None
-        print(gld.pk, obs, meas)
-        if not meas == None:
-            stop
+    map_center = get_map_center(settings)
+    
+    # gld_qs = get_glds_with_latest_data_fast()
+    # for gld in gld_qs:
+    #     obs = gld.latest_observation
+    #     meas = obs.latest_measurement if obs else None
+    #     print(gld.pk, obs, meas)
+    #     if not meas == None:
+    #         stop
 
     # Pre-fetch related data to reduce database hits
-    # print("Prefetching GMWs")
-    # gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
-    #     Prefetch(
-    #         "tube__measuring_point",  # Adjust the related field names
-    #         queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
-    #     ),
-    #     Prefetch(
-    #         "picture",
-    #         queryset=gmw_models.Picture.objects.only(
-    #             "is_main", "picture", "recording_datetime", "picture_id"
-    #         ).order_by("-is_main", "-recording_datetime", "-picture_id")
-    #     ),
-    # )
+    print("Prefetching GMWs")
+    gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
+        Prefetch(
+            "tube__measuring_point",  # Adjust the related field names
+            queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
+        ),
+        Prefetch(
+            "picture",
+            queryset=gmw_models.Picture.objects.only(
+                "is_main", "picture", "recording_datetime", "picture_id"
+            ).order_by("-is_main", "-recording_datetime", "-picture_id")
+        ),
+    )
 
     # print("Prefetching GLDs")
     # gld_qs = gld_models.GroundwaterLevelDossier.objects.prefetch_related(
@@ -230,11 +231,11 @@ def gmw_map_context(request):
     ## Insane amount of mtvps is the slowing factor
     ## Need a quick and efficient way to get the first mtvp for every obs or the ones I specify
 
-    # print("wells: ")
-    # start = time.time()
-    # wells = serializers.GMWSerializer(gmw_qs, many=True).data
-    # end = time.time()
-    # print(f"finished in {end-start}s")
+    print("wells: ")
+    start = time.time()
+    wells = serializers.GMWSerializer(gmw_qs, many=True).data
+    end = time.time()
+    print(f"finished in {end-start}s")
     
     # ## use observation serializer
     # ## find the most recent measurementtvp
@@ -268,22 +269,23 @@ def gmw_map_context(request):
     # end = time.time()
     # print(f"finished in {end-start}s")
 
-    # # Get unique party IDs and related organisations in one query
-    # party_ids = GroundwaterMonitoringWellStatic.objects.values_list(
-    #     "delivery_accountable_party", flat=True
-    # ).distinct()
-    # instantie_qs = Organisation.objects.filter(id__in=party_ids)
-    # instanties = bro_serializers.OrganisationSerializer(instantie_qs, many=True).data
+    # Get unique party IDs and related organisations in one query
+    party_ids = GroundwaterMonitoringWellStatic.objects.values_list(
+        "delivery_accountable_party", flat=True
+    ).distinct()
+    instantie_qs = Organisation.objects.filter(id__in=party_ids)
+    instanties = bro_serializers.OrganisationSerializer(instantie_qs, many=True).data
 
-    # # Use a set for unique GMNs
-    # gmns = {gmn for well in wells for gmn in well.get("linked_gmns", [])}
+    # Use a set for unique GMNs
+    gmns = {gmn for well in wells for gmn in well.get("linked_gmns", [])}
 
-    # context = {
-    #     "wells": wells,
-    #     "gmns": list(gmns),  # Convert set to list
-    #     "organisations": instanties,
-    # }
-    context = {}
+    context = {
+        "wells": wells,
+        "gmns": list(gmns),  # Convert set to list
+        "organisations": instanties,
+        "map_center": map_center
+    }
+    # context = {}
 
     response = render(request, "map.html", context)
 
