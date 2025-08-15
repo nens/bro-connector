@@ -127,7 +127,6 @@ class GMWSerializer(serializers.ModelSerializer):
     def get_has_open_comments(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return obj.has_open_comments
 
-
 class GLDSerializer(serializers.ModelSerializer):
     class Meta:
         model = gld_models.GroundwaterLevelDossier

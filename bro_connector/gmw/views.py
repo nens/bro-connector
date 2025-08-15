@@ -12,6 +12,14 @@ import bro.serializers as bro_serializers
 
 def gmw_map_context(request):
     # Pre-fetch related data to reduce database hits
+    wells = GroundwaterMonitoringWellStatic.objects.all()
+    latitudes = [w.lat for w in wells]
+    longitudes =  [w.lon for w in wells]
+    center_lat = sum(latitudes) / len(latitudes)
+    center_lon = sum(longitudes) / len(longitudes)
+    center_coordinate = [center_lon, center_lat]
+    print(center_coordinate)
+
     gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
         Prefetch(
             "tube__measuring_point",  # Adjust the related field names
@@ -36,6 +44,7 @@ def gmw_map_context(request):
         "wells": wells,
         "gmns": list(gmns),  # Convert set to list
         "organisations": instanties,
+        "center_coordinate": center_coordinate,
     }
     return render(request, "map.html", context)
 

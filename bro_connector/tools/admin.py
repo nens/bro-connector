@@ -27,77 +27,46 @@ def get_searchable_fields(model_class: models.Model) -> list[str]:
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
-
-def format_message(type: str, kvk: int, count: int, imported: int) -> dict:
-    if type in ["gar", "gmn", "frd"]:
-        return {"message": f"BRO type {type} not yet implemented.", "level": "WARNING"}
-    elif count == 0:
-        return {"message": f"No {type}-objects found for {kvk}.", "level": "ERROR"}
-    elif count == imported:
-        return {
-            "message": f"All {type}-objects imported for {kvk}. ({imported})",
-            "level": "SUCCESS",
-        }
-    elif imported == 0:
-        return {
-            "message": f"No {type}-objects imported for {kvk}. Found: {count} objects.",
-            "level": "ERROR",
-        }
-    elif count > imported:
-        return {
-            "message": f"Imported {imported} out of {count} {type}-objects for {kvk}.",
-            "level": "WARNING",
-        }
-
-
-class BroImporterAdmin(admin.ModelAdmin):
-    search_fields = get_searchable_fields(tools_models.BroImporter)
+class BroImportAdmin(admin.ModelAdmin):
+    search_fields = get_searchable_fields(tools_models.BroImport)
 
     list_display = (
         "id",
+        "handler",
         "bro_type",
         "kvk_number",
+        "file_name",
         "import_date",
     )
 
     list_filter = (
         "bro_type",
         "kvk_number",
+        "validated",
+        "executed",
     )
 
-    readonly_fields = (
-        "import_date",
-        "created_date",
-    )
+    readonly_fields = ["file_name", "import_date", "created_date", "report", "validated", "executed"]
 
     actions = ["update_import"]
 
-    # IDEA: COULD ADD FEATURE TO IMPORT ONLY ONE ID.
-
     def save_model(self, request, obj, form, change):
-        module_to_call = {
-            "gmw": retrieve_historic_gmw,
-            "gmn": retrieve_historic_gmn,
-            "gld": retrieve_historic_gld,
-            "frd": retrieve_historic_frd,
-            "gar": retrieve_historic_gar,
-        }
+        # Save the object first
+        super().save_model(request, obj, form, change)
 
-        import_info = module_to_call[obj.bro_type].run(kvk_number=obj.kvk_number)
-        message_info = format_message(
-            obj.bro_type,
-            obj.kvk_number,
-            import_info["ids_found"],
-            import_info["imported"],
-        )
+        # Check if validated is False, and add a warning message
+        if not obj.validated:
+            messages.warning(
+                request,
+                f'De BRO Import"{obj}" is aangemaakt maar is niet valide. Bekijk de rapportage voor verdere acties.',
+            )
 
-        obj.import_date = datetime.datetime.now()
-        self.message_user(request, message_info["message"], level=message_info["level"])
-        obj.save()
+        else:
+            messages.success(request, f'De BRO Import "{obj}" is succesvol uitgevoerd.')
 
     @admin.action(description="Importeer waardes opnieuw uit de BRO")
-    def update_import(self, request, queryset):
-        pass
+    def update_import(self, request, obj, queryset):
+        obj.save()
 
 
 class XMLImportAdmin(admin.ModelAdmin):
@@ -237,11 +206,11 @@ class GMNImportAdmin(admin.ModelAdmin):
             messages.success(request, f'The GLD Import "{obj}" was added successfully.')
 
 
-_register(tools_models.BroImporter, BroImporterAdmin)
+_register(tools_models.BroImport, BroImportAdmin)
 _register(tools_models.XMLImport, XMLImportAdmin)
 _register(tools_models.GLDImport, GLDImportAdmin)
 _register(tools_models.GMNImport, GMNImportAdmin)
-patch_admin(tools_models.BroImporter)
+patch_admin(tools_models.BroImport)
 patch_admin(tools_models.XMLImport)
 patch_admin(tools_models.GLDImport)
 patch_admin(tools_models.GMNImport)
