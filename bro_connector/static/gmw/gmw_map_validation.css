@@ -168,6 +168,9 @@
   border-radius: 10px;
   border: 1px solid black;
   border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;  /* avoid text cutoff with scrollbar */
 }
 
 .well-item {

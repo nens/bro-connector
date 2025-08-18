@@ -1,7 +1,7 @@
 // Get information
 const wells = JSON.parse(document.getElementById("wells_json").textContent);
 const glds = JSON.parse(
-  document.getElementById("groundwater_level_dossiers_json").textContent
+  document.getElementById("glds_json").textContent
 );
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
@@ -19,84 +19,125 @@ const hexToRgb = (hex) => {
 // Show check or cross
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
-const getGLD = (id) => {
-  return glds.find(gld => {
-    const match = String(gld.groundwater_level_dossier_id) === String(id);
-    // console.log(match ? "match" : "no match", " - gld id:", gld.groundwater_level_dossier_id, "vs", id);
-    return match;
-  });
-};
+function findObjectsByIds(ids, glds) {
+  gld_unsorted = ids.map(id => 
+    glds.find(gld => gld.groundwater_level_dossier_id === id)
+  );
+  
+  return gld_unsorted.slice().sort((a, b) => a.tube_number - b.tube_number);
+  // ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
+}
+// function findObjectsByIds(ids, glds) {
+//   return ids.map(id => {
+//     const matched = glds.filter(gld => gld.groundwater_level_dossier_id === id)
+//                         .sort((a, b) => a.tube_number - b.tube_number); // lowest tube_number first
+//     return matched.length > 0 ? matched[0] : { groundwater_level_dossier_id: id }; // keep id if no match
+//   });
+// }
 
-// Create a popup with well information and a link to the object page
-const createPopup = (well) => {
-  console.log(well);
-  if (well.glds.length > 0) {
-    for (let i = 0; i < well.glds.length; i++) {
-      const id = well.glds[i];
-      console.log("id: ",id)
-      const GLD = getGLD(id);
-      console.log(GLD);
-    }
-  }
-    // Filter based on wellValue checkboxes: 
+
+// Helper: format date nicely
+function formatDate(dateString) {
+  if (!dateString) return "—";
+  const d = new Date(dateString);
+  return d.toLocaleDateString();
+}
+
+// Helper: determine color based on recency of date
+function getDateColor(dateString) {
+  if (!dateString) return '#9E9E9E'; // no measurement
+  const now = new Date();
+  const d = new Date(dateString);
+  const diffYears = (now - d) / (1000 * 60 * 60 * 24 * 365);
+
+  if (diffYears < 1) return '#4CAF50';      // measured within a year
+  if (diffYears < 2) return '#FFC107';     // measured within 5 years
+  return '#F44336';                           // older
+}
+
+// Create popup with well info + GLD entries
+const createPopup = (well) => {  
+  const glds_well = findObjectsByIds(well.glds, glds);
   const popup = document.createElement("div");
-  const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
+  const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;  
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
-  const gldPageUrl = `/admin/gld/groundwaterleveldossier/?q=${well.bro_id}`;
-  const frdPageUrl = `/admin/frd/formationresistancedossier/?q=${well.bro_id}`;
+
+  let gldsContent = "";
+  if (glds_well.length > 0) {
+    glds_well.forEach((gld, i) => {
+      const GLDPageUrl = `/admin/gld/groundwaterleveldossier/${gld.groundwater_level_dossier_id}`;
+      const GLDBROID = gld.gld_bro_id;
+      const tube_number = gld.tube_number;
+      const measurementType = gld.latest_measurement_date ? "regulier" : "controle";
+      const status = gld.status;
+      const latestDate = formatDate(gld.latest_measurement_date);
+      const color = getDateColor(gld.latest_measurement_date);
+
+      gldsContent += `
+        <details style="margin-bottom:6px;">
+          <summary style="cursor:pointer;font-weight:bold;">
+            Filter ${tube_number}
+          </summary>
+          <div style="width: 100%; height: 6px; margin: 4px 0; border-radius: 3px; background-color: ${color};"></div>
+          <div class="well-item">
+            <span class="label">GLD:</span>
+            <span class="value"><a href="${GLDPageUrl}" target="_blank">GLD Link</a></span>
+          </div>
+          <div class="well-item">
+            <span class="label">BRO ID:</span>
+            <span class="value">${GLDBROID}</span>
+          </div>
+          <div class="well-item">
+            <span class="label">Type:</span>
+            <span class="value">${measurementType}</span>
+          </div>
+          <div class="well-item">
+            <span class="label">Status:</span>
+            <span class="value">${status}</span>
+          </div>
+          <div class="well-item">
+            <span class="label">Latest measurement:</span>
+            <span class="value">${latestDate}</span>
+          </div>
+        </details>
+      `;
+    });
+  } else {
+    gldsContent = `<div class="well-item"><em>No GLD entries found</em></div>`;
+  }
+
   const popupContent = `
-              <div id="popup-content">
-                <a href="${objectPageUrl}" target="_blank"><strong style="font-size: 18px;">${well.well_code
-    }</strong></a>
-                <hr width="100%" size="2">
-                <div class="well-item">
-                  <span class="label">BRO-ID:</span>
-                  <span class="value">${well.bro_id}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">NITG-code:</span>
-                  <span class="value">${well.nitg_code}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">GMW naar BRO:</span>
-                  <span class="value">${checkOrCross(
-      well.deliver_gmw_to_bro
-    )}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">BRO compleet:</span>
-                  <span class="value">${checkOrCross(well.complete_bro)}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">In beheer:</span>
-                  <span class="value">${checkOrCross(well.in_management)}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">BRO-loket:</span>
-                  <span class="value"><a href="${BROloketUrl}" target="_blank">broloket link</a></span>
-                </div>
-                <div class="well-item">
-                  <span class="label">GMNs:</span>
-                  <span class="value">${well.linked_gmns}</span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Zoek GLDs: </span>
-                  <span class="value"><a href="${gldPageUrl}" target="_blank">GLDs</a></span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Zoek FRDs: </span>
-                  <span class="value"><a href="${frdPageUrl}" target="_blank">FRDs</a></span>
-                </div>
-                <div class="well-item">
-                  <span class="label">Foto: </span>
-                  <span class="value">${well.picture}</span>
-                </div>
-              </div>
-              <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
-                <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
-              </div>
-                  `;
+    <div id="popup-content">
+      <a href="${objectPageUrl}" target="_blank">
+        <strong style="font-size: 18px;">${well.well_code}</strong>
+      </a>
+      <hr width="100%" size="2">
+      <div class="well-item">
+        <span class="label">BRO-ID:</span>
+        <span class="value">${well.bro_id}</span>
+      </div>
+      <div class="well-item">
+        <span class="label">BRO-loket:</span>
+        <span class="value"><a href="${BROloketUrl}" target="_blank">broloket link</a></span>
+      </div>
+      ${gldsContent}
+    </div>
+    <div style="display: flex; width: 100%; justify-content: center; padding-bottom: 0.5em;">
+      <div style="clip-path: polygon(100% 0, 0 0, 50% 100%); width: 10px; height: 10px; background-color: white;"></div>
+    </div>
+  `;
+
   popup.innerHTML = popupContent;
+  popup.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+  popup.addEventListener("mouseenter", () => {
+    map.scrollZoom.disable();
+  });
+  popup.addEventListener("mouseleave", () => {
+    map.scrollZoom.enable();
+  });
+
   return popup;
 };
 
@@ -123,31 +164,113 @@ const BLACK = [0, 0, 0];
 let marker = null;
 
 // For each well, add a circle
-const myScatterplotLayer = new deck.MapboxLayer({
-  id: "scatterplot-layer",
-  data: wells,
-  type: deck.ScatterplotLayer,
-  getPosition: (well) => [well.y, well.x],
+// const myScatterplotLayer = new deck.MapboxLayer({
+//   id: "scatterplot-layer",
+//   data: wells,
+//   type: deck.ScatterplotLayer,
+//   getPosition: (well) => [well.y, well.x],
+//   pickable: true,
+//   radiusMaxPixels: 6.5,
+//   radiusUnits: "meters",
+//   lineWidthMaxPixels: 1,
+//   lineWidthUnits: "meters",
+//   getLineWidth: 0.005,
+//   stroked: true,
+//   filled: true,
+//   antialiasing: true,
+//   radiusUnits: "pixels",
+//   getFillColor: (well) => colorMap[well.delivery_accountable_party],
+//   lineWidthMinPixels: 2,
+//   getLineColor: WHITE,
+
+//   // Hide circle when gmn or organisation is set to invisible
+//   getRadius: (well) => (wellIsShown(well) ? 10 : 0),
+
+//   //   On click add a popup as an Mapbox marker at the circle's location
+//   onClick: (event) => {
+//     const well = event.object;
+//     showWellPopupAndMove(well);
+//   },
+// });
+
+const getGLDs = (ids) => {
+  return glds
+    .filter(gld => ids.includes(gld.groundwater_level_dossier_id))
+    .sort((a, b) => a.tube_number - b.tube_number); // lowest first
+};
+
+function getColorFromGLD(gld) {
+  return getDateColor(gld.latest_measurement_date)
+}
+
+function renderPieToCanvas(data, size = 64) {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = size / 2;
+
+  let total = data.length;
+  let startAngle = -0.5 * Math.PI;
+  // console.log(data)
+  // console.log(startAngle)
+
+  for (const slice of data) {
+    const angle = (1 / total) * 2 * Math.PI;
+    // console.log(startAngle, startAngle + angle)
+    // console.log(slice.color)
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
+    ctx.closePath();
+    ctx.fillStyle = slice.color;
+    ctx.fill();
+    if (total > 1) {
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;  // adjust thickness
+      ctx.stroke();
+    }
+    startAngle += angle;
+  }
+
+  // Append a timestamp to force Deck.gl to treat it as a new image
+  return canvas.toDataURL();
+}
+
+
+// 2. Function to build pie icon data for all wells
+const pieData = wells.map((well) => { 
+  const gldsData = getGLDs(well.glds); 
+  const pieChart = gldsData.map(gld => ({ 
+    color: getColorFromGLD(gld) 
+  })); 
+  const iconUrl = renderPieToCanvas(pieChart); 
+  return { 
+    position: [well.y, well.x], 
+    well,   // <-- store this for dynamic resizing
+    iconUrl, 
+  }; 
+});
+
+// 3. Function to generate IconLayer with dynamic size
+const pieIconLayer = new deck.MapboxLayer({
+  id: "pie-layer",
+  type: deck.IconLayer,
+  data: pieData,
   pickable: true,
-  radiusMaxPixels: 6.5,
-  radiusUnits: "meters",
-  lineWidthMaxPixels: 1,
-  lineWidthUnits: "meters",
-  getLineWidth: 0.005,
-  stroked: true,
-  filled: true,
-  antialiasing: true,
-  radiusUnits: "pixels",
-  getFillColor: (well) => colorMap[well.delivery_accountable_party],
-  lineWidthMinPixels: 2,
-  getLineColor: WHITE,
-
-  // Hide circle when gmn or organisation is set to invisible
-  getRadius: (well) => (wellIsShown(well) ? 10 : 0),
-
-  //   On click add a popup as an Mapbox marker at the circle's location
+  getPosition: d => d.position,
+  getIcon: d => ({
+    url: d.iconUrl,
+    width: 64,
+    height: 64,
+    anchorY: 32,
+  }),
+  sizeUnits: "pixels",
+  getSize: d => wellIsShown() ? 25 : 0, // diameter
+    //   On click add a popup as an Mapbox marker at the circle's location
   onClick: (event) => {
-    const well = event.object;
+    const well = event.object.well;
     showWellPopupAndMove(well);
   },
 });
@@ -254,11 +377,14 @@ const map = new mapboxgl.Map({
 // Add map control and circle layer
 map.addControl(new mapboxgl.NavigationControl(), "bottom-left");
 map.on("load", () => {
-  map.addLayer(myScatterplotLayer);
+  // map.addLayer(myScatterplotLayer);
+  map.addLayer(pieIconLayer);
 });
 
+// regenerate all icons on zoom:
 
 map.on("zoom", () => {
+  // console.log(map.getZoom())
   const zoom = map.getZoom();
   shouldShowText = zoom >= 12;
   // Remove the old layer if it exists
@@ -271,6 +397,7 @@ map.on("zoom", () => {
     // map.addLayer(newTextLayer);
     updateTextLayer()
   }
+
 });
 
 // Remove popup on map click
@@ -339,7 +466,7 @@ const handleTypeClick = (id, element) => {
 
 const updateGetRadius = () => {
   //   Updating the update triggers to Date.now() makes sure the getRadius gets recaluclated
-  myScatterplotLayer.setProps({
+  pieIconLayer.setProps({
     updateTriggers: {
       getRadius: Date.now(),
     },

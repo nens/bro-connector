@@ -24,13 +24,11 @@ def get_color_value():
 
 def get_company_name(company_number: int):
     # Extract company based on known company kvks. Manually extracted from: https://basisregistratieondergrond.nl/service-contact/formulieren/aangemeld-bro/
+    # Use main.utils.convert_kvk_company_to_python_dict.py to generate a dictionary (outputted in a .txt file) and paste this into main.utils.kvk_company_name
     for kvk, company in KVK_COMPANY_NAME.items():
         if int(kvk) == company_number:
             return company
-        
-    print(company)
-    print(len(company))
-        
+
     return None
 
 
@@ -108,8 +106,6 @@ class Organisation(BaseModel):
             self.color = get_color_value()
         if not self.name and self.company_number:
             self.name = get_company_name(self.company_number)
-            print(self.name)
-            print(len(self.name))
         super().save(*args, **kwargs)
 
 

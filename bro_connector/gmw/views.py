@@ -44,26 +44,42 @@ def get_cache_key(request):
 from django.db.models import Max, Q
 
 def get_glds_with_latest_data_fast():
-    print("# Step 1: Find newest observation per GLD (batch query)")
-    latest_obs_per_gld = (
+    start = time.time()
+    print("# Step 1: Find newest observation per GLD (based on observation_starttime)")
+    latest_obs_subquery = (
         gld_models.Observation.objects
-        .values('groundwater_level_dossier')
-        .annotate(latest_obs_id=Max('observation_id', filter=Q(observation_starttime__isnull=False)))
+        .filter(
+            groundwater_level_dossier=OuterRef('pk'),
+            observation_starttime__isnull=False
+        )
+        .order_by('-observation_starttime')
+        .values('pk')[:1]
+    )
+    latest_obs_per_gld = (
+        gld_models.GroundwaterLevelDossier.objects
+        .annotate(latest_obs_id=Subquery(latest_obs_subquery))
+        .values('pk', 'latest_obs_id')
     )
     obs_id_map = {
-        row['groundwater_level_dossier']: row['latest_obs_id']
+        row['pk']: row['latest_obs_id']
         for row in latest_obs_per_gld if row['latest_obs_id']
     }
 
+    start = time.time()
     print("# Step 2: Fetch all GLDs in one go")
     glds = list(gld_models.GroundwaterLevelDossier.objects.all())
+    end = time.time()
+    print(f"time to run step: {end-start}")
 
     print("# Step 3: Get all latest observations in one go")
     observations = list(
         gld_models.Observation.objects.filter(pk__in=obs_id_map.values())
     )
     obs_map = {o.pk: o for o in observations}
-
+    end = time.time()
+    print(f"time to run step: {end-start}")
+    
+    start = time.time()
     print("# Step 4: Find newest measurement per observation (batch query)")
     latest_meas_per_obs = (
         gld_models.MeasurementTvp.objects
@@ -75,13 +91,19 @@ def get_glds_with_latest_data_fast():
         row['observation_id']: row['latest_meas_id']
         for row in latest_meas_per_obs if row['latest_meas_id']
     }
+    end = time.time()
+    print(f"time to run step: {end-start}")
 
+    start = time.time()
     print("# Step 5: Fetch those measurements in bulk")
     measurements = {
         m.pk: m
         for m in gld_models.MeasurementTvp.objects.filter(pk__in=meas_id_map.values())
     }
+    end = time.time()
+    print(f"time to run step: {end-start}")
 
+    start = time.time()
     print("# Step 6: Attach to objects") 
     for obs in observations:
         obs.latest_measurement = measurements.get(meas_id_map.get(obs.pk))
@@ -89,79 +111,13 @@ def get_glds_with_latest_data_fast():
     for gld in glds:
         gld.latest_observation = obs_map.get(obs_id_map.get(gld.pk))
 
+    end = time.time()
+    print(f"time to run step: {end-start}")
+
     return glds
 
-
-def prefetch_lastest_measurements():
-    print("# 1️⃣ Subquery for latest observation per GLD")
-    latest_obs_subquery = (
-        gld_models.Observation.objects
-        .filter(groundwater_level_dossier=OuterRef('pk'))
-        .order_by('-observation_starttime')
-        .values('observation_id')[:1]
-    )
-
-    print("# 2️⃣ Add latest_observation_id to each GLD")
-    glds_with_latest_obs = (
-        gld_models.GroundwaterLevelDossier.objects
-        .annotate(latest_observation_id=Subquery(latest_obs_subquery))
-    )
-
-    print("# 3️⃣ Get all latest observations in one go")
-    latest_observations = list(
-        gld_models.Observation.objects.filter(
-            pk__in=[g.latest_observation_id for g in glds_with_latest_obs if g.latest_observation_id]
-        )
-    )
-
-    print("# 4️⃣ Subquery for latest measurement per observation")
-    latest_meas_subquery = (
-        gld_models.MeasurementTvp.objects
-        .filter(observation=OuterRef('pk'))
-        .order_by('-measurement_time')
-        .values('measurement_tvp_id')[:1]
-    )
-
-    print("# 5️⃣ Annotate observations with latest_measurement_id")
-    observations_with_latest_meas = (
-        gld_models.Observation.objects
-        .filter(pk__in=[o.pk for o in latest_observations])
-        .annotate(latest_measurement_id=Subquery(latest_meas_subquery))
-    )
-    print([o.lastest_measurement_id for o in observations_with_latest_meas])
-
-    print("# 6️⃣ Fetch all latest measurements in one go")
-    latest_measurements = {
-        m.pk: m
-        for m in gld_models.MeasurementTvp.objects.filter(
-            pk__in=[o.latest_measurement_id for o in observations_with_latest_meas if o.latest_measurement_id]
-        )
-    }
-
-    print("# 7️⃣ Attach latest_measurement to each observation")
-    observations_by_id = {}
-    for obs in observations_with_latest_meas:
-        obs.latest_measurement = latest_measurements.get(obs.latest_measurement_id)
-        observations_by_id[obs.pk] = obs
-
-    print("# 8️⃣ Attach latest_observation to each GLD")
-    for gld in glds_with_latest_obs:
-        gld.latest_observation = observations_by_id.get(gld.latest_observation_id)
-
-    return glds_with_latest_obs
-
-
-
-def serialize_map(request):
-    ## Prefetch gmws
-    ## Prefetch observations
-    ## Prefetch measurement tvps
-    ## Prefetch observation types
-    ## Prefetch organisations
-    return
-
 def gmw_map_context(request):
-    cache.clear()
+    # cache.clear()
     cache_key = get_cache_key(request)
     response = cache.get(cache_key)
     if response:
@@ -169,14 +125,16 @@ def gmw_map_context(request):
         return response
     
     map_center = get_map_center(settings)
-    
-    # gld_qs = get_glds_with_latest_data_fast()
-    # for gld in gld_qs:
-    #     obs = gld.latest_observation
-    #     meas = obs.latest_measurement if obs else None
-    #     print(gld.pk, obs, meas)
-    #     if not meas == None:
-    #         stop
+
+    gld_qs = get_glds_with_latest_data_fast()
+    print("wells: ")
+    start = time.time()
+    glds = serializers.GLDSerializer(gld_qs, many=True).data
+    end = time.time()
+    print(f"finished in {end-start}s")
+    # print(gld.latest_measurement)
+    # print(gld.latest_observation)
+    # print(gld.latest_observation.latest_measurement)
 
     # Pre-fetch related data to reduce database hits
     print("Prefetching GMWs")
@@ -281,6 +239,7 @@ def gmw_map_context(request):
 
     context = {
         "wells": wells,
+        "glds": glds,
         "gmns": list(gmns),  # Convert set to list
         "organisations": instanties,
         "map_center": map_center
@@ -294,13 +253,28 @@ def gmw_map_context(request):
     return response
 
 def gmw_map_validation_status_context(request):
-    cache.clear()
+    # cache.clear()
     cache_key = get_cache_key(request)
-    cache.clear()
+    # cache.clear()
     response = cache.get(cache_key)
+    ## make it so that the wells are not serialized, but glds are loaded
     if response:
         print("already cached")
         return response
+    
+    map_center = get_map_center(settings)
+
+    ## Ideally, load the latest_measurement for controle and reguliere metingen
+    ## Make sure that we filter for one of the other, or empty
+    ## For regular, store the status. Make sure that we can filter for volledigBeoordeeld, voorlopig, onbekend (for controle this is not used)
+    ## The popup box should only show what is checked. The dot should ideally update when checking on of these boxes
+
+    gld_qs = get_glds_with_latest_data_fast()
+    print("wells: ")
+    start = time.time()
+    glds = serializers.GLDSerializer(gld_qs, many=True).data
+    end = time.time()
+    print(f"finished in {end-start}s")
 
     # find a way to read the request and only load the wells that are shown in the main map
 
@@ -311,32 +285,34 @@ def gmw_map_validation_status_context(request):
             queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
         )
     )
-    print(gmw_qs[0])
-    print(gmw_qs[0].quality_regime)
-    print("Serializing wells")
     # Serialize GroundwaterMonitoringWellStatic with only required fields
     wells = serializers.GMWSerializer(gmw_qs, many=True).data
 
-    print("getting gld ids")
-    gld_ids = set()
-    for well in wells:
-        ids = well.get("glds", None)
-        if ids:
-            for gld in ids:
-                gld_ids.add(gld)
+    # print("getting gld ids")
+    # gld_ids = set()
+    # for well in wells:
+    #     ids = well.get("glds", None)
+    #     if ids:
+    #         for gld in ids:
+    #             gld_ids.add(gld)
 
-    gld_qs = GroundwaterLevelDossier.objects.filter(groundwater_level_dossier_id__in=gld_ids)
+    # gld_qs = GroundwaterLevelDossier.objects.filter(groundwater_level_dossier_id__in=gld_ids)
     
-    print("serializing glds")
-    glds = serializers.GLDSerializer(gld_qs, many=True).data
+    # print("serializing glds")
+    # glds = serializers.GLDSerializer(gld_qs, many=True).data
 
     print("finished")
     context = {
         "wells": wells,
-        "gmns": list(gmns),  # Convert set to list
-        "organisations": instanties,
+        "glds": glds,
+        "map_center": map_center
     }
-    return render(request, "map.html", context)
+
+    response = render(request, "map_validation_status.html", context)
+
+    cache.set(cache_key, response, timeout=3600)
+
+    return response
 
 
 def gmw_map_detail_context(request):

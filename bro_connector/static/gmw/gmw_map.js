@@ -9,7 +9,7 @@ const organisations = JSON.parse(
 );
 console.log("loading glds");
 const glds = JSON.parse(
-  document.getElementById("groundwater_level_dossiers_json").textContent
+  document.getElementById("glds_json").textContent
 );
 const mapCenter = JSON.parse(document.getElementById("map_center_json").textContent);
 
@@ -58,8 +58,24 @@ Object.keys(organisations).forEach((orgKey) => {
 // Show check or cross
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
+// function findObjectsByIds(ids, glds) {
+//   return ids.map(id => 
+//     glds.find(gld => gld.groundwater_level_dossier_id === id)
+//   ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
+// }
+function findObjectsByIds(ids, glds) {
+  return ids.map(id => {
+    const matched = glds.filter(gld => gld.groundwater_level_dossier_id === id)
+                        .sort((a, b) => a.tube_number - b.tube_number); // lowest tube_number first
+    return matched.length > 0 ? matched[0] : { groundwater_level_dossier_id: id }; // keep id if no match
+  });
+}
+
+
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
+  console.log(well.glds)
+  console.log(findObjectsByIds(well.glds, glds))
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
@@ -118,6 +134,7 @@ const createPopup = (well) => {
               </div>
                   `;
   popup.innerHTML = popupContent;
+  
   return popup;
 };
 
