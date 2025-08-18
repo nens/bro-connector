@@ -234,7 +234,7 @@ class GMNImportAdmin(admin.ModelAdmin):
             )
 
         else:
-            messages.success(request, f'The GLD Import "{obj}" was added successfully.')
+            messages.success(request, f'The GMN Import "{obj}" was added successfully.')
 
 
 _register(tools_models.BroImporter, BroImporterAdmin)
