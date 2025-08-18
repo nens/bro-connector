@@ -216,8 +216,8 @@ class GroundwaterLevelDossier(BaseModel):
     class Meta:
         managed = True
         db_table = 'gld"."groundwater_level_dossier'
-        verbose_name = "Grondwaterstand Dossier"
-        verbose_name_plural = "Grondwaterstand Dossiers"
+        verbose_name = "Grondwaterstandonderzoek"
+        verbose_name_plural = "Grondwaterstandonderzoeken"
 
 
 class Observation(BaseModel):
