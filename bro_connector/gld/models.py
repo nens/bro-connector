@@ -428,7 +428,7 @@ class ObservationMetadata(BaseModel):
     observation_type = models.CharField(
         choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Observatie type"
     )
-    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True, verbose_name="Status metadata")
+    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True, verbose_name="Mate beoordeling")
     responsible_party = models.ForeignKey(
         Organisation,
         on_delete=models.SET_NULL,
