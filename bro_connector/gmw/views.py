@@ -22,12 +22,17 @@ from django.conf import settings
 import time
 
 @csrf_exempt
-def store_visible_wells(request):
+def gmw_visible_wells(request):
+    print("doing the funky visible well request")
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            ids = data.get("ids", [])
-            cache.set("visible_well_ids", ids, timeout=None)
+            content = json.loads(request.body)
+            cache_key = get_cache_key(request)
+            cache.set(cache_key, content, timeout=3600)
+
+            ids = []
+            if content:
+                ids = content.get("ids", [])
             return JsonResponse({"status": "ok", "count": len(ids)})
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
@@ -46,14 +51,17 @@ def get_map_center(settings):
     return center_coordinate
 
 def get_cache_key(request):
+    if not request.session.session_key:
+        request.session.save()
+
     if request.path.startswith("/map/validation"):
-        cache_base = "/map"
+        cache_base = "/map/"
     else:
         cache_base = request.path
 
-    session_id = request.session.session_key or "anon"
+    session_id = request.session.session_key
     cache_key = f"map:{session_id}:{cache_base}"
-
+    print("Created cache key: ",cache_key)
     return cache_key
 
 from django.db.models import Max, Q
@@ -144,11 +152,12 @@ def get_glds_with_latest_data_fast():
     return glds
 
 def gmw_map_context(request):
-    cache.clear()
+    # cache.clear()
     cache_key = get_cache_key(request)
-    response = cache.get(cache_key)
-    if response:
+    cached_context = cache.get(cache_key)
+    if cached_context:
         print("already cached")
+        response = render(request, "map.html", cached_context)
         return response
     
     map_center = get_map_center(settings)
@@ -275,21 +284,41 @@ def gmw_map_context(request):
 
     response = render(request, "map.html", context)
 
-    cache.set(cache_key, response, timeout=3600)
+    cache.set(cache_key, context, timeout=3600)
 
     return response
 
 def gmw_map_validation_status_context(request):
-    cache.clear()
-    cache_key = get_cache_key(request)
     # cache.clear()
-    response = cache.get(cache_key)
-    ## make it so that the wells are not serialized, but glds are loaded
-    if response:
-        print("already cached")
+    cache_key = get_cache_key(request)
+    cache_key_content = cache_key + "ids/"    
+    cached_context = cache.get(cache_key, {})
+    cached_content = cache.get(cache_key_content, {})
+
+    content = {
+        "ids": [],
+        "lon": None,
+        "lat": None,
+        "zoom": None,
+    }
+        
+    if cached_context:
+        if cached_content:
+            content["ids"] = cached_content.get("ids", [])
+            content["lon"] = cached_content.get("lon")
+            content["lat"] = cached_content.get("lat")
+            content["zoom"] = cached_content.get("zoom")
+
+        context = cached_context
+        context["content"] = content
+        context["wells"] = [
+            well for well in cached_context.get("wells", [])
+            if well.get("groundwater_monitoring_well_static_id") in content["ids"]
+        ]
+
+        response = render(request, "map_validation_status.html", context)
+
         return response
-    
-    map_center = get_map_center(settings)
 
     ## Ideally, load the latest_measurement for controle and reguliere metingen
     ## Make sure that we filter for one of the other, or empty
@@ -338,12 +367,12 @@ def gmw_map_validation_status_context(request):
     context = {
         "wells": wells,
         "glds": glds,
-        "map_center": map_center
+        "content": content
     }
 
     response = render(request, "map_validation_status.html", context)
 
-    cache.set(cache_key, response, timeout=3600)
+    cache.set(cache_key, context, timeout=3600)
 
     return response
 

@@ -15,7 +15,7 @@ Including another URLconf
 """
 
 from django.urls import path
-from gmw.views import gmw_map_context, gmw_map_validation_status_context, gmw_map_detail_context
+from gmw.views import gmw_map_context, gmw_map_validation_status_context, gmw_map_detail_context, gmw_visible_wells
 from main.dash import visualisatie_meetopstelling
 from django.contrib import admin
 

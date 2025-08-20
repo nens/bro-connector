@@ -1,8 +1,9 @@
 // Get information
 const wells = JSON.parse(document.getElementById("wells_json").textContent);
-const glds = JSON.parse(
-  document.getElementById("glds_json").textContent
-);
+const glds = JSON.parse(document.getElementById("glds_json").textContent);
+const content = JSON.parse(document.getElementById("content_json").textContent);
+console.log(content)
+stop
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );

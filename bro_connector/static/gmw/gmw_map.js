@@ -278,20 +278,67 @@ function updateTextLayer() {
   map.addLayer(textLayer); // add to your deck/map instance
 };
 
+function sendVisibleWellIds(wells) {
+  const ids = wells.map(well => well.groundwater_monitoring_well_static_id);
+  console.log("IDs length: ",ids.length)
+
+  fetch("/map/ids/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids })
+  })
+  .then(resp => resp.json())
+  .then(data => console.log("Stored wells:", data));
+}
 // Function to open validation map with current view
-function switchToValidationStatusMap() {
+async function switchToValidationStatusMap() {
   // Get current map center and zoom
   const center = map.getCenter();
   const zoom = map.getZoom();
   const visibleWells = getVisibleWells();
-  const visibleWellIDs = visibleWells.map(well => well.id);
-  const idsParam = visibleWellIDs.join(",");
-  // Create URL with current view parameters
-  const url = `../map/validation/?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}&ids=${encodeURIComponent(idsParam)}`;
-  
-  // Open in new tab
-  window.location.href = url;
+  const visibleIds = visibleWells.map(w => w.groundwater_monitoring_well_static_id);
+  console.log("IDs length: ",visibleIds.length)
+
+  const payload = {
+    ids: visibleIds,
+    lon: center.lng,
+    lat: center.lat,
+    zoom: zoom,
+  };
+
+  try {
+    // 1. Post visible IDs to Django and wait until it's done
+    const resp = await fetch("/map/ids/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // "X-CSRFToken": getCookie("csrftoken")  // if CSRF is active
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) {
+      console.error("Failed to store visible wells:", resp.status);
+      return;
+    }
+
+    // 2. Only redirect after success
+    const url = `../map/validation/`;
+    window.location.href = url;
+
+  } catch (err) {
+    console.error("Error storing visible wells:", err);
+  }
 }
+
+//   sendVisibleWellIds(visibleWells)
+
+//   // Create URL with current view parameters
+//   const url = `../map/validation/?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}`;
+  
+//   // Open in new tab
+//   window.location.href = url;
+// }
 
 // Function to get URL parameters and set initial view
 function setInitialViewFromURL() {
