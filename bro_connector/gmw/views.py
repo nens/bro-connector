@@ -1,5 +1,8 @@
 # Create your views here.
 from django.views.decorators.cache import cache_page
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 
 from django.http import HttpResponse
@@ -17,6 +20,18 @@ from . import serializers
 import bro.serializers as bro_serializers
 from django.conf import settings
 import time
+
+@csrf_exempt
+def store_visible_wells(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            ids = data.get("ids", [])
+            cache.set("visible_well_ids", ids, timeout=None)
+            return JsonResponse({"status": "ok", "count": len(ids)})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
 
 def get_map_center(settings):
     wells = GroundwaterMonitoringWellStatic.objects.all()
@@ -81,15 +96,27 @@ def get_glds_with_latest_data_fast():
     
     start = time.time()
     print("# Step 4: Find newest measurement per observation (batch query)")
-    latest_meas_per_obs = (
+    # latest_meas_per_obs = (
+    #     gld_models.MeasurementTvp.objects
+    #     .filter(observation_id__in=obs_map.keys())
+    #     .values('observation_id')
+    #     .annotate(latest_meas_id=Max('measurement_tvp_id', filter=Q(measurement_time__isnull=False)))
+    # )
+    latest_meas_subquery = (
         gld_models.MeasurementTvp.objects
-        .filter(observation_id__in=obs_map.keys())
-        .values('observation_id')
-        .annotate(latest_meas_id=Max('measurement_tvp_id', filter=Q(measurement_time__isnull=False)))
+        .filter(observation=OuterRef("pk"), measurement_time__isnull=False)
+        .order_by("-measurement_time")
+        .values("pk")[:1]
+    )
+
+    latest_meas_per_obs = (
+        gld_models.Observation.objects
+        .filter(pk__in=obs_map.keys())
+        .annotate(latest_meas_id=Subquery(latest_meas_subquery))
     )
     meas_id_map = {
-        row['observation_id']: row['latest_meas_id']
-        for row in latest_meas_per_obs if row['latest_meas_id']
+        o.observation_id: o.latest_meas_id
+        for o in latest_meas_per_obs if o.latest_meas_id
     }
     end = time.time()
     print(f"time to run step: {end-start}")
@@ -117,7 +144,7 @@ def get_glds_with_latest_data_fast():
     return glds
 
 def gmw_map_context(request):
-    # cache.clear()
+    cache.clear()
     cache_key = get_cache_key(request)
     response = cache.get(cache_key)
     if response:
@@ -253,7 +280,7 @@ def gmw_map_context(request):
     return response
 
 def gmw_map_validation_status_context(request):
-    # cache.clear()
+    cache.clear()
     cache_key = get_cache_key(request)
     # cache.clear()
     response = cache.get(cache_key)
@@ -270,7 +297,7 @@ def gmw_map_validation_status_context(request):
     ## The popup box should only show what is checked. The dot should ideally update when checking on of these boxes
 
     gld_qs = get_glds_with_latest_data_fast()
-    print("wells: ")
+    print("glds: ")
     start = time.time()
     glds = serializers.GLDSerializer(gld_qs, many=True).data
     end = time.time()
@@ -278,12 +305,18 @@ def gmw_map_validation_status_context(request):
 
     # find a way to read the request and only load the wells that are shown in the main map
 
-    # Pre-fetch related data to reduce database hits
+    print("Prefetching GMWs")
     gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
         Prefetch(
             "tube__measuring_point",  # Adjust the related field names
             queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
-        )
+        ),
+        Prefetch(
+            "picture",
+            queryset=gmw_models.Picture.objects.only(
+                "is_main", "picture", "recording_datetime", "picture_id"
+            ).order_by("-is_main", "-recording_datetime", "-picture_id")
+        ),
     )
     # Serialize GroundwaterMonitoringWellStatic with only required fields
     wells = serializers.GMWSerializer(gmw_qs, many=True).data

@@ -27,4 +27,5 @@ urlpatterns = [
     path("map/", gmw_map_context, name="gmw_map"),
     path("map/validation/", gmw_map_validation_status_context, name="gmw_validation_status_map"),
     path("map/detail/", gmw_map_detail_context, name="gmw_detail_map"),
+    path("map/ids/", gmw_visible_wells, name="gmw_visible_well_ids")
 ]

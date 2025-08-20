@@ -58,19 +58,11 @@ Object.keys(organisations).forEach((orgKey) => {
 // Show check or cross
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
-// function findObjectsByIds(ids, glds) {
-//   return ids.map(id => 
-//     glds.find(gld => gld.groundwater_level_dossier_id === id)
-//   ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
-// }
 function findObjectsByIds(ids, glds) {
-  return ids.map(id => {
-    const matched = glds.filter(gld => gld.groundwater_level_dossier_id === id)
-                        .sort((a, b) => a.tube_number - b.tube_number); // lowest tube_number first
-    return matched.length > 0 ? matched[0] : { groundwater_level_dossier_id: id }; // keep id if no match
-  });
+  return ids.map(id => 
+    glds.find(gld => gld.groundwater_level_dossier_id === id)
+  ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
 }
-
 
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
@@ -134,7 +126,6 @@ const createPopup = (well) => {
               </div>
                   `;
   popup.innerHTML = popupContent;
-  
   return popup;
 };
 
@@ -226,12 +217,12 @@ function filterByCheckbox(wellValue, checkboxId) {
   }
 }
 
-function createTextLayer(visible) {
+function getVisibleWells() {
   const visibleWells = wells.filter(well => {
-    // Filter based on wellValue checkboxes:    
-    if (!filterByCheckbox(well.has_open_comments, 'open_comments')) return false;
-    if (!filterByCheckbox(well.complete_bro, 'complete_bro')) return false;
-    if (!filterByCheckbox(well.deliver_gmw_to_bro, 'deliver_gmw_to_bro')) return false;
+    // Filter based on wellValue checkboxes
+    if (!filterByCheckbox(well.has_open_comments, "open_comments")) return false;
+    if (!filterByCheckbox(well.complete_bro, "complete_bro")) return false;
+    if (!filterByCheckbox(well.deliver_gmw_to_bro, "deliver_gmw_to_bro")) return false;
 
     // Filter based on linked_gmns & noLinked checkbox
     if (!well.linked_gmns || well.linked_gmns.length === 0) {
@@ -254,9 +245,14 @@ function createTextLayer(visible) {
     return true;
   });
 
+  // Return just the IDs (used for URL params)
+  return visibleWells;
+}
+
+function createTextLayer(visible) {
   return new deck.MapboxLayer({
     id: "text-layer",
-    data: visibleWells,
+    data: getVisibleWells(),
     type: deck.TextLayer,
     getPosition: (well) => [well.y, well.x],
     getText: (well) => well.label + "",
@@ -287,9 +283,11 @@ function switchToValidationStatusMap() {
   // Get current map center and zoom
   const center = map.getCenter();
   const zoom = map.getZoom();
-  
+  const visibleWells = getVisibleWells();
+  const visibleWellIDs = visibleWells.map(well => well.id);
+  const idsParam = visibleWellIDs.join(",");
   // Create URL with current view parameters
-  const url = `../map/validation/?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}`;
+  const url = `../map/validation/?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}&ids=${encodeURIComponent(idsParam)}`;
   
   // Open in new tab
   window.location.href = url;

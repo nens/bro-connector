@@ -7,6 +7,21 @@ const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );
 
+const visibleMap = {
+  no_glds: true,
+  type: {
+    no_obs: true,
+    controle: true,
+    regular: true,
+  },
+  status: {
+    no_status: true,
+    validated: true,
+    tentative: true,
+    unknown: true,
+  }
+}; // update visible map wells / glds depending on selected toggles
+
 const colorMap = {};
 
 const hexToRgb = (hex) => {
@@ -15,6 +30,20 @@ const hexToRgb = (hex) => {
   const b = parseInt(hex.slice(5, 7), 16);
   return [r, g, b, 200];
 };
+
+const valueMap = {
+  type: {
+    controle: "controlemeting",
+    regular: "reguliereMeting",
+    none: null
+  },
+  status: {
+    validated: "volledigBeoordeeld",
+    tentative: "voorlopig",
+    unknown: "onbekend",
+    none: null,
+  }  
+}
 
 // Show check or cross
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
@@ -35,7 +64,11 @@ function findObjectsByIds(ids, glds) {
 //   });
 // }
 
-
+// Helper: format date nicely
+function formatString(string) {
+  if (!string) return "—";
+  return string
+}
 // Helper: format date nicely
 function formatDate(dateString) {
   if (!dateString) return "—";
@@ -55,9 +88,29 @@ function getDateColor(dateString) {
   return '#F44336';                           // older
 }
 
+function getFilterStatus(well) {
+  let filterStatus = "Geen GLDs voor deze put"
+  if (well.glds.length === 0) {
+    return filterStatus;
+  }
+  const { type } = visibleMap;
+  filterStatus += " na filteren op:"
+  if (!type.no_obs) {
+    filterStatus += "<br>• Geen meting"
+  }
+  if (!type.controle) {
+    filterStatus += "<br>• Controle meting"
+  }
+  if (!type.regular) {
+    filterStatus += "<br>• Reguliere meting"
+  }
+
+  return filterStatus
+}
+
 // Create popup with well info + GLD entries
-const createPopup = (well) => {  
-  const glds_well = findObjectsByIds(well.glds, glds);
+const createPopup = (well) => { 
+  const glds_well = filterGLDs(findObjectsByIds(well.glds, glds), well); // should be visibleMap something
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;  
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
@@ -66,17 +119,17 @@ const createPopup = (well) => {
   if (glds_well.length > 0) {
     glds_well.forEach((gld, i) => {
       const GLDPageUrl = `/admin/gld/groundwaterleveldossier/${gld.groundwater_level_dossier_id}`;
-      const GLDBROID = gld.gld_bro_id;
+      const GLDBROID = formatString(gld.gld_bro_id);
       const tube_number = gld.tube_number;
-      const measurementType = gld.latest_measurement_date ? "regulier" : "controle";
-      const status = gld.status;
+      const measurementType = formatString(gld.observation_type);
+      const status = formatString(gld.status);
       const latestDate = formatDate(gld.latest_measurement_date);
       const color = getDateColor(gld.latest_measurement_date);
 
       gldsContent += `
         <details style="margin-bottom:6px;">
           <summary style="cursor:pointer;font-weight:bold;">
-            Filter ${tube_number}
+            Filterbuis ${tube_number}
           </summary>
           <div style="width: 100%; height: 6px; margin: 4px 0; border-radius: 3px; background-color: ${color};"></div>
           <div class="well-item">
@@ -88,22 +141,22 @@ const createPopup = (well) => {
             <span class="value">${GLDBROID}</span>
           </div>
           <div class="well-item">
-            <span class="label">Type:</span>
+            <span class="label">Observatie type:</span>
             <span class="value">${measurementType}</span>
           </div>
           <div class="well-item">
-            <span class="label">Status:</span>
+            <span class="label">Validatiestatus:</span>
             <span class="value">${status}</span>
           </div>
           <div class="well-item">
-            <span class="label">Latest measurement:</span>
+            <span class="label">Meest recente meting:</span>
             <span class="value">${latestDate}</span>
           </div>
         </details>
       `;
     });
   } else {
-    gldsContent = `<div class="well-item"><em>No GLD entries found</em></div>`;
+    gldsContent = `<div class="well-item"><em>${getFilterStatus(well)}</em></div>`;
   }
 
   const popupContent = `
@@ -154,10 +207,50 @@ const showWellPopupAndMove = (well) => {
   map.flyTo({ center: lngLat, zoom: 15, essential: true });
 };
 
+
+
 const wellIsShown = (well) => {
+  // if (well.bro_id === "GMW000000004282") {
+  //   console.log(well.glds.length);
+  //   console.log(visibleMap);
+  // }
+  // Filter for no glds:
+  // Hide if doenst have linked_gmns and notLinked is false or if visibileMap doesnt have any of the linked gmns
+  if (well.glds.length === 0 && !visibleMap.no_glds)
+    return;
+
+  if (well.glds.length > 0 && !filterGLDs(getGLDs(well.glds), well).length)
+    return;
+
+  if ((well.glds.length === 0 || !filterGLDs(getGLDs(well.glds), well).length) && !visibleMap.status.no_status)
+    // instead of this, it should do it if length is 0, or if the status is none, and if the toggle is on
+    return;
+
+  // if (!filterGLDs(getGLDs(well.glds), well))
+  // if (well.bro_id === "GMW000000004282") {
+  //   console.log(!filterGLDs(getGLDs(well.glds), well).length);
+  // }
+  // if (well.bro_id === "GMW000000057245") {
+  //   console.log(!filterGLDs(getGLDs(well.glds), well).length);
+  // }
+  // // return;
+
+  // if (well.glds.length && !visibleMap.type.controle)
+  //   // update the visible glds
+  //   // if the visible glds are length 0, then return emtpy
+  //   // if the visible glds are length > 0, then return true but make sure the glds in visible maps are up to date
+  //   // the pie chart should always take the visible glds, not the true glds
+  //   return ;
+
+  // if (well.glds.length && !visibleMap.type.regular)
+  //   return;
+
+  
+
+  // update to use checks and to show if there is no gld as well
   // Hide if doenst have linked_gmns and notLinked is false or if visibileMap doesnt have any of the linked gmns
   return true;
-};
+};    
 
 const WHITE = [255, 255, 255];
 const BLACK = [0, 0, 0];
@@ -199,11 +292,58 @@ const getGLDs = (ids) => {
     .sort((a, b) => a.tube_number - b.tube_number); // lowest first
 };
 
+const filterGLDsByStatus = (glds) => {
+  if (!visibleMap.status.no_status) {
+    glds = glds.filter(gld => gld.status != valueMap.status.none);
+  }
+
+  if (!visibleMap.status.validated) {
+    glds = glds.filter(gld => gld.status !== valueMap.status.validated);
+  }
+
+  if (!visibleMap.status.tentative) {
+    glds = glds.filter(gld => gld.status !== valueMap.status.tentative);
+  }
+
+  if (!visibleMap.status.unknown) {
+    glds = glds.filter(gld => gld.status !== valueMap.status.unknown);
+  }
+
+  return glds
+}
+
+const filterGLDs = (glds, well) => {
+
+  if (well.bro_id === "GMW000000051044") {
+      console.log("visibleMap: ", visibleMap);
+      console.log(well.status);
+    }
+
+  if (!visibleMap.type.no_obs) {
+    glds = glds.filter(gld => gld.observation_type != valueMap.type.none);
+  }
+
+  if (!visibleMap.type.controle) {
+    glds = glds.filter(gld => gld.observation_type !== valueMap.type.controle);
+  }  
+  
+  if (!visibleMap.type.regular) {
+    glds = glds.filter(gld => gld.observation_type !== valueMap.type.regular);
+  }  
+
+  if (glds.length > 0) {
+    return filterGLDsByStatus(glds)
+  }
+  // make sure that is it hierarchical
+
+  return glds
+};
+
 function getColorFromGLD(gld) {
   return getDateColor(gld.latest_measurement_date)
 }
 
-function renderPieToCanvas(data, size = 64) {
+function renderPieToCanvas(data, empty = false, size = 64) {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext("2d");
@@ -215,6 +355,28 @@ function renderPieToCanvas(data, size = 64) {
   let startAngle = -0.5 * Math.PI;
   // console.log(data)
   // console.log(startAngle)
+
+  if (empty) {
+    // Fill with transparent grey
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius - 1, 0, 2 * Math.PI);
+    ctx.fillStyle = "rgba(158, 158, 158, 0.05)"; // grey with ~20% opacity
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius - 1, 0, 2 * Math.PI); // subtract 1 so stroke fits inside
+    ctx.strokeStyle = '#9E9E9E';
+    ctx.lineWidth = 5;  
+    ctx.stroke();
+
+    // Small dot in the center
+    ctx.beginPath();
+    ctx.arc(cx, cy, size * 0.05, 0, 2 * Math.PI); // dot radius = 5% of size
+    ctx.fillStyle = '#9E9E9E';
+    ctx.fill();
+
+    return canvas.toDataURL();
+  }
 
   for (const slice of data) {
     const angle = (1 / total) * 2 * Math.PI;
@@ -238,28 +400,36 @@ function renderPieToCanvas(data, size = 64) {
   return canvas.toDataURL();
 }
 
+function buildPieData() {
+  return wells.map((well) => { 
+    const gldsData = getGLDs(well.glds); 
+    const gldsDataFiltered = filterGLDs(gldsData, well);
 
-// 2. Function to build pie icon data for all wells
-const pieData = wells.map((well) => { 
-  const gldsData = getGLDs(well.glds); 
-  const pieChart = gldsData.map(gld => ({ 
-    color: getColorFromGLD(gld) 
-  })); 
-  const iconUrl = renderPieToCanvas(pieChart); 
-  return { 
-    position: [well.y, well.x], 
-    well,   // <-- store this for dynamic resizing
-    iconUrl, 
-  }; 
-});
+    if (well.bro_id === "GMW000000051044") {
+      console.log("GLDs before filter:", gldsData.length);
+      console.log("GLDs after filter:", gldsDataFiltered.length);
+    }
+
+    const pieChart = gldsDataFiltered.map(gld => ({
+      color: getColorFromGLD(gld) 
+    })); 
+
+    const iconUrl = renderPieToCanvas(pieChart, well.glds.length < 1); 
+
+    return {  
+      well,
+      iconUrl, 
+    }; 
+  });
+}
 
 // 3. Function to generate IconLayer with dynamic size
 const pieIconLayer = new deck.MapboxLayer({
   id: "pie-layer",
   type: deck.IconLayer,
-  data: pieData,
+  data: buildPieData(),
   pickable: true,
-  getPosition: d => d.position,
+  getPosition: d => [d.well.y, d.well.x],
   getIcon: d => ({
     url: d.iconUrl,
     width: 64,
@@ -267,8 +437,7 @@ const pieIconLayer = new deck.MapboxLayer({
     anchorY: 32,
   }),
   sizeUnits: "pixels",
-  getSize: d => wellIsShown() ? 25 : 0, // diameter
-    //   On click add a popup as an Mapbox marker at the circle's location
+  getSize: d => wellIsShown(d.well) ? 25 : 0, // diameter
   onClick: (event) => {
     const well = event.object.well;
     showWellPopupAndMove(well);
@@ -276,27 +445,29 @@ const pieIconLayer = new deck.MapboxLayer({
 });
 
 function createTextLayer(visible) {
-  const visibleWells = wells;
-
   return new deck.MapboxLayer({
     id: "text-layer",
-    data: visibleWells,
+    data: wells,
     type: deck.TextLayer,
     getPosition: (well) => [well.y, well.x],
     getText: (well) => well.label + "",
     getAlignmentBaseline: "bottom",
     getColor: BLACK,
-    getSize: 100,
+    getSize: (well) => (wellIsShown(well) ? 100 : 0),
     sizeUnits: "meters",
     sizeMaxPixels: 15,
     getPixelOffset: [50, -30],
     getTextAnchor: "middle",
     getAngle: 30,
     visible: visible,
+    updateTriggers: {
+      getSize: Date.now(), // forces Deck.gl to reevaluate sizes
+    },
   });
 }
 
 function updateTextLayer() {
+
   if (map.getLayer("text-layer")) {
     map.removeLayer("text-layer"); // remove old layer
   }
@@ -449,26 +620,145 @@ map.on("mousemove", (e) => {
 const handleWellValue = (id, element) => {
   const checkbox = element.querySelector('input[type="checkbox"]');
   
-  updateGetRadius();
+  updateGetSize();
   updateTextLayer();
 };
 
 const deselectAllCheckboxes = () => {
-  updateGetRadius();
+  if (!visibleMap || !visibleMap.type) {
+    console.warn("❌ visibleMap.type not defined");
+    return;
+  }
+
+  const type = visibleMap.type;
+  console.log("🔍 Current visibleMap.type state:", type);
+
+  // Check if any GMN is false
+  const anyFalse = Object.values(type).some(value => value === false);
+  console.log(`❓ Any type false? ${anyFalse}`);
+
+  // Decide the new state: if any false => set all true; else set all false
+  const newState = anyFalse ? true : false;
+  console.log(`➡️ Setting all types to: ${newState}`);
+
+  // Update visibleMap.gmns
+  Object.keys(type).forEach(key => {
+    type[key] = newState;
+  });
+  console.log(visibleMap)
+
+  // Sync checkboxes with visibleMap.gmns state
+  Object.keys(type).forEach(key => {
+    let searchKey = key;
+    const escapedKey = CSS.escape(searchKey);
+    const checkbox = document.querySelector(`#checkbox-${escapedKey}`);
+    if (checkbox) {
+      checkbox.checked = newState;
+      console.log(`✔️ Checkbox for '${searchKey}' set to ${newState}`);
+    } else {
+      console.warn(`⚠️ Checkbox #checkbox-${searchKey} not found in DOM`);
+    }
+  });
+
+  updateGetData();
+  updateGetSize();
   updateTextLayer();
 };
 
-// Handle if someone toggles an gmn
+const deselectAllStatusCheckboxes = () => {
+  if (!visibleMap || !visibleMap.status) {
+    console.warn("❌ visibleMap.status not defined");
+    return;
+  }
+
+  const status = visibleMap.status;
+  // console.log("🔍 Current visibleMap.type state:", status);
+
+  // Check if any status is false
+  const anyFalse = Object.values(status).some(value => value === false);
+  // console.log(`❓ Any type false? ${anyFalse}`);
+
+  // Decide the new state: if any false => set all true; else set all false
+  const newState = anyFalse ? true : false;
+  // console.log(`➡️ Setting all status to: ${newState}`);
+
+  // Update visibleMap.status
+  Object.keys(status).forEach(key => {
+    status[key] = newState;
+  });
+
+  // Sync checkboxes with visibleMap.status state
+  Object.keys(status).forEach(key => {
+    let searchKey = key;
+    const escapedKey = CSS.escape(searchKey);
+    const checkbox = document.querySelector(`#checkbox-${escapedKey}`);
+    if (checkbox) {
+      checkbox.checked = newState;
+      console.log(`✔️ Checkbox for '${searchKey}' set to ${newState}`);
+    } else {
+      console.warn(`⚠️ Checkbox #checkbox-${searchKey} not found in DOM`);
+    }
+  });
+
+  updateGetData();
+  updateGetSize();
+  updateTextLayer();
+};
+
+
+
+// Handle if someone toggles an type measurement
 const handleTypeClick = (id, element) => {
-  updateGetRadius();
+  // console.log(id)
+  const checkbox = element.querySelector('input[type="checkbox"]');
+  const { type } = visibleMap;
+
+  if (id === "no_glds") {
+    visibleMap[id] = !visibleMap[id]
+    checkbox.checked = visibleMap[id];
+    updateGetSize();
+    updateTextLayer();
+    return;
+  }
+
+  type[id] = !type[id];
+  checkbox.checked = type[id];
+
+  updateGetData();
+  updateGetSize();
   updateTextLayer();
 };
 
-const updateGetRadius = () => {
+// Handle if someone toggles an status measurement
+const handleStatusClick = (id, element) => {
+  // console.log(id)
+  const checkbox = element.querySelector('input[type="checkbox"]');
+  const { status } = visibleMap;
+  
+  status[id] = !status[id];
+  checkbox.checked = status[id];
+
+  updateGetData();
+  updateGetSize();
+  updateTextLayer();
+};
+
+const updateGetData = () => {
+  // console.log("updating data")
+  pieIconLayer.setProps({
+    data: buildPieData(),
+    updateTriggers: {
+      data: Date.now(),
+    },
+  });
+}
+
+
+const updateGetSize = () => {
   //   Updating the update triggers to Date.now() makes sure the getRadius gets recaluclated
   pieIconLayer.setProps({
     updateTriggers: {
-      getRadius: Date.now(),
+      getSize: Date.now(),
     },
   });
 };

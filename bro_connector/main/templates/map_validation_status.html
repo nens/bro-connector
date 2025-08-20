@@ -40,7 +40,7 @@
     </button>
   </div>
 
-  <!-- This code handles the gmn hamburger menu -->
+  <!-- This code handles the meting hamburger menu -->
   <div id="legend-top">
     <div
       id="hamburger-button"
@@ -52,65 +52,166 @@
         <div class="hamburger-line"></div>
       </div>
     </div>
-    <div id="type-wrapper">
-      <h4>Type Meting:</h4>
-      <div class="mapbox-checkbox-wrapper" onclick="event.preventDefault();">
-        <label class="mapbox-button-deselect" for="checkbox-button-all">
-          <button
-            type="button"
-            onclick="event.stopPropagation(); deselectAllCheckboxes()"
-          >
-            (De)selecteer alles
-          </button>
-        </label>
-      </div>
-      <div
+
+    <div id="meting-wrapper">
+      <!-- GLD -->
+      <div id="gld-wrapper">
+        <div
         class="mapbox-checkbox-wrapper"
-        onclick="event.preventDefault(); handleTypeClick('no_obs', this)"
-      >
-        <label class="mapbox-checkbox-label" for="checkbox-no_obs">
-          <input
-            type="checkbox"
-            class="mapbox-checkbox"
-            id="checkbox-no_obs"
-            name="checkbox-no_obs"
-            checked
-            onclick="handleCheckboxClick(this)"
-          />
-          Geen meting
-        </label>
+          onclick="event.preventDefault(); handleTypeClick('no_glds', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-no_glds">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-no_glds"
+              name="checkbox-no_glds"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Putten zonder GLD
+          </label>
+        </div>
+      <!-- TYPE METING -->
+      <div id="type-wrapper">
+        <h4>Type Meting:</h4>
+        <div class="mapbox-checkbox-wrapper" onclick="event.preventDefault();">
+          <label class="mapbox-button-deselect" for="checkbox-button-all">
+            <button
+              type="button"
+              onclick="event.stopPropagation(); deselectAllCheckboxes()"
+            >
+              (De)selecteer alles
+            </button>
+          </label>
+        </div>        
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('no_obs', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-no_obs">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-no_obs"
+              name="checkbox-no_obs"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Geen meting
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('controle', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-controle">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-controle"
+              name="checkbox-controle"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Controle meting
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('regular', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-regular">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-regular"
+              name="checkbox-regular"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Reguliere meting
+          </label>
+        </div>
       </div>
-      <div
-        class="mapbox-checkbox-wrapper"
-        onclick="event.preventDefault(); handleTypeClick('controle', this)"
-      >
-        <label class="mapbox-checkbox-label" for="checkbox-controle">
-          <input
-            type="checkbox"
-            class="mapbox-checkbox"
-            id="checkbox-controle"
-            name="checkbox-controle"
-            checked
-            onclick="handleCheckboxClick(this)"
-          />
-          Controle meting
-        </label>
-      </div>
-      <div
-        class="mapbox-checkbox-wrapper"
-        onclick="event.preventDefault(); handleTypeClick('regular', this)"
-      >
-        <label class="mapbox-checkbox-label" for="checkbox-regular">
-          <input
-            type="checkbox"
-            class="mapbox-checkbox"
-            id="checkbox-regular"
-            name="checkbox-regular"
-            checked
-            onclick="handleCheckboxClick(this)"
-          />
-          Reguliere meting
-        </label>
+
+      <!-- STATUS METING -->
+      <div id="status-wrapper">
+        <h4>Status Meting:</h4>
+        <div class="mapbox-checkbox-wrapper" onclick="event.preventDefault();">
+          <label class="mapbox-button-deselect" for="checkbox-button-all">
+            <button
+              type="button"
+              onclick="event.stopPropagation(); deselectAllStatusCheckboxes()"
+            >
+              (De)selecteer alles
+            </button>
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('no_status', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-no_status">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-no_status"
+              name="checkbox-no_status"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Geen status
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('validated', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-validated">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-validated"
+              name="checkbox-validated"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Volledig Beoordeeld
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('tentative', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-tentative">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-tentative"
+              name="checkbox-tentative"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Voorlopig
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('unknown', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-unknown">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-unknown"
+              name="checkbox-unknown"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Onbekend
+          </label>
+        </div>
       </div>
     </div>
   </div>
