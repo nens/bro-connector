@@ -116,69 +116,72 @@ class XMLImportAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         try:
             originele_constructie_import = tools_models.XMLImport.objects.get(id=obj.id)
-            file = originele_constructie_import.file
+            old_file = originele_constructie_import.file
         except tools_models.XMLImport.DoesNotExist:
-            originele_constructie_import = None
-            file = None
+            old_file = None
 
-        if obj.file != file and file is not None:
-            # If a new csv is set into the ConstructieImport row.
+        # call super so file is saved
+        super().save_model(request, obj, form, change)
+
+        # If file changed (or new object)
+        if obj.file and obj.file != old_file:
+            # Reset flags
             obj.imported = False
             obj.checked = False
-            obj.report = (
-                obj.report + f"\nswitched the csv file from {file} to {obj.file}."
-            )
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+            if old_file:
+                obj.report = (obj.report or "") + f"\nSwitched the file from {old_file} to {obj.file}."
+            else:
+                obj.report = (obj.report or "") + f"\nUploaded new file {obj.file}."
 
-        else:
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+            self._process_import(obj)
 
-    def update_database(self, request, QuerySet):
-        for object in QuerySet:
-            app_dir = os.path.abspath(os.path.curdir)
+    def _process_import(self, obj):
+        """Handle XML/ZIP files"""
+        app_dir = os.path.abspath(os.path.curdir)
 
-            if str(object.file).endswith("xml"):
-                print("Handling XML file")
-                (completed, message) = xml_import.import_xml(object.file, app_dir)
-                object.checked = True
-                object.imported = completed
-                object.report += message
-                object.save()
+        file_full_path  = obj.file.path
+        file_name  = os.path.basename(file_full_path)
+        file_dir  = os.path.dirname(file_full_path)
 
-            elif str(object.file).endswith("zip"):
-                print("Handling ZIP file")
-                # First unpack the zip
-                with ZipFile(object.file, "r") as zip:
-                    zip.printdir()
-                    zip.extractall(path=app_dir)
+        print(file_full_path)
+        print(file_name)
+        print(file_dir)
 
-                # Remove constructies/ and .zip from the filename
-                file_name = str(object.file)[13:-4]
-                print(file_name)
+        if file_full_path.endswith(".xml"):
+            completed, message = xml_import.import_xml(file_name, file_dir)
+            obj.checked = True
+            obj.imported = completed
+            obj.report = (obj.report or "") + message
+            obj.save()
 
-                for file in os.listdir(app_dir):
-                    if file.endswith("csv"):
-                        print(
-                            f"Bulk import of filetype of {file} not yet supported not yet supported."
-                        )
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
-                        pass
+        elif file_full_path.endswith(".zip"):
+            with ZipFile(file_full_path, "r") as zipf:
+                zipf.extractall(path=app_dir)
 
-                    elif file.endswith("xml"):
-                        (completed, message) = xml_import.import_xml(file, app_dir)
-                        object.checked = True
-                        object.imported = completed
-                        object.report += message
-                        object.save()
+            # Process extracted files
+            for extracted_file in os.listdir(app_dir):
+                extracted_path = os.path.join(app_dir, extracted_file)
 
-                    else:
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
+                if extracted_file.endswith(".csv"):
+                    obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
+                    obj.save()
+
+                elif extracted_file.endswith(".xml"):
+                    extracted_dir = os.path.dirname(extracted_path)
+                    extracted_name = os.path.basename(extracted_path)
+                    completed, message = xml_import.import_xml(extracted_name, extracted_dir)
+                    obj.checked = True
+                    obj.imported = completed
+                    obj.report = (obj.report or "") + message
+                    obj.save()
+
+                else:
+                    obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
+                    obj.save()
+
+    def update_database(self, request, queryset):
+        for obj in queryset:
+            self._process_import(obj)
 
 
 class GLDImportAdmin(admin.ModelAdmin):

@@ -13,14 +13,14 @@ os.environ["PROJ_LIB"] = r"C:\OSGeo4W\share\proj"
 def import_xml(file: str, path: str) -> tuple:
     gmw = GMWHandler()
     progressor = Progress()
-    file_path = f"{path}/{file}"
+    file_path = os.path.join(path, file)
     gmw.get_data(file_path)
     gmw.root_data_to_dictionary()
     gmw_dict = gmw.dict
 
     if "GMW_Construction" not in gmw_dict:
         completed = False
-        message = f"{file} is not a GMW xml file."
+        message = f"\n{file} is not a GMW xml file."
         return (completed, message)
 
     try:
