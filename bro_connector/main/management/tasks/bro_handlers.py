@@ -112,7 +112,7 @@ class GLDHandler(BROHandler):
     def __init__(self):
         self.number_of_points = 0
         self.number_of_observations = 0
-        self.count_dictionary = {}
+        self.number_of_measurements = {}
         self.dict = {}
 
         # Initializing list to use in the dictionary making process.
@@ -135,11 +135,10 @@ class GLDHandler(BROHandler):
         else:
             f = "NEE"
 
-        gmw_verzoek = requests.get(
+        gld_verzoek = requests.get(
             f"{basis_url}{id}?requestReference=BRO-Import-script-{now}&observationPeriodBeginDate=1900-01-01&observationPeriodEndDate={now}&filtered={f}"
         )
-        print(gmw_verzoek)
-        self.root = ET.fromstring(gmw_verzoek.content)
+        self.root = ET.fromstring(gld_verzoek.content)
 
     def append_censoring(self) -> None:
         self.censoring_limit_value.append("None")
@@ -155,6 +154,7 @@ class GLDHandler(BROHandler):
 
     def root_data_to_dictionary(self):
         prefix = f"{self.number_of_observations}_"
+        count_dictionary_cumulative = {}
 
         for element in self.root.iter():
             tag = element.tag
@@ -163,14 +163,15 @@ class GLDHandler(BROHandler):
             if split[1] == "observation":
                 if self.number_of_observations != 0:
                     if self.number_of_observations == 1:
-                        self.count_dictionary[self.number_of_observations] = (
+                        count_dictionary_cumulative[self.number_of_observations] = self.number_of_points
+                        self.number_of_measurements[self.number_of_observations] = (
                             self.number_of_points
                         )
-
                     else:
-                        self.count_dictionary[self.number_of_observations] = (
+                        count_dictionary_cumulative[self.number_of_observations] = self.number_of_points
+                        self.number_of_measurements[self.number_of_observations] = (
                             self.number_of_points
-                            - self.count_dictionary[self.number_of_observations - 1]
+                            - count_dictionary_cumulative[self.number_of_observations - 1]
                         )
 
                 self.number_of_observations = self.number_of_observations + 1
@@ -272,10 +273,18 @@ class GLDHandler(BROHandler):
 
             self.dict.update({tag: values_value})
 
+        if self.number_of_observations > 1:
+            self.number_of_measurements[self.number_of_observations] = (
+                self.number_of_points
+                - sum(self.number_of_measurements.values())
+            )
+        else:
+            self.number_of_measurements[1] = self.number_of_points
+
     def reset_values(self):
         self.number_of_points = 0
         self.number_of_observations = 0
-        self.count_dictionary = {}
+        self.number_of_measurements = {}
         self.point_value = []
         self.time = []
         self.qualifier = []

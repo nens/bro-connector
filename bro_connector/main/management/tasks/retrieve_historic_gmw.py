@@ -182,10 +182,7 @@ class InitializeData:
             construction_date = None
 
         with reversion.create_revision():
-            (
-                self.gmws,
-                created,
-            ) = GroundwaterMonitoringWellStatic.objects.update_or_create(
+            self.gmws, created = GroundwaterMonitoringWellStatic.objects.update_or_create(
                 bro_id=self.gmw_dict.get("broId", None),
                 defaults={
                     "construction_standard": self.gmw_dict.get(
