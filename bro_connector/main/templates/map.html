@@ -30,7 +30,7 @@
         id="validation-map-btn"
         type="button"
         onclick="event.stopPropagation(); switchToValidationStatusMap()">
-        Validatiemodus
+        Leverstatus modus
     </button>
     <button
         id="toggle-text-layer"
@@ -176,7 +176,7 @@
 <div class="json">{{ glds|json_script:"glds_json" }}</div>
 <div class="json">{{ gmns|json_script:"gmns_json" }}</div>
 <div class="json">{{ organisations|json_script:"organisations_json" }}</div>
-<div class="json">{{ map_center|json_script:"map_center_json" }}</div>
+<div class="json">{{ state|json_script:"state_json" }}</div>
 
 <!-- Link to css -->
 <link href="{% static 'gmw/gmw_map.css' %}" rel="stylesheet" />

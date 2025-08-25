@@ -1,28 +1,15 @@
 // Get information
-console.log("loading wells");
 const wells = JSON.parse(document.getElementById("wells_json").textContent);
-console.log("loading gmns");
 const gmns = JSON.parse(document.getElementById("gmns_json").textContent);
-console.log("loading organisations");
-const organisations = JSON.parse(
-  document.getElementById("organisations_json").textContent
-);
-console.log("loading glds");
-const glds = JSON.parse(
-  document.getElementById("glds_json").textContent
-);
-const mapCenter = JSON.parse(document.getElementById("map_center_json").textContent);
+const organisations = JSON.parse(document.getElementById("organisations_json").textContent);
+const glds = JSON.parse(document.getElementById("glds_json").textContent);
+const state = JSON.parse(document.getElementById("state_json").textContent);
 
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );
-console.log("loading done");
-
-// Visible mapping
 const visibleMap = {
-  gmns: {
-    noLinked: true,
-  },
+  gmns: { noLinked: true },
   organisations: {},
   wellValue: {},
 };
@@ -278,18 +265,6 @@ function updateTextLayer() {
   map.addLayer(textLayer); // add to your deck/map instance
 };
 
-function sendVisibleWellIds(wells) {
-  const ids = wells.map(well => well.groundwater_monitoring_well_static_id);
-  console.log("IDs length: ",ids.length)
-
-  fetch("/map/ids/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ids })
-  })
-  .then(resp => resp.json())
-  .then(data => console.log("Stored wells:", data));
-}
 // Function to open validation map with current view
 async function switchToValidationStatusMap() {
   // Get current map center and zoom
@@ -304,11 +279,12 @@ async function switchToValidationStatusMap() {
     lon: center.lng,
     lat: center.lat,
     zoom: zoom,
+    checkboxes: visibleMap,
   };
 
   try {
     // 1. Post visible IDs to Django and wait until it's done
-    const resp = await fetch("/map/ids/", {
+    const resp = await fetch("/map/state/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -342,10 +318,9 @@ async function switchToValidationStatusMap() {
 
 // Function to get URL parameters and set initial view
 function setInitialViewFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const lng = params.get('lng');
-  const lat = params.get('lat');
-  const zoom = params.get('zoom');
+  const lng = state.lon;
+  const lat = state.lat;
+  const zoom = state.zoom;
   
   if (lng && lat && zoom) {
     return {
@@ -356,7 +331,7 @@ function setInitialViewFromURL() {
   
   // Return default view if no parameters
   return {
-    center: mapCenter, // Default Netherlands center
+    center: [3.945697, 51.522601], // Default Netherlands center
     zoom: 9
   };
 }
@@ -395,12 +370,67 @@ const map = new mapboxgl.Map({
   pitch: 0,
 });
 
+console.log("test", visibleMap)
+
 // Add map control and circle layer
 map.addControl(new mapboxgl.NavigationControl(), "bottom-left");
 map.on("load", () => {
+  // Reset the center and zoom and update the state
   map.addLayer(myScatterplotLayer);
+  setCheckboxesToState();
+  updateGetRadius();
+  updateTextLayer();
 });
 
+function setCheckboxesToState() {
+  const stateCheckboxes = state.checkboxes;
+  if (!stateCheckboxes || typeof stateCheckboxes !== "object") return;
+  Object.keys(stateCheckboxes).forEach(category => {
+    const group = stateCheckboxes[category];
+    if (typeof group !== "object") return;
+
+    Object.keys(group).forEach(id => {
+      let checkboxName =
+        id === "noLinked"
+          ? "checkbox-no-linked"
+          : id === "has_open_comments"
+          ? "checkbox-open_comments"
+          : `checkbox-${id}`;
+      const checkbox = document.querySelector(`input[name=${CSS.escape(checkboxName)}]`);
+      if (!checkbox) {
+        console.warn(`Checkbox with name ${id} not found`);
+        return;
+      }
+
+      // Apply logic for wellValue checkboxes
+      if (category === "wellValue") {
+        const { wellValue } = visibleMap;
+        console.log(group)
+        if (group[id] === false) {
+          wellValue[id] = group[id];
+          checkbox.checked = false;
+          checkbox.indeterminate = false;
+        } else if (group[id] === true) {
+          wellValue[id] = group[id];  
+          checkbox.checked = true;
+          checkbox.indeterminate = false;
+        } else {
+          wellValue[id] = group[id];
+          checkbox.checked = false;
+          checkbox.indeterminate = true;
+        }
+      } else if (category === "organisations") {
+        const { organisations } = visibleMap;
+        organisations[id] = !!group[id]
+        checkbox.checked = organisations[id];
+      } else if (category === "gmns") {
+        const { gmns } = visibleMap;
+        gmns[id] = !!group[id]
+        checkbox.checked = gmns[id];
+      } 
+    });
+  });
+};
 
 map.on("zoom", () => {
   const zoom = map.getZoom();

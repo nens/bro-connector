@@ -1,11 +1,10 @@
 # Create your views here.
 from django.views.decorators.cache import cache_page
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 
-from django.http import HttpResponse
 from django.db.models import OuterRef, Subquery, Prefetch
 from django.shortcuts import render
 from gmw.models import (
@@ -17,40 +16,43 @@ import gmn.models as gmn_models
 import gld.models as gld_models
 import gmw.models as gmw_models
 from . import serializers
+from gmw.utils import compute_map_view
 import bro.serializers as bro_serializers
 from django.conf import settings
 import time
 
 @csrf_exempt
-def gmw_visible_wells(request):
-    print("doing the funky visible well request")
+def gmw_map_state(request):
     if request.method == "POST":
         try:
-            content = json.loads(request.body)
+            state = json.loads(request.body)  
             cache_key = get_cache_key(request)
-            cache.set(cache_key, content, timeout=3600)
+            cache.set(cache_key, state, timeout=settings.CACHE_TIMEOUT)
 
             ids = []
-            if content:
-                ids = content.get("ids", [])
+            if state:
+                ids = state.get("ids", [])
             return JsonResponse({"status": "ok", "count": len(ids)})
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
 
-def get_map_center(settings):
+def get_map_settings(settings):
     wells = GroundwaterMonitoringWellStatic.objects.all()
 
-    if settings.USE_WELLS_AS_MAP_CENTER and len(wells) > 0:
-        latitudes, longitudes = [w.lat for w in wells], [w.lon for w in wells]
-        center_coordinate = {"lat": sum(latitudes) / len(latitudes), "lon": sum(longitudes) / len(longitudes)}
-
+    if settings.USE_WELLS_AS_MAP_CENTER and wells:
+        map_settings = compute_map_view(wells)
+        print(map_settings)
     else:
-        center_coordinate = {"lat": settings.MAP_CENTER[1], "lon": settings.MAP_CENTER[0]}
+        map_settings = {
+            "lon": settings.MAP_CENTER[0],
+            "lat": settings.MAP_CENTER[1], 
+            "zoom": settings.ZOOM,
+        }
 
-    return center_coordinate
+    return map_settings
 
-def get_cache_key(request):
+def get_cache_key(request: HttpRequest):
     if not request.session.session_key:
         request.session.save()
 
@@ -63,8 +65,6 @@ def get_cache_key(request):
     cache_key = f"map:{session_id}:{cache_base}"
     print("Created cache key: ",cache_key)
     return cache_key
-
-from django.db.models import Max, Q
 
 def get_glds_with_latest_data_fast():
     start = time.time()
@@ -154,228 +154,134 @@ def get_glds_with_latest_data_fast():
 def gmw_map_context(request):
     # cache.clear()
     cache_key = get_cache_key(request)
-    cached_context = cache.get(cache_key)
-    if cached_context:
-        print("already cached")
-        response = render(request, "map.html", cached_context)
-        return response
-    
-    map_center = get_map_center(settings)
-
-    gld_qs = get_glds_with_latest_data_fast()
-    print("wells: ")
-    start = time.time()
-    glds = serializers.GLDSerializer(gld_qs, many=True).data
-    end = time.time()
-    print(f"finished in {end-start}s")
-    # print(gld.latest_measurement)
-    # print(gld.latest_observation)
-    # print(gld.latest_observation.latest_measurement)
-
-    # Pre-fetch related data to reduce database hits
-    print("Prefetching GMWs")
-    gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
-        Prefetch(
-            "tube__measuring_point",  # Adjust the related field names
-            queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
-        ),
-        Prefetch(
-            "picture",
-            queryset=gmw_models.Picture.objects.only(
-                "is_main", "picture", "recording_datetime", "picture_id"
-            ).order_by("-is_main", "-recording_datetime", "-picture_id")
-        ),
-    )
-
-    # print("Prefetching GLDs")
-    # gld_qs = gld_models.GroundwaterLevelDossier.objects.prefetch_related(
-    #     Prefetch(
-    #         "most_recent_measurement",
-    #     ),
-    # )
-
-    ## Prefetch measurementtvps and their observations
-    # mtvp_qs = gld_models.MeasurementTvp.objects.prefetch_related(
-    #     Prefetch(
-    #         "measurement"
-    #     ),
-    #     queryset=gld_models.Observation.objects.order_by("-observation_starttime")
-    # )
-
-    # mtvp_qs = gld_models.Observation.objects.prefetch_related(
-    #     Prefetch("measurement"),
-    #     queryset=gld_models.Observation. ## measurment is the relation of the observationthat are connected to mtvps
-    # )
-    # obs_dates = [
-    #     mtvp.observation.observation_starttime for mtvp in gld_models.MeasurementTvp.objects.all()
-    # ]
-
-
-    # Per locatie per filter
-
-    # Check GLD voor 
-
-    # Observatie controle last timestamp
-
-    # Observatie regulier last timestamp
-
-
-
-    ## When loading the last mtvp, doesnt matter if you base it on gld or obs, takes 9s
-    ## Insane amount of mtvps is the slowing factor
-    ## Need a quick and efficient way to get the first mtvp for every obs or the ones I specify
-
-    print("wells: ")
-    start = time.time()
-    wells = serializers.GMWSerializer(gmw_qs, many=True).data
-    end = time.time()
-    print(f"finished in {end-start}s")
-    
-    # ## use observation serializer
-    # ## find the most recent measurementtvp
-    # ## 
-    # print("serializing obs")
-    # obs_ids = set()
-    # for well in wells:
-    #     ids = well.get("obs", None)
-    #     if ids:
-    #         for obs in ids:
-    #             obs_ids.add(obs)
-    # obs_qs = gld_models.Observation.objects.filter(observation_id__in=[list(obs_ids)[0]])
-    # print(f"{len(obs_qs)} obs")
-    # start = time.time()
-    # obs = serializers.ObservationSerializer(obs_qs, many=True).data
-    # end = time.time()
-    # print(f"finished in {end-start}s")
-    # stop
-
-    # print("serializing glds")
-    # gld_ids = set()
-    # for well in wells:
-    #     ids = well.get("glds", None)
-    #     if ids:
-    #         for gld in ids:
-    #             gld_ids.add(gld)
-    # gld_qs = GroundwaterLevelDossier.objects.filter(groundwater_level_dossier_id__in=[list(gld_ids)[0]])
-    # print(f"{len(gld_qs)} glds")
-    # start = time.time()
-    # glds = serializers.GLDSerializer(gld_qs, many=True).data
-    # end = time.time()
-    # print(f"finished in {end-start}s")
-
-    # Get unique party IDs and related organisations in one query
-    party_ids = GroundwaterMonitoringWellStatic.objects.values_list(
-        "delivery_accountable_party", flat=True
-    ).distinct()
-    instantie_qs = Organisation.objects.filter(id__in=party_ids)
-    instanties = bro_serializers.OrganisationSerializer(instantie_qs, many=True).data
-
-    # Use a set for unique GMNs
-    gmns = {gmn for well in wells for gmn in well.get("linked_gmns", [])}
+    cache_key_state = cache_key + "state/"    
+    cached_context = cache.get(cache_key, {})
+    cached_state = cache.get(cache_key_state, {})
 
     context = {
-        "wells": wells,
-        "glds": glds,
-        "gmns": list(gmns),  # Convert set to list
-        "organisations": instanties,
-        "map_center": map_center
+        "wells": [],
+        "glds": [],
+        "gmns": [],
+        "organisations": [],
+        "state": {}
     }
-    # context = {}
-
-    response = render(request, "map.html", context)
-
-    cache.set(cache_key, context, timeout=3600)
-
-    return response
-
-def gmw_map_validation_status_context(request):
-    # cache.clear()
-    cache_key = get_cache_key(request)
-    cache_key_content = cache_key + "ids/"    
-    cached_context = cache.get(cache_key, {})
-    cached_content = cache.get(cache_key_content, {})
-
-    content = {
+    state = {
         "ids": [],
         "lon": None,
         "lat": None,
         "zoom": None,
+        "checkboxes": {},
     }
-        
+
+    if cached_state:   
+        state["ids"] = cached_state.get("ids", [])
+        state["lon"] = cached_state.get("lon")
+        state["lat"] = cached_state.get("lat")
+        state["zoom"] = cached_state.get("zoom")
+        state["checkboxes"] = cached_state.get("checkboxes", {})
+
+    else:
+        map_settings = get_map_settings(settings)
+        state["lon"] = map_settings.get("lon")
+        state["lat"] = map_settings.get("lat")
+        state["zoom"] = map_settings.get("zoom")
+
     if cached_context:
-        if cached_content:
-            content["ids"] = cached_content.get("ids", [])
-            content["lon"] = cached_content.get("lon")
-            content["lat"] = cached_content.get("lat")
-            content["zoom"] = cached_content.get("zoom")
-
         context = cached_context
-        context["content"] = content
-        context["wells"] = [
-            well for well in cached_context.get("wells", [])
-            if well.get("groundwater_monitoring_well_static_id") in content["ids"]
-        ]
+        context["state"] = state
+        response = render(request, "map.html", context)
+        return response
+    
+    else:
+        ## SERIALIZING GLDS
+        start = time.time()
+        gld_qs = get_glds_with_latest_data_fast()
+        glds = serializers.GLDSerializer(gld_qs, many=True).data
+        end = time.time()
+        print(f"finished serializing GLDs in {end-start}s")
 
-        response = render(request, "map_validation_status.html", context)
+        ## SERIALIZING GMWS
+        start = time.time()
+        gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
+            Prefetch(
+                "tube__measuring_point",  # Adjust the related field names
+                queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
+            ),
+            Prefetch(
+                "picture",
+                queryset=gmw_models.Picture.objects.only(
+                    "is_main", "picture", "recording_datetime", "picture_id"
+                ).order_by("-is_main", "-recording_datetime", "-picture_id")
+            ),
+        )
+        wells = serializers.GMWSerializer(gmw_qs, many=True).data
+        end = time.time()
+        print(f"finished serializing GMWs in {end-start}s")
+        
+        ## SERIALIZING ORGS AND GMNS
+        start = time.time()
+        party_ids = GroundwaterMonitoringWellStatic.objects.values_list(
+            "delivery_accountable_party", flat=True
+        ).distinct()
+        instantie_qs = Organisation.objects.filter(id__in=party_ids)
+        instanties = bro_serializers.OrganisationSerializer(instantie_qs, many=True).data
+        gmns = list({gmn for well in wells for gmn in well.get("linked_gmns", [])})
+        end = time.time()
+        print(f"finished serializing Organisations and GMNs in {end-start}s")
+
+        context["wells"] = wells
+        context["glds"] = glds
+        context["gmns"] = gmns
+        context["organisations"] = instanties
+        context["state"] = state
+        response = render(request, "map.html", context)
+        cache.set(cache_key, context, timeout=settings.CACHE_TIMEOUT)
 
         return response
 
-    ## Ideally, load the latest_measurement for controle and reguliere metingen
-    ## Make sure that we filter for one of the other, or empty
-    ## For regular, store the status. Make sure that we can filter for volledigBeoordeeld, voorlopig, onbekend (for controle this is not used)
-    ## The popup box should only show what is checked. The dot should ideally update when checking on of these boxes
+def gmw_map_validation_status_context(request):
+    # cache.clear()
+    cache_key = get_cache_key(request)
+    cache_key_state = cache_key + "state/"    
+    cached_context = cache.get(cache_key, {})
+    cached_state = cache.get(cache_key_state, {})
 
-    gld_qs = get_glds_with_latest_data_fast()
-    print("glds: ")
-    start = time.time()
-    glds = serializers.GLDSerializer(gld_qs, many=True).data
-    end = time.time()
-    print(f"finished in {end-start}s")
+    if not cached_context:
+        raise Exception("No cache found of the BRO-Connector map. It might have been deleted manually or due to a timeout. Please reload to main map and then go back to the validation map.")
 
-    # find a way to read the request and only load the wells that are shown in the main map
-
-    print("Prefetching GMWs")
-    gmw_qs = GroundwaterMonitoringWellStatic.objects.prefetch_related(
-        Prefetch(
-            "tube__measuring_point",  # Adjust the related field names
-            queryset=gmn_models.MeasuringPoint.objects.select_related("gmn"),
-        ),
-        Prefetch(
-            "picture",
-            queryset=gmw_models.Picture.objects.only(
-                "is_main", "picture", "recording_datetime", "picture_id"
-            ).order_by("-is_main", "-recording_datetime", "-picture_id")
-        ),
-    )
-    # Serialize GroundwaterMonitoringWellStatic with only required fields
-    wells = serializers.GMWSerializer(gmw_qs, many=True).data
-
-    # print("getting gld ids")
-    # gld_ids = set()
-    # for well in wells:
-    #     ids = well.get("glds", None)
-    #     if ids:
-    #         for gld in ids:
-    #             gld_ids.add(gld)
-
-    # gld_qs = GroundwaterLevelDossier.objects.filter(groundwater_level_dossier_id__in=gld_ids)
-    
-    # print("serializing glds")
-    # glds = serializers.GLDSerializer(gld_qs, many=True).data
-
-    print("finished")
     context = {
-        "wells": wells,
-        "glds": glds,
-        "content": content
+        "wells": [],
+        "glds": [],
+        "gmns": [],
+        "organisations": [],
+        "state": {}
+    }
+    state = {
+        "ids": [],
+        "lon": None,
+        "lat": None,
+        "zoom": None,
+        "checkboxes": {}
     }
 
+    if cached_state:              
+        state["ids"] = cached_state.get("ids", [])
+        state["lon"] = cached_state.get("lon")
+        state["lat"] = cached_state.get("lat")
+        state["zoom"] = cached_state.get("zoom")
+        state["checkboxes"] = cached_state.get("checkboxes", {})
+        
+    else:
+        map_settings = get_map_settings(settings)
+        state["lon"] = map_settings.get("lon")
+        state["lat"] = map_settings.get("lat")
+        state["zoom"] = map_settings.get("zoom")
+
+    context = cached_context
+    context["state"] = state
     response = render(request, "map_validation_status.html", context)
 
-    cache.set(cache_key, context, timeout=3600)
-
     return response
-
 
 def gmw_map_detail_context(request):
     # Pre-fetch related data to reduce database hits

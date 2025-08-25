@@ -1,9 +1,10 @@
 // Get information
-const wells = JSON.parse(document.getElementById("wells_json").textContent);
+const allWells = JSON.parse(document.getElementById("wells_json").textContent);
 const glds = JSON.parse(document.getElementById("glds_json").textContent);
-const content = JSON.parse(document.getElementById("content_json").textContent);
-console.log(content)
-stop
+const state = JSON.parse(document.getElementById("state_json").textContent);
+console.log(state.checkboxes)
+const idSet = new Set(state.ids);
+const wells = allWells.filter(well => idSet.has(well.groundwater_monitoring_well_static_id));
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );
@@ -209,48 +210,14 @@ const showWellPopupAndMove = (well) => {
 };
 
 
-
 const wellIsShown = (well) => {
-  // if (well.bro_id === "GMW000000004282") {
-  //   console.log(well.glds.length);
-  //   console.log(visibleMap);
-  // }
-  // Filter for no glds:
-  // Hide if doenst have linked_gmns and notLinked is false or if visibileMap doesnt have any of the linked gmns
   if (well.glds.length === 0 && !visibleMap.no_glds)
     return;
 
   if (well.glds.length > 0 && !filterGLDs(getGLDs(well.glds), well).length)
     return;
 
-  if ((well.glds.length === 0 || !filterGLDs(getGLDs(well.glds), well).length) && !visibleMap.status.no_status)
-    // instead of this, it should do it if length is 0, or if the status is none, and if the toggle is on
-    return;
-
-  // if (!filterGLDs(getGLDs(well.glds), well))
-  // if (well.bro_id === "GMW000000004282") {
-  //   console.log(!filterGLDs(getGLDs(well.glds), well).length);
-  // }
-  // if (well.bro_id === "GMW000000057245") {
-  //   console.log(!filterGLDs(getGLDs(well.glds), well).length);
-  // }
-  // // return;
-
-  // if (well.glds.length && !visibleMap.type.controle)
-  //   // update the visible glds
-  //   // if the visible glds are length 0, then return emtpy
-  //   // if the visible glds are length > 0, then return true but make sure the glds in visible maps are up to date
-  //   // the pie chart should always take the visible glds, not the true glds
-  //   return ;
-
-  // if (well.glds.length && !visibleMap.type.regular)
-  //   return;
-
-  
-
-  // update to use checks and to show if there is no gld as well
-  // Hide if doenst have linked_gmns and notLinked is false or if visibileMap doesnt have any of the linked gmns
-  return true;
+return true;
 };    
 
 const WHITE = [255, 255, 255];
@@ -479,24 +446,52 @@ function updateTextLayer() {
 };
 
 // Function to open validation map with current view
-function switchToBaseMap() {
+async function switchToBaseMap() {
   // Get current map center and zoom
   const center = map.getCenter();
   const zoom = map.getZoom();
-  
-  // Create URL with current view parameters
-  const url = `../?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}`;
-  
-  // Open in new tab
-  window.location.href = url;
+  const visibleWells = wells
+  const visibleIds = visibleWells.map(w => w.groundwater_monitoring_well_static_id);
+  console.log("IDs length: ",visibleIds.length)
+
+  const payload = {
+    ids: visibleIds,
+    lon: center.lng,
+    lat: center.lat,
+    zoom: zoom,
+    checkboxes: state.checkboxes,
+  };
+
+  try {
+    // 1. Post visible IDs to Django and wait until it's done
+    const resp = await fetch("/map/state/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // "X-CSRFToken": getCookie("csrftoken")  // if CSRF is active
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) {
+      console.error("Failed to store visible wells:", resp.status);
+      return;
+    }
+
+    // 2. Only redirect after success
+    const url = `../`;
+    window.location.href = url;
+
+  } catch (err) {
+    console.error("Error storing visible wells:", err);
+  }
 }
 
 // Function to get URL parameters and set initial view
 function setInitialViewFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const lng = params.get('lng');
-  const lat = params.get('lat');
-  const zoom = params.get('zoom');
+  const lng = state.lon;
+  const lat = state.lat;
+  const zoom = state.zoom;
   
   if (lng && lat && zoom) {
     return {
