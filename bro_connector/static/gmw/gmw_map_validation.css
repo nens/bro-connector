@@ -23,7 +23,7 @@
   max-height: 28vh;
 }
 
-#legend-bottom {
+/* #legend-bottom {
   position: absolute;
   right: 20px;
   bottom: 20px;
@@ -32,7 +32,7 @@
   padding: 1em;
   max-height: 30vh;
   overflow: auto;
-}
+} */
 
 .mapbox-checkbox-wrapper {
   cursor: pointer;
@@ -126,7 +126,20 @@
   border: 1px solid black;
 }
 
-#gmn-wrapper {
+#meting-wrapper {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: white;
+  padding: 1em;
+  max-height: 60vh;   /* taller to fit both sections */
+  overflow: auto;
+  flex-direction: column;
+  width: 200px;
+}
+
+/* #type-wrapper {
   display: none;
   top: 50px;
   position: absolute;
@@ -138,9 +151,16 @@
   flex-direction: column;
   width: 200px;
 }
+*/
 
-.hamburger-open #gmn-wrapper {
+.hamburger-open #meting-wrapper {
   display: flex;
+}
+
+#gld-wrapper,
+#type-wrapper,
+#status-wrapper {
+  margin-bottom: 1em; /* spacing between sections */
 }
 
 .hamburger-open .hamburger-line {
@@ -168,6 +188,9 @@
   border-radius: 10px;
   border: 1px solid black;
   border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;  /* avoid text cutoff with scrollbar */
 }
 
 .well-item {

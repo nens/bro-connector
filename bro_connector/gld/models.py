@@ -588,6 +588,9 @@ class MeasurementTvp(BaseModel):
         db_table = 'gld"."measurement_tvp'
         verbose_name = "Metingen Tijd-Waarde Paren"
         verbose_name_plural = "Metingen Tijd-Waarde Paren"
+        indexes = [
+            models.Index(fields=["observation", "-measurement_time"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.observation} {self.measurement_time} {self.calculated_value}"

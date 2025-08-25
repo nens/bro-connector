@@ -1,23 +1,15 @@
 // Get information
 const wells = JSON.parse(document.getElementById("wells_json").textContent);
 const gmns = JSON.parse(document.getElementById("gmns_json").textContent);
-const organisations = JSON.parse(
-  document.getElementById("organisations_json").textContent
-);
-const glds = JSON.parse(
-  document.getElementById("groundwater_level_dossiers_json").textContent
-);
-const mapCenter = JSON.parse(document.getElementById("map_center_json").textContent);
+const organisations = JSON.parse(document.getElementById("organisations_json").textContent);
+const glds = JSON.parse(document.getElementById("glds_json").textContent);
+const state = JSON.parse(document.getElementById("state_json").textContent);
 
 const wellMap = Object.fromEntries(
   wells.map((well) => [well.groundwater_monitoring_well_static_id + "", well])
 );
-
-// Visible mapping
 const visibleMap = {
-  gmns: {
-    noLinked: true,
-  },
+  gmns: { noLinked: true },
   organisations: {},
   wellValue: {},
 };
@@ -53,8 +45,16 @@ Object.keys(organisations).forEach((orgKey) => {
 // Show check or cross
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
+function findObjectsByIds(ids, glds) {
+  return ids.map(id => 
+    glds.find(gld => gld.groundwater_level_dossier_id === id)
+  ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
+}
+
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
+  console.log(well.glds)
+  console.log(findObjectsByIds(well.glds, glds))
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
@@ -204,12 +204,12 @@ function filterByCheckbox(wellValue, checkboxId) {
   }
 }
 
-function createTextLayer(visible) {
+function getVisibleWells() {
   const visibleWells = wells.filter(well => {
-    // Filter based on wellValue checkboxes:
-    if (!filterByCheckbox(well.complete_bro, 'complete_bro')) return false;
-    if (!filterByCheckbox(well.has_open_comments, 'open_comments')) return false;
-    if (!filterByCheckbox(well.deliver_gmw_to_bro, 'deliver_gmw_to_bro')) return false;
+    // Filter based on wellValue checkboxes
+    if (!filterByCheckbox(well.has_open_comments, "open_comments")) return false;
+    if (!filterByCheckbox(well.complete_bro, "complete_bro")) return false;
+    if (!filterByCheckbox(well.deliver_gmw_to_bro, "deliver_gmw_to_bro")) return false;
 
     // Filter based on linked_gmns & noLinked checkbox
     if (!well.linked_gmns || well.linked_gmns.length === 0) {
@@ -232,9 +232,14 @@ function createTextLayer(visible) {
     return true;
   });
 
+  // Return just the IDs (used for URL params)
+  return visibleWells;
+}
+
+function createTextLayer(visible) {
   return new deck.MapboxLayer({
     id: "text-layer",
-    data: visibleWells,
+    data: getVisibleWells(),
     type: deck.TextLayer,
     getPosition: (well) => [well.y, well.x],
     getText: (well) => well.label + "",
@@ -260,7 +265,79 @@ function updateTextLayer() {
   map.addLayer(textLayer); // add to your deck/map instance
 };
 
+// Function to open validation map with current view
+async function switchToValidationStatusMap() {
+  // Get current map center and zoom
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  const visibleWells = getVisibleWells();
+  const visibleIds = visibleWells.map(w => w.groundwater_monitoring_well_static_id);
+  console.log("IDs length: ",visibleIds.length)
+
+  const payload = {
+    ids: visibleIds,
+    lon: center.lng,
+    lat: center.lat,
+    zoom: zoom,
+    checkboxes: visibleMap,
+  };
+
+  try {
+    // 1. Post visible IDs to Django and wait until it's done
+    const resp = await fetch("/map/state/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // "X-CSRFToken": getCookie("csrftoken")  // if CSRF is active
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) {
+      console.error("Failed to store visible wells:", resp.status);
+      return;
+    }
+
+    // 2. Only redirect after success
+    const url = `../map/validation/`;
+    window.location.href = url;
+
+  } catch (err) {
+    console.error("Error storing visible wells:", err);
+  }
+}
+
+//   sendVisibleWellIds(visibleWells)
+
+//   // Create URL with current view parameters
+//   const url = `../map/validation/?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}`;
+  
+//   // Open in new tab
+//   window.location.href = url;
+// }
+
+// Function to get URL parameters and set initial view
+function setInitialViewFromURL() {
+  const lng = state.lon;
+  const lat = state.lat;
+  const zoom = state.zoom;
+  
+  if (lng && lat && zoom) {
+    return {
+      center: [parseFloat(lng), parseFloat(lat)],
+      zoom: parseFloat(zoom)
+    };
+  }
+  
+  // Return default view if no parameters
+  return {
+    center: [3.945697, 51.522601], // Default Netherlands center
+    zoom: 9
+  };
+}
+
 // Create the map
+const initialView = setInitialViewFromURL();
 const map = new mapboxgl.Map({
   container: "deck-gl-canvas",
   style: {
@@ -287,18 +364,73 @@ const map = new mapboxgl.Map({
     ],
   },
   antialias: true,
-  center: mapCenter,
-  zoom: 9,
+  center: initialView.center,
+  zoom: initialView.zoom,
   bearing: 0,
   pitch: 0,
 });
 
+console.log("test", visibleMap)
+
 // Add map control and circle layer
 map.addControl(new mapboxgl.NavigationControl(), "bottom-left");
 map.on("load", () => {
+  // Reset the center and zoom and update the state
   map.addLayer(myScatterplotLayer);
+  setCheckboxesToState();
+  updateGetRadius();
+  updateTextLayer();
 });
 
+function setCheckboxesToState() {
+  const stateCheckboxes = state.checkboxes;
+  if (!stateCheckboxes || typeof stateCheckboxes !== "object") return;
+  Object.keys(stateCheckboxes).forEach(category => {
+    const group = stateCheckboxes[category];
+    if (typeof group !== "object") return;
+
+    Object.keys(group).forEach(id => {
+      let checkboxName =
+        id === "noLinked"
+          ? "checkbox-no-linked"
+          : id === "has_open_comments"
+          ? "checkbox-open_comments"
+          : `checkbox-${id}`;
+      const checkbox = document.querySelector(`input[name=${CSS.escape(checkboxName)}]`);
+      if (!checkbox) {
+        console.warn(`Checkbox with name ${id} not found`);
+        return;
+      }
+
+      // Apply logic for wellValue checkboxes
+      if (category === "wellValue") {
+        const { wellValue } = visibleMap;
+        console.log(group)
+        if (group[id] === false) {
+          wellValue[id] = group[id];
+          checkbox.checked = false;
+          checkbox.indeterminate = false;
+        } else if (group[id] === true) {
+          wellValue[id] = group[id];  
+          checkbox.checked = true;
+          checkbox.indeterminate = false;
+        } else {
+          wellValue[id] = group[id];
+          checkbox.checked = false;
+          checkbox.indeterminate = true;
+        }
+      } else if (category === "organisations") {
+        const { organisations } = visibleMap;
+        organisations[id] = !!group[id]
+        checkbox.checked = organisations[id];
+      } else if (category === "gmns") {
+        const { gmns } = visibleMap;
+        gmns[id] = !!group[id]
+        checkbox.checked = gmns[id];
+      } 
+    });
+  });
+};
 
 map.on("zoom", () => {
   const zoom = map.getZoom();
