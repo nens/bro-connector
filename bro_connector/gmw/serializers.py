@@ -230,10 +230,9 @@ class GLDSerializer(serializers.ModelSerializer):
         return None
     
     def get_latest_measurement_date(self, obj: gld_models.GroundwaterLevelDossier):
-        if obj.latest_observation:
-            meas: gld_models.MeasurementTvp = obj.latest_observation.latest_measurement
-            if meas:
-                return meas.measurement_time
+        meas: gld_models.MeasurementTvp = obj.latest_measurement
+        if meas:
+            return meas.measurement_time
         return None
 
     # def get_latest_measurement_date(self, obj: gld_models.GroundwaterLevelDossier):
@@ -245,7 +244,7 @@ class GLDSerializer(serializers.ModelSerializer):
     def get_observation_type(self, obj: gld_models.GroundwaterLevelDossier):
         latest_observation: gld_models.Observation = obj.latest_observation
 
-        if latest_observation and latest_observation.latest_measurement:
+        if latest_observation and obj.latest_measurement:
             metadata: gld_models.ObservationMetadata = latest_observation.observation_metadata
             observation_type = metadata.observation_type
 
@@ -256,7 +255,7 @@ class GLDSerializer(serializers.ModelSerializer):
     def get_status(self, obj: gld_models.GroundwaterLevelDossier):
         latest_observation: gld_models.Observation = obj.latest_observation
 
-        if latest_observation and latest_observation.latest_measurement:
+        if latest_observation and obj.latest_measurement:
             metadata: gld_models.ObservationMetadata = latest_observation.observation_metadata
             if metadata.observation_type == "reguliereMeting":
                 status = metadata.status
