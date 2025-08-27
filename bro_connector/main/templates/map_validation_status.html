@@ -217,6 +217,30 @@
   </div>
 </div>
 
+<!-- LEGEND -->
+<div id="map-legend">
+  <div class="legend-item">
+    <span class="legend-dot" style="background-color: #4CAF50;"></span>
+    <span>Korter dan 1 jaar</span>
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot" style="background-color: #FFC107;"></span>
+    <span>Tussen 1 en 2 jaar</span>
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot" style="background-color: #F44336;"></span>
+    <span>Meer dan 2 jaar</span>
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot" style="background-color: #9E9E9E;"></span>
+    <span>Geen metingen</span>
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot-empty"></span>
+    <span>Geen GLD</span>
+  </div>
+</div>
+
 <!-- Add json information -->
 <div class="json">{{ wells|json_script:"wells_json" }}</div>
 <div class="json">{{ glds|json_script:"glds_json" }}</div>

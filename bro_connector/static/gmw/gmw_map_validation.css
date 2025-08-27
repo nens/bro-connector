@@ -23,6 +23,50 @@
   max-height: 28vh;
 }
 
+#map-legend {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  z-index: 50;
+  background: white;
+  /* border: 1px solid #ccc; */
+  /* border-radius: 6px; */
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: 200
+  /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  /* border: 1px solid #333; */
+}
+
+.legend-dot-empty {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  border: 2px solid #9E9E9E; /* black outline */
+  background-color: rgba(158, 158, 158, 0.05); /* empty inside */
+}
+
+
 /* #legend-bottom {
   position: absolute;
   right: 20px;

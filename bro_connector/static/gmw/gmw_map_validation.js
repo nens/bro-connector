@@ -79,6 +79,10 @@ function formatDate(dateString) {
 }
 
 // Helper: determine color based on recency of date
+// BASE THE COLOR ON CONTROLE OR REGULIER:
+// komt er data binnen? (<1 dag groen/ <1 week oranje / > 1 maand rood)
+// regulier (indien nog geen MFM): <1 maand: groen / < 2 maanden oranje / > 2 maanden: rood)
+// controle metingen: < 2 maanden: groen; > 3maanden: oranje; > 6 maanden: rood.
 function getDateColor(dateString) {
   if (!dateString) return '#9E9E9E'; // no measurement
   const now = new Date();
@@ -112,7 +116,7 @@ function getFilterStatus(well) {
 
 // Create popup with well info + GLD entries
 const createPopup = (well) => { 
-  const glds_well = filterGLDs(findObjectsByIds(well.glds, glds), well); // should be visibleMap something
+  const glds_well = filterGLDs(findObjectsByIds(well.glds, glds), well); // sorting of this is different than sorting in icons when filternumbers are the same
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;  
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
@@ -354,13 +358,30 @@ function renderPieToCanvas(data, empty = false, size = 64) {
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
     ctx.closePath();
+  
     ctx.fillStyle = slice.color;
     ctx.fill();
+
     if (total > 1) {
       ctx.strokeStyle = "white";
-      ctx.lineWidth = 2;  // adjust thickness
+      ctx.lineWidth = 3;  // adjust thickness
       ctx.stroke();
     }
+
+    if (slice.type === valueMap.type.controle) {
+      const numLines = 3;
+      const spacing = radius / (numLines + 1);
+
+      for (let i = 1; i <= numLines; i++) {
+        const r = i * spacing;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, startAngle, startAngle + angle);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    }
+  
     startAngle += angle;
   }
 
@@ -379,7 +400,8 @@ function buildPieData() {
     }
 
     const pieChart = gldsDataFiltered.map(gld => ({
-      color: getColorFromGLD(gld) 
+      color: getColorFromGLD(gld),
+      type: gld.observation_type,
     })); 
 
     const iconUrl = renderPieToCanvas(pieChart, well.glds.length < 1); 
