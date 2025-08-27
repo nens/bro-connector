@@ -162,14 +162,22 @@ class GLDHandler(BROHandler):
     def root_data_to_dictionary(self):
         self.reset_values()
         prefix = f"{self.number_of_observations}_"
+        print("Number of measurements dict: ",self.number_of_measurements)
 
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
+            # if split[1].startswith("obs"):
+            #     print(split)
 
             if split[1] == "observation":
+                # print("observations split: ",split)
                 if self.number_of_observations != 0:
+                    # print(f"Adding {self.number_of_points} points to number_of_measurements at key {self.number_of_observations}")
                     self.number_of_measurements[self.number_of_observations] = self.number_of_points
+                    # print(f"adding {self.number_of_points} to total_measurements")
+                    self.total_measurements += self.number_of_points
+                    self.reset_measurement_values()
                     # if self.number_of_observations == 1:
                     #     self.number_of_measurements[self.number_of_observations] = self.number_of_points
                     # else:
@@ -179,8 +187,6 @@ class GLDHandler(BROHandler):
                     #         - count_dictionary_cumulative[self.number_of_observations - 1]
                     #     )
                 self.number_of_observations = self.number_of_observations + 1
-                self.total_measurements += self.number_of_points
-                self.reset_measurement_values()
                 # if self.number_of_observations == 3:
                 #     stop
                 prefix = f"{self.number_of_observations}_"
@@ -281,17 +287,21 @@ class GLDHandler(BROHandler):
 
             self.dict.update({tag: values_value})
 
+        # print(f"adding {self.number_of_points} to number_of_measurements at key {self.number_of_observations} outside of loop:")
         if self.number_of_observations > 1:
             self.number_of_measurements[self.number_of_observations] = (
                 self.number_of_points
-                # - sum(self.number_of_measurements.values())
             )
         else:
             self.number_of_measurements[1] = self.number_of_points
+        # print(self.number_of_measurements)
+        # print(f"Adding {self.number_of_points} to total_measurements at end of loop")
+        self.total_measurements += self.number_of_points
 
     def reset_values(self):
         self.number_of_observations = 0
         self.number_of_measurements = {}
+        self.total_measurements = 0
         self.bro_ids = []
 
     def reset_measurement_values(self):

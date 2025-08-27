@@ -63,6 +63,7 @@ class ObservationInline(admin.TabularInline):
     fields = (
         "observation_type",
         "all_measurements_validated",
+        "nr_measurements",
         "up_to_date_in_bro",
         "observation_id_bro",
         "observation_starttime",
@@ -72,7 +73,8 @@ class ObservationInline(admin.TabularInline):
 
     readonly_fields = [
         "observation_type",
-        "all_measurements_validated",
+        "all_measurements_validated",        
+        "nr_measurements",
         "up_to_date_in_bro",
         "observation_id_bro",
         "observation_starttime",
@@ -93,6 +95,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "gld_bro_id",
         "quality_regime",
         "first_measurement",
+        "nr_measurements",
         "has_open_observation",
         "completely_delivered",
         "monitoring_networks",
@@ -121,6 +124,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "gmw_bro_id",
         "tube_number",
         "most_recent_measurement",
+        "nr_measurements",
     ]
 
     inlines = (ObservationInline,)
@@ -224,6 +228,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "measurement_type",
         "status",
         "all_measurements_validated",
+        "nr_measurements",
         "up_to_date_in_bro",
     )
     list_filter = (
@@ -251,6 +256,7 @@ class ObservationAdmin(admin.ModelAdmin):
     readonly_fields = [
         "status",
         "all_measurements_validated",
+        "nr_measurements",
         "timestamp_first_measurement",
         "timestamp_last_measurement",
     ]

@@ -210,6 +210,16 @@ class GroundwaterLevelDossier(BaseModel):
         return True
     has_open_observation.fget.short_description = "Heeft open observatie(s)"
 
+    @property
+    def nr_measurements(self):
+        observations =  Observation.objects.filter(
+            groundwater_level_dossier=self
+        )
+        return MeasurementTvp.objects.filter(
+            observation__in=observations,
+        ).count()
+    nr_measurements.fget.short_description = "Aantal metingen"
+
     def __str__(self):
         return f"GLD_{self.groundwater_monitoring_tube.__str__()}"
 
@@ -359,6 +369,11 @@ class Observation(BaseModel):
             observation=self, measurement_time__gte=one_week_ago
         ).exists()
     active_measurement.fget.short_description = "Actieve meting"
+
+    @property
+    def nr_measurements(self):
+        return len(MeasurementTvp.objects.filter(observation=self))
+    nr_measurements.fget.short_description = "Aantal metingen"
 
     def __str__(self):
         start = (
@@ -590,6 +605,12 @@ class MeasurementTvp(BaseModel):
         verbose_name_plural = "Metingen Tijd-Waarde Paren"
         indexes = [
             models.Index(fields=["observation", "-measurement_time"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["observation", "measurement_time"],  # composite uniqueness
+                name="unique_observation_measurement_time"
+            )
         ]
 
     def __str__(self) -> str:
