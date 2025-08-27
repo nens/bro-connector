@@ -21,7 +21,7 @@ from gmn.models import (
     Subgroup,
     MeasuringPoint,
 )
-from logging import getLogger
+import logging
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from gld.models import (
     Observation,
@@ -38,6 +38,8 @@ from main.management.tasks import (
     retrieve_historic_gld,
     retrieve_historic_gmn,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def detect_csv_separator(file):
@@ -196,10 +198,10 @@ def process_zip_bro_file(instance: BroImport):
                 instance.report += "Geen of meerdere SHX, DBF, or PRJ-bestanden gevonden in het ZIP-bestand. 1 van elk benodigd/toegestaan.\n"
                 instance.validated = False
 
-            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            # timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
             basename = Path(shp_files[0]).stem
             output_folder = (
-                Path(__file__).resolve().parent.parent.parent / "data" / "shapefile" / f"{basename}_{timestamp}"
+                Path(__file__).resolve().parent.parent.parent / "data" / "shapefile" / f"{basename}"#_{timestamp}"
             )
             output_folder.mkdir(parents=True, exist_ok=True)
             shp_filename = shp_files[0]
@@ -207,8 +209,12 @@ def process_zip_bro_file(instance: BroImport):
             for ext in extensions:
                 filename = [f for f in all_files if f.endswith(ext)][0]
                 file_path = output_folder / Path(filename).name
-                with zip_file.open(filename) as src, open(file_path, "wb") as dst:
-                    shutil.copyfileobj(src, dst)
+                try:
+                    with zip_file.open(filename) as src, open(file_path, "wb") as dst:
+                        shutil.copyfileobj(src, dst)
+                except PermissionError as e:
+                    logger.info("Shape files and helper files are in use and locked. Unable to overwrite with new shape file.")
+                    logger.exception(e)
 
             ## start a new loop and validate the shp file and then process it
             POLYGON_SHAPEFILE = output_folder / Path(shp_filename).name

@@ -92,66 +92,68 @@ def run(kvk_number: str = None, bro_type: str = "gld", handler: str = "shape", s
     progressor.calibrate(gld_ids, 25)
 
     # Import the well dat
-    try:
-        post_save.disconnect(on_save_observation, sender=Observation)
-        for id in range(gld_ids_count):
-            start = time.time()
-            print("BRO id: ",gld_ids[id])
-            if gld_ids[id] != "GLD000000070208":
-                continue
+    for id in range(gld_ids_count):
+        start = time.time()
+        print("BRO id: ",gld_ids[id])
 
-            gld.get_data(gld_ids[id], False)
-            if gld.root is None:
-                continue
-            gld.root_data_to_dictionary()
-            gld_dict = gld.dict
-            # print(list(gld_dict.keys())[:100])
-            print(gld_dict.get("0_broId"))
-            # print("HELP: ",get_bro_id_by_type(gld_dict.get("0_broId"), "gld"))
-            # stop
+        gld.get_data(gld_ids[id], False)
+        if gld.root is None:
+            continue
+        gld.root_data_to_dictionary()
+        gld_dict = gld.dict
 
-            # For now don't handle deregistered GMWs
-            if gld_dict.get("0_deregistered", None) == "ja":
-                continue
 
-            # Start at observation 1
-            ini = InitializeData(gld_dict)            
-            ini.well_static()
-            ini.tube_static()
-            ini.groundwater_level_dossier()
+        # print(list(gld_dict.keys())[:100])
+        # print(gld_dict.get("0_broId"))
+        # print("HELP: ",get_bro_id_by_type(gld_dict.get("0_broId"), "gld"))
+        # stop
 
-            if ini.gld is None:
-                continue
-            
-            # print(gld.number_of_measurements)
-            # print("sum of mesurements", sum(gld.number_of_measurements.values()))
-            # # print(gld.number_of_measurements[ini.observation_number])
-            # print("total points: ", gld.total_measurements)
-            # continue
-            # obs_time_dict = {}
-            # meas_time_dict = {}
-            # for observation_number in range(gld.number_of_observations):
-            #     prefix = f"{observation_number+1}_"
-            #     start_time = gld_dict.get(prefix + "beginPosition", None)
-            #     end_time = gld_dict.get(prefix + "endPosition", None)
-            #     result_time = gld_dict.get(prefix + "timePosition", None)
-            #     measurement_time_start=gld_dict.get(prefix + "point_time", [None])[0]
-            #     measurement_time_end=gld_dict.get(prefix + "point_time", [None])[-1]
+        # For now don't handle deregistered GMWs
+        if gld_dict.get("0_deregistered", None) == "ja":
+            continue
 
-            #     obs_time_dict[prefix] = {}
-            #     obs_time_dict[prefix]["obs_start"] = start_time
-            #     obs_time_dict[prefix]["obs_end"] = end_time
-            #     obs_time_dict[prefix]["obs_result"] = result_time
-            #     obs_time_dict[prefix]["mtvp_start"] = measurement_time_start
-            #     obs_time_dict[prefix]["mtvp_end"] = measurement_time_end
-            #     obs_time_dict[prefix]["n_mtvp"] = len(gld_dict.get(prefix + "point_time", [None]))
+        # Start at observation 1
+        ini = InitializeData(gld_dict)            
+        ini.well_static()
+        ini.tube_static()
+        ini.groundwater_level_dossier()
 
-            
-            # print(obs_time_dict)
-            # print(gld.number_of_measurements)
-            # print(gld.total_measurements)
+        if ini.gld is None:
+            continue
+
+        # print("measurments list before? : ", len(ini.measurements))
+        
+        # print(gld.number_of_measurements)
+        # print("sum of mesurements", sum(gld.number_of_measurements.values()))
+        # print(gld.number_of_measurements[1])
+        # print("total points: ", gld.total_measurements)
+        
+        # obs_time_dict = {}
+        # meas_time_dict = {}
+        # for observation_number in range(gld.number_of_observations):
+        #     prefix = f"{observation_number+1}_"
+        #     start_time = gld_dict.get(prefix + "beginPosition", None)
+        #     end_time = gld_dict.get(prefix + "endPosition", None)
+        #     result_time = gld_dict.get(prefix + "timePosition", None)
+        #     measurement_time_start=gld_dict.get(prefix + "point_time", [None])[0]
+        #     measurement_time_end=gld_dict.get(prefix + "point_time", [None])[-1]
+
+        #     obs_time_dict[prefix] = {}
+        #     obs_time_dict[prefix]["obs_start"] = start_time
+        #     obs_time_dict[prefix]["obs_end"] = end_time
+        #     obs_time_dict[prefix]["obs_result"] = result_time
+        #     obs_time_dict[prefix]["mtvp_start"] = measurement_time_start
+        #     obs_time_dict[prefix]["mtvp_end"] = measurement_time_end
+        #     obs_time_dict[prefix]["n_mtvp"] = len(gld_dict.get(prefix + "point_time", [None]))
+
+        
+        # print(obs_time_dict)
+        # print(gld.number_of_measurements)
+        # print(gld.total_measurements)
+        try:
+            post_save.connect(on_save_observation, sender=Observation)
             with transaction.atomic():
-                step = max(1, gld.total_measurements // 10)
+                step = max(1, gld.total_measurements // 4)
                 for observation_number in range(gld.number_of_observations):
                     ini.increment_observation_number()
                     # if int(observation_number) < gld.number_of_observations -3:
@@ -170,16 +172,21 @@ def run(kvk_number: str = None, bro_type: str = "gld", handler: str = "shape", s
                         #     ini.increment_measurement_number()
                         #     continue
                         
-                        # if ini.measurement_count % step == 0 or ini.measurement_count == gld.total_measurements:
-                        #     print(f"{(ini.measurement_count / gld.total_measurements) * 100:.0f}% done ({ini.measurement_count}/{gld.total_measurements})")
+                        if ini.measurement_count % step == 0 or ini.measurement_count == gld.total_measurements:
+                            print(f"{(ini.measurement_count / gld.total_measurements) * 100:.0f}% done ({ini.measurement_count}/{gld.total_measurements})")
                         # if measurement_number == 0:
                         #     print(ini.measurement_number)
                         ini.measurement_metadata()
-                        ini.measurement_tvp() ## time is saved correctly, but the observation is not linked correctly or created wrong
+                        ini.measurement_tvp()
                         ini.increment_measurement_number()
-                    
+
                     try:
-                        print("Bulk updating/creating...")
+                        MeasurementPointMetadata.objects.bulk_create(
+                            ini.metadatas,
+                            update_conflicts=False,
+                            batch_size=5000,
+                        )
+                    
                         MeasurementTvp.objects.bulk_create(
                             ini.measurements,
                             update_conflicts=True,
@@ -199,8 +206,6 @@ def run(kvk_number: str = None, bro_type: str = "gld", handler: str = "shape", s
                     except Exception as e:
                         logger.info(f"Bulk updating/creating failed for observation: {ini.obs}")
                         logger.exception(e)
-                        print(f"Bulk updating/creating failed for observation: {ini.obs}")
-                        print(f"{e}")
                         ini.reset_measurement_number()
 
                 imported += 1
@@ -210,11 +215,15 @@ def run(kvk_number: str = None, bro_type: str = "gld", handler: str = "shape", s
 
                 end = time.time()
                 print(f"Time for one GLD: {end-start}s")
-    finally:
-        post_save.connect(on_save_observation, sender=Observation)
+        finally:
+            post_save.connect(on_save_observation, sender=Observation)
 
-    for obs in Observation.objects.all():
-        obs.save()
+            with reversion.create_revision():
+                print(len(ini.observations))
+                for obs in Observation.objects.filter(pk__in=[o.pk for o in ini.observations]):
+                    obs.save()
+
+            ## delete measuring point metadata that is not in use?
 
     info = {
         "ids_found": gld_ids_count,
@@ -223,15 +232,19 @@ def run(kvk_number: str = None, bro_type: str = "gld", handler: str = "shape", s
 
     return info
 
-def get_delivery_accountable_party(gld_dict: dict) -> None:
-        # return
-        company_id = gld_dict.get("0_deliveryAccountableParty", None)
-        if company_id is None:
-            return (None, False)
-        if company_id.isdigit():
-            return Organisation.objects.get_or_create(company_number=company_id)
-        else:
-            return Organisation.objects.get_or_create(name=company_id)
+def get_delivery_accountable_party(gld_dict: dict) -> Organisation | None:
+    # return
+    company_id = gld_dict.get("0_deliveryAccountableParty", None)
+    if company_id is None:
+        return None
+    if company_id.isdigit():
+        organisation = Organisation.objects.get_or_create(company_number=company_id)[0]
+        organisation.save()
+        return organisation
+    else:
+        organisation = Organisation.objects.get_or_create(name=company_id)[0]
+        organisation.save()
+        return organisation
 
 def get_censor_reason(
     dict: dict, prefix: str, measurement_number: int
@@ -305,22 +318,26 @@ class InitializeData:
     The xml converted to dictionary is read into the database.
     """
 
-    observation_number = 0
-    measurement_number = 0
-    measurement_count = 0
-    prefix = f"{observation_number}_"
-    gld_dict = {}
-    measurements = []
-
     def __init__(self, gld_dict: dict) -> None:
+        self.observation_number = 0
+        self.measurement_number = 0
+        self.measurement_count = 0
+        self.prefix = f"{self.observation_number}_"
+        self.measurements = []
+        self.metadatas = []
+        self.observations = []
+
         self.gld_dict = gld_dict
         self.gld_bro_id = get_bro_id_by_type(self.gld_dict.get(self.prefix + "broId"), "gld")
         self.gmw_bro_id = get_bro_id_by_type(self.gld_dict.get(self.prefix + "broId"), "gmw")
         self.gmn_bro_id =get_bro_id_by_type(self.gld_dict.get(self.prefix + "broId"), "gmn")
         
     def reset_measurement_number(self):
+        # print("not resetting?")
         self.measurement_number = 0        
         self.measurements = []
+        self.metadatas = []
+        # print("n list measurements within func: ",len(self.measurements))
 
     def increment_observation_number(self) -> None:
         self.observation_number += 1
@@ -398,7 +415,7 @@ class InitializeData:
                     status=self.gld_dict.get(
                         self.prefix + "status", None
                     ),
-                    responsible_party=get_delivery_accountable_party(self.gld_dict)[0],
+                    responsible_party=get_delivery_accountable_party(self.gld_dict),
                 )
             )
         except ObservationMetadata.MultipleObjectsReturned:
@@ -428,6 +445,7 @@ class InitializeData:
             self.obsp = None
 
     def observation(self) -> None:
+        observation_id_bro = self.gld_dict.get(self.prefix + "OM_Observation", None)
         start_time = str_to_datetime(
             self.gld_dict.get(self.prefix + "beginPosition", None)
         )
@@ -448,17 +466,19 @@ class InitializeData:
             observation_starttime=start_time,
             observation_endtime=end_time,
             defaults={                    
+                "observation_id_bro": observation_id_bro,
                 "observation_metadata": self.obsm,
                 "observation_process": self.obsp,
                 "result_time": result_time,
                 "up_to_date_in_bro": True,
             }
         )
+        self.observations.append(self.obs)
 
     def measurement_metadata(self) -> None:
         # return
         self.mm = (
-            MeasurementPointMetadata.objects.create(
+            MeasurementPointMetadata(
                 status_quality_control=self.gld_dict.get(
                     self.prefix + "point_qualifier_value", "onbekend"
                 )[self.measurement_number],
@@ -467,6 +487,7 @@ class InitializeData:
                 ),
             )
         )
+        self.metadatas.append(self.mm)
 
     def measurement_tvp(self) -> None:
         calculated_value = _calculate_value(
@@ -512,4 +533,8 @@ class InitializeData:
 
     def reset_values(self):
         self.observation_number = 0
+        self.measurement_number = 0   
         self.measurement_count = 0
+        self.measurements = []
+        self.metadatas = []
+        self.observations = []

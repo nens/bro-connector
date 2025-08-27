@@ -111,13 +111,17 @@ def run(kvk_number: str = None, bro_type: str = "gmw", handler: str = "shape", s
     return info
 
 
-def get_or_create_instantie(instantie: str):
+def get_or_create_instantie(instantie: str) -> Organisation | None:
     if instantie is None:
-        return (None, False)
+        return None
     if instantie.isdigit():
-        return Organisation.objects.get_or_create(company_number=instantie)
+        organisation = Organisation.objects.get_or_create(company_number=instantie)[0]
+        organisation.save()
+        return organisation
     else:
-        return Organisation.objects.get_or_create(name=instantie)
+        organisation = Organisation.objects.get_or_create(name=instantie)[0]
+        organisation.save()
+        return organisation
 
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime:
@@ -191,11 +195,11 @@ class InitializeData:
                     "coordinates": f"POINT({self.gmw_dict.get('pos_1', None)})",
                     "delivery_accountable_party": get_or_create_instantie(
                         self.gmw_dict.get("deliveryAccountableParty", None)
-                    )[0],
+                    ),
                     "delivery_context": self.gmw_dict.get("deliveryContext", None),
                     "delivery_responsible_party": get_or_create_instantie(
                         self.gmw_dict.get("deliveryResponsibleParty", None)
-                    )[0],
+                    ),
                     "horizontal_positioning_method": self.gmw_dict.get(
                         "horizontalPositioningMethod", None
                     ),
@@ -214,22 +218,25 @@ class InitializeData:
                     "well_code": self.gmw_dict.get("wellCode", None),
                     "deliver_gmw_to_bro": True,
                     "complete_bro": True,
+                    "in_management": True
+                        if self.gmw_dict.get("deliveryAccountableParty", None) == settings.KVK_USER 
+                        else False,
                 },
             )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)
+
+            # if (
+            #     str(self.gmws.delivery_accountable_party.company_number)
+            #     == settings.KVK_USER
+            # ):
+            #     self.gmws.in_management = True
+            # else:
+            #     self.gmws.in_management = False
+            
+            # self.gmws.save()
 
             reversion.set_comment(
                 f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
             )
-
-        if (
-            str(self.gmws.delivery_accountable_party.company_number)
-            == settings.KVK_USER
-        ):
-            self.gmws.in_management = True
-        else:
-            self.gmws.in_management = False
-
-        self.gmws.save()
 
     def well_dynamic(self):
         if "construction_date" in self.gmw_dict:
@@ -254,7 +261,7 @@ class InitializeData:
                 "ground_level_stable": self.gmw_dict.get("groundLevelStable", None),
                 "maintenance_responsible_party": get_or_create_instantie(
                     self.gmw_dict.get("maintenanceResponsibleParty", None)
-                )[0],
+                ),
                 "owner": self.gmw_dict.get("owner", None),
                 "well_head_protector": self.gmw_dict.get("wellHeadProtector", None),
                 "well_stability": self.gmw_dict.get("wellStability", None),

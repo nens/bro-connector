@@ -162,22 +162,30 @@ class GLDHandler(BROHandler):
     def root_data_to_dictionary(self):
         self.reset_values()
         prefix = f"{self.number_of_observations}_"
-        print("Number of measurements dict: ",self.number_of_measurements)
+        # print("Number of measurements dict: ",self.number_of_measurements)
+        # print("Number of dict: ",self.dict)
 
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
             # if split[1].startswith("obs"):
             #     print(split)
+            # print(tag, split)
+            # if split[1] == "OM_Observation":
+            #     print(element)
+            #     print(element.attrib)
+            #     stop
 
             if split[1] == "observation":
+                # print("Number of point when reaching a new obs: ",self.number_of_points)
                 # print("observations split: ",split)
                 if self.number_of_observations != 0:
                     # print(f"Adding {self.number_of_points} points to number_of_measurements at key {self.number_of_observations}")
                     self.number_of_measurements[self.number_of_observations] = self.number_of_points
                     # print(f"adding {self.number_of_points} to total_measurements")
+                    # print(self.total_measurements)
                     self.total_measurements += self.number_of_points
-                    self.reset_measurement_values()
+                    # print(self.total_measurements)
                     # if self.number_of_observations == 1:
                     #     self.number_of_measurements[self.number_of_observations] = self.number_of_points
                     # else:
@@ -187,9 +195,12 @@ class GLDHandler(BROHandler):
                     #         - count_dictionary_cumulative[self.number_of_observations - 1]
                     #     )
                 self.number_of_observations = self.number_of_observations + 1
+                # if self.number_of_observations > 2:
+                #     stop
                 # if self.number_of_observations == 3:
                 #     stop
                 prefix = f"{self.number_of_observations}_"
+                self.reset_measurement_values()
 
             if split[1] == "broId":                
                 self.bro_ids.append(element.text)
@@ -197,6 +208,8 @@ class GLDHandler(BROHandler):
             # If point, add prefix
             if split[1] == "point":
                 self.number_of_points = self.number_of_points + 1
+                # if self.number_of_points > 10:
+                #     stop
                 prefix = f"{self.number_of_observations}_point_"
                 self.append_censoring()
 
@@ -224,6 +237,9 @@ class GLDHandler(BROHandler):
                 prefix = f"{self.number_of_observations}_"
 
             values_value = element.text
+
+            if tag == f"{self.number_of_observations}_OM_Observation":
+                values_value = element.attrib["{http://www.opengis.net/gml/3.2}id"]
 
             if tag == f"{self.number_of_observations}_processReference":
                 values_value = element.attrib[
@@ -286,19 +302,22 @@ class GLDHandler(BROHandler):
                     values_value = self.censoring_limit_reason
 
             self.dict.update({tag: values_value})
-
+        # stop
         # print(f"adding {self.number_of_points} to number_of_measurements at key {self.number_of_observations} outside of loop:")
         if self.number_of_observations > 1:
             self.number_of_measurements[self.number_of_observations] = (
                 self.number_of_points
             )
         else:
+            # print(self.total_measurements)
             self.number_of_measurements[1] = self.number_of_points
         # print(self.number_of_measurements)
         # print(f"Adding {self.number_of_points} to total_measurements at end of loop")
         self.total_measurements += self.number_of_points
+        # print(self.total_measurements)
 
     def reset_values(self):
+        self.dict = {}
         self.number_of_observations = 0
         self.number_of_measurements = {}
         self.total_measurements = 0

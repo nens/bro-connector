@@ -17,6 +17,7 @@ from django.core.exceptions import ValidationError
 from gmw.models import GroundwaterMonitoringTubeStatic
 from gmn.choices import KADER_AANLEVERING_GMN, MONITORINGDOEL
 from main.models import BaseModel
+from django.core.files.storage import default_storage
 
 
 class BroImport(BaseModel):
@@ -85,6 +86,11 @@ class BroImport(BaseModel):
         verbose_name_plural = "BRO Importer"
 
     def save(self, *args, **kwargs) -> None:
+        file_name = Path(self.file.name).name
+
+        if default_storage.exists(str(file_name)):
+            self.file.name = str(file_name)
+
         if not self.pk:
             self.import_date = datetime.datetime.now()
             self.created_date = datetime.datetime.now()

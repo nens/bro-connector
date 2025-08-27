@@ -162,7 +162,21 @@ class GroundwaterLevelDossier(BaseModel):
         )
 
         return first_measurement_date
-    first_measurement.fget.short_description = "Eerste meetdatum"
+    first_measurement.fget.short_description = "Eerste observatiedatum"
+
+    @property
+    def last_measurement(self):
+        last_measurement = (
+            Observation.objects.filter(groundwater_level_dossier=self)
+            .order_by("observation_starttime")
+            .last()
+        )
+        last_measurement_date = getattr(
+            last_measurement, "observation_starttime", None
+        )
+
+        return last_measurement_date
+    last_measurement.fget.short_description = "Laatste observatiedatum"
 
     @property
     def most_recent_measurement(self):

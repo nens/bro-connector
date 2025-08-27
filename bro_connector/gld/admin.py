@@ -65,10 +65,10 @@ class ObservationInline(admin.TabularInline):
         "all_measurements_validated",
         "nr_measurements",
         "up_to_date_in_bro",
-        "observation_id_bro",
         "observation_starttime",
         "observation_endtime",
         "result_time",
+        "observation_id_bro",
     )
 
     readonly_fields = [
@@ -94,10 +94,11 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "research_last_date",
         "gld_bro_id",
         "quality_regime",
-        "first_measurement",
-        "nr_measurements",
         "has_open_observation",
         "completely_delivered",
+        # "first_measurement",
+        # "last_measurement",
+        "nr_measurements",
         "monitoring_networks",
     )
     list_filter = (
@@ -123,7 +124,8 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         "gld_bro_id",
         "gmw_bro_id",
         "tube_number",
-        "most_recent_measurement",
+        "first_measurement",
+        "last_measurement",
         "nr_measurements",
     ]
 
@@ -229,7 +231,8 @@ class ObservationAdmin(admin.ModelAdmin):
         "status",
         "all_measurements_validated",
         "nr_measurements",
-        "up_to_date_in_bro",
+        "up_to_date_in_bro",        
+        "observation_id_bro",
     )
     list_filter = (
         GLDFilter,
@@ -237,14 +240,16 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_starttime",
         "observation_endtime",
         "result_time",
-        "up_to_date_in_bro",
+        "up_to_date_in_bro",    
+        "observation_id_bro",
     )
 
     search_fields = [
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
-        "groundwater_level_dossier__gld_bro_id",
+        "groundwater_level_dossier__gld_bro_id",            
+        "groundwater_level_dossier__observation_id_bro",
     ]
 
     autocomplete_fields = [
@@ -258,10 +263,15 @@ class ObservationAdmin(admin.ModelAdmin):
         "all_measurements_validated",
         "nr_measurements",
         "timestamp_first_measurement",
-        "timestamp_last_measurement",
+        "timestamp_last_measurement",        
+        "observation_id_bro",
     ]
 
     actions = ["close_observation", "change_up_to_date_status"]
+
+    ordering = ["-observation_starttime"]
+    extra = 0
+    max_num = 0
 
     def observation_type(self, obj: models.Observation):
         if obj.observation_metadata is not None:
