@@ -248,8 +248,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
-        "groundwater_level_dossier__gld_bro_id",            
-        "groundwater_level_dossier__observation_id_bro",
+        "groundwater_level_dossier__gld_bro_id",           
     ]
 
     autocomplete_fields = [

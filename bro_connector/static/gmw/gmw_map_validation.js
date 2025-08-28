@@ -83,15 +83,24 @@ function formatDate(dateString) {
 // komt er data binnen? (<1 dag groen/ <1 week oranje / > 1 maand rood)
 // regulier (indien nog geen MFM): <1 maand: groen / < 2 maanden oranje / > 2 maanden: rood)
 // controle metingen: < 2 maanden: groen; > 3maanden: oranje; > 6 maanden: rood.
-function getDateColor(dateString) {
+function getDateColor(observationType, dateString) {
   if (!dateString) return '#9E9E9E'; // no measurement
+
   const now = new Date();
-  const d = new Date(dateString);
+  const d = new Date(dateString); // convert string to Date
   const diffYears = (now - d) / (1000 * 60 * 60 * 24 * 365);
 
-  if (diffYears < 1) return '#4CAF50';      // measured within a year
-  if (diffYears < 2) return '#FFC107';     // measured within 5 years
-  return '#F44336';                           // older
+  if (observationType === valueMap.type.controle) {
+    if (diffYears <= 1 / 12 * 2) return '#4CAF50';      // measured within 2 months
+    if (diffYears <= 1 / 12 * 6) return '#FFC107';     // measured within 6 months
+    return '#F44336';        
+  }  
+  if (observationType === valueMap.type.regular) {
+    if (diffYears <= 1 / 12) return '#4CAF50';      // measured within a month
+    if (diffYears <= 1 / 12 * 2) return '#FFC107';     // measured within 2 months
+    return '#F44336';        
+  }
+  return '#9E9E9E';
 }
 
 function getFilterStatus(well) {
@@ -114,9 +123,19 @@ function getFilterStatus(well) {
   return filterStatus
 }
 
+function getObsPageValue(latest_observation_id) {
+  let value = null
+  if (latest_observation_id) {
+    value = `<a href=/admin/gld/observation/${latest_observation_id} target="_blank">Observatie</a>`;
+  } else {
+    value = '-'
+  }
+  return value
+}
+
 // Create popup with well info + GLD entries
 const createPopup = (well) => { 
-  const glds_well = filterGLDs(findObjectsByIds(well.glds, glds), well); // sorting of this is different than sorting in icons when filternumbers are the same
+  const glds_well = filterGLDs(updateGLDsState(findObjectsByIds(well.glds, glds), well), well); // sorting of this is different than sorting in icons when filternumbers are the same
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;  
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
@@ -131,11 +150,12 @@ const createPopup = (well) => {
       const status = formatString(gld.status);
       const latestDate = formatDate(gld.latest_measurement_date);
       const color = getDateColor(gld.latest_measurement_date);
+      const ObsPageValue = getObsPageValue(gld.latest_observation_id)
 
       gldsContent += `
         <details style="margin-bottom:6px;">
           <summary style="cursor:pointer;font-weight:bold;">
-            Filterbuis ${tube_number}
+            Filterbuis ${tube_number} (${(!gld.observation_type) ? "geen meting" : measurementType})
           </summary>
           <div style="width: 100%; height: 6px; margin: 4px 0; border-radius: 3px; background-color: ${color};"></div>
           <div class="well-item">
@@ -157,6 +177,10 @@ const createPopup = (well) => {
           <div class="well-item">
             <span class="label">Meest recente meting:</span>
             <span class="value">${latestDate}</span>
+          </div>
+          <div class="well-item">
+            <span class="label">Bijbehorende observatie:</span>
+            <span class="value">${ObsPageValue}</span>
           </div>
         </details>
       `;
@@ -200,7 +224,9 @@ const createPopup = (well) => {
   return popup;
 };
 
+let activeWell = null;
 const showWellPopupAndMove = (well) => {
+  activeWell = well; // remember which well is shown
   if (marker) marker.remove();
   const popup = createPopup(well);
   const lngLat = [well.y, well.x];
@@ -213,13 +239,27 @@ const showWellPopupAndMove = (well) => {
   map.flyTo({ center: lngLat, zoom: 15, essential: true });
 };
 
+// call this whenever checkboxes/filters change
+const refreshActivePopup = () => {
+  if (marker && activeWell) {
+    if (filterGLDs(updateGLDsState(findObjectsByIds(activeWell.glds, glds), activeWell), activeWell).length == 0) {
+      marker.remove();
+    } else {
+      const newContent = createPopup(activeWell);
+      const el = marker.getElement();
+      el.innerHTML = "";
+      el.appendChild(newContent);
+    }
+  }
+};
+
 
 const wellIsShown = (well) => {
   if (well.glds.length === 0 && !visibleMap.no_glds)
-    return;
+    return refreshActivePopup();
 
   if (well.glds.length > 0 && !filterGLDs(getGLDs(well.glds), well).length)
-    return;
+    return refreshActivePopup();
 
 return true;
 };    
@@ -227,36 +267,6 @@ return true;
 const WHITE = [255, 255, 255];
 const BLACK = [0, 0, 0];
 let marker = null;
-
-// For each well, add a circle
-// const myScatterplotLayer = new deck.MapboxLayer({
-//   id: "scatterplot-layer",
-//   data: wells,
-//   type: deck.ScatterplotLayer,
-//   getPosition: (well) => [well.y, well.x],
-//   pickable: true,
-//   radiusMaxPixels: 6.5,
-//   radiusUnits: "meters",
-//   lineWidthMaxPixels: 1,
-//   lineWidthUnits: "meters",
-//   getLineWidth: 0.005,
-//   stroked: true,
-//   filled: true,
-//   antialiasing: true,
-//   radiusUnits: "pixels",
-//   getFillColor: (well) => colorMap[well.delivery_accountable_party],
-//   lineWidthMinPixels: 2,
-//   getLineColor: WHITE,
-
-//   // Hide circle when gmn or organisation is set to invisible
-//   getRadius: (well) => (wellIsShown(well) ? 10 : 0),
-
-//   //   On click add a popup as an Mapbox marker at the circle's location
-//   onClick: (event) => {
-//     const well = event.object;
-//     showWellPopupAndMove(well);
-//   },
-// });
 
 const getGLDs = (ids) => {
   return glds
@@ -286,13 +296,23 @@ const filterGLDsByStatus = (glds) => {
 
 const filterGLDs = (glds, well) => {
 
-  if (well.bro_id === "GMW000000051044") {
-      console.log("visibleMap: ", visibleMap);
-      console.log(well.status);
-    }
+  // if (well.bro_id === "GMW000000057308") {
+  //     console.log("visibleMap: ", visibleMap);
+  //     console.log(well.status);
+  //     glds.forEach((gld, index) => {
+  //       console.log(`gld[${index}]:`, gld);
+  //     });
+  //   }
+
+  // Look at checkbox and filter based on regular and controle
+  
+  // If the controle is checked but regular not:
+  //  - Per GLD, check the latest regular and latest controle time
+  //  - If the latest controle is known, the gld should be shown
+  //  - If the latest controle is not known, the gld should be filtered
 
   if (!visibleMap.type.no_obs) {
-    glds = glds.filter(gld => gld.observation_type != valueMap.type.none);
+    glds = glds.filter(gld => gld.observation_type != valueMap.type.none)
   }
 
   if (!visibleMap.type.controle) {
@@ -312,8 +332,69 @@ const filterGLDs = (glds, well) => {
 };
 
 function getColorFromGLD(gld) {
-  return getDateColor(gld.latest_measurement_date)
+  return getDateColor(gld.observation_type, gld.latest_measurement_date);
 }
+
+const updateGLDsState = (glds, well) => {
+  if (well.bro_id === "GMW000000057308") {
+    console.log("GLDs:", glds);
+  }
+
+  glds.forEach((gld) => {
+    const hasControle = !!gld.latest_measurement_date_controle;
+    const hasRegular = !!gld.latest_measurement_date_regular;
+
+    if (visibleMap.type.controle && visibleMap.type.regular) {
+      if (hasControle && hasRegular) {
+        // Pick the latest
+        gld.latest_measurement_date = new Date(gld.latest_measurement_date_controle) > new Date(gld.latest_measurement_date_regular)
+          ? gld.latest_measurement_date_controle
+          : gld.latest_measurement_date_regular;
+        gld.observation_type = (gld.latest_measurement_date === gld.latest_measurement_date_controle)
+          ? gld.observation_type_controle
+          : gld.observation_type_regular;
+        gld.latest_observation_id = (gld.latest_measurement_date === gld.latest_measurement_date_controle)
+          ? gld.latest_observation_id_controle
+          : gld.latest_observation_id_regular;
+        gld.status = (gld.latest_measurement_date === gld.latest_measurement_date_controle)
+          ? gld.status_controle
+          : gld.status_regular;
+      } else if (hasControle) {
+        gld.latest_measurement_date = gld.latest_measurement_date_controle;
+        gld.observation_type = gld.observation_type_controle;
+        gld.latest_observation_id = gld.latest_observation_id_controle;
+        gld.status = gld.status_controle;
+      } else if (hasRegular) {
+        gld.latest_measurement_date = gld.latest_measurement_date_regular;
+        gld.observation_type = gld.observation_type_regular;
+        gld.latest_observation_id = gld.latest_observation_id_regular;
+        gld.status = gld.status_regular;
+      } else {
+        gld.latest_measurement_date = null;
+        gld.observation_type = null;
+        gld.latest_observation_id = null;
+        gld.status = null;
+      }
+    } else if (visibleMap.type.controle && !visibleMap.type.regular) {
+      gld.latest_measurement_date = gld.latest_measurement_date_controle;
+      gld.observation_type = gld.observation_type_controle;
+      gld.latest_observation_id = gld.latest_observation_id_controle;
+      gld.status = gld.status_controle;
+    } else if (!visibleMap.type.controle && visibleMap.type.regular) {
+      gld.latest_measurement_date = gld.latest_measurement_date_regular;
+      gld.observation_type = gld.observation_type_regular;
+      gld.latest_observation_id = gld.latest_observation_id_regular;
+      gld.status = gld.status_regular;
+    } else {
+      gld.latest_measurement_date = null;
+      gld.observation_type = null;
+      gld.latest_observation_id = null;
+      gld.status = null;
+    }
+  });
+
+  return glds
+};
 
 function renderPieToCanvas(data, empty = false, size = 64) {
   const canvas = document.createElement("canvas");
@@ -391,18 +472,14 @@ function renderPieToCanvas(data, empty = false, size = 64) {
 
 function buildPieData() {
   return wells.map((well) => { 
-    const gldsData = getGLDs(well.glds); 
-    const gldsDataFiltered = filterGLDs(gldsData, well);
-
-    if (well.bro_id === "GMW000000051044") {
-      console.log("GLDs before filter:", gldsData.length);
-      console.log("GLDs after filter:", gldsDataFiltered.length);
-    }
-
+    const gldsData = findObjectsByIds(well.glds, glds); 
+    const gldsDataUpdated = updateGLDsState(gldsData, well)
+    const gldsDataFiltered = filterGLDs(gldsDataUpdated, well);
     const pieChart = gldsDataFiltered.map(gld => ({
       color: getColorFromGLD(gld),
       type: gld.observation_type,
     })); 
+    // Make sure that the checkbox of regular and controle is done correctly
 
     const iconUrl = renderPieToCanvas(pieChart, well.glds.length < 1); 
 
@@ -634,14 +711,6 @@ map.on("mousemove", (e) => {
   if (!isHovering && cursor === "pointer") return setCursorStyle("grab");
 });
 
-// Handle if someone toggles any other filter
-const handleWellValue = (id, element) => {
-  const checkbox = element.querySelector('input[type="checkbox"]');
-  
-  updateGetSize();
-  updateTextLayer();
-};
-
 const deselectAllCheckboxes = () => {
   if (!visibleMap || !visibleMap.type) {
     console.warn("❌ visibleMap.type not defined");
@@ -681,6 +750,7 @@ const deselectAllCheckboxes = () => {
   updateGetData();
   updateGetSize();
   updateTextLayer();
+  refreshActivePopup();
 };
 
 const deselectAllStatusCheckboxes = () => {
@@ -720,7 +790,8 @@ const deselectAllStatusCheckboxes = () => {
 
   updateGetData();
   updateGetSize();
-  updateTextLayer();
+  updateTextLayer();  
+  refreshActivePopup();
 };
 
 
@@ -745,6 +816,7 @@ const handleTypeClick = (id, element) => {
   updateGetData();
   updateGetSize();
   updateTextLayer();
+  refreshActivePopup();
 };
 
 // Handle if someone toggles an status measurement
@@ -758,7 +830,8 @@ const handleStatusClick = (id, element) => {
 
   updateGetData();
   updateGetSize();
-  updateTextLayer();
+  updateTextLayer();  
+  refreshActivePopup();
 };
 
 const updateGetData = () => {

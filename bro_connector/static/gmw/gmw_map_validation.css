@@ -33,11 +33,68 @@
   /* border-radius: 6px; */
   padding: 10px 15px;
   font-size: 14px;
-  font-weight: 200
-  /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */
+  font-weight: 200;
+  /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */  
+  max-height: 100vh;
+  overflow: auto;
+}
+
+#map-legend h4 {
+  font-size: 1em; /* slightly smaller than default */
+  margin: 4px 0;     /* less vertical spacing */
+}
+
+.legend-header {
+  font-weight: bold;
+  margin-top: 8px;
+  margin-bottom: 4px;
 }
 
 .legend-item {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.legend-dot.hatched {
+  background-color: #4CAF50; /* base color */
+}
+
+.legend-dot.hatched::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient( 
+    circle,
+    rgb(255, 255, 255) 0px,   /* white ring start */
+    rgb(255, 255, 255) 0.75px,   /* white ring thickness */
+    transparent 1px,
+    transparent 2.5px              /* spacing before next ring */
+  );
+}
+
+.legend-dot-empty {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  border: 2px solid #9E9E9E; /* black outline */
+  background-color: rgba(158, 158, 158, 0.05); /* empty inside */
+}
+
+/* .legend-item {
   display: flex;
   align-items: center;
   margin-bottom: 6px;
@@ -54,17 +111,7 @@
   display: inline-block;
   margin-right: 8px;
   /* border: 1px solid #333; */
-}
-
-.legend-dot-empty {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 8px;
-  border: 2px solid #9E9E9E; /* black outline */
-  background-color: rgba(158, 158, 158, 0.05); /* empty inside */
-}
+/* } */ */
 
 
 /* #legend-bottom {

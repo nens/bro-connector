@@ -186,7 +186,15 @@ class GLDSerializer(serializers.ModelSerializer):
     groundwater_monitoring_well_static_id = serializers.SerializerMethodField()
     groundwater_monitoring_tube_static_id = serializers.SerializerMethodField()
     tube_number = serializers.SerializerMethodField()
-    latest_observation_date = serializers.SerializerMethodField()
+    latest_observation_id_regular = serializers.SerializerMethodField()
+    latest_measurement_date_regular = serializers.SerializerMethodField()
+    observation_type_regular = serializers.SerializerMethodField()
+    status_regular = serializers.SerializerMethodField()
+    latest_observation_id_controle = serializers.SerializerMethodField()
+    latest_measurement_date_controle = serializers.SerializerMethodField()
+    observation_type_controle = serializers.SerializerMethodField()
+    status_controle = serializers.SerializerMethodField()
+    latest_observation_id = serializers.SerializerMethodField()
     latest_measurement_date = serializers.SerializerMethodField()
     observation_type = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
@@ -199,7 +207,15 @@ class GLDSerializer(serializers.ModelSerializer):
             "groundwater_monitoring_tube_static_id",
             "gld_bro_id",
             "tube_number",
-            "latest_observation_date",
+            "latest_observation_id_regular",
+            "latest_measurement_date_regular",
+            "observation_type_regular",
+            "status_regular",
+            "latest_observation_id_controle",
+            "latest_measurement_date_controle",
+            "observation_type_controle",
+            "status_controle",
+            "latest_observation_id",
             "latest_measurement_date",
             "observation_type",
             "status"
@@ -223,49 +239,79 @@ class GLDSerializer(serializers.ModelSerializer):
     def get_tube_number(self, obj: gld_models.GroundwaterLevelDossier):
         return obj.tube_number
 
-    def get_latest_observation_date(self, obj: gld_models.GroundwaterLevelDossier):
-        obs: gld_models.Observation = obj.latest_observation
+    def get_latest_observation_id_regular(self, obj: gld_models.GroundwaterLevelDossier):
+        obs: gld_models.Observation = obj.latest_observation_regular
         if obs:
-            return obs.observation_starttime
+            return obs.observation_id
         return None
     
-    def get_latest_measurement_date(self, obj: gld_models.GroundwaterLevelDossier):
-        meas: gld_models.MeasurementTvp = obj.latest_measurement
+    def get_latest_observation_id_controle(self, obj: gld_models.GroundwaterLevelDossier):
+        obs: gld_models.Observation = obj.latest_observation_controle
+        if obs:
+            return obs.observation_id
+        return None
+    
+    def get_latest_measurement_date_regular(self, obj: gld_models.GroundwaterLevelDossier):
+        meas: gld_models.MeasurementTvp = obj.latest_measurement_regular
+        if meas:
+            return meas.measurement_time
+        return None
+    
+    def get_latest_measurement_date_controle(self, obj: gld_models.GroundwaterLevelDossier):
+        meas: gld_models.MeasurementTvp = obj.latest_measurement_controle
         if meas:
             return meas.measurement_time
         return None
 
-    # def get_latest_measurement_date(self, obj: gld_models.GroundwaterLevelDossier):
-    #     for obs in obj.observation.all():
-    #         for measurement in obs.measurement.all():
-    #             return measurement.measurement_time
-    #     return None
+    def get_observation_type_regular(self, obj: gld_models.GroundwaterLevelDossier):
+        latest_observation_regular: gld_models.Observation = obj.latest_observation_regular
 
-    def get_observation_type(self, obj: gld_models.GroundwaterLevelDossier):
-        latest_observation: gld_models.Observation = obj.latest_observation
+        if latest_observation_regular and obj.latest_measurement_regular:
+            metadata: gld_models.ObservationMetadata = latest_observation_regular.observation_metadata
+            observation_type_regular = metadata.observation_type
 
-        if latest_observation and obj.latest_measurement:
-            metadata: gld_models.ObservationMetadata = latest_observation.observation_metadata
-            observation_type = metadata.observation_type
+            return observation_type_regular
+        
+        return None
+    
+    def get_observation_type_controle(self, obj: gld_models.GroundwaterLevelDossier):
+        latest_observation_controle: gld_models.Observation = obj.latest_observation_controle
 
-            return observation_type
+        if latest_observation_controle and obj.latest_measurement_controle:
+            metadata: gld_models.ObservationMetadata = latest_observation_controle.observation_metadata
+            observation_type_controle = metadata.observation_type
+
+            return observation_type_controle
         
         return None
 
-    def get_status(self, obj: gld_models.GroundwaterLevelDossier):
-        latest_observation: gld_models.Observation = obj.latest_observation
+    def get_status_regular(self, obj: gld_models.GroundwaterLevelDossier):
+        latest_observation_regular: gld_models.Observation = obj.latest_observation_regular
 
-        if latest_observation and obj.latest_measurement:
-            metadata: gld_models.ObservationMetadata = latest_observation.observation_metadata
-            if metadata.observation_type == "reguliereMeting":
-                status = metadata.status
-            else:
-                status = None
+        if latest_observation_regular and obj.latest_measurement_regular:
+            metadata: gld_models.ObservationMetadata = latest_observation_regular.observation_metadata
+            status = metadata.status
 
             return status
         
         return None
+    
+    def get_status_controle(self, obj: gld_models.GroundwaterLevelDossier):
+        ## Status of a controle measurement should always be None
+        return None
+    
+    def get_latest_observation_id(self, obj: gld_models.GroundwaterLevelDossier):
+        return None
+    
+    def get_latest_measurement_date(self, obj: gld_models.GroundwaterLevelDossier):
+        return None
 
+    def get_observation_type(self, obj: gld_models.GroundwaterLevelDossier):
+        return None
+    
+    def get_status(self, obj: gld_models.GroundwaterLevelDossier):
+        return None
+    
 class ObservationSerializer(serializers.ModelSerializer):
     timestamp_last_measurement = serializers.SerializerMethodField()
     # observation_type = serializers.SerializerMethodField()

@@ -72,14 +72,18 @@ def get_glds_with_latest_data_fast():
     # 1️⃣ Fetch all GLDs
     glds = list(gld_models.GroundwaterLevelDossier.objects.all())
 
-    # 2️⃣ Fetch all observations for these GLDs
+    # 2️⃣ Fetch all observations for these GLDs (with metadata prefetch for efficiency)
     observations = list(
-        gld_models.Observation.objects.filter(
+        gld_models.Observation.objects.select_related("observation_metadata").filter(
             groundwater_level_dossier__in=glds,
             observation_starttime__isnull=False
         )
     )
     obs_map = {obs.pk: obs for obs in observations}
+    # print(obs_map[4304])
+    # for o,v in obs_map.items():
+    #     if o == 4304:
+    #         print(v)
 
     # 3️⃣ Aggregate latest measurement_time per observation
     latest_meas_per_obs = (
@@ -91,177 +95,124 @@ def get_glds_with_latest_data_fast():
         .values('observation_id')
         .annotate(latest_time=Max('measurement_time'))
     )
-    # Map: observation_id -> latest measurement_time
     obs_latest_time_map = {row['observation_id']: row['latest_time'] for row in latest_meas_per_obs}
+    # print(obs_latest_time_map[4304])
+    # for o,v in obs_latest_time_map.items():
+    #     if o == 4304:
+    #         print(v)
 
     # 4️⃣ Fetch actual MeasurementTvp rows in bulk
     latest_measurements = gld_models.MeasurementTvp.objects.filter(
         observation_id__in=obs_latest_time_map.keys(),
         measurement_time__in=obs_latest_time_map.values()
-    )
-    meas_map = {m.observation_id: m for m in latest_measurements}
+    ).order_by("observation_id", "-measurement_time")
+
+    meas_map = {}
+    for m in latest_measurements:
+        if m.observation_id not in meas_map:
+            meas_map[m.observation_id] = m
+    # print(meas_map[4304])
 
     # 5️⃣ Attach latest measurement to each observation
     for obs in observations:
         obs.latest_measurement = meas_map.get(obs.pk)
 
-    # 6️⃣ Determine latest measurement and its observation per GLD
-    gld_meas_map = {}
-    gld_obs_map = {}
+    # 6️⃣ Determine latest measurement per GLD + observation_type
+    gld_type_meas_map = {}
+    gld_type_obs_map = {}
     for obs in observations:
-        gld_id = obs.groundwater_level_dossier_id
+        gld_id = obs.groundwater_level_dossier.groundwater_level_dossier_id
+        obs_type = getattr(obs.observation_metadata, "observation_type", None)
         meas = obs.latest_measurement
+        # if obs.observation_id == 4304:
+        #     print(meas)
+        #     stop
         if meas:
-            current = gld_meas_map.get(gld_id)
-            # Keep the newest measurement across all observations
+            key = (gld_id, obs_type)
+            current = gld_type_meas_map.get(key)
             if not current or meas.measurement_time > current.measurement_time:
-                gld_meas_map[gld_id] = meas
-                gld_obs_map[gld_id] = obs
+                gld_type_meas_map[key] = meas
+                gld_type_obs_map[key] = obs
 
-    # 7️⃣ Attach latest measurement to GLDs
+    # 7️⃣ Attach per-type latest measurement/observation to GLDs
     for gld in glds:
-        gld.latest_measurement = gld_meas_map.get(gld.groundwater_level_dossier_id)
-        gld.latest_observation = gld_obs_map.get(gld.groundwater_level_dossier_id)
+        # initialize
+        for obs_type in ["regular", "controle"]:
+            setattr(gld, f"latest_measurement_{obs_type}", None)
+            setattr(gld, f"latest_observation_{obs_type}", None)
+
+        # fill
+        for obs_type in ["regular", "controle"]:
+            if obs_type == "regular":
+                obs_type_value = "reguliereMeting"
+            if obs_type == "controle":
+                obs_type_value = "controlemeting"
+            key = (gld.groundwater_level_dossier_id, obs_type_value)
+            if key in gld_type_meas_map:
+                setattr(gld, f"latest_measurement_{obs_type}", gld_type_meas_map[key])
+                setattr(gld, f"latest_observation_{obs_type}", gld_type_obs_map[key])
+
+    # for key in gld_type_meas_map.keys():
+    #     if key[0] == 6972:
+    #         print(key[1], gld_type_meas_map[key])
+
 
     return glds
 
 # def get_glds_with_latest_data_fast():
-#     start = time.time()
-#     print("# Step 1: Find newest measurement per GLD (based on measurement_time)")
-
-#     latest_meas_subquery = (
-#         gld_models.MeasurementTvp.objects
-#         .filter(
-#             observation__groundwater_level_dossier=OuterRef("pk"),
-#             measurement_time__isnull=False,
-#         )
-#         .order_by("-measurement_time")
-#         .values("pk")[:1]
-#     )
-
-#     latest_meas_per_gld = (
-#         gld_models.GroundwaterLevelDossier.objects
-#         .annotate(latest_meas_id=Subquery(latest_meas_subquery))
-#         .values("pk", "latest_meas_id")
-#     )
-#     meas_id_map = {
-#         row["pk"]: row["latest_meas_id"]
-#         for row in latest_meas_per_gld if row["latest_meas_id"]
-#     }
-
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
-
-#     start = time.time()
-#     print("# Step 2: Fetch all GLDs in one go")
+#     # 1️⃣ Fetch all GLDs
 #     glds = list(gld_models.GroundwaterLevelDossier.objects.all())
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
 
-#     start = time.time()
-#     print("# Step 3: Fetch all latest measurements in bulk (with observations)")
-#     measurements = {
-#         m.pk: m
-#         for m in gld_models.MeasurementTvp.objects
-#         .select_related("observation")
-#         .filter(pk__in=meas_id_map.values())
-#     }
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
-
-#     start = time.time()
-#     print("# Step 4: Attach to objects")
-#     for gld in glds:
-#         latest_meas = measurements.get(meas_id_map.get(gld.pk))
-#         gld.latest_measurement = latest_meas
-#         gld.latest_observation = latest_meas.observation if latest_meas else None
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
-
-#     return glds
-
-# def get_glds_with_latest_data_fast():
-#     start = time.time()
-#     print("# Step 1: Find newest observation per GLD (based on observation_starttime)")
-#     latest_obs_subquery = (
-#         gld_models.Observation.objects
-#         .filter(
-#             groundwater_level_dossier=OuterRef('pk'),
+#     # 2️⃣ Fetch all observations for these GLDs
+#     observations = list(
+#         gld_models.Observation.objects.filter(
+#             groundwater_level_dossier__in=glds,
 #             observation_starttime__isnull=False
 #         )
-#         .order_by('-observation_starttime')
-#         .values('pk')[:1]
 #     )
-#     latest_obs_per_gld = (
-#         gld_models.GroundwaterLevelDossier.objects
-#         .annotate(latest_obs_id=Subquery(latest_obs_subquery))
-#         .values('pk', 'latest_obs_id')
-#     )
-#     obs_id_map = {
-#         row['pk']: row['latest_obs_id']
-#         for row in latest_obs_per_gld if row['latest_obs_id']
-#     }
+#     obs_map = {obs.pk: obs for obs in observations}
 
-#     start = time.time()
-#     print("# Step 2: Fetch all GLDs in one go")
-#     glds = list(gld_models.GroundwaterLevelDossier.objects.all())
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
-
-#     print("# Step 3: Get all latest observations in one go")
-#     observations = list(
-#         gld_models.Observation.objects.filter(pk__in=obs_id_map.values())
-#     )
-#     obs_map = {o.pk: o for o in observations}
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
-    
-#     start = time.time()
-#     print("# Step 4: Find newest measurement per observation (batch query)")
-#     # latest_meas_per_obs = (
-#     #     gld_models.MeasurementTvp.objects
-#     #     .filter(observation_id__in=obs_map.keys())
-#     #     .values('observation_id')
-#     #     .annotate(latest_meas_id=Max('measurement_tvp_id', filter=Q(measurement_time__isnull=False)))
-#     # )
-#     latest_meas_subquery = (
-#         gld_models.MeasurementTvp.objects
-#         .filter(observation=OuterRef("pk"), measurement_time__isnull=False)
-#         .order_by("-measurement_time")
-#         .values("pk")[:1]
-#     )
-
+#     # 3️⃣ Aggregate latest measurement_time per observation
 #     latest_meas_per_obs = (
-#         gld_models.Observation.objects
-#         .filter(pk__in=obs_map.keys())
-#         .annotate(latest_meas_id=Subquery(latest_meas_subquery))
+#         gld_models.MeasurementTvp.objects
+#         .filter(
+#             observation_id__in=obs_map.keys(),
+#             measurement_time__isnull=False
+#         )
+#         .values('observation_id')
+#         .annotate(latest_time=Max('measurement_time'))
 #     )
-#     meas_id_map = {
-#         o.observation_id: o.latest_meas_id
-#         for o in latest_meas_per_obs if o.latest_meas_id
-#     }
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
+#     # Map: observation_id -> latest measurement_time
+#     obs_latest_time_map = {row['observation_id']: row['latest_time'] for row in latest_meas_per_obs}
 
-#     start = time.time()
-#     print("# Step 5: Fetch those measurements in bulk")
-#     measurements = {
-#         m.pk: m
-#         for m in gld_models.MeasurementTvp.objects.filter(pk__in=meas_id_map.values())
-#     }
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
+#     # 4️⃣ Fetch actual MeasurementTvp rows in bulk
+#     latest_measurements = gld_models.MeasurementTvp.objects.filter(
+#         observation_id__in=obs_latest_time_map.keys(),
+#         measurement_time__in=obs_latest_time_map.values()
+#     )
+#     meas_map = {m.observation_id: m for m in latest_measurements}
 
-#     start = time.time()
-#     print("# Step 6: Attach to objects") 
+#     # 5️⃣ Attach latest measurement to each observation
 #     for obs in observations:
-#         obs.latest_measurement = measurements.get(meas_id_map.get(obs.pk))
+#         obs.latest_measurement = meas_map.get(obs.pk)
 
+#     # 6️⃣ Determine latest measurement and its observation per GLD
+#     gld_meas_map = {}
+#     gld_obs_map = {}
+#     for obs in observations:
+#         gld_id = obs.groundwater_level_dossier_id
+#         meas = obs.latest_measurement
+#         if meas:
+#             current = gld_meas_map.get(gld_id)
+#             # Keep the newest measurement across all observations
+#             if not current or meas.measurement_time > current.measurement_time:
+#                 gld_meas_map[gld_id] = meas
+#                 gld_obs_map[gld_id] = obs
+
+#     # 7️⃣ Attach latest measurement to GLDs
 #     for gld in glds:
-#         gld.latest_observation = obs_map.get(obs_id_map.get(gld.pk))
-
-#     end = time.time()
-#     print(f"time to run step: {end-start}")
+#         gld.latest_measurement = gld_meas_map.get(gld.groundwater_level_dossier_id)
+#         gld.latest_observation = gld_obs_map.get(gld.groundwater_level_dossier_id)
 
 #     return glds
 
@@ -316,6 +267,8 @@ def gmw_map_context(request):
         ## 
 
         gld_qs = get_glds_with_latest_data_fast()
+        # print([gld for gld in gld_qs if gld.groundwater_level_dossier_id == 6972])
+        # stop
         glds = serializers.GLDSerializer(gld_qs, many=True).data
         end = time.time()
         print(f"finished serializing GLDs in {end-start}s")
