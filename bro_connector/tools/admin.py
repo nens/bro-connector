@@ -14,6 +14,7 @@ from main.management.tasks import (
     retrieve_historic_gar,
 )
 import datetime
+import tempfile
 
 
 def _register(model, admin_class):
@@ -137,8 +138,6 @@ class XMLImportAdmin(admin.ModelAdmin):
 
     def _process_import(self, obj):
         """Handle XML/ZIP files"""
-        app_dir = os.path.abspath(os.path.curdir)
-
         file_full_path  = obj.file.path
         file_name  = os.path.basename(file_full_path)
         file_dir  = os.path.dirname(file_full_path)
@@ -155,29 +154,26 @@ class XMLImportAdmin(admin.ModelAdmin):
             obj.save()
 
         elif file_full_path.endswith(".zip"):
-            with ZipFile(file_full_path, "r") as zipf:
-                zipf.extractall(path=app_dir)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                with ZipFile(file_full_path, "r") as zipf:
+                    zipf.extractall(path=temp_dir)
 
-            # Process extracted files
-            for extracted_file in os.listdir(app_dir):
-                extracted_path = os.path.join(app_dir, extracted_file)
+                # Process extracted files
+                for extracted_file in os.listdir(temp_dir):
+                    extracted_path = os.path.join(temp_dir, extracted_file)
 
-                if extracted_file.endswith(".csv"):
-                    obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
-                    obj.save()
-
-                elif extracted_file.endswith(".xml"):
-                    extracted_dir = os.path.dirname(extracted_path)
-                    extracted_name = os.path.basename(extracted_path)
-                    completed, message = xml_import.import_xml(extracted_name, extracted_dir)
-                    obj.checked = True
-                    obj.imported = completed
-                    obj.report = (obj.report or "") + message
-                    obj.save()
-
-                else:
-                    obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
-                    obj.save()
+                    if extracted_file.endswith(".xml"):
+                        extracted_name = os.path.basename(extracted_path)
+                        completed, message = xml_import.import_xml(extracted_name, temp_dir)
+                        obj.checked = True
+                        obj.imported = completed
+                        obj.report = (obj.report or "") + message
+                        obj.save()
+                    else:
+                        obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
+                        obj.save()
+        else:
+            obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
 
     def update_database(self, request, queryset):
         for obj in queryset:

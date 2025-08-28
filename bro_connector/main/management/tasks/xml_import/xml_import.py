@@ -1,47 +1,67 @@
-from .bro_handlers import GMWHandler
-from .progressor import Progress
+from .bro_handlers import GMWHandler as xmlGMWHandler
+from ..bro_handlers import GMWHandler as broGMWHandler
 import gmw.models as gmw_models
 import bro.models as bro_models
 import datetime
 from string import punctuation, whitespace
 from django.contrib.gis.geos import Point
 import os
+import xml.etree.ElementTree as ET
 
 os.environ["PROJ_LIB"] = r"C:\OSGeo4W\share\proj"
 
 
 def import_xml(file: str, path: str) -> tuple:
-    gmw = GMWHandler()
-    progressor = Progress()
     file_path = os.path.join(path, file)
-    gmw.get_data(file_path)
+
+    # Read XML to detect type
+    try:
+        with open(file_path, "r") as f:
+            xml_data = f.read()
+            root = ET.fromstring(xml_data)
+    except Exception as e:
+        return False, f"Failed to parse XML: {e}"
+
+    # Detect type by looking for key elements
+    if root.find(".//{*}GMW_Construction") is not None:
+        gmw = xmlGMWHandler()
+        id_key = "objectIdAccountableParty"
+        gmw.get_data(file_path)
+    elif root.find(".//{*}GMW_PPO") is not None or root.find(".//{*}GMW_PO") is not None:
+        gmw = broGMWHandler()
+        id_key = "deliveryAccountableParty"
+        # For broGMWHandler, full_history is required; set False for file import
+        gmw.get_data(id=None, full_history=False, file=file_path)
+    else:
+        return False, f"\n{file} is not a recognized GMW XML file."
+
+    # Build dictionary
     gmw.root_data_to_dictionary()
     gmw_dict = gmw.dict
 
-    if "GMW_Construction" not in gmw_dict:
-        completed = False
-        message = f"\n{file} is not a GMW xml file."
-        return (completed, message)
+    # Select the correct ID field
+    internal_id = gmw_dict.get(id_key, None)
+    bro_id = gmw_dict.get("broId", None)
 
+    # Check if already in DB
     try:
-        gmw_models.GroundwaterMonitoringWellStatic.objects.get(
-            internal_id=gmw_dict.get("objectIdAccountableParty", None),
-        )
-        message = f"objectIdAccountableParty: {gmw_dict.get('objectIdAccountableParty', None)} is already in database."
-        completed = True
-        print(message)
-        return (completed, message)
+        exists = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
+            internal_id=internal_id
+        ).exists() or gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
+            bro_id=bro_id
+        ).exists()
+
+        if exists:
+            message = f"\ninternal_id: {internal_id} or bro_id: {bro_id} is already in database."
+            print(message)
+            return False, message
 
     except gmw_models.GroundwaterMonitoringWellStatic.DoesNotExist:
         pass
 
-    # Invullen initiële waarden.
+    # Initialize and create objects
     ini = InitializeData(gmw_dict)
-
-    # Eerst de put maken, want die zit in het onderhoudsmoment.
     ini.well()
-
-    # Dan de putgeschiedenis.
     ini.well_dynamic()
     ini.event()
 
@@ -49,27 +69,21 @@ def import_xml(file: str, path: str) -> tuple:
         ini.increment_tube_number()
         ini.filter()
         ini.filter_dynamic()
-
         for _ in range(int(gmw.number_of_geo_ohm_cables)):
             ini.increment_geo_ohm_number()
             ini.geo_ohm()
-
             for _ in range(int(gmw.number_of_electrodes)):
                 ini.increment_electrode_number()
                 ini.electrode()
-
             ini.reset_electrode_number()
         ini.reset_geo_ohm_number()
 
-    # Dan het onderhoudsmoment, want die zit in de geschiedenissen.
     gmw.reset_values()
     ini.reset_tube_number()
-    progressor.next()
-    progressor.progress()
-
+ 
     completed = True
-    message = f"Put {ini.meetpunt_instance.internal_id} en bijbehorende filters gemaakt aan de hand van XML."
-    return (completed, message)
+    message = f"\nPut {ini.gmw_dict.get('broId', None)} en bijbehorende filters gemaakt aan de hand van XML."
+    return completed, message
 
 
 def get_sediment_sump_present(dict: dict, prefix: str) -> bool | None:
