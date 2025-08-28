@@ -99,6 +99,21 @@
           GMWs aan BRO aanleveren
         </label>
       </div>
+      <div
+        class="mapbox-checkbox-wrapper"
+        onclick="event.preventDefault(); handleWellValue('is_active', this)"
+      >
+        <label class="mapbox-checkbox-label" for="checkbox-is_active">
+          <input
+            type="checkbox"
+            class="mapbox-checkbox default-indeterminate"
+            id="checkbox-is_active"
+            name="checkbox-is_active"
+            onclick="handleWellValueCheckboxClick(this)"
+          />
+          Actieve put
+        </label>
+      </div>
       <hr />
       <h4>GMN's:</h4>
       <div class="mapbox-checkbox-wrapper" onclick="event.preventDefault();">

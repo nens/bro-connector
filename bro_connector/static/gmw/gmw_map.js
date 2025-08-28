@@ -54,7 +54,11 @@ function findObjectsByIds(ids, glds) {
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
   console.log(well.glds)
-  console.log(findObjectsByIds(well.glds, glds))
+  const well_glds = findObjectsByIds(well.glds, glds)
+  if (well.bro_id === "GMW000000057308") {
+    console.log("GLDs:", well_glds);
+  }
+
   const popup = document.createElement("div");
   const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;

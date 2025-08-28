@@ -198,6 +198,7 @@ class GLDSerializer(serializers.ModelSerializer):
     latest_measurement_date = serializers.SerializerMethodField()
     observation_type = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    is_active = serializers.SerializerMethodField()
 
     class Meta:
         model = gld_models.GroundwaterLevelDossier
@@ -218,7 +219,8 @@ class GLDSerializer(serializers.ModelSerializer):
             "latest_observation_id",
             "latest_measurement_date",
             "observation_type",
-            "status"
+            "status",
+            "is_active",
         ]
 
     def get_groundwater_monitoring_tube_static_id(self, obj: gld_models.GroundwaterLevelDossier):
@@ -311,6 +313,17 @@ class GLDSerializer(serializers.ModelSerializer):
     
     def get_status(self, obj: gld_models.GroundwaterLevelDossier):
         return None
+    
+    def get_is_active(self, obj: gld_models.GroundwaterLevelDossier):
+        active_measurement_regular = active_measurement_controle = False
+        latest_observation_regular: gld_models.Observation = obj.latest_observation_regular
+        if latest_observation_regular:
+            active_measurement_regular = latest_observation_regular.active_measurement
+        latest_observation_controle: gld_models.Observation = obj.latest_observation_controle
+        if latest_observation_controle:
+            active_measurement_controle = latest_observation_controle.active_measurement
+
+        return active_measurement_regular or active_measurement_controle
     
 class ObservationSerializer(serializers.ModelSerializer):
     timestamp_last_measurement = serializers.SerializerMethodField()
