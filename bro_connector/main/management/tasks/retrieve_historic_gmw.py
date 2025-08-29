@@ -17,6 +17,9 @@ from gmw.models import (
     Electrode,
 )
 from bro.models import Organisation
+from django.db.models.signals import post_save
+from gmw.signals import on_save_groundwater_monitoring_well_static, on_save_groundwater_monitoring_tube_static
+from django.db import transaction
 
 import logging
 
@@ -70,26 +73,34 @@ def run(kvk_number: str = None, bro_type: str = "gmw", handler: str = "shape", s
             continue
 
         # Invullen initiële waarden.
-        ini = InitializeData(gmw_dict)
-        ini.well_static()
-        gmws = ini.gmws
-        ini.well_dynamic()
+        try:
+            post_save.disconnect(on_save_groundwater_monitoring_well_static, sender=GroundwaterMonitoringWellStatic)
+            post_save.disconnect(on_save_groundwater_monitoring_tube_static, sender=GroundwaterMonitoringTubeStatic)
+            
+            with transaction.atomic():
+                ini = InitializeData(gmw_dict)
+                ini.well_static()
+                gmws = ini.gmws
+                ini.well_dynamic()
 
-        for tube_number in range(gmw.number_of_tubes):
-            ini.increment_tube_number()
-            ini.tube_static()
-            ini.tube_dynamic()
+                for tube_number in range(gmw.number_of_tubes):
+                    ini.increment_tube_number()
+                    ini.tube_static()
+                    ini.tube_dynamic()
 
-            for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
-                ini.increment_geo_ohm_number()
-                ini.geo_ohm()
+                    for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
+                        ini.increment_geo_ohm_number()
+                        ini.geo_ohm()
 
-                for electrode in range(int(gmw.number_of_electrodes)):
-                    ini.increment_electrode_number()
-                    ini.electrode()
+                        for electrode in range(int(gmw.number_of_electrodes)):
+                            ini.increment_electrode_number()
+                            ini.electrode()
 
-                ini.reset_electrode_number()
-            ini.reset_geo_ohm_number()
+                        ini.reset_electrode_number()
+                    ini.reset_geo_ohm_number()
+        finally:
+            post_save.connect(on_save_groundwater_monitoring_well_static, sender=GroundwaterMonitoringWellStatic)
+            post_save.connect(on_save_groundwater_monitoring_tube_static, sender=GroundwaterMonitoringTubeStatic)
 
         events_handler.create_construction_event(gmw_dict, gmws)
         imported += 1

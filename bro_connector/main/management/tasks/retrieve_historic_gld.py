@@ -151,7 +151,7 @@ def run(kvk_number: str = None, bro_type: str = "gld", handler: str = "shape", s
         # print(gld.number_of_measurements)
         # print(gld.total_measurements)
         try:
-            post_save.connect(on_save_observation, sender=Observation)
+            post_save.disconnect(on_save_observation, sender=Observation)
             with transaction.atomic():
                 step = max(1, gld.total_measurements // 4)
                 for observation_number in range(gld.number_of_observations):

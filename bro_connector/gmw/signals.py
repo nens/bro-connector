@@ -6,7 +6,9 @@ from .models import (
     gmw_registration_log,
     Event,
     GroundwaterMonitoringWellStatic,
+    GroundwaterMonitoringWellDynamic,
     GroundwaterMonitoringTubeStatic,
+    GroundwaterMonitoringTubeDynamic,
     Electrode,
 )
 from gmw.bro_validators.well_validation import WellValidation
@@ -28,20 +30,40 @@ def clear_map_cache(sender, **kwargs):
     cache.clear()
 
 @receiver(post_save, sender=GroundwaterMonitoringWellStatic)
-def on_save_groundwater_monitoring_well_static(sender, instance, **kwargs):
-    return
+def on_save_groundwater_monitoring_well_static(sender, instance, created, **kwargs):
+    if created and not instance.state.exists():
+        GroundwaterMonitoringWellDynamic.objects.create(
+            groundwater_monitoring_well_static=instance,
+            date_from=datetime.datetime.now(),
+        )
 
 @receiver(post_delete, sender=GroundwaterMonitoringWellStatic)
 def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):
-    return
+    """
+    Delete all GroundwaterMonitoringWellDynamic objects related to the
+    deleted GroundwaterMonitoringWellStatic instance.
+    """
+    GroundwaterMonitoringWellDynamic.objects.filter(
+        groundwater_monitoring_well_static=instance
+    ).delete()
 
 @receiver(post_save, sender=GroundwaterMonitoringTubeStatic)
-def on_save_groundwater_monitoring_tube_static(sender, instance, **kwargs):
-    return
+def on_save_groundwater_monitoring_tube_static(sender, instance, created, **kwargs):
+    if created and not instance.state.exists():
+        GroundwaterMonitoringTubeDynamic.objects.create(
+            groundwater_monitoring_well_static=instance,
+            date_from=datetime.datetime.now(),
+        )
 
 @receiver(post_delete, sender=GroundwaterMonitoringTubeStatic)
 def on_delete_groundwater_monitoring_tube_static(sender, instance, **kwargs):
-    return
+    """
+    Delete all GroundwaterMonitoringTubeDynamic objects related to the
+    deleted GroundwaterMonitoringTubeStatic instance.
+    """
+    GroundwaterMonitoringTubeDynamic.objects.filter(
+        groundwater_monitoring_tube_static=instance
+    ).delete()
 
 # @receiver(post_save, sender=gmw_registration_log)
 # def on_save_gmw_synchronisatie_log(
