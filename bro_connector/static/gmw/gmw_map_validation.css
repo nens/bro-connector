@@ -23,7 +23,56 @@
   max-height: 28vh;
 }
 
+/* Container positioning, similar to #legend-top */
+#legend-container {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  z-index: 1000;              /* ensure above map/canvas */
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  overflow: hidden;
+  max-width: 220px;
+  font-size: 14px;
+}
+
+/* The button */
+#legend-button {
+  background-color: #87c1ff;   /* same blue as validation/label buttons */
+  color: white;
+  padding: 4px 12px;           /* same padding */
+  border: none;                /* remove default border */
+  border-radius: 4px;          /* same rounded corners */
+  cursor: pointer;
+  font-size: 14px;             /* match other buttons */
+  font-weight: normal;         /* match other buttons’ weight */
+  text-align: center;
+}
+
+/* Hover effect like other buttons */
+#legend-button:hover {
+  background-color: #51a2f8;
+}
+
+/* Legend content hidden by default */
 #map-legend {
+  display: none;
+  padding: 10px;
+  position: relative;   /* keep inside container */
+  bottom: auto;
+  right: auto;
+  z-index: auto;
+  max-height: 40vh;
+  overflow: auto;
+}
+
+/* Show legend when open */
+#legend-container.legend-open #map-legend {
+  display: block;
+}
+
+/* #map-legend {
   position: absolute;
   bottom: 30px;
   right: 20px;
@@ -31,13 +80,13 @@
   background: white;
   /* border: 1px solid #ccc; */
   /* border-radius: 6px; */
-  padding: 10px 15px;
+  /* padding: 10px 15px;
   font-size: 14px;
-  font-weight: 200;
+  font-weight: 200; */
   /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */  
-  max-height: 100vh;
+  /* max-height: 100vh;
   overflow: auto;
-}
+} */
 
 #map-legend h4 {
   font-size: 1em; /* slightly smaller than default */
@@ -376,5 +425,9 @@
 }
 
 #toggle-text-layer:hover {
+  background-color: #51a2f8;
+}
+
+#validation-map-btn:hover {
   background-color: #51a2f8;
 }
