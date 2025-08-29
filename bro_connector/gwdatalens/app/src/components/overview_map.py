@@ -90,7 +90,7 @@ def draw_map(
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
-        "marker": go.scattermap.Marker(
+        "marker": go.scattermapbox.Marker(
             size=6,
             # sizeref=0.5,
             # sizemin=2,
@@ -130,7 +130,7 @@ def draw_map(
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
-        "marker": go.scattermap.Marker(
+        "marker": go.scattermapbox.Marker(
             size=7,
             opacity=0.8,
             # sizeref=0.5,
