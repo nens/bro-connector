@@ -142,10 +142,6 @@ class XMLImportAdmin(admin.ModelAdmin):
         file_name  = os.path.basename(file_full_path)
         file_dir  = os.path.dirname(file_full_path)
 
-        print(file_full_path)
-        print(file_name)
-        print(file_dir)
-
         if file_full_path.endswith(".xml"):
             completed, message = xml_import.import_xml(file_name, file_dir)
             obj.checked = True
@@ -173,7 +169,8 @@ class XMLImportAdmin(admin.ModelAdmin):
                         obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
                         obj.save()
         else:
-            obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
+            obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {file_name} is not supported."
+            obj.save()
 
     def update_database(self, request, queryset):
         for obj in queryset:
