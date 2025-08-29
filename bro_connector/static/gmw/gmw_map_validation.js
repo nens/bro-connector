@@ -153,7 +153,7 @@ const createPopup = (well) => {
       const ObsPageValue = getObsPageValue(gld.latest_observation_id)
 
       gldsContent += `
-        <details style="margin-bottom:6px;">
+        <details ${i === 0 ? "open" : ""} style="margin-bottom:6px;">
           <summary style="cursor:pointer;font-weight:bold;">
             Filterbuis ${tube_number} (${(!gld.observation_type) ? "geen meting" : measurementType})
           </summary>

@@ -103,22 +103,6 @@
         </div>
         <div
           class="mapbox-checkbox-wrapper"
-          onclick="event.preventDefault(); handleTypeClick('controle', this)"
-        >
-          <label class="mapbox-checkbox-label" for="checkbox-controle">
-            <input
-              type="checkbox"
-              class="mapbox-checkbox"
-              id="checkbox-controle"
-              name="checkbox-controle"
-              checked
-              onclick="handleCheckboxClick(this)"
-            />
-            Controle meting
-          </label>
-        </div>
-        <div
-          class="mapbox-checkbox-wrapper"
           onclick="event.preventDefault(); handleTypeClick('regular', this)"
         >
           <label class="mapbox-checkbox-label" for="checkbox-regular">
@@ -131,6 +115,22 @@
               onclick="handleCheckboxClick(this)"
             />
             Reguliere meting
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('controle', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-controle">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-controle"
+              name="checkbox-controle"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Controle meting
           </label>
         </div>
       </div>
@@ -219,26 +219,11 @@
 
 <!-- LEGEND -->
 <div id="map-legend">
-  <!-- Controle metingen -->
-  <h4>Controle metingen:</h4>
-  <div class="legend-item">
-    <span class="legend-dot hatched" style="background-color: #4CAF50;"></span>
-    <span>Korter 2 maanden</span>
-  </div>
-  <div class="legend-item">
-    <span class="legend-dot hatched" style="background-color: #FFC107;"></span>
-    <span>Tussen 2 en 6 maanden</span>
-  </div>
-  <div class="legend-item">
-    <span class="legend-dot hatched" style="background-color: #F44336;"></span>
-    <span>Meer 6 maanden</span>
-  </div>
-
   <!-- Reguliere metingen -->
   <h4>Reguliere metingen:</h4>
   <div class="legend-item">
     <span class="legend-dot" style="background-color: #4CAF50;"></span>
-    <span>Korter 1 maand</span>
+    <span>Korter dan 1 maand</span>
   </div>
   <div class="legend-item">
     <span class="legend-dot" style="background-color: #FFC107;"></span>
@@ -246,7 +231,22 @@
   </div>
   <div class="legend-item">
     <span class="legend-dot" style="background-color: #F44336;"></span>
-    <span>Meer 2 maanden</span>
+    <span>Meer dan 2 maanden</span>
+  </div>
+
+  <!-- Controle metingen -->
+  <h4>Controle metingen:</h4>
+  <div class="legend-item">
+    <span class="legend-dot hatched" style="background-color: #4CAF50;"></span>
+    <span>Korter dan 2 maanden</span>
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot hatched" style="background-color: #FFC107;"></span>
+    <span>Tussen 2 en 6 maanden</span>
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot hatched" style="background-color: #F44336;"></span>
+    <span>Meer dan 6 maanden</span>
   </div>
 
   <!-- Overig -->
