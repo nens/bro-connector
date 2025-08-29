@@ -86,6 +86,28 @@ class ObservationInline(admin.TabularInline):
     extra = 0
     max_num = 0
 
+class MeasurementTvpInline(admin.TabularInline):
+    model = models.MeasurementTvp
+    show_change_link = True
+    search_fields = get_searchable_fields(models.MeasurementTvp)
+    fields = (
+        "measurement_time",
+        "field_value",
+        "field_value_unit",
+        "comment",
+    )
+
+    readonly_fields = [
+        "measurement_time",
+        "field_value",
+        "field_value_unit",
+        "comment",
+    ]
+
+    ordering = ["-measurement_time"]
+    extra = 0
+    max_num = 0
+
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -212,7 +234,7 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
 
     list_display = ("__str__",)
     ordering = ("-measurement_time",)
-    autocomplete_fields = ("measurement_point_metadata",)
+    autocomplete_fields = ("measurement_point_metadata", "observation",)
     list_filter = (ObservationFilter,)
 
     def get_queryset(self, request):
@@ -266,11 +288,13 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_id_bro",
     ]
 
+    inlines = (MeasurementTvpInline,)
+
     actions = ["close_observation", "change_up_to_date_status"]
 
     ordering = ["-observation_starttime"]
-    extra = 0
-    max_num = 0
+    # extra = 0
+    # max_num = 0
 
     def observation_type(self, obj: models.Observation):
         if obj.observation_metadata is not None:

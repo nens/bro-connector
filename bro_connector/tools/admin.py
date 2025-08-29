@@ -163,7 +163,7 @@ class GLDImportAdmin(admin.ModelAdmin):
         "validated",
         "executed",
     )
-
+    autocomplete_fields = ["groundwater_monitoring_tube", "responsible_party"]
     readonly_fields = ["report", "validated", "executed"]
 
     def save_model(self, request, obj, form, change):
