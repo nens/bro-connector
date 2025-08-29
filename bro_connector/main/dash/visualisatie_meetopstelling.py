@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import logging
 
 import dash_bootstrap_components as dbc
@@ -720,10 +720,12 @@ def get_dropdown_events(groundwater_monitoring_well_static_id):
 
 
 def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
+   
     if event.groundwater_monitoring_well_dynamic:
         return event.groundwater_monitoring_well_dynamic
 
     datetime_event = event.event_date
+
     return (
         GroundwaterMonitoringWellDynamic.objects.filter(
             groundwater_monitoring_well_static=event.groundwater_monitoring_well_static,
@@ -756,6 +758,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
             well_code=groundwater_monitoring_well_static_id,
         )
     event = get_object_or_404(Event, change_id=event_id)
+    logger.info(event)
     well_dynamic = get_well_dynamic(event)
     datetime_event = event.event_date
     well_head_protector = well_dynamic.well_head_protector
