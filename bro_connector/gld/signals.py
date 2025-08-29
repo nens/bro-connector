@@ -3,6 +3,7 @@ from django.db.models.signals import (
     post_delete,
     pre_save,
 )
+from django.core.cache import cache
 from django.dispatch import receiver
 from .models import (
     gld_registration_log,
@@ -52,7 +53,13 @@ def _calculate_value_tube(
         return (field_value * 10.1974) + tube_top_position
     else:
         return None
-
+    
+@receiver([post_save, post_delete], sender=GroundwaterLevelDossier)
+@receiver([post_save, post_delete], sender=Observation)
+@receiver([post_save, post_delete], sender=MeasurementTvp)
+def clear_map_cache(sender, **kwargs):
+    print("Map cache cleared due to model change:", sender.__name__)
+    cache.clear()
 
 @receiver(post_save, sender=gld_registration_log)
 def on_save_gld_registration_log(
