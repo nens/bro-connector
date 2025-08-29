@@ -10,7 +10,7 @@ bro_connector/gmw_aanlevering/migrations
 bro_connector/tools/bulk
 bro_connector/tools/gmn
 bro_connector/tools/gmw
-bro_connector/.cache/
+bro_connector/.cache/*.djcache
 venv
 **/migrations/**
 bro_connector/qc_tool/app/assets/.mapbox_access_token
