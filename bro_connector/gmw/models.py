@@ -36,6 +36,7 @@ from gmw.choices import (
     ELECTRODESTATUS,
     EVENTNAME,
     CONSTRUCTIONSTANDARD,
+    KRW_CHOICES,
 )
 import main.utils.validators_models as validators_models
 from bro.models import Organisation, BROProject
@@ -556,6 +557,13 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
     )
     deliver_gld_to_bro = models.BooleanField(
         blank=True, default=False, verbose_name="Lever GLD aan naar BRO"
+    )
+    krw_body = models.CharField(
+        choices=KRW_CHOICES,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Grondwaterlichaam",
     )
     tube_number = models.IntegerField(
         blank=True,
