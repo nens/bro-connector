@@ -47,7 +47,7 @@ def get_map_settings(settings):
         map_settings = {
             "lon": settings.MAP_CENTER[0],
             "lat": settings.MAP_CENTER[1], 
-            "zoom": settings.ZOOM,
+            "zoom": settings.MAP_ZOOM,
         }
 
     return map_settings
