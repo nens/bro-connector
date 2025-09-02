@@ -90,10 +90,11 @@ class BroImport(BaseModel):
         verbose_name_plural = "BRO Importer"
 
     def save(self, *args, **kwargs) -> None:
-        file_name = Path(self.file.name).name
+        if self.file:
+            file_name = Path(self.file.name).name
 
-        if default_storage.exists(str(file_name)):
-            self.file.name = str(file_name)
+            if default_storage.exists(str(file_name)):
+                self.file.name = str(file_name)
 
         if not self.pk:
             self.import_date = datetime.datetime.now()
@@ -133,7 +134,6 @@ class XMLImport(BaseModel):
         verbose_name = "XML Importer"
         verbose_name_plural = "XML Importer"
 
-
 class GLDImport(BaseModel):
     file = models.FileField(
         upload_to="bulk",
@@ -153,6 +153,19 @@ class GLDImport(BaseModel):
     )
     responsible_party = models.ForeignKey(
         Organisation, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Bronhouder"
+    )
+    gld_bro_id = models.CharField(
+        max_length=254, verbose_name="GLD BRO ID", null=True, blank=True
+    )
+    quality_regime = models.CharField(
+        choices=(
+            ("IMBRO", "IMBRO"),
+            ("IMBRO/A", "IMBRO/A"),
+        ),
+        max_length=255,
+        null=True,
+        blank=False,
+        verbose_name="Kwaliteitsregime",
     )
     observation_type = models.CharField(
         choices=OBSERVATIONTYPE, max_length=200, blank=False, null=False, verbose_name="Observatie type"
@@ -214,7 +227,6 @@ class GLDImport(BaseModel):
             return
         else:
             raise ValidationError("File should be of type: [csv, zip]")
-
 
 class GMNImport(BaseModel):
     file = models.FileField(
@@ -289,8 +301,7 @@ class GMNImport(BaseModel):
             return
         else:
             raise ValidationError("File should be of type: [csv, zip]")
-
-
+        
 class GMWImport(BaseModel):
     file = models.FileField(
         upload_to="gmw",
@@ -323,8 +334,16 @@ class GMWImport(BaseModel):
         verbose_name = "GMW Importer"
         verbose_name_plural = "GMW Importer"
 
+    def save(self, *args, **kwargs) -> None:
+        if self.file:
+            file_name = Path(self.file.name).name
+
+            if default_storage.exists(str(file_name)):
+                self.file.name = str(file_name)
+
     def clean(self):
         if self.file.path.endswith(".zip") or self.file.path.endswith(".csv"):
             return
         else:
             raise ValidationError("File should be of type: [csv, zip]")
+

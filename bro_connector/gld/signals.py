@@ -12,6 +12,8 @@ from .models import (
     MeasurementTvp,
     MeasurementPointMetadata,
     Observation,
+    ObservationProcess,
+    ObservationMetadata
 )
 from gmw.models import GroundwaterMonitoringTubeStatic
 import reversion
@@ -56,7 +58,10 @@ def _calculate_value_tube(
     
 @receiver([post_save, post_delete], sender=GroundwaterLevelDossier)
 @receiver([post_save, post_delete], sender=Observation)
+@receiver([post_save, post_delete], sender=ObservationProcess)
+@receiver([post_save, post_delete], sender=ObservationMetadata)
 @receiver([post_save, post_delete], sender=MeasurementTvp)
+@receiver([post_save, post_delete], sender=MeasurementPointMetadata)
 def clear_map_cache(sender, **kwargs):
     print("Map cache cleared due to model change:", sender.__name__)
     cache.clear()

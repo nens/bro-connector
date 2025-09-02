@@ -1,9 +1,17 @@
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import post_save, m2m_changed, post_delete
 from django.dispatch import receiver
 from .models import GroundwaterMonitoringNet, MeasuringPoint, Subgroup
 import logging
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
+
+@receiver([post_save, post_delete], sender=GroundwaterMonitoringNet)
+@receiver([post_save, post_delete], sender=MeasuringPoint)
+@receiver([post_save, post_delete], sender=Subgroup)
+def clear_map_cache(sender, **kwargs):
+    print("Map cache cleared due to model change:", sender.__name__)
+    cache.clear()
 
 
 @receiver(post_save, sender=GroundwaterMonitoringNet)

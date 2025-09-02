@@ -51,7 +51,7 @@ def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):
 def on_save_groundwater_monitoring_tube_static(sender, instance, created, **kwargs):
     if created and not instance.state.exists():
         GroundwaterMonitoringTubeDynamic.objects.create(
-            groundwater_monitoring_well_static=instance,
+            groundwater_monitoring_tube_static=instance,
             date_from=datetime.datetime.now(),
         )
 

@@ -149,7 +149,7 @@ const createPopup = (well) => {
       const measurementType = formatString(gld.observation_type);
       const status = formatString(gld.status);
       const latestDate = formatDate(gld.latest_measurement_date);
-      const color = getDateColor(gld.latest_measurement_date);
+      const color = getDateColor(gld.observation_type, gld.latest_measurement_date);
       const ObsPageValue = getObsPageValue(gld.latest_observation_id)
 
       gldsContent += `

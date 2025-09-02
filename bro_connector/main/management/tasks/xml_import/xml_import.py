@@ -4,9 +4,12 @@ import gmw.models as gmw_models
 import bro.models as bro_models
 import datetime
 from string import punctuation, whitespace
+from django.conf import settings
 from django.contrib.gis.geos import Point
 import os
 import xml.etree.ElementTree as ET
+from django.db.models.signals import post_save
+from gmw.signals import on_save_groundwater_monitoring_well_static, on_save_groundwater_monitoring_tube_static
 
 os.environ["PROJ_LIB"] = r"C:\OSGeo4W\share\proj"
 
@@ -59,27 +62,34 @@ def import_xml(file: str, path: str) -> tuple:
     except gmw_models.GroundwaterMonitoringWellStatic.DoesNotExist:
         pass
 
-    # Initialize and create objects
-    ini = InitializeData(gmw_dict)
-    ini.well()
-    ini.well_dynamic()
-    ini.event()
+    try:
+        post_save.disconnect(on_save_groundwater_monitoring_well_static, sender=gmw_models.GroundwaterMonitoringWellStatic)
+        post_save.disconnect(on_save_groundwater_monitoring_tube_static, sender=gmw_models.GroundwaterMonitoringTubeStatic)
+        # Initialize and create objects
+        ini = InitializeData(gmw_dict)
+        ini.well()
+        ini.well_dynamic()
+        ini.event()
 
-    for _ in range(gmw.number_of_tubes):
-        ini.increment_tube_number()
-        ini.filter()
-        ini.filter_dynamic()
-        for _ in range(int(gmw.number_of_geo_ohm_cables)):
-            ini.increment_geo_ohm_number()
-            ini.geo_ohm()
-            for _ in range(int(gmw.number_of_electrodes)):
-                ini.increment_electrode_number()
-                ini.electrode()
-            ini.reset_electrode_number()
-        ini.reset_geo_ohm_number()
+        for _ in range(gmw.number_of_tubes):
+            ini.increment_tube_number()
+            ini.filter()
+            ini.filter_dynamic()
+            for _ in range(int(gmw.number_of_geo_ohm_cables)):
+                ini.increment_geo_ohm_number()
+                ini.geo_ohm()
+                for _ in range(int(gmw.number_of_electrodes)):
+                    ini.increment_electrode_number()
+                    ini.electrode()
+                ini.reset_electrode_number()
+            ini.reset_geo_ohm_number()
 
-    gmw.reset_values()
-    ini.reset_tube_number()
+        gmw.reset_values()
+        ini.reset_tube_number()
+
+    finally:
+        post_save.connect(on_save_groundwater_monitoring_well_static, sender=gmw_models.GroundwaterMonitoringWellStatic)
+        post_save.connect(on_save_groundwater_monitoring_tube_static, sender=gmw_models.GroundwaterMonitoringTubeStatic)
  
     completed = True
     message = f"\nPut {ini.gmw_dict.get('broId', None)} en bijbehorende filters gemaakt aan de hand van XML."
@@ -167,17 +177,19 @@ class InitializeData:
     def increment_electrode_number(self):
         self.electrode_number = self.electrode_number + 1
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
-
-    def get_accountable_party(self) -> bro_models.Organisation:
+   
+    def get_accountable_party(self) -> bro_models.Organisation | None:
         kvk_nummer = self.gmw_dict.get("deliveryAccountableParty", None)
-        if kvk_nummer is not None:
-            party, created = bro_models.Organisation.objects.get_or_create(
-                company_number=kvk_nummer,
-            )
+        if kvk_nummer is None:
+            return None
+        if kvk_nummer.isdigit():
+            organisation = bro_models.Organisation.objects.get_or_create(company_number=kvk_nummer)[0]
+            organisation.save()
+            return organisation
         else:
-            party = None
-
-        return party
+            organisation = bro_models.Organisation.objects.get_or_create(name=kvk_nummer)[0]
+            organisation.save()
+            return organisation
 
     def get_coordinates(self) -> Point:
         position = self.gmw_dict.get("pos_1", None)
@@ -223,6 +235,11 @@ class InitializeData:
                 vertical_datum=self.gmw_dict.get("verticalDatum", None),
                 last_horizontal_positioning_date=construction_date,
                 construction_coordinates=self.get_coordinates(),
+                deliver_gmw_to_bro = True,
+                complete_bro = True,
+                in_management = True
+                    if self.gmw_dict.get("deliveryAccountableParty", None) == settings.KVK_USER 
+                    else False, 
             )
         )
 

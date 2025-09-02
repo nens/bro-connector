@@ -35,6 +35,11 @@ class GMWHandler(BROHandler):
         self.dict = {}
 
     def get_data(self, id: str, full_history: bool, file = None):
+        if full_history:
+            fh = "ja"
+        else:
+            fh = "nee"
+            
         if not file:
             basis_url = "https://publiek.broservices.nl/gm/gmw/v1/objects/"
             gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
@@ -52,14 +57,6 @@ class GMWHandler(BROHandler):
                 except Exception as e:
                     self.root = None
                     print(f"{e}")
-
-
-        if full_history:
-            fh = "ja"
-        else:
-            fh = "nee"
-
-
 
     def root_data_to_dictionary(self):
         tags = []

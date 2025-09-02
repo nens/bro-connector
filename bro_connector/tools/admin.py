@@ -92,6 +92,8 @@ class XMLImportAdmin(admin.ModelAdmin):
         except tools_models.XMLImport.DoesNotExist:
             old_file = None
 
+        print(obj.file.path)
+
         # call super so file is saved
         super().save_model(request, obj, form, change)
 
@@ -112,6 +114,7 @@ class XMLImportAdmin(admin.ModelAdmin):
         file_full_path  = obj.file.path
         file_name  = os.path.basename(file_full_path)
         file_dir  = os.path.dirname(file_full_path)
+        print(file_full_path, file_name, file_dir)
 
         if file_full_path.endswith(".xml"):
             completed, message = xml_import.import_xml(file_name, file_dir)

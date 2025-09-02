@@ -140,7 +140,6 @@ def process_zip_file(instance: GLDImport):
 def process_csv_file(instance: GLDImport):
     # Validate CSV file
     reader = validate_csv(instance.file, instance.file.name, instance)
-
     time_col = "time" if "time" in reader.columns else "tijd"
     value_col = "value" if "value" in reader.columns else "waarde"
     gld = GroundwaterLevelDossier.objects.filter(
@@ -149,7 +148,9 @@ def process_csv_file(instance: GLDImport):
     ).first()
     if not gld:
         gld = GroundwaterLevelDossier.objects.update_or_create(
-            groundwater_monitoring_tube = instance.groundwater_monitoring_tube
+            gld_bro_id=instance.gld_bro_id,
+            groundwater_monitoring_tube = instance.groundwater_monitoring_tube,
+            quality_regime = getattr(instance, "quality_regime", "onbekend"),
         )[0]
         instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
     
@@ -220,8 +221,24 @@ def process_csv_file(instance: GLDImport):
                 measurement_point_metadata=mp_meta,
             )
 
-        instance.executed = True
+        if instance.groundwater_monitoring_tube:
+            glds = GroundwaterLevelDossier.objects.filter(
+                groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
+                gld_bro_id=instance.gld_bro_id
+            )
+            for gld in glds:
+                if gld.first_measurement:
+                    gld.research_start_date = gld.first_measurement.date()
+                else:
+                    gld.research_start_date = datetime.now().date()
+                if gld.last_measurement:
+                    gld.research_last_date = gld.last_measurement.date()
+                else:
+                    gld.research_last_date = datetime.now().date()
+                gld.research_last_correction = datetime.now().date()
+                gld.save()
 
+        instance.executed = True
 
 def validate_csv(file, filename: str, instance: GLDImport):
     time_col = None
