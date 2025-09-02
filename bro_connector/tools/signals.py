@@ -79,6 +79,11 @@ def validate_and_process_file(sender, instance: GLDImport, **kwargs):
         instance.report += (
             "Geen bestand geupload. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
         )
+    if not instance.groundwater_monitoring_tube:
+        instance.validated = False
+        instance.report += (
+            "Geen filterbuis geselecteerd om de GLD aan te koppelen.\n"
+        )
     elif instance.file.name.endswith(".zip"):
         process_zip_file(
             instance

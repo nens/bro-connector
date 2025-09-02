@@ -148,7 +148,7 @@ class GLDImport(BaseModel):
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
         null=True,
-        blank=False,
+        blank=True,
         verbose_name="Filter"
     )
     responsible_party = models.ForeignKey(
