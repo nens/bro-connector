@@ -104,7 +104,7 @@ class BroImport(BaseModel):
 class XMLImport(BaseModel):
     id = models.AutoField(primary_key=True, verbose_name="ID")
     created = models.DateTimeField(auto_now_add=True, editable=False, verbose_name="Datum aangemaakt")
-    file = models.FileField(upload_to="bulk", validators=[], verbose_name="Bestand")
+    file = models.FileField(upload_to="bulk", validators=[], verbose_name="Bestand", help_text="Filetype: xml or zip.",)
     report = models.TextField(
         help_text="process description",
         blank=True,

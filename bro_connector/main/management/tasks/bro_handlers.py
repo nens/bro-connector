@@ -34,20 +34,32 @@ class GMWHandler(BROHandler):
         self.positions = 0
         self.dict = {}
 
-    def get_data(self, id: str, full_history: bool):
-        basis_url = "https://publiek.broservices.nl/gm/gmw/v1/objects/"
+    def get_data(self, id: str, full_history: bool, file = None):
+        if not file:
+            basis_url = "https://publiek.broservices.nl/gm/gmw/v1/objects/"
+            gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+            try:
+                self.root = ET.fromstring(gmw_verzoek.content)
+            except Exception as e:
+                self.root = None
+                print(f"{e}")
+
+        if file:
+            with open(file, "r") as xml_file:
+                data = xml_file.read()
+                try:
+                    self.root = ET.fromstring(data)
+                except Exception as e:
+                    self.root = None
+                    print(f"{e}")
+
 
         if full_history:
             fh = "ja"
         else:
             fh = "nee"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
-        try:
-            self.root = ET.fromstring(gmw_verzoek.content)
-        except Exception as e:
-            self.root = None
-            print(f"{e}")
+
 
     def root_data_to_dictionary(self):
         tags = []
