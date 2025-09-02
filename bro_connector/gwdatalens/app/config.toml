@@ -6,7 +6,7 @@ CACHING = false              # set to True to enable caching, does not work when
 SERIES_LOAD_LIMIT = 10       # number of observations to load and plot simultaneously
 PORT = 8050                  # default port for the Dash app
 BACKGROUND_CALLBACKS = false # false is recommended at this moment
-USE_MAPBOX = true           # set to True to use Mapbox for plotting, requires access token
+USE_MAPBOX = false           # set to True to use Mapbox for plotting, requires access token
 
 [pastastore]
 name = "zeeland_bro"            # name of the pastastore database
