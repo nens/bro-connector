@@ -903,7 +903,7 @@ class EventAdmin(admin.ModelAdmin):
                 valid = False
                 report = f"Electrode:\n{report_e}\nTube Dynamic:\n{report_td}\nTube Static:\n{report_ts}\nWell Dynamic:\n{report_wd}\nWell Static:\n{report_ws}"
 
-        obj.bro_actions = report
+        # obj.bro_actions = report
         obj.complete_bro = valid
 
         # If not valid, show a warning in the admin interface

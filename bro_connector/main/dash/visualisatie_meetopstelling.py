@@ -778,13 +778,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
         groundwater_monitoring_well_static=monitoring_well
     )
     for filtr in filters:
-        filtr_history = (
-            GroundwaterMonitoringTubeDynamic.objects.filter(
-                groundwater_monitoring_tube_static=filtr, date_from__lte=datetime_event
-            )
-            .order_by("date_from")
-            .last()
-        )
+        filtr_history = event.groundwater_monitoring_tube_dynamic.first()
         print(filtr_history.date_from)
         filt_dict = (
             {
