@@ -8,7 +8,9 @@ from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWel
 import numpy as np
 from datetime import datetime, timedelta, tzinfo
 import polars as pl
+import logging
 
+logger = logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -20,6 +22,8 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        logger.info("Creating/updating KRW-kwantiteit 2021 GMN")
+        
         meetnet_naam = "KRW-kwantiteit 2021"
         groundwater_aspect = "kwantiteit"  # Aangenomen waarde, klopt dit?
 
@@ -38,9 +42,9 @@ class Command(BaseCommand):
         )
 
         if created:
-            self.stdout.write(self.style.SUCCESS(f"Meetnet '{meetnet_naam}' is aangemaakt."))
+            logger.info(f"Meetnet '{meetnet_naam}' is aangemaakt.")
         else:
-            self.stdout.write(self.style.WARNING(f"Meetnet '{meetnet_naam}' bestond al, wordt hergebruikt."))
+            logger.warning(f"Meetnet '{meetnet_naam}' bestond al, wordt hergebruikt.")
 
         # 2. CSV inlezen en koppelen aan database
         csv_pad = str(options["csv"])        
@@ -77,18 +81,18 @@ class Command(BaseCommand):
                 gmn=gmn,
                 groundwater_monitoring_tube=filter,
                 defaults={
-                    "code": f"{NITGCode}_{tube}",
+                    "code": f"{NITGCode}_{tube}", ## FIXME
                 },
             )
 
             if created:
                 aanwezige_putten.append((NITGCode, tube))
-                print(f"MeasuringPoint aangemaakt: {mp.code}")
+                logger.info(f"MeasuringPoint aangemaakt: {mp.code}")
             else:
-                print(f"MeasuringPoint bestaat al: {mp.code}")
+                logger.info(f"MeasuringPoint bestaat al: {mp.code}")
 
-        print(f"Ingevulde putten: {len(aanwezige_putten)}")
-        print(f"Afwezige putten: {len(afwezige_putten)}")
+        logger.info(f"Ingevulde putten: {len(aanwezige_putten)}")
+        logger.info(f"Afwezige putten: {len(afwezige_putten)}")
 
 
 

@@ -3,7 +3,9 @@ from django.contrib.gis.geos import Point
 from gmw.models import GroundwaterMonitoringWellStatic
 from gmw.models import GroundwaterMonitoringTubeStatic
 import polars as pl
-import os
+import logging
+
+logger = logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -62,6 +64,7 @@ class Command(BaseCommand):
                 aanwezige_putten.append((NITGCode, tube))                
                 filter.save()
 
-        print(f'ingevulde putten:{aanwezige_putten}')
+        logging.info(f"Afwezige putten: : {afwezige_putten}")
+        logging.info(f'Aangevulde putten: {aanwezige_putten}')
         # Save the object to the database
 
