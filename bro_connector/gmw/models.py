@@ -191,12 +191,12 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         null=True,
         verbose_name="Zoutgehalte",
     )
-    depth = models.CharField(
+    gwl_depth = models.CharField(
         max_length=30,
         choices=DEPTH_CHOICES,
         blank=True,
         null=True,
-        verbose_name="Diepte",
+        verbose_name="Diepte grondwaterlichaam",
     )
 
     # Added for additional wells that are not owned by the user

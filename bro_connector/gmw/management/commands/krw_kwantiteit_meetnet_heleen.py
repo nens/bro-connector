@@ -30,7 +30,7 @@ class Command(BaseCommand):
         # 1. Meetnet aanmaken of ophalen
         gmn, created = GroundwaterMonitoringNet.objects.update_or_create(
             name=meetnet_naam,
-            quality_regime="IMBRO/A",
+            quality_regime="IMBRO",
             deliver_to_bro= False,
             object_id_accountable_party= groundwater_aspect, 
             province_name= "Zeeland", 

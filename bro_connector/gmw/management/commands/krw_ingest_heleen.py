@@ -16,6 +16,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        logger.info("Ingesting KRW body")
         # Read csv file
         csv_pad = str(options["csv"])
         csv = pl.read_csv(csv_pad, ignore_errors=True, truncate_ragged_lines=True, separator=";")
@@ -64,7 +65,7 @@ class Command(BaseCommand):
                 aanwezige_putten.append((NITGCode, tube))                
                 filter.save()
 
-        logging.info(f"Afwezige putten: : {afwezige_putten}")
+        logging.info(f"Afwezige putten: {afwezige_putten}")
         logging.info(f'Aangevulde putten: {aanwezige_putten}')
         # Save the object to the database
 

@@ -3,7 +3,9 @@ from django.contrib.gis.geos import Point
 from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 import polars as pl
 import os
+import logging
 
+logger = logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -14,13 +16,15 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        logger.info("Ingesting GWL depth")
+
         csv_pad = str(options["csv"])
         csv = pl.read_csv(csv_pad, ignore_errors=True, truncate_ragged_lines=True, separator=",")
 
+        aanwezige_putten = []
         afwezige_putten = []
 
         for i, row in enumerate(csv.iter_rows(named=True)):
-
             # For row in CSV    
             csv_search = row["search"].split("_")
             nitg_csv = csv_search[0]
@@ -47,14 +51,16 @@ class Command(BaseCommand):
             # if len == 1, assign depth, aquifer_layer to the object
             if tube_db is not None:
                 tube_db.krw_body = gw_csv
-                gmw.depth = diepte_csv
+                gmw.gwl_depth = diepte_csv
 
+                aanwezige_putten.append((nitg_csv, tube_csv)) 
                 gmw.save()
                 tube_db.save()
 
-                print(f'gelukt voor put {nitg_csv} met gw-lichaam {tube_db.krw_body} en diepte {gmw.depth}')    
+                print(f'gelukt voor put {nitg_csv} met gw-lichaam {tube_db.krw_body} en diepte {gmw.gwl_depth}')    
 
-        print(f'niet gelukt voor {afwezige_putten}')
+        logging.info(f"Afwezige putten: {afwezige_putten}")
+        logging.info(f'Aangevulde putten: {aanwezige_putten}')
 
             # gmw.depth = ... # write the code from the e-mail depending on the excel column Grondwaterlichaam
             # gmw.aquifer_layer = ... # write the code from the e-mail depending on the excel column Grondwaterlichaam
