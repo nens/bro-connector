@@ -41,7 +41,11 @@ class Command(BaseCommand):
                 afwezige_putten.append((nitg_csv))
                 continue
 
-            tube_db = GroundwaterMonitoringTubeStatic.objects.filter(groundwater_monitoring_well_static=gmw, tube_number=tube_csv).first()
+            tube_db = GroundwaterMonitoringTubeStatic.objects.filter(
+                groundwater_monitoring_well_static=gmw, 
+                tube_number=tube_csv, 
+                krw_body=gw_csv
+            )
         
             # If len gmw > 1, assign depth, aquifer_layer to all objects
             if tube_db is None:
@@ -50,14 +54,12 @@ class Command(BaseCommand):
 
             # if len == 1, assign depth, aquifer_layer to the object
             if tube_db is not None:
-                tube_db.krw_body = gw_csv
-                gmw.gwl_depth = diepte_csv
+                for t in tube_db:
+                    t.gwl_depth = diepte_csv
+                    # t.save()
+                    print(f'gelukt voor put {nitg_csv} met gw-lichaam {tube_db.krw_body} en diepte {gmw.gwl_depth}')  
 
-                aanwezige_putten.append((nitg_csv, tube_csv)) 
-                gmw.save()
-                tube_db.save()
-
-                print(f'gelukt voor put {nitg_csv} met gw-lichaam {tube_db.krw_body} en diepte {gmw.gwl_depth}')    
+                aanwezige_putten.append((nitg_csv, tube_csv))   
 
         logging.info(f"Afwezige putten: {afwezige_putten}")
         logging.info(f'Aangevulde putten: {aanwezige_putten}')
