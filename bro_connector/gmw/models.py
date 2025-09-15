@@ -36,6 +36,7 @@ from gmw.choices import (
     ELECTRODESTATUS,
     EVENTNAME,
     CONSTRUCTIONSTANDARD,
+    KRW_CHOICES,
 )
 import main.utils.validators_models as validators_models
 from bro.models import Organisation, BROProject
@@ -167,15 +168,6 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     construction_date = models.DateField(
         blank=True, null=True, verbose_name="Inrichtingsdatum"
     )
-
-    # Added by Zeeland at later stage 2025-04-18
-    krw_body = models.CharField(
-        max_length=30,
-        blank=True,
-        null=True,
-        verbose_name="KRW-lichaam",
-        help_text="Bijv. SC00000001",
-    )
     aquifer_layer = models.CharField(
         max_length=30,
         blank=True,
@@ -189,13 +181,6 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         blank=True,
         null=True,
         verbose_name="Zoutgehalte",
-    )
-    depth = models.CharField(
-        max_length=30,
-        choices=DEPTH_CHOICES,
-        blank=True,
-        null=True,
-        verbose_name="Diepte",
     )
 
     # Added for additional wells that are not owned by the user
@@ -605,6 +590,20 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
     )
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
+    )
+    krw_body = models.CharField(
+        choices=KRW_CHOICES,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Grondwaterlichaam",
+    )
+    gwl_depth = models.CharField(
+        max_length=30,
+        choices=DEPTH_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Diepte grondwaterlichaam",
     )
     # bro_complete
 

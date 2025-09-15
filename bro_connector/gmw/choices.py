@@ -351,6 +351,14 @@ DELIVERY_TYPE_CHOICES = (
     ("delete", "delete"),
 )
 
+KRW_CHOICES = (
+    ("NLGWSC0001" ,"NLGWSC0001"),
+    ("NLGWSC0002" ,"NLGWSC0002"),
+    ("NLGWSC0003" ,"NLGWSC0003"),
+    ("NLGWSC0004" ,"NLGWSC0004"),
+    ("NLGWSC0005" ,"NLGWSC0005"), 
+)
+
 BOOLEAN_CHOICES = (
     ("ja", "ja"),
     ("nee", "nee"),
