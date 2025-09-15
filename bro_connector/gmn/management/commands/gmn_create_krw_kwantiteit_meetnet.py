@@ -44,7 +44,7 @@ class Command(BaseCommand):
         if created:
             logger.info(f"Meetnet '{meetnet_naam}' is aangemaakt.")
         else:
-            logger.warning(f"Meetnet '{meetnet_naam}' bestond al, wordt hergebruikt.")
+            logger.info(f"Meetnet '{meetnet_naam}' bestond al, wordt hergebruikt.")
 
         # 2. CSV inlezen en koppelen aan database
         csv_pad = str(options["csv"])        
@@ -81,12 +81,12 @@ class Command(BaseCommand):
                 gmn=gmn,
                 groundwater_monitoring_tube=filter,
                 defaults={
-                    "code": f"{NITGCode}_{tube}", ## FIXME
-                },
+                    "added_to_gmn_date": datetime(2021, 1, 1)
+               }
             )
 
+            aanwezige_putten.append((NITGCode, tube))
             if created:
-                aanwezige_putten.append((NITGCode, tube))
                 logger.info(f"MeasuringPoint aangemaakt: {mp.code}")
             else:
                 logger.info(f"MeasuringPoint bestaat al: {mp.code}")

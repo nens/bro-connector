@@ -46,7 +46,6 @@ class Command(BaseCommand):
             gmw = GroundwaterMonitoringWellStatic.objects.filter(nitg_code = NITGCode).first()
 
             if gmw is None:
-                print('er is geen put')
                 afwezige_putten.append((NITGCode, tube))
                 continue
             
@@ -57,7 +56,6 @@ class Command(BaseCommand):
 
             # if len == 0, write to df or logging that the object was not found
             if len(filter) == 0:
-                print('er is geen filter')
                 afwezige_putten.append((NITGCode, tube))
                 continue
 
@@ -65,8 +63,8 @@ class Command(BaseCommand):
             if filter is not None:
                 for f in filter:
                     f.krw_body = grondwater_code  
-                    # f.save()
-                aanwezige_putten.append((NITGCode, tube))                
+                    f.save()
+                    aanwezige_putten.append((f.groundwater_monitoring_tube_static_id ,NITGCode, tube))                
 
         logging.info(f"Afwezige putten: {afwezige_putten}")
         logging.info(f'Aangevulde putten: {aanwezige_putten}')
