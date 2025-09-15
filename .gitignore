@@ -1,4 +1,5 @@
 **/__pycache__/
+**/.cache/
 **/*.xml
 **/localsecret.py
 *.docx
@@ -21,3 +22,4 @@ bro_connector/.pi_cache/
 .pixi
 **/pastasdb/**
 staticfiles/
+bro_connector/bulk/**
