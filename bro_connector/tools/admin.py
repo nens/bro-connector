@@ -14,6 +14,7 @@ from main.management.tasks import (
     retrieve_historic_gar,
 )
 import datetime
+import tempfile
 
 
 def _register(model, admin_class):
@@ -27,77 +28,48 @@ def get_searchable_fields(model_class: models.Model) -> list[str]:
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
-
-def format_message(type: str, kvk: int, count: int, imported: int) -> dict:
-    if type in ["gar", "gmn", "frd"]:
-        return {"message": f"BRO type {type} not yet implemented.", "level": "WARNING"}
-    elif count == 0:
-        return {"message": f"No {type}-objects found for {kvk}.", "level": "ERROR"}
-    elif count == imported:
-        return {
-            "message": f"All {type}-objects imported for {kvk}. ({imported})",
-            "level": "SUCCESS",
-        }
-    elif imported == 0:
-        return {
-            "message": f"No {type}-objects imported for {kvk}. Found: {count} objects.",
-            "level": "ERROR",
-        }
-    elif count > imported:
-        return {
-            "message": f"Imported {imported} out of {count} {type}-objects for {kvk}.",
-            "level": "WARNING",
-        }
-
-
-class BroImporterAdmin(admin.ModelAdmin):
-    search_fields = get_searchable_fields(tools_models.BroImporter)
+class BroImportAdmin(admin.ModelAdmin):
+    search_fields = get_searchable_fields(tools_models.BroImport)
 
     list_display = (
         "id",
+        "handler",
         "bro_type",
         "kvk_number",
+        "file_name",
         "import_date",
     )
 
     list_filter = (
         "bro_type",
         "kvk_number",
+        "validated",
+        "executed",
     )
 
-    readonly_fields = (
-        "import_date",
-        "created_date",
-    )
+    readonly_fields = ["file_name", "import_date", "created_date", "report", "validated", "executed"]
 
     actions = ["update_import"]
 
-    # IDEA: COULD ADD FEATURE TO IMPORT ONLY ONE ID.
-
     def save_model(self, request, obj, form, change):
-        module_to_call = {
-            "gmw": retrieve_historic_gmw,
-            "gmn": retrieve_historic_gmn,
-            "gld": retrieve_historic_gld,
-            "frd": retrieve_historic_frd,
-            "gar": retrieve_historic_gar,
-        }
+        # Save the object first
+        super().save_model(request, obj, form, change)
 
-        import_info = module_to_call[obj.bro_type].run(kvk_number=obj.kvk_number)
-        message_info = format_message(
-            obj.bro_type,
-            obj.kvk_number,
-            import_info["ids_found"],
-            import_info["imported"],
-        )
+        # Check if validated is False, and add a warning message
+        if not obj.validated:
+            messages.warning(
+                request,
+                f'De BRO Import"{obj}" is aangemaakt maar is niet valide. Bekijk de rapportage voor verdere acties.',
+            )
 
-        obj.import_date = datetime.datetime.now()
-        self.message_user(request, message_info["message"], level=message_info["level"])
-        obj.save()
+        else:
+            messages.success(request, f'De BRO Import "{obj}" is succesvol uitgevoerd.')
 
     @admin.action(description="Importeer waardes opnieuw uit de BRO")
     def update_import(self, request, queryset):
-        pass
+        for obj in queryset:
+            obj.import_date = datetime.datetime.now()
+            obj.save()
 
 
 class XMLImportAdmin(admin.ModelAdmin):
@@ -116,69 +88,67 @@ class XMLImportAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         try:
             originele_constructie_import = tools_models.XMLImport.objects.get(id=obj.id)
-            file = originele_constructie_import.file
+            old_file = originele_constructie_import.file
         except tools_models.XMLImport.DoesNotExist:
-            originele_constructie_import = None
-            file = None
+            old_file = None
 
-        if obj.file != file and file is not None:
-            # If a new csv is set into the ConstructieImport row.
+        print(obj.file.path)
+
+        # call super so file is saved
+        super().save_model(request, obj, form, change)
+
+        # If file changed (or new object)
+        if obj.file and obj.file != old_file:
+            # Reset flags
             obj.imported = False
             obj.checked = False
-            obj.report = (
-                obj.report + f"\nswitched the csv file from {file} to {obj.file}."
-            )
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+            if old_file:
+                obj.report = (obj.report or "") + f"\nSwitched the file from {old_file} to {obj.file}."
+            else:
+                obj.report = (obj.report or "") + f"\nUploaded new file {obj.file}."
 
-        else:
-            super(XMLImportAdmin, self).save_model(request, obj, form, change)
+            self._process_import(obj)
 
-    def update_database(self, request, QuerySet):
-        for object in QuerySet:
-            app_dir = os.path.abspath(os.path.curdir)
+    def _process_import(self, obj):
+        """Handle XML/ZIP files"""
+        file_full_path  = obj.file.path
+        file_name  = os.path.basename(file_full_path)
+        file_dir  = os.path.dirname(file_full_path)
+        print(file_full_path, file_name, file_dir)
 
-            if str(object.file).endswith("xml"):
-                print("Handling XML file")
-                (completed, message) = xml_import.import_xml(object.file, app_dir)
-                object.checked = True
-                object.imported = completed
-                object.report += message
-                object.save()
+        if file_full_path.endswith(".xml"):
+            completed, message = xml_import.import_xml(file_name, file_dir)
+            obj.checked = True
+            obj.imported = completed
+            obj.report = (obj.report or "") + message
+            obj.save()
 
-            elif str(object.file).endswith("zip"):
-                print("Handling ZIP file")
-                # First unpack the zip
-                with ZipFile(object.file, "r") as zip:
-                    zip.printdir()
-                    zip.extractall(path=app_dir)
+        elif file_full_path.endswith(".zip"):
+            with tempfile.TemporaryDirectory() as temp_dir:
+                with ZipFile(file_full_path, "r") as zipf:
+                    zipf.extractall(path=temp_dir)
 
-                # Remove constructies/ and .zip from the filename
-                file_name = str(object.file)[13:-4]
-                print(file_name)
+                # Process extracted files
+                for extracted_file in os.listdir(temp_dir):
+                    extracted_path = os.path.join(temp_dir, extracted_file)
 
-                for file in os.listdir(app_dir):
-                    if file.endswith("csv"):
-                        print(
-                            f"Bulk import of filetype of {file} not yet supported not yet supported."
-                        )
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
-                        pass
-
-                    elif file.endswith("xml"):
-                        (completed, message) = xml_import.import_xml(file, app_dir)
-                        object.checked = True
-                        object.imported = completed
-                        object.report += message
-                        object.save()
-
+                    if extracted_file.endswith(".xml"):
+                        extracted_name = os.path.basename(extracted_path)
+                        completed, message = xml_import.import_xml(extracted_name, temp_dir)
+                        obj.checked = True
+                        obj.imported = completed
+                        obj.report = (obj.report or "") + message
+                        obj.save()
                     else:
-                        object.report += (
-                            f"\n UNSUPPORTED FILE TYPE: {file} is not supported."
-                        )
-                        object.save()
+                        obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
+                        obj.save()
+        else:
+            obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {file_name} is not supported."
+            obj.save()
+
+    def update_database(self, request, queryset):
+        for obj in queryset:
+            self._process_import(obj)
 
 
 class GLDImportAdmin(admin.ModelAdmin):
@@ -192,7 +162,7 @@ class GLDImportAdmin(admin.ModelAdmin):
         "validated",
         "executed",
     )
-
+    autocomplete_fields = ["groundwater_monitoring_tube", "responsible_party"]
     readonly_fields = ["report", "validated", "executed"]
 
     def save_model(self, request, obj, form, change):
@@ -234,14 +204,14 @@ class GMNImportAdmin(admin.ModelAdmin):
             )
 
         else:
-            messages.success(request, f'The GLD Import "{obj}" was added successfully.')
+            messages.success(request, f'The GMN Import "{obj}" was added successfully.')
 
 
-_register(tools_models.BroImporter, BroImporterAdmin)
+_register(tools_models.BroImport, BroImportAdmin)
 _register(tools_models.XMLImport, XMLImportAdmin)
 _register(tools_models.GLDImport, GLDImportAdmin)
 _register(tools_models.GMNImport, GMNImportAdmin)
-patch_admin(tools_models.BroImporter)
+patch_admin(tools_models.BroImport)
 patch_admin(tools_models.XMLImport)
 patch_admin(tools_models.GLDImport)
 patch_admin(tools_models.GMNImport)

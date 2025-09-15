@@ -24,8 +24,14 @@
     </div>
   </div>
 
-  <!-- SEARCH -->
+  <!-- BUTTONS -->
   <div id="toggle-text-layer-btn">
+    <button
+        id="validation-map-btn"
+        type="button"
+        onclick="event.stopPropagation(); switchToValidationStatusMap()">
+        Leverstatus modus
+    </button>
     <button
         id="toggle-text-layer"
         type="button"
@@ -91,6 +97,21 @@
             onclick="handleWellValueCheckboxClick(this)"
           />
           GMWs aan BRO aanleveren
+        </label>
+      </div>
+      <div
+        class="mapbox-checkbox-wrapper"
+        onclick="event.preventDefault(); handleWellValue('is_active', this)"
+      >
+        <label class="mapbox-checkbox-label" for="checkbox-is_active">
+          <input
+            type="checkbox"
+            class="mapbox-checkbox default-indeterminate"
+            id="checkbox-is_active"
+            name="checkbox-is_active"
+            onclick="handleWellValueCheckboxClick(this)"
+          />
+          Actieve put
         </label>
       </div>
       <hr />
@@ -167,11 +188,10 @@
 
 <!-- Add json information -->
 <div class="json">{{ wells|json_script:"wells_json" }}</div>
+<div class="json">{{ glds|json_script:"glds_json" }}</div>
 <div class="json">{{ gmns|json_script:"gmns_json" }}</div>
 <div class="json">{{ organisations|json_script:"organisations_json" }}</div>
-<div class="json">
-  {{ groundwater_level_dossiers|json_script:"groundwater_level_dossiers_json" }}
-</div>
+<div class="json">{{ state|json_script:"state_json" }}</div>
 
 <!-- Link to css -->
 <link href="{% static 'gmw/gmw_map.css' %}" rel="stylesheet" />

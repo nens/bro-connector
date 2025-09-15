@@ -1,4 +1,5 @@
 **/__pycache__/
+**/.cache/
 **/*.xml
 **/localsecret.py
 *.docx
@@ -10,6 +11,7 @@ bro_connector/gmw_aanlevering/migrations
 bro_connector/tools/bulk
 bro_connector/tools/gmn
 bro_connector/tools/gmw
+bro_connector/.cache/*.djcache
 venv
 **/migrations/**
 bro_connector/qc_tool/app/assets/.mapbox_access_token
@@ -20,3 +22,4 @@ bro_connector/.pi_cache/
 .pixi
 **/pastasdb/**
 staticfiles/
+bro_connector/bulk/**

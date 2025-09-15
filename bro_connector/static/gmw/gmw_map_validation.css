@@ -1,0 +1,433 @@
+#deck-gl-canvas {
+  height: 75vh;
+  width: 75vw;
+  border: rgb(77, 77, 77) solid 1px;
+}
+
+#deck-gl-canvas hr {
+  height: 1px;
+  margin: 5px 0 5px 0;
+}
+
+#deck-gl-canvas h4 {
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+
+#legend-top {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  z-index: 100;
+  background-color: white;
+  max-height: 28vh;
+}
+
+/* Container positioning, similar to #legend-top */
+#legend-container {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  z-index: 1000;              /* ensure above map/canvas */
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  overflow: hidden;
+  max-width: 220px;
+  font-size: 14px;
+}
+
+/* The button */
+#legend-button {
+  background-color: #87c1ff;   /* same blue as validation/label buttons */
+  color: white;
+  padding: 4px 12px;           /* same padding */
+  border: none;                /* remove default border */
+  border-radius: 4px;          /* same rounded corners */
+  cursor: pointer;
+  font-size: 14px;             /* match other buttons */
+  font-weight: normal;         /* match other buttons’ weight */
+  text-align: center;
+}
+
+/* Hover effect like other buttons */
+#legend-button:hover {
+  background-color: #51a2f8;
+}
+
+/* Legend content hidden by default */
+#map-legend {
+  display: none;
+  padding: 10px;
+  position: relative;   /* keep inside container */
+  bottom: auto;
+  right: auto;
+  z-index: auto;
+  max-height: 40vh;
+  overflow: auto;
+}
+
+/* Show legend when open */
+#legend-container.legend-open #map-legend {
+  display: block;
+}
+
+/* #map-legend {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  z-index: 50;
+  background: white;
+  /* border: 1px solid #ccc; */
+  /* border-radius: 6px; */
+  /* padding: 10px 15px;
+  font-size: 14px;
+  font-weight: 200; */
+  /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */  
+  /* max-height: 100vh;
+  overflow: auto;
+} */
+
+#map-legend h4 {
+  font-size: 1em; /* slightly smaller than default */
+  margin: 4px 0;     /* less vertical spacing */
+}
+
+.legend-header {
+  font-weight: bold;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.legend-dot.hatched {
+  background-color: #4CAF50; /* base color */
+}
+
+.legend-dot.hatched::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient( 
+    circle,
+    rgb(255, 255, 255) 0px,   /* white ring start */
+    rgb(255, 255, 255) 0.75px,   /* white ring thickness */
+    transparent 1px,
+    transparent 2.5px              /* spacing before next ring */
+  );
+}
+
+.legend-dot-empty {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  border: 2px solid #9E9E9E; /* black outline */
+  background-color: rgba(158, 158, 158, 0.05); /* empty inside */
+}
+
+/* .legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  /* border: 1px solid #333; */
+/* } */ */
+
+
+/* #legend-bottom {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 100;
+  background-color: white;
+  padding: 1em;
+  max-height: 30vh;
+  overflow: auto;
+} */
+
+.mapbox-checkbox-wrapper {
+  cursor: pointer;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.mapbox-checkbox-wrapper:first-of-type {
+  margin-top: 0;
+}
+
+.mapbox-checkbox-wrapper:last-of-type {
+  margin-bottom: 0;
+}
+
+.mapbox-checkbox-label {
+  cursor: pointer;
+
+  user-select: none;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  font-weight: 200 !important;
+}
+
+.mapbox-button-deselect {
+  cursor: pointer;
+
+  user-select: none;
+  display: flex;
+  margin-bottom: 0;
+  font-weight: 200 !important;
+}
+
+.mapbox-checkbox {
+  cursor: pointer;
+
+  margin-right: 0.5em;
+  accent-color: grey;
+  background: grey;
+  height: 1em;
+  width: 1em;
+}
+
+.mapbox-checkbox[type="checkbox"]:indeterminate {
+  background: white;
+  border: 2px grey solid;
+}
+
+.mapbox-checkbox[type="checkbox"]:not(:checked) {
+  appearance: none;
+  margin-bottom: 0;
+  width: 1em;
+  height: 1em;
+  border-radius: 2px;
+}
+
+.json {
+  display: none;
+}
+
+/* Mapbox cursor states */
+.mapboxgl-canvas.grab {
+  cursor: grab !important;
+}
+.mapboxgl-canvas.pointer {
+  cursor: pointer !important;
+}
+.mapboxgl-canvas.grabbing {
+  cursor: grabbing !important;
+}
+
+#hamburger-button {
+  padding: 1em;
+  cursor: pointer;
+}
+
+#hamburger-button-innner {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.hamburger-line {
+  flex-grow: 0;
+  height: 1px;
+  width: 100%;
+  border: 1px solid black;
+}
+
+#meting-wrapper {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: white;
+  padding: 1em;
+  max-height: 60vh;   /* taller to fit both sections */
+  overflow: auto;
+  flex-direction: column;
+  width: 200px;
+}
+
+/* #type-wrapper {
+  display: none;
+  top: 50px;
+  position: absolute;
+  right: 0;
+  background-color: white;
+  padding: 1em;
+  max-height: 30vh;
+  overflow: auto;
+  flex-direction: column;
+  width: 200px;
+}
+*/
+
+.hamburger-open #meting-wrapper {
+  display: flex;
+}
+
+#gld-wrapper,
+#type-wrapper,
+#status-wrapper {
+  margin-bottom: 1em; /* spacing between sections */
+}
+
+.hamburger-open .hamburger-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.hamburger-open .hamburger-line:first-of-type {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.hamburger-open .hamburger-line:nth-child(2) {
+  display: none;
+}
+
+.hamburger-open .hamburger-line:last-of-type {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+#popup-content {
+  margin-bottom: -0.25em;
+  background-color: white;
+  padding: 1em;
+  border-radius: 10px;
+  border: 1px solid black;
+  border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;  /* avoid text cutoff with scrollbar */
+}
+
+.well-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  border-bottom: 1px solid gray;
+}
+
+.well-item:last-of-type {
+  border-bottom: 0;
+}
+
+.label {
+  text-align: left;
+  flex: 1;
+}
+
+.value {
+  text-align: right;
+  flex: 1;
+}
+
+/* SEARCH */
+#search-top-left {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  z-index: 100;
+  background-color: white;
+  width: 320px;
+}
+
+#search-input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+#search-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  border: 1px solid #ccc;
+  max-height: 500px;
+  overflow-y: auto;
+  background: white;
+  z-index: 10;
+}
+
+.search-option {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.search-option:hover,
+.search-option.highlight {
+  background-color: #f0f0f0;
+}
+
+.hide {
+  display: none;
+}
+
+#toggle-text-layer-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 50px;
+  z-index: 1000; /* Ensures the button is above other map elements */
+}
+
+#toggle-text-layer {
+  padding: 4px 12px;
+  background-color: #87c1ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#validation-map-btn {
+  padding: 4px 12px;
+  background-color: #87c1ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#toggle-text-layer:hover {
+  background-color: #51a2f8;
+}
+
+#validation-map-btn:hover {
+  background-color: #51a2f8;
+}

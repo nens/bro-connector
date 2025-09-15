@@ -34,20 +34,29 @@ class GMWHandler(BROHandler):
         self.positions = 0
         self.dict = {}
 
-    def get_data(self, id: str, full_history: bool):
-        basis_url = "https://publiek.broservices.nl/gm/gmw/v1/objects/"
-
+    def get_data(self, id: str, full_history: bool, file = None):
         if full_history:
             fh = "ja"
         else:
             fh = "nee"
+            
+        if not file:
+            basis_url = "https://publiek.broservices.nl/gm/gmw/v1/objects/"
+            gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+            try:
+                self.root = ET.fromstring(gmw_verzoek.content)
+            except Exception as e:
+                self.root = None
+                print(f"{e}")
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
-        try:
-            self.root = ET.fromstring(gmw_verzoek.content)
-        except Exception as e:
-            self.root = None
-            print(f"{e}")
+        if file:
+            with open(file, "r") as xml_file:
+                data = xml_file.read()
+                try:
+                    self.root = ET.fromstring(data)
+                except Exception as e:
+                    self.root = None
+                    print(f"{e}")
 
     def root_data_to_dictionary(self):
         tags = []
@@ -112,8 +121,10 @@ class GLDHandler(BROHandler):
     def __init__(self):
         self.number_of_points = 0
         self.number_of_observations = 0
-        self.count_dictionary = {}
+        self.number_of_measurements = {}
+        self.total_measurements = 0
         self.dict = {}
+        self.root = None
 
         # Initializing list to use in the dictionary making process.
         self.point_value = []
@@ -126,6 +137,7 @@ class GLDHandler(BROHandler):
         self.censoring_limit_unit = []
 
     def get_data(self, id: str, filtered: bool):
+        print("ID: ",id)
         basis_url = "https://publiek.broservices.nl/gm/gld/v1/objects/"
 
         now = datetime.datetime.now().date()
@@ -135,12 +147,15 @@ class GLDHandler(BROHandler):
         else:
             f = "NEE"
 
-        gmw_verzoek = requests.get(
+        gld_verzoek = requests.get(
             f"{basis_url}{id}?requestReference=BRO-Import-script-{now}&observationPeriodBeginDate=1900-01-01&observationPeriodEndDate={now}&filtered={f}"
         )
-        print(gmw_verzoek)
-        self.root = ET.fromstring(gmw_verzoek.content)
-
+        try:
+            self.root = ET.fromstring(gld_verzoek.content)
+        except Exception as e:
+            self.root = None
+            print(f"{e}")
+        
     def append_censoring(self) -> None:
         self.censoring_limit_value.append("None")
         self.censoring_limit_reason.append("None")
@@ -154,34 +169,56 @@ class GLDHandler(BROHandler):
         )
 
     def root_data_to_dictionary(self):
+        self.reset_values()
         prefix = f"{self.number_of_observations}_"
+        # print("Number of measurements dict: ",self.number_of_measurements)
+        # print("Number of dict: ",self.dict)
 
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
+            # if split[1].startswith("obs"):
+            #     print(split)
+            # print(tag, split)
+            # if split[1] == "OM_Observation":
+            #     print(element)
+            #     print(element.attrib)
+            #     stop
 
             if split[1] == "observation":
+                # print("Number of point when reaching a new obs: ",self.number_of_points)
+                # print("observations split: ",split)
                 if self.number_of_observations != 0:
-                    if self.number_of_observations == 1:
-                        self.count_dictionary[self.number_of_observations] = (
-                            self.number_of_points
-                        )
-
-                    else:
-                        self.count_dictionary[self.number_of_observations] = (
-                            self.number_of_points
-                            - self.count_dictionary[self.number_of_observations - 1]
-                        )
-
+                    # print(f"Adding {self.number_of_points} points to number_of_measurements at key {self.number_of_observations}")
+                    self.number_of_measurements[self.number_of_observations] = self.number_of_points
+                    # print(f"adding {self.number_of_points} to total_measurements")
+                    # print(self.total_measurements)
+                    self.total_measurements += self.number_of_points
+                    # print(self.total_measurements)
+                    # if self.number_of_observations == 1:
+                    #     self.number_of_measurements[self.number_of_observations] = self.number_of_points
+                    # else:
+                    #     count_dictionary_cumulative[self.number_of_observations] = self.number_of_points
+                    #     self.number_of_measurements[self.number_of_observations] = (
+                    #         self.number_of_points
+                    #         - count_dictionary_cumulative[self.number_of_observations - 1]
+                    #     )
                 self.number_of_observations = self.number_of_observations + 1
+                # if self.number_of_observations > 2:
+                #     stop
+                # if self.number_of_observations == 3:
+                #     stop
                 prefix = f"{self.number_of_observations}_"
+                self.reset_measurement_values()
 
-            if split[1] == "broId":
+            if split[1] == "broId":                
                 self.bro_ids.append(element.text)
 
             # If point, add prefix
             if split[1] == "point":
                 self.number_of_points = self.number_of_points + 1
+                # if self.number_of_points > 10:
+                #     stop
                 prefix = f"{self.number_of_observations}_point_"
                 self.append_censoring()
 
@@ -209,6 +246,9 @@ class GLDHandler(BROHandler):
                 prefix = f"{self.number_of_observations}_"
 
             values_value = element.text
+
+            if tag == f"{self.number_of_observations}_OM_Observation":
+                values_value = element.attrib["{http://www.opengis.net/gml/3.2}id"]
 
             if tag == f"{self.number_of_observations}_processReference":
                 values_value = element.attrib[
@@ -248,7 +288,7 @@ class GLDHandler(BROHandler):
                 if tag == f"{self.number_of_observations}_point_qualifier_value":
                     self.qualifier.append(element.text)
                     values_value = self.qualifier
-
+                
                 if tag == f"{self.number_of_observations}_point_censoring_value":
                     self.censoring_limit_value[self.number_of_points - 1] = element.text
                     values_value = self.censoring_limit_value
@@ -271,15 +311,32 @@ class GLDHandler(BROHandler):
                     values_value = self.censoring_limit_reason
 
             self.dict.update({tag: values_value})
+        # stop
+        # print(f"adding {self.number_of_points} to number_of_measurements at key {self.number_of_observations} outside of loop:")
+        if self.number_of_observations > 1:
+            self.number_of_measurements[self.number_of_observations] = (
+                self.number_of_points
+            )
+        else:
+            # print(self.total_measurements)
+            self.number_of_measurements[1] = self.number_of_points
+        # print(self.number_of_measurements)
+        # print(f"Adding {self.number_of_points} to total_measurements at end of loop")
+        self.total_measurements += self.number_of_points
+        # print(self.total_measurements)
 
     def reset_values(self):
-        self.number_of_points = 0
+        self.dict = {}
         self.number_of_observations = 0
-        self.count_dictionary = {}
+        self.number_of_measurements = {}
+        self.total_measurements = 0
+        self.bro_ids = []
+
+    def reset_measurement_values(self):
+        self.number_of_points = 0
         self.point_value = []
         self.time = []
         self.qualifier = []
-        self.bro_ids = []
         self.units = []
         self.censoring_limit_value = []
         self.censoring_limit_reason = []

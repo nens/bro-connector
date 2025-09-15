@@ -15,31 +15,25 @@ import platform
 from pathlib import Path
 import django.db.models.options as options
 from main.localsecret import ENV, GDAL_DLL_VERSION
-from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
 # Application definition
 MODULES = ["gmw", "frd", "gld", "gmn"]
 
-# BBOX_SETTINGS = {
-#     "use_bbox": True,
-#     "xmin": 10000,
-#     "xmax": 80000,
-#     "ymin": 355000,
-#     "ymax": 420000,
-# }
+
 POLYGON_SHAPEFILE = (
     Path(__file__).resolve().parent.parent.parent.parent
-    / "data"
-    / "shapefile"
-    / "ProvincieZeeland_BrabantseWal_GeoNAM.shp"
+    / "data" / "shapefile" / "ProvincieZeeland_BrabantseWal_GeoNAM.shp"
 )
-print(POLYGON_SHAPEFILE)
-BBOX_SETTINGS = BBOX_EXTRACTOR(shp=POLYGON_SHAPEFILE, use_bbox=True).bbox_settings
-BBOX = BBOX_EXTRACTOR(shp=POLYGON_SHAPEFILE, use_bbox=True).bbox
 
 KVK_USER = "20168636"
+
+USE_WELLS_AS_MAP_CENTER = True
+MAP_CENTER = [3.945697, 51.522601]
+MAP_ZOOM = 9
+
+CACHE_TIMEOUT = 60 * 60 * 24 # 1 day
 
 ##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
 
@@ -94,6 +88,21 @@ MAP_WIDGETS = {
     ),
     "GOOGLE_MAP_API_KEY": "<google-api-key>",
 }
+
+# Caching configuration: file-based cache
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": f"{BASE_DIR}/.cache",  # You can change this path if needed
+        "TIMEOUT": 3600,  # 1 hour
+        "OPTIONS": {
+            "MAX_ENTRIES": 1000,
+            "CULL_FREQUENCY": 3,
+        },
+    }
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -168,7 +177,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "UTC" #"Europe/Amsterdam"
 
 USE_I18N = True
 
@@ -381,7 +390,7 @@ JAZZMIN_SETTINGS = {
     # Links to put along the top menu
     "topmenu_links": [
         # model admin to link to (Permissions checked against model)
-        {"name": "Map", "url": "/map", "permissions": ["auth.view_user"]},
+        {"name": "Kaart", "url": "/map", "permissions": ["auth.view_user"]},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "bro"},
         # App with dropdown menu to all its models pages (Permissions checked against models)

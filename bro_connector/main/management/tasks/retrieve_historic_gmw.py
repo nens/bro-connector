@@ -6,6 +6,7 @@ from ..tasks import events_handler
 import reversion
 import datetime
 from django.conf import settings
+from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
@@ -16,50 +17,40 @@ from gmw.models import (
     Electrode,
 )
 from bro.models import Organisation
+from django.db.models.signals import post_save
+from gmw.signals import on_save_groundwater_monitoring_well_static, on_save_groundwater_monitoring_tube_static
+from django.db import transaction
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-# def within_bbox(coordinates) -> bool:
-#     print(f"x: {coordinates.x}, y: {coordinates.y}")
-#     if (
-#         coordinates.x > settings.BBOX_SETTINGS["xmin"]
-#         and coordinates.x < settings.BBOX_SETTINGS["xmax"]
-#         and coordinates.y > settings.BBOX_SETTINGS["ymin"]
-#         and coordinates.y < settings.BBOX_SETTINGS["ymax"]
-#     ):
-#         return True
-#     return False
+def run(kvk_number: str = None, bro_type: str = "gmw", handler: str = "shape", shp_file: str = None, delete: bool = False) -> dict:
+    if shp_file == None:
+        shp_file = settings.POLYGON_SHAPEFILE
+    shp = shp_file
+    bbox_settings = BBOX_EXTRACTOR(shp=shp, use_bbox=True).bbox_settings
+    bbox = BBOX_EXTRACTOR(shp=shp, use_bbox=True).bbox
 
-
-def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "ogc"):
     progressor = Progress()
     gmw = GMWHandler()
 
-    if kvk_number and handler == "kvk":
+    if kvk_number and handler.lower() == "kvk":
         DR = DataRetrieverKVK(kvk_number)
         DR.request_bro_ids(bro_type)
         DR.get_ids_kvk()
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
 
-    bbox_settings = settings.BBOX_SETTINGS
-    bbox = settings.BBOX
-    shp = settings.POLYGON_SHAPEFILE
-    if bbox_settings["use_bbox"] and handler == "ogc":
+    if bbox_settings["use_bbox"] and handler.lower() == "shape":
         print("bbox settings: ", bbox_settings)
         DR = DataRetrieverBBOX(bbox)
         DR.request_bro_ids(bro_type)
         DR.filter_ids_kvk(kvk_number)
-        DR.enforce_shapefile(shp, delete=False)
+        DR.enforce_shapefile(shp, delete=delete)
         DR.get_ids_ogc()
         gmw_ids = DR.gmw_ids
         gmw_ids_ini_count = len(gmw_ids)
-
-    if gmw_ids_ini_count == 0:
-        print(f"No IDs found for kvk: {kvk_number}.")
-        return {"ids_found": gmw_ids_ini_count, "imported": gmw_ids_ini_count}
 
     print(f"{gmw_ids_ini_count} bro ids found for kvk {kvk_number}.")
 
@@ -82,26 +73,34 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
             continue
 
         # Invullen initiële waarden.
-        ini = InitializeData(gmw_dict)
-        ini.well_static()
-        gmws = ini.gmws
-        ini.well_dynamic()
+        try:
+            post_save.disconnect(on_save_groundwater_monitoring_well_static, sender=GroundwaterMonitoringWellStatic)
+            post_save.disconnect(on_save_groundwater_monitoring_tube_static, sender=GroundwaterMonitoringTubeStatic)
+            
+            with transaction.atomic():
+                ini = InitializeData(gmw_dict)
+                ini.well_static()
+                gmws = ini.gmws
+                ini.well_dynamic()
 
-        for tube_number in range(gmw.number_of_tubes):
-            ini.increment_tube_number()
-            ini.tube_static()
-            ini.tube_dynamic()
+                for tube_number in range(gmw.number_of_tubes):
+                    ini.increment_tube_number()
+                    ini.tube_static()
+                    ini.tube_dynamic()
 
-            for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
-                ini.increment_geo_ohm_number()
-                ini.geo_ohm()
+                    for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
+                        ini.increment_geo_ohm_number()
+                        ini.geo_ohm()
 
-                for electrode in range(int(gmw.number_of_electrodes)):
-                    ini.increment_electrode_number()
-                    ini.electrode()
+                        for electrode in range(int(gmw.number_of_electrodes)):
+                            ini.increment_electrode_number()
+                            ini.electrode()
 
-                ini.reset_electrode_number()
-            ini.reset_geo_ohm_number()
+                        ini.reset_electrode_number()
+                    ini.reset_geo_ohm_number()
+        finally:
+            post_save.connect(on_save_groundwater_monitoring_well_static, sender=GroundwaterMonitoringWellStatic)
+            post_save.connect(on_save_groundwater_monitoring_tube_static, sender=GroundwaterMonitoringTubeStatic)
 
         events_handler.create_construction_event(gmw_dict, gmws)
         imported += 1
@@ -119,17 +118,21 @@ def run(kvk_number=None, csv_file=None, bro_type: str = "gmw", handler: str = "o
         "ids_found": gmw_ids_count,
         "imported": imported,
     }
-    print("run finished")
+    
     return info
 
 
-def get_or_create_instantie(instantie: str):
+def get_or_create_instantie(instantie: str) -> Organisation | None:
     if instantie is None:
-        return (None, False)
+        return None
     if instantie.isdigit():
-        return Organisation.objects.get_or_create(company_number=instantie)
+        organisation = Organisation.objects.get_or_create(company_number=instantie)[0]
+        organisation.save()
+        return organisation
     else:
-        return Organisation.objects.get_or_create(name=instantie)
+        organisation = Organisation.objects.get_or_create(name=instantie)[0]
+        organisation.save()
+        return organisation
 
 
 def convert_event_date_str_to_datetime(event_date: str) -> datetime:
@@ -194,10 +197,7 @@ class InitializeData:
             construction_date = None
 
         with reversion.create_revision():
-            (
-                self.gmws,
-                created,
-            ) = GroundwaterMonitoringWellStatic.objects.update_or_create(
+            self.gmws, created = GroundwaterMonitoringWellStatic.objects.update_or_create(
                 bro_id=self.gmw_dict.get("broId", None),
                 defaults={
                     "construction_standard": self.gmw_dict.get(
@@ -206,11 +206,11 @@ class InitializeData:
                     "coordinates": f"POINT({self.gmw_dict.get('pos_1', None)})",
                     "delivery_accountable_party": get_or_create_instantie(
                         self.gmw_dict.get("deliveryAccountableParty", None)
-                    )[0],
+                    ),
                     "delivery_context": self.gmw_dict.get("deliveryContext", None),
                     "delivery_responsible_party": get_or_create_instantie(
                         self.gmw_dict.get("deliveryResponsibleParty", None)
-                    )[0],
+                    ),
                     "horizontal_positioning_method": self.gmw_dict.get(
                         "horizontalPositioningMethod", None
                     ),
@@ -229,22 +229,25 @@ class InitializeData:
                     "well_code": self.gmw_dict.get("wellCode", None),
                     "deliver_gmw_to_bro": True,
                     "complete_bro": True,
+                    "in_management": True
+                        if self.gmw_dict.get("deliveryAccountableParty", None) == settings.KVK_USER 
+                        else False,
                 },
             )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)
+
+            # if (
+            #     str(self.gmws.delivery_accountable_party.company_number)
+            #     == settings.KVK_USER
+            # ):
+            #     self.gmws.in_management = True
+            # else:
+            #     self.gmws.in_management = False
+            
+            # self.gmws.save()
 
             reversion.set_comment(
                 f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
             )
-
-        if (
-            str(self.gmws.delivery_accountable_party.company_number)
-            == settings.KVK_USER
-        ):
-            self.gmws.in_management = True
-        else:
-            self.gmws.in_management = False
-
-        self.gmws.save()
 
     def well_dynamic(self):
         if "construction_date" in self.gmw_dict:
@@ -269,7 +272,7 @@ class InitializeData:
                 "ground_level_stable": self.gmw_dict.get("groundLevelStable", None),
                 "maintenance_responsible_party": get_or_create_instantie(
                     self.gmw_dict.get("maintenanceResponsibleParty", None)
-                )[0],
+                ),
                 "owner": self.gmw_dict.get("owner", None),
                 "well_head_protector": self.gmw_dict.get("wellHeadProtector", None),
                 "well_stability": self.gmw_dict.get("wellStability", None),

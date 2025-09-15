@@ -22,6 +22,7 @@ def get_searchable_fields(model_class):
 
 class CompanyAdmin(admin.ModelAdmin):
     form = bro_forms.CompanyForm
+    search_fields = get_searchable_fields(bro_models.Organisation)
 
     list_display = (
         "name",

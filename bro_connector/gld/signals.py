@@ -3,6 +3,7 @@ from django.db.models.signals import (
     post_delete,
     pre_save,
 )
+from django.core.cache import cache
 from django.dispatch import receiver
 from .models import (
     gld_registration_log,
@@ -11,6 +12,8 @@ from .models import (
     MeasurementTvp,
     MeasurementPointMetadata,
     Observation,
+    ObservationProcess,
+    ObservationMetadata
 )
 from gmw.models import GroundwaterMonitoringTubeStatic
 import reversion
@@ -52,7 +55,16 @@ def _calculate_value_tube(
         return (field_value * 10.1974) + tube_top_position
     else:
         return None
-
+    
+@receiver([post_save, post_delete], sender=GroundwaterLevelDossier)
+@receiver([post_save, post_delete], sender=Observation)
+@receiver([post_save, post_delete], sender=ObservationProcess)
+@receiver([post_save, post_delete], sender=ObservationMetadata)
+@receiver([post_save, post_delete], sender=MeasurementTvp)
+@receiver([post_save, post_delete], sender=MeasurementPointMetadata)
+def clear_map_cache(sender, **kwargs):
+    print("Map cache cleared due to model change:", sender.__name__)
+    cache.clear()
 
 @receiver(post_save, sender=gld_registration_log)
 def on_save_gld_registration_log(
@@ -142,6 +154,24 @@ def on_save_observation(sender, instance: Observation, **kwargs):
             observation_process=last_observation.observation_process,
         )
 
+@receiver(post_delete, sender=Observation)
+def on_delete_observation(sender, instance: Observation, **kwargs):
+    gld: GroundwaterLevelDossier = instance.groundwater_level_dossier
+
+    open_observations = gld.observation.filter(
+        observation_endtime__isnull=True,
+        observation_process=instance.observation_process,
+        observation_metadata=instance.observation_metadata,
+    )
+    closed_observations = gld.observation.filter(
+        observation_endtime__isnull=False,
+        observation_process=instance.observation_process,
+        observation_metadata=instance.observation_metadata,
+    )
+    if closed_observations.count() == 0 and open_observations.count() > 0:
+        for obs in open_observations:
+            obs: Observation
+            obs.delete()
 
 @receiver(pre_save, sender=MeasurementTvp)
 def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):

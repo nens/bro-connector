@@ -554,7 +554,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     )
 
     list_filter = (WellFilter, "owner")
-
+    autocomplete_fields = ["groundwater_monitoring_well_static"]
     readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "date_till"]
 
     fields = [
@@ -782,6 +782,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
 
 class GeoOhmCableAdmin(admin.ModelAdmin):
     form = gmw_forms.GeoOhmCableForm
+    search_fields = ("geo_ohm_cable_id",)
 
     list_display = (
         "geo_ohm_cable_id",
@@ -790,8 +791,8 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
         # "electrode_count",
     )
 
-    list_filter = (TubeFilter,)
-
+    list_filter = (TubeFilter,)    
+    autocomplete_fields = ["groundwater_monitoring_tube_static"]
     readonly_fields = ["electrode_count"]
 
     inlines = (ElectrodeInline,)
@@ -810,6 +811,7 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
 
 class ElectrodeStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.ElectrodeStaticForm
+    search_fields = ("electrode_static_id",)
 
     list_display = (
         "electrode_static_id",
@@ -819,6 +821,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
         "electrode_position",
     )
     list_filter = ("electrode_static_id", "geo_ohm_cable")
+    autocomplete_fields = ["geo_ohm_cable"]
 
     search_fields = get_searchable_fields(gmw_models.Electrode)
 
@@ -900,7 +903,7 @@ class EventAdmin(admin.ModelAdmin):
                 valid = False
                 report = f"Electrode:\n{report_e}\nTube Dynamic:\n{report_td}\nTube Static:\n{report_ts}\nWell Dynamic:\n{report_wd}\nWell Static:\n{report_ws}"
 
-        obj.bro_actions = report
+        # obj.bro_actions = report
         obj.complete_bro = valid
 
         # If not valid, show a warning in the admin interface
@@ -937,6 +940,8 @@ class MaintenanceAdmin(admin.ModelAdmin):
         "reporter",
         "execution_by",
     )
+    autocomplete_fields = ["groundwater_monitoring_well_static"]
+    
 
 
 class GmwSyncLogAdmin(admin.ModelAdmin):

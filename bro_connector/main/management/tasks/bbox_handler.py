@@ -30,7 +30,7 @@ class DataRetrieverBBOX:
 
     def filter_ids_kvk(self, kvk_number):
         if kvk_number:
-            for feature in self.features:
+            for feature in self.features[:]:
                 kvk_id = feature["properties"].get("delivery_accountable_party", None)
                 if kvk_number != kvk_id:
                     self.features.remove(feature)

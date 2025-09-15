@@ -1,0 +1,295 @@
+{% extends "admin/base_site.html" %} {% block content %} {% load static %}
+<!-- HTML -->
+<div id="deck-gl-canvas">
+  <!-- SEARCH -->
+  <div id="search-top-left">
+    <input
+      type="text"
+      id="search-input"
+      placeholder="Zoek naar een put..."
+      title="Je kunt zoeken op BRO id, putcode, nitg code of label"
+    />
+    <div id="search-options" class="hide">
+      {% for well in wells %}
+      <div
+        data-keyword="`{{well.bro_id}} {{well.well_code}} {{well.nitg_code}}`"
+        class="search-option"
+        data-label="{{well.label}}"
+        data-id="{{well.groundwater_monitoring_well_static_id}}"
+        onclick="event.preventDefault(); handleSearchValue(this)"
+      >
+        {{well.label}}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div id="toggle-text-layer-btn">
+    <button
+        id="validation-map-btn"
+        type="button"
+        onclick="event.stopPropagation(); switchToBaseMap()">
+        Normale modus
+    </button>
+    <button
+        id="toggle-text-layer"
+        type="button"
+        onclick="event.stopPropagation(); toggleTextLayerVisibility()">
+        Labels
+    </button>
+  </div>
+
+  <!-- This code handles the meting hamburger menu -->
+  <div id="legend-top">
+    <div
+      id="hamburger-button"
+      onclick="this.parentElement.classList.toggle('hamburger-open')"
+    >
+      <div id="hamburger-button-innner">
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+      </div>
+    </div>
+
+    <div id="meting-wrapper">
+      <!-- GLD -->
+      <div id="gld-wrapper">
+        <div
+        class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('no_glds', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-no_glds">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-no_glds"
+              name="checkbox-no_glds"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Putten zonder GLD
+          </label>
+        </div>
+      <!-- TYPE METING -->
+      <div id="type-wrapper">
+        <h4>Type Meting:</h4>
+        <div class="mapbox-checkbox-wrapper" onclick="event.preventDefault();">
+          <label class="mapbox-button-deselect" for="checkbox-button-all">
+            <button
+              type="button"
+              onclick="event.stopPropagation(); deselectAllCheckboxes()"
+            >
+              (De)selecteer alles
+            </button>
+          </label>
+        </div>        
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('no_obs', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-no_obs">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-no_obs"
+              name="checkbox-no_obs"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Geen meting
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('regular', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-regular">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-regular"
+              name="checkbox-regular"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Reguliere meting
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleTypeClick('controle', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-controle">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-controle"
+              name="checkbox-controle"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Controle meting
+          </label>
+        </div>
+      </div>
+
+      <!-- STATUS METING -->
+      <div id="status-wrapper">
+        <h4>Status Meting:</h4>
+        <div class="mapbox-checkbox-wrapper" onclick="event.preventDefault();">
+          <label class="mapbox-button-deselect" for="checkbox-button-all">
+            <button
+              type="button"
+              onclick="event.stopPropagation(); deselectAllStatusCheckboxes()"
+            >
+              (De)selecteer alles
+            </button>
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('no_status', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-no_status">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-no_status"
+              name="checkbox-no_status"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Geen status
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('validated', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-validated">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-validated"
+              name="checkbox-validated"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Volledig Beoordeeld
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('tentative', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-tentative">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-tentative"
+              name="checkbox-tentative"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Voorlopig
+          </label>
+        </div>
+        <div
+          class="mapbox-checkbox-wrapper"
+          onclick="event.preventDefault(); handleStatusClick('unknown', this)"
+        >
+          <label class="mapbox-checkbox-label" for="checkbox-unknown">
+            <input
+              type="checkbox"
+              class="mapbox-checkbox"
+              id="checkbox-unknown"
+              name="checkbox-unknown"
+              checked
+              onclick="handleCheckboxClick(this)"
+            />
+            Onbekend
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div id="legend-container">
+  <!-- Button to toggle legend -->
+  <div
+    id="legend-button"
+    onclick="this.parentElement.classList.toggle('legend-open')"
+  >
+    <span>Legenda</span>
+  </div>
+
+  <!-- Legend content -->
+  <div id="map-legend">
+    <!-- Reguliere metingen -->
+    <h4>Reguliere metingen:</h4>
+    <div class="legend-item">
+      <span class="legend-dot" style="background-color: #4CAF50;"></span>
+      <span>Korter dan 1 maand</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background-color: #FFC107;"></span>
+      <span>Tussen 1 en 2 maanden</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background-color: #F44336;"></span>
+      <span>Meer dan 2 maanden</span>
+    </div>
+
+    <!-- Controle metingen -->
+    <h4>Controle metingen:</h4>
+    <div class="legend-item">
+      <span class="legend-dot hatched" style="background-color: #4CAF50;"></span>
+      <span>Korter dan 2 maanden</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot hatched" style="background-color: #FFC107;"></span>
+      <span>Tussen 2 en 6 maanden</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot hatched" style="background-color: #F44336;"></span>
+      <span>Meer dan 6 maanden</span>
+    </div>
+
+    <!-- Overig -->
+    <h4>Overig:</h4>
+    <div class="legend-item">
+      <span class="legend-dot" style="background-color: #9E9E9E;"></span>
+      <span>Geen metingen</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot-empty"></span>
+      <span>Geen GLD</span>
+    </div>
+  </div>
+</div>
+
+<!-- Add json information -->
+<div class="json">{{ wells|json_script:"wells_json" }}</div>
+<div class="json">{{ glds|json_script:"glds_json" }}</div>
+<div class="json">{{ state|json_script:"state_json" }}</div>
+
+<!-- Link to css -->
+<link href="{% static 'gmw/gmw_map_validation.css' %}" rel="stylesheet" />
+
+<!-- Link to packages -->
+<link
+  href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css"
+  rel="stylesheet"
+/>
+<script src="
+https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
+<script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+
+<!-- Link to javascript -->
+<script src="{% static 'gmw/gmw_map_validation.js' %}"></script>
+
+{% endblock %}

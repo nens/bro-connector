@@ -162,7 +162,21 @@ class GroundwaterLevelDossier(BaseModel):
         )
 
         return first_measurement_date
-    first_measurement.fget.short_description = "Eerste meetdatum"
+    first_measurement.fget.short_description = "Eerste observatiedatum"
+
+    @property
+    def last_measurement(self):
+        last_measurement = (
+            Observation.objects.filter(groundwater_level_dossier=self)
+            .order_by("observation_starttime")
+            .last()
+        )
+        last_measurement_date = getattr(
+            last_measurement, "observation_starttime", None
+        )
+
+        return last_measurement_date
+    last_measurement.fget.short_description = "Laatste observatiedatum"
 
     @property
     def most_recent_measurement(self):
@@ -210,14 +224,24 @@ class GroundwaterLevelDossier(BaseModel):
         return True
     has_open_observation.fget.short_description = "Heeft open observatie(s)"
 
+    @property
+    def nr_measurements(self):
+        observations =  Observation.objects.filter(
+            groundwater_level_dossier=self
+        )
+        return MeasurementTvp.objects.filter(
+            observation__in=observations,
+        ).count()
+    nr_measurements.fget.short_description = "Aantal metingen"
+
     def __str__(self):
         return f"GLD_{self.groundwater_monitoring_tube.__str__()}"
 
     class Meta:
         managed = True
         db_table = 'gld"."groundwater_level_dossier'
-        verbose_name = "Grondwaterstand Dossier"
-        verbose_name_plural = "Grondwaterstand Dossiers"
+        verbose_name = "Grondwaterstandonderzoek"
+        verbose_name_plural = "Grondwaterstandonderzoeken"
 
 
 class Observation(BaseModel):
@@ -360,6 +384,11 @@ class Observation(BaseModel):
         ).exists()
     active_measurement.fget.short_description = "Actieve meting"
 
+    @property
+    def nr_measurements(self):
+        return len(MeasurementTvp.objects.filter(observation=self))
+    nr_measurements.fget.short_description = "Aantal metingen"
+
     def __str__(self):
         start = (
             self.observation_starttime.date()
@@ -428,7 +457,7 @@ class ObservationMetadata(BaseModel):
     observation_type = models.CharField(
         choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Observatie type"
     )
-    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True, verbose_name="Status metadata")
+    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True, verbose_name="Mate beoordeling")
     responsible_party = models.ForeignKey(
         Organisation,
         on_delete=models.SET_NULL,
@@ -588,6 +617,15 @@ class MeasurementTvp(BaseModel):
         db_table = 'gld"."measurement_tvp'
         verbose_name = "Metingen Tijd-Waarde Paren"
         verbose_name_plural = "Metingen Tijd-Waarde Paren"
+        indexes = [
+            models.Index(fields=["observation", "-measurement_time"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["observation", "measurement_time"],  # composite uniqueness
+                name="unique_observation_measurement_time"
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.observation} {self.measurement_time} {self.calculated_value}"
