@@ -163,8 +163,9 @@ class GLDImport(BaseModel):
             ("IMBRO/A", "IMBRO/A"),
         ),
         max_length=255,
-        null=True,
+        null=False,
         blank=False,
+        default="IMBRO",
         verbose_name="Kwaliteitsregime",
     )
     observation_type = models.CharField(

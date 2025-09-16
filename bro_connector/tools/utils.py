@@ -291,6 +291,7 @@ def validate_shp(file_path, instance: BroImport):
         return None  
     
 
+
 def process_zip_file(instance: GLDImport):
     # Read ZIP file
     zip_buffer = BytesIO(instance.file.read())
@@ -325,18 +326,25 @@ def process_zip_file(instance: GLDImport):
         zip_buffer.close()
 
 
+
 def process_csv_file(instance: GLDImport):
     # Validate CSV file
     reader = validate_csv(instance.file, instance.file.name, instance)
-
     time_col = "time" if "time" in reader.columns else "tijd"
     value_col = "value" if "value" in reader.columns else "waarde"
     gld = GroundwaterLevelDossier.objects.filter(
-        groundwater_monitoring_tube=instance.groundwater_monitoring_tube
-        # quality_regime = instance.quality_regime
+        groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
+        quality_regime = instance.quality_regime
     ).first()
+    if not gld:
+        gld = GroundwaterLevelDossier.objects.update_or_create(
+            gld_bro_id=instance.gld_bro_id,
+            groundwater_monitoring_tube = instance.groundwater_monitoring_tube,
+            quality_regime = instance.quality_regime,
+        )[0]
+        instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
+    
     if instance.validated:
-        print("validated")
         # Create ObservationProces
         Obs_Pro = ObservationProcess.objects.update_or_create(
             process_reference=instance.process_reference,
@@ -345,7 +353,6 @@ def process_csv_file(instance: GLDImport):
             process_type=instance.process_type,
             evaluation_procedure=instance.evaluation_procedure,
         )[0]
-        print("starting meta")
         # Create ObservationMetadata
         Obs_Meta = ObservationMetadata.objects.update_or_create(
             observation_type=instance.observation_type,
@@ -353,12 +360,10 @@ def process_csv_file(instance: GLDImport):
             responsible_party=instance.responsible_party,
         )[0]
 
-        print("starting dates")
         first_datetime = reader[time_col].min()
         last_datetime = reader[time_col].max()
 
         # Create Observation
-        print("starting obs")
         Obs = Observation.objects.update_or_create(
             groundwater_level_dossier=gld,
             observation_metadata=Obs_Meta,
@@ -366,7 +371,6 @@ def process_csv_file(instance: GLDImport):
             observation_starttime=first_datetime,
             observation_endtime=last_datetime,
         )[0]
-        print("created obs")
 
         # itter over file
         for index, row in reader.iterrows():
@@ -402,15 +406,30 @@ def process_csv_file(instance: GLDImport):
                 measurement_point_metadata=mp_meta,
             )
 
+        if instance.groundwater_monitoring_tube:
+            glds = GroundwaterLevelDossier.objects.filter(
+                groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
+                gld_bro_id=instance.gld_bro_id
+            )
+            for gld in glds:
+                if gld.first_measurement:
+                    gld.research_start_date = gld.first_measurement.date()
+                else:
+                    gld.research_start_date = datetime.now().date()
+                if gld.last_measurement:
+                    gld.research_last_date = gld.last_measurement.date()
+                else:
+                    gld.research_last_date = datetime.now().date()
+                gld.research_last_correction = datetime.now().date()
+                gld.save()
+
         instance.executed = True
 
 
 def validate_csv(file, filename: str, instance: GLDImport):
     time_col = None
     seperator = ","  # detect_csv_separator(file)
-    print("Separator: ", seperator)
     reader = pd.read_csv(file, header=0, index_col=False, sep=seperator)
-    print(reader)
     required_columns = ["time", "value"]
     missing_columns = [col for col in required_columns if col not in reader.columns]
     if missing_columns:
@@ -428,21 +447,23 @@ def validate_csv(file, filename: str, instance: GLDImport):
     try:
         # print(reader[time_col])
         reader[time_col] = pd.to_datetime(
-            reader[time_col], format="%Y-%m-%dT%H:%M:%S%z", errors="raise"
+            reader[time_col], errors="raise", infer_datetime_format=True, utc=True
         )  # This will raise an error if invalid format
+        # Convert to Europe/Amsterdam
+        reader[time_col] = reader[time_col].dt.tz_convert("Europe/Amsterdam")
     except Exception as e:
         instance.validated = False
         instance.report += (
             f"Eerste kolom moet de tijd bevatten van {filename}: {str(e)}\n\n"
         )
 
-    # Validate 'values' column format (numeric values)
-    if "values" in reader.columns:
+    # Validate 'value' column format (numeric values)
+    if "value" in reader.columns:
         if (
-            not pd.to_numeric(reader["values"], errors="coerce").notnull().all()
+            not pd.to_numeric(reader["value"], errors="coerce").notnull().all()
         ):  # Check if all values are numeric
             instance.validated = False
-            instance.report += f"Fout in 'values' kolom van {filename}: Bevat niet-numerieke waarden.\n\n"
+            instance.report += f"Fout in 'value' kolom van {filename}: Bevat niet-numerieke waarden.\n\n"
 
     # validate the status_quality_control column if given in csv
     if "status_quality_control" in reader.columns:
@@ -495,3 +516,4 @@ def get_monitoring_tube(
         )
     except GroundwaterMonitoringTubeStatic.DoesNotExist:
         return None
+
