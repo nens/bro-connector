@@ -38,6 +38,7 @@ from main.management.tasks import (
     retrieve_historic_gld,
     retrieve_historic_gmn,
 )
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -373,12 +374,23 @@ def process_csv_file(instance: GLDImport):
         )[0]
 
         # itter over file
+        times = []
+        mms = []
+        mtvps = []
+        duplicates = False
         for index, row in reader.iterrows():
             value = row[value_col]
             time = row[time_col]
+            if time in times: 
+                if not duplicates:
+                    instance.report += "Duplicaten gevonden in de tijd waardes. Alleen de eerste voorgekomen waardes gebruikt.\n\n"
+                duplicates = True
+                continue
+            else:
+                times.append(time)
 
             # create basic MeasurementPointMetadata
-            mp_meta = MeasurementPointMetadata.objects.create(value_limit=None)
+            mp_meta = MeasurementPointMetadata(value_limit=None)
 
             # Add the present fields to the metadata if they are given in the CSV
             st_quality_control_tvp = row.get("status_quality_control", None)
@@ -395,16 +407,47 @@ def process_csv_file(instance: GLDImport):
                     mp_meta.value_limit = censor_limit_tvp
 
             # Save the metadata after all fields are set
-            mp_meta.save()
+            mms.append(mp_meta)
 
             # create time-value pair
-            MeasurementTvp.objects.create(
+            mtvp = MeasurementTvp(
                 observation=Obs,
                 measurement_time=time,
                 field_value=value,
                 field_value_unit=instance.field_value_unit,
                 measurement_point_metadata=mp_meta,
             )
+
+            mtvps.append(mtvp)
+
+        with transaction.atomic():
+            try:
+                MeasurementPointMetadata.objects.bulk_create(
+                    mms,
+                    update_conflicts=False,
+                    batch_size=5000,
+                )
+                MeasurementTvp.objects.bulk_create(
+                    mtvps,
+                    update_conflicts=True,
+                    update_fields=[
+                        "field_value", 
+                        "field_value_unit", 
+                        "calculated_value", 
+                        "measurement_point_metadata"
+                    ],
+                    unique_fields=[
+                        "observation", 
+                        "measurement_time"
+                    ],
+                    batch_size=5000,
+                )
+            except Exception as e:
+                instance.report += f"Bulk updating/creating failed for observation: {Obs}"
+                logger.info(f"Bulk updating/creating failed for observation: {Obs}")
+                logger.exception(e)
+                instance.executed = False
+                return
 
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(
@@ -447,7 +490,7 @@ def validate_csv(file, filename: str, instance: GLDImport):
     try:
         # print(reader[time_col])
         reader[time_col] = pd.to_datetime(
-            reader[time_col], errors="raise", infer_datetime_format=True, utc=True
+            reader[time_col], errors="raise", utc=True
         )  # This will raise an error if invalid format
         # Convert to Europe/Amsterdam
         reader[time_col] = reader[time_col].dt.tz_convert("Europe/Amsterdam")
