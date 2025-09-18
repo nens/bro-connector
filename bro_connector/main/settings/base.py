@@ -13,18 +13,21 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 import platform
 from pathlib import Path
+
 import django.db.models.options as options
 from main.localsecret import ENV, GDAL_DLL_VERSION
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
 # Application definition
-MODULES = ["gmw", "frd", "gld", "gmn"]
+MODULES = ["gmw", "frd", "gld", "gmn", "gar"]
 
 
 POLYGON_SHAPEFILE = (
     Path(__file__).resolve().parent.parent.parent.parent
-    / "data" / "shapefile" / "ProvincieZeeland_BrabantseWal_GeoNAM.shp"
+    / "data"
+    / "shapefile"
+    / "ProvincieZeeland_BrabantseWal_GeoNAM.shp"
 )
 
 KVK_USER = "20168636"
@@ -33,7 +36,7 @@ USE_WELLS_AS_MAP_CENTER = True
 MAP_CENTER = [3.945697, 51.522601]
 MAP_ZOOM = 9
 
-CACHE_TIMEOUT = 60 * 60 * 24 # 1 day
+CACHE_TIMEOUT = 60 * 60 * 24  # 1 day
 
 ##### CUSTOMIZEABLE SETTINGS FOR EXPERIENCED USERS #####
 
@@ -53,6 +56,7 @@ INSTALLED_APPS = [
     "gmw",
     "gmn",
     "frd",
+    "gar",
     "tools",
     "rest_framework",
     "reversion",
@@ -102,7 +106,7 @@ CACHES = {
     }
 }
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -177,7 +181,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC" #"Europe/Amsterdam"
+TIME_ZONE = "UTC"  # "Europe/Amsterdam"
 
 USE_I18N = True
 

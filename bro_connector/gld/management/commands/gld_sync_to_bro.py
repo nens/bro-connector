@@ -1,20 +1,19 @@
-from django.core.management.base import BaseCommand
-import bro_exchange as brx
-import os
-import datetime
 import bisect
-import reversion
+import datetime
+import logging
+import os
 import uuid
-from xml.etree import ElementTree as ET
 from copy import deepcopy
-from main.settings.base import ENV
+from xml.etree import ElementTree as ET
 
+import bro_exchange as brx
+import reversion
+from bro.models import Organisation
 from django.apps import apps
+from django.core.management.base import BaseCommand
 from gld import models
 from gmw.models import GroundwaterMonitoringWellStatic
-from bro.models import Organisation
-
-import logging
+from main.settings.base import ENV
 
 logger = logging.getLogger(__name__)
 
@@ -277,15 +276,13 @@ def create_new_observations():
             except Exception as e:
                 logger.exception(e)
                 print(
-                    "No observations exist yet for GLD {}, please create an observation".format(
-                        gld_id
-                    )
+                    f"No observations exist yet for GLD {gld_id}, please create an observation"
                 )
                 continue
             # use the metadata id and process id from the previous observation
             new_observation = models.Observation(
                 observation_starttime=datetime.datetime.utcnow().replace(
-                    tzinfo=datetime.timezone.utc
+                    tzinfo=datetime.UTC
                 ),
                 observation_metadata_id=previous_observation_metadata_id,
                 observation_process_id=previous_observation_process_id,
@@ -370,8 +367,8 @@ class GldSyncHandler:
                     "monitoringPoints": monitoringpoints,
                 }
 
-            request_reference = "GLD_StartRegistration_{}_tube_{}".format(
-                bro_id_gmw, str(filtrnr)
+            request_reference = (
+                f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(filtrnr)}"
             )
             gld_startregistration_request = brx.gld_registration_request(
                 srcdoc="GLD_StartRegistration",
@@ -407,9 +404,7 @@ class GldSyncHandler:
                 filter_number=filtrnr,
                 quality_regime=quality_regime,
                 defaults=dict(
-                    comments="Failed to create startregistration source document: {}".format(
-                        e
-                    ),
+                    comments=f"Failed to create startregistration source document: {e}",
                     date_modified=datetime.datetime.now(),
                     process_status=process_status,
                 ),
@@ -432,9 +427,7 @@ class GldSyncHandler:
         except Exception as e:
             validation_status = validation_info["status"]
             process_status = "failed_to_validate_sourcedocument"
-            comments = (
-                "Exception occured during validation of sourcedocuments: {}".format(e)
-            )
+            comments = f"Exception occured during validation of sourcedocuments: {e}"
 
         comments = "Succesfully validated sourcedocument, no errors"
         process_status = "source_document_validation_succesful"
@@ -499,9 +492,7 @@ class GldSyncHandler:
                 registration.save()
 
         except Exception as e:
-            comments = "Exception occured during delivery of startregistration sourcedocument: {}".format(
-                e
-            )
+            comments = f"Exception occured during delivery of startregistration sourcedocument: {e}"
             registration.date_modified = datetime.datetime.now()
             registration.comments = comments
             registration.delivery_status = delivery_status_update
@@ -851,7 +842,7 @@ class GldSyncHandler:
                 defaults=dict(
                     date_modified=datetime.datetime.now(),
                     broid_registration=gld_bro_id,
-                    comments="Failed to generate XML source document, {}".format(e),
+                    comments=f"Failed to generate XML source document, {e}",
                     process_status="failed_to_create_source_document",
                 ),
             )
@@ -983,9 +974,7 @@ class GldSyncHandler:
                 gld_addition.process_status = "source_document_delivered"
 
         except Exception as e:
-            comments = (
-                "Error occured in attempting to deliver sourcedocument, {}".format(e)
-            )
+            comments = f"Error occured in attempting to deliver sourcedocument, {e}"
 
             gld_addition.date_modified = datetime.datetime.now()
             gld_addition.comments = comments
@@ -1013,7 +1002,7 @@ class GldSyncHandler:
             )
             delivery_status = upload_info.json()["status"]
         except Exception as e:
-            comments = "Status check failed, {}".format(e)
+            comments = f"Status check failed, {e}"
             gld_addition.comments = comments
             gld_addition.save()
             return

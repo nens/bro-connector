@@ -1,19 +1,19 @@
-import bro_exchange as brx
-import os
-import datetime
 import bisect
+import datetime
+import logging
+import os
+
+import bro_exchange as brx
 import reversion
 from bro.models import Organisation
-from main.settings.base import ENV
 from gmw import models
 from main.management.tasks.django_tools_bro import (
-    DjangoTableToDict,
-    getConstruction,
-    getAllIntermediateEvents,
     EVENTNAME2TYPE,
+    DjangoTableToDict,
+    getAllIntermediateEvents,
+    getConstruction,
 )
-import logging
-
+from main.settings.base import ENV
 
 logger = logging.getLogger(__name__)
 
@@ -769,9 +769,7 @@ def handle_not_valid_or_error(registration, validation_info):
 
     try:
         validation_errors = validation_info["errors"]
-        comments = "Validated registration document, found errors: {}".format(
-            validation_errors
-        )
+        comments = f"Validated registration document, found errors: {validation_errors}"
 
         defaults.update({"comments": comments})
         if (
@@ -885,8 +883,8 @@ def deliver_sourcedocuments(
             )
 
     except Exception as e:
-        comments = "Exception occured during delivery of registration sourcedocument: {}".format(
-            e
+        comments = (
+            f"Exception occured during delivery of registration sourcedocument: {e}"
         )
         models.gmw_registration_log.objects.update_or_create(
             id=registration,
@@ -981,7 +979,7 @@ def check_delivery_status_levering(
         record, created = models.gmw_registration_log.objects.update_or_create(
             id=registration,
             defaults=dict(
-                comments="Error occured during status check of delivery: {}".format(e)
+                comments=f"Error occured during status check of delivery: {e}"
             ),
         )
 

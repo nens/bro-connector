@@ -1,43 +1,29 @@
-from django.db.models.signals import (
-    pre_save,
-)
-import polars as pl
-import numpy as np
-from .models import GLDImport, GMNImport, BroImport
-from django.dispatch import receiver
-from io import BytesIO
-import zipfile
-import pandas as pd
-import geopandas as gpd
-import tempfile
-import os
-from pathlib import Path
-from datetime import datetime
-import shutil
-
-from main.utils.bbox_extractor import BBOX_EXTRACTOR
-from gmn.models import (
-    GroundwaterMonitoringNet,
-    Subgroup,
-    MeasuringPoint,
-)
 import logging
-from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
+import shutil
+import zipfile
+from datetime import datetime
+from io import BytesIO
+from pathlib import Path
+
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+from gld.choices import CENSORREASON, STATUSQUALITYCONTROL
 from gld.models import (
-    Observation,
-    MeasurementTvp,
-    MeasurementPointMetadata,
-    ObservationProcess,
-    ObservationMetadata,
     GroundwaterLevelDossier,
+    MeasurementPointMetadata,
+    MeasurementTvp,
+    Observation,
+    ObservationMetadata,
+    ObservationProcess,
 )
-from gld.choices import STATUSQUALITYCONTROL, CENSORREASON
+from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.management.tasks import (
-    retrieve_historic_gmw,
-    retrieve_historic_frd,
     retrieve_historic_gld,
-    retrieve_historic_gmn,
+    retrieve_historic_gmw,
 )
+
+from .models import BroImport, GLDImport
 
 logger = logging.getLogger(__name__)
 
@@ -91,18 +77,33 @@ def detect_csv_separator(file):
     except Exception as e:
         print(f"Error reading file: {e}")
         return ","
-    
-def format_message(handler: str, type: str, kvk: int, shp: str, count: int, imported: int) -> dict:
+
+
+def format_message(
+    handler: str, type: str, kvk: int, shp: str, count: int, imported: int
+) -> dict:
     if type in ["gar", "gmn", "frd"]:
-        return {"message": f"BRO type {type} is nog niet geimplementeerd.", "level": "WARNING"}
+        return {
+            "message": f"BRO type {type} is nog niet geimplementeerd.",
+            "level": "WARNING",
+        }
     elif count == 0:
         if handler == "KvK":
-            return {"message": f"Geen {type}-objecten gevonden voor kvk {kvk}.", "level": "ERROR"}
+            return {
+                "message": f"Geen {type}-objecten gevonden voor kvk {kvk}.",
+                "level": "ERROR",
+            }
         if handler == "Shape":
             if kvk:
-                return {"message": f"Geen {type}-objecten gevonden voor kvk {kvk} binnen {shp}.", "level": "ERROR"}
+                return {
+                    "message": f"Geen {type}-objecten gevonden voor kvk {kvk} binnen {shp}.",
+                    "level": "ERROR",
+                }
             else:
-                return {"message": f"Geen {type}-objecten gevonden binnen {shp}.", "level": "ERROR"}
+                return {
+                    "message": f"Geen {type}-objecten gevonden binnen {shp}.",
+                    "level": "ERROR",
+                }
     elif count == imported:
         if handler == "KvK":
             return {
@@ -155,7 +156,8 @@ def format_message(handler: str, type: str, kvk: int, shp: str, count: int, impo
                     "message": f"{imported} van de {count} {type}-objecten geimporeerd binnen {shp}.",
                     "level": "WARNING",
                 }
-            
+
+
 def has_necessary_helper_files(filenames):
     """
     Check if the list of filenames contains exactly one file
@@ -173,6 +175,7 @@ def has_necessary_helper_files(filenames):
     # Check conditions
     all_present = all(counts[ext] == 1 for ext in required_extensions)
     return all_present, counts
+
 
 def process_zip_bro_file(instance: BroImport):
     # Read ZIP file
@@ -201,7 +204,10 @@ def process_zip_bro_file(instance: BroImport):
             # timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
             basename = Path(shp_files[0]).stem
             output_folder = (
-                Path(__file__).resolve().parent.parent.parent / "data" / "shapefile" / f"{basename}"#_{timestamp}"
+                Path(__file__).resolve().parent.parent.parent
+                / "data"
+                / "shapefile"
+                / f"{basename}"  # _{timestamp}"
             )
             output_folder.mkdir(parents=True, exist_ok=True)
             shp_filename = shp_files[0]
@@ -213,7 +219,9 @@ def process_zip_bro_file(instance: BroImport):
                     with zip_file.open(filename) as src, open(file_path, "wb") as dst:
                         shutil.copyfileobj(src, dst)
                 except PermissionError as e:
-                    logger.info("Shape files and helper files are in use and locked. Unable to overwrite with new shape file.")
+                    logger.info(
+                        "Shape files and helper files are in use and locked. Unable to overwrite with new shape file."
+                    )
                     logger.exception(e)
 
             ## start a new loop and validate the shp file and then process it
@@ -223,25 +231,25 @@ def process_zip_bro_file(instance: BroImport):
                 import_info = {}
                 if instance.bro_type.lower() == "gmw":
                     import_info = retrieve_historic_gmw.run(
-                        kvk_number=instance.kvk_number, 
+                        kvk_number=instance.kvk_number,
                         handler=instance.handler,
                         shp_file=POLYGON_SHAPEFILE,
                         delete=instance.delete_outside,
                     )
                 if instance.bro_type.lower() == "gld":
                     import_info = retrieve_historic_gld.run(
-                        kvk_number=instance.kvk_number, 
+                        kvk_number=instance.kvk_number,
                         handler=instance.handler,
                         shp_file=POLYGON_SHAPEFILE,
                         delete=instance.delete_outside,
                     )
-            
+
                 report = format_message(
-                    handler=instance.handler, 
-                    type=instance.bro_type, 
-                    kvk=instance.kvk_number, 
+                    handler=instance.handler,
+                    type=instance.bro_type,
+                    kvk=instance.kvk_number,
                     shp=shp_filename,
-                    count=import_info.get("ids_found"), 
+                    count=import_info.get("ids_found"),
                     imported=import_info.get("imported"),
                 )
                 instance.report += report.get("message") + "\n"
@@ -252,6 +260,7 @@ def process_zip_bro_file(instance: BroImport):
         instance.validated = False
     finally:
         zip_buffer.close()
+
 
 def validate_shp(file_path, instance: BroImport):
     """
@@ -288,8 +297,7 @@ def validate_shp(file_path, instance: BroImport):
     except Exception as e:
         instance.validated = False
         instance.report += f"{filename} is ongeldig of corrupt: {str(e)}\n"
-        return None  
-    
+        return None
 
 
 def process_zip_file(instance: GLDImport):
@@ -326,7 +334,6 @@ def process_zip_file(instance: GLDImport):
         zip_buffer.close()
 
 
-
 def process_csv_file(instance: GLDImport):
     # Validate CSV file
     reader = validate_csv(instance.file, instance.file.name, instance)
@@ -334,16 +341,16 @@ def process_csv_file(instance: GLDImport):
     value_col = "value" if "value" in reader.columns else "waarde"
     gld = GroundwaterLevelDossier.objects.filter(
         groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
-        quality_regime = instance.quality_regime
+        quality_regime=instance.quality_regime,
     ).first()
     if not gld:
         gld = GroundwaterLevelDossier.objects.update_or_create(
             gld_bro_id=instance.gld_bro_id,
-            groundwater_monitoring_tube = instance.groundwater_monitoring_tube,
-            quality_regime = instance.quality_regime,
+            groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
+            quality_regime=instance.quality_regime,
         )[0]
         instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
-    
+
     if instance.validated:
         # Create ObservationProces
         Obs_Pro = ObservationProcess.objects.update_or_create(
@@ -409,7 +416,7 @@ def process_csv_file(instance: GLDImport):
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(
                 groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
-                gld_bro_id=instance.gld_bro_id
+                gld_bro_id=instance.gld_bro_id,
             )
             for gld in glds:
                 if gld.first_measurement:
@@ -516,4 +523,3 @@ def get_monitoring_tube(
         )
     except GroundwaterMonitoringTubeStatic.DoesNotExist:
         return None
-

@@ -1,19 +1,15 @@
-from django.db.models.signals import post_save, pre_save, post_delete
-from django.conf import settings
 import datetime
-from django.dispatch import receiver
-from .models import (
-    gmw_registration_log,
-    Event,
-    GroundwaterMonitoringWellStatic,
-    GroundwaterMonitoringWellDynamic,
-    GroundwaterMonitoringTubeStatic,
-    GroundwaterMonitoringTubeDynamic,
-    Electrode,
-)
-from gmw.bro_validators.well_validation import WellValidation
-import reversion
+
 from django.core.cache import cache
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
+
+from .models import (
+    GroundwaterMonitoringTubeDynamic,
+    GroundwaterMonitoringTubeStatic,
+    GroundwaterMonitoringWellDynamic,
+    GroundwaterMonitoringWellStatic,
+)
 
 # @receiver(post_save, sender=GroundwaterMonitoringWellStatic)
 # def on_save_groundwater_monitoring_static_pre(sender, **kwargs):
@@ -23,11 +19,13 @@ from django.core.cache import cache
 # def on_save_groundwater_monitoring_static_post(sender, **kwargs):
 #     print("Pre save GMWS")
 
+
 @receiver([post_save, post_delete], sender=GroundwaterMonitoringWellStatic)
 @receiver([post_save, post_delete], sender=GroundwaterMonitoringTubeStatic)
 def clear_map_cache(sender, **kwargs):
     print("Map cache cleared due to model change:", sender.__name__)
     cache.clear()
+
 
 @receiver(post_save, sender=GroundwaterMonitoringWellStatic)
 def on_save_groundwater_monitoring_well_static(sender, instance, created, **kwargs):
@@ -36,6 +34,7 @@ def on_save_groundwater_monitoring_well_static(sender, instance, created, **kwar
             groundwater_monitoring_well_static=instance,
             date_from=datetime.datetime.now(),
         )
+
 
 @receiver(post_delete, sender=GroundwaterMonitoringWellStatic)
 def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):
@@ -47,6 +46,7 @@ def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):
         groundwater_monitoring_well_static=instance
     ).delete()
 
+
 @receiver(post_save, sender=GroundwaterMonitoringTubeStatic)
 def on_save_groundwater_monitoring_tube_static(sender, instance, created, **kwargs):
     if created and not instance.state.exists():
@@ -54,6 +54,7 @@ def on_save_groundwater_monitoring_tube_static(sender, instance, created, **kwar
             groundwater_monitoring_tube_static=instance,
             date_from=datetime.datetime.now(),
         )
+
 
 @receiver(post_delete, sender=GroundwaterMonitoringTubeStatic)
 def on_delete_groundwater_monitoring_tube_static(sender, instance, **kwargs):
@@ -64,6 +65,7 @@ def on_delete_groundwater_monitoring_tube_static(sender, instance, **kwargs):
     GroundwaterMonitoringTubeDynamic.objects.filter(
         groundwater_monitoring_tube_static=instance
     ).delete()
+
 
 # @receiver(post_save, sender=gmw_registration_log)
 # def on_save_gmw_synchronisatie_log(

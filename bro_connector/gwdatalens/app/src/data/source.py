@@ -3,7 +3,6 @@ import os
 import pickle
 from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
-from typing import List, Optional, Tuple, Union
 from urllib.parse import quote
 
 import geopandas as gpd
@@ -53,7 +52,7 @@ class DataSourceTemplate(ABC):
         """
 
     @abstractmethod
-    def list_locations(self) -> List[str]:
+    def list_locations(self) -> list[str]:
         """List of measurement location names.
 
         Returns
@@ -63,7 +62,7 @@ class DataSourceTemplate(ABC):
         """
 
     @abstractmethod
-    def list_locations_sorted_by_distance(self, name) -> List[str]:
+    def list_locations_sorted_by_distance(self, name) -> list[str]:
         """List of measurement location names, sorted by distance.
 
         Parameters
@@ -82,7 +81,7 @@ class DataSourceTemplate(ABC):
         self,
         gmw_id: str,
         tube_id: int,
-        observation_type: Optional[str] = None,
+        observation_type: str | None = None,
     ) -> pd.DataFrame:
         """Get time series.
 
@@ -304,7 +303,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         return gdf
 
     @lru_cache  # noqa: B019
-    def list_locations(self) -> List[str]:
+    def list_locations(self) -> list[str]:
         """Return a list of locations that contain groundwater level dossiers.
 
         Each location is defined by a tuple of length 2: bro_id and tube_id.
@@ -367,7 +366,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         else:
             return well_code.iloc[0]
 
-    def list_locations_sorted_by_distance(self, name) -> List[str]:
+    def list_locations_sorted_by_distance(self, name) -> list[str]:
         """List locations sorted by their distance from a given location.
 
         Parameters
@@ -412,9 +411,9 @@ class PostgreSQLDataSource(DataSourceTemplate):
     def get_timeseries(
         self,
         gmw_id: str,
-        tube_id: Optional[int] = None,
+        tube_id: int | None = None,
         observation_type="reguliereMeting",
-        column: Optional[Union[List[str], str]] = None,
+        column: list[str] | str | None = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series for the measurements for given bro-id and tube-id.
 
@@ -673,7 +672,7 @@ class HydropandasDataSource(DataSourceTemplate):
         return gdf
 
     @lru_cache  # noqa: B019
-    def list_locations(self) -> List[Tuple[str, int]]:
+    def list_locations(self) -> list[tuple[str, int]]:
         """Return a list of locations that contain groundwater level dossiers.
 
         Each location is defines by a tuple of length 2: bro-id and tube_id.
@@ -724,7 +723,7 @@ class HydropandasDataSource(DataSourceTemplate):
     def get_timeseries(
         self,
         gmw_id: str,
-        tube_id: Optional[Union[int, str]] = None,
+        tube_id: int | str | None = None,
         observation_type="reguliereMeting",
     ) -> pd.DataFrame:
         """Return a Pandas Series for the measurements for gmw_id and tube_id.

@@ -1,7 +1,9 @@
-from django.core.management.base import BaseCommand
-from gld.models import MeasurementTvp
-from django.db import transaction
 from collections import defaultdict
+
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from gld.models import MeasurementTvp
+
 
 class Command(BaseCommand):
     help = "Remove duplicate MeasurementTvp rows (same observation_id + measurement_time), keeping only one."
@@ -13,13 +15,18 @@ class Command(BaseCommand):
 
         # Group rows by (observation_id, measurement_time)
         for mtvp in MeasurementTvp.objects.all().only(
-                "measurement_tvp_id", 
-                "observation", 
-                "measurement_time",
-                "field_value",
-                "field_value_unit",
-            ):
-            key = (mtvp.observation.observation_id, mtvp.measurement_time, mtvp.field_value, mtvp.field_value_unit)
+            "measurement_tvp_id",
+            "observation",
+            "measurement_time",
+            "field_value",
+            "field_value_unit",
+        ):
+            key = (
+                mtvp.observation.observation_id,
+                mtvp.measurement_time,
+                mtvp.field_value,
+                mtvp.field_value_unit,
+            )
             duplicates_map[key].append(mtvp.measurement_tvp_id)
 
         # Keep the first, mark the rest for deletion
@@ -37,7 +44,9 @@ class Command(BaseCommand):
 
         # Delete in one transaction
         with transaction.atomic():
-            deleted_count, _ = MeasurementTvp.objects.filter(id__in=ids_to_delete).delete()
+            deleted_count, _ = MeasurementTvp.objects.filter(
+                id__in=ids_to_delete
+            ).delete()
 
         self.stdout.write(
             self.style.SUCCESS(f"✅ Deleted {deleted_count} duplicate measurement(s).")

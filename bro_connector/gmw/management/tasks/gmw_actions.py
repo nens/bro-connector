@@ -1,14 +1,15 @@
-from . import sync_gmw_events as gmw_sync
+import os
+
+import reversion
+from bro.models import Organisation
+from gmw.management.commands.gmw_sync_to_bro import _get_registrations_dir
 from gmw.models import (
-    GroundwaterMonitoringWellStatic,
     Event,
+    GroundwaterMonitoringWellStatic,
     gmw_registration_log,
 )
-import os
-import reversion
-from gmw.management.commands.gmw_sync_to_bro import _get_registrations_dir
 
-from bro.models import Organisation
+from . import sync_gmw_events as gmw_sync
 
 
 def _get_token(owner: Organisation):

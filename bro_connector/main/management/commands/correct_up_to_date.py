@@ -1,10 +1,9 @@
 import datetime
-import reversion
-
-from django.core.management.base import BaseCommand
 from logging import getLogger
 
-from gld.models import Observation, MeasurementTvp
+import reversion
+from django.core.management.base import BaseCommand
+from gld.models import MeasurementTvp, Observation
 
 logger = getLogger(__name__)
 

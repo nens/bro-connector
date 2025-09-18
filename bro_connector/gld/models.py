@@ -5,37 +5,39 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
-import os
-import datetime
 import bisect
+import datetime
+import os
 import uuid
+from datetime import timedelta
+from logging import getLogger
+from xml.etree import ElementTree as ET
+
+import bro_exchange as brx
+from bro.models import Organisation
 from django.apps import apps
 from django.db import models
-from logging import getLogger
+from django.db.models import Manager
+from django.utils import timezone
+from gmn.models import GroundwaterMonitoringNet
+from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
+from main.localsecret import DEMO
+from main.models import BaseModel
+
 from .choices import (
-    QUALITYREGIME,
     AIRPRESSURECOMPENSATIONTYPE,
     CENSORREASON,
-    UNIT_CHOICES,
     DELIVERY_TYPE_CHOICES,
     EVALUATIONPROCEDURE,
     MEASUREMENTINSTRUMENTTYPE,
     OBSERVATIONTYPE,
     PROCESSREFERENCE,
     PROCESSTYPE,
+    QUALITYREGIME,
     STATUSCODE,
     STATUSQUALITYCONTROL,
+    UNIT_CHOICES,
 )
-from bro.models import Organisation
-from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
-from gmn.models import GroundwaterMonitoringNet
-from main.models import BaseModel
-from main.localsecret import DEMO
-import bro_exchange as brx
-from django.db.models import Manager
-from xml.etree import ElementTree as ET
-from datetime import timedelta
-from django.utils import timezone
 
 logger = getLogger(__file__)
 
@@ -104,7 +106,9 @@ def get_timeseries_tvp_for_observation_id(observation):
 
 
 class GroundwaterLevelDossier(BaseModel):
-    groundwater_level_dossier_id = models.AutoField(primary_key=True, verbose_name="DB ID")
+    groundwater_level_dossier_id = models.AutoField(
+        primary_key=True, verbose_name="DB ID"
+    )
     groundwater_monitoring_net = models.ManyToManyField(
         GroundwaterMonitoringNet,
         blank=True,
@@ -116,7 +120,7 @@ class GroundwaterLevelDossier(BaseModel):
         null=True,
         blank=False,
         related_name="groundwaterleveldossier",
-        verbose_name="Filter"
+        verbose_name="Filter",
     )
     gld_bro_id = models.CharField(
         max_length=255, blank=True, null=True, unique=True, verbose_name="GLD BRO ID"
@@ -143,11 +147,13 @@ class GroundwaterLevelDossier(BaseModel):
         if self.groundwater_monitoring_tube is not None:
             return self.groundwater_monitoring_tube.groundwater_monitoring_well_static.bro_id
         return None
+
     gmw_bro_id.fget.short_description = "GMW BRO ID"
 
     @property
     def tube_number(self):
         return self.groundwater_monitoring_tube.tube_number
+
     tube_number.fget.short_description = "Filternummer"
 
     @property
@@ -162,6 +168,7 @@ class GroundwaterLevelDossier(BaseModel):
         )
 
         return first_measurement_date
+
     first_measurement.fget.short_description = "Eerste observatiedatum"
 
     @property
@@ -171,11 +178,10 @@ class GroundwaterLevelDossier(BaseModel):
             .order_by("observation_starttime")
             .last()
         )
-        last_measurement_date = getattr(
-            last_measurement, "observation_starttime", None
-        )
+        last_measurement_date = getattr(last_measurement, "observation_starttime", None)
 
         return last_measurement_date
+
     last_measurement.fget.short_description = "Laatste observatiedatum"
 
     @property
@@ -197,6 +203,7 @@ class GroundwaterLevelDossier(BaseModel):
                 return most_recent_measurement.measurement_time
 
         return None
+
     most_recent_measurement.fget.short_description = "Meest recente meetmoment"
 
     @property
@@ -210,6 +217,7 @@ class GroundwaterLevelDossier(BaseModel):
         if nr_of_observations_groundwaterleveldossier == 0:
             return True
         return False
+
     completely_delivered.fget.short_description = "Volledig geleverd"
 
     @property
@@ -222,16 +230,16 @@ class GroundwaterLevelDossier(BaseModel):
         if nr_of_observations_groundwaterleveldossier == 0:
             return False
         return True
+
     has_open_observation.fget.short_description = "Heeft open observatie(s)"
 
     @property
     def nr_measurements(self):
-        observations =  Observation.objects.filter(
-            groundwater_level_dossier=self
-        )
+        observations = Observation.objects.filter(groundwater_level_dossier=self)
         return MeasurementTvp.objects.filter(
             observation__in=observations,
         ).count()
+
     nr_measurements.fget.short_description = "Aantal metingen"
 
     def __str__(self):
@@ -245,9 +253,14 @@ class GroundwaterLevelDossier(BaseModel):
 
 
 class Observation(BaseModel):
-    observation_id = models.AutoField(primary_key=True, null=False, blank=False, verbose_name="DB ID")
+    observation_id = models.AutoField(
+        primary_key=True, null=False, blank=False, verbose_name="DB ID"
+    )
     groundwater_level_dossier = models.ForeignKey(
-        "GroundwaterLevelDossier", on_delete=models.CASCADE, related_name="observation", verbose_name="Grondwaterstand dossier [GLD]"
+        "GroundwaterLevelDossier",
+        on_delete=models.CASCADE,
+        related_name="observation",
+        verbose_name="Grondwaterstand dossier [GLD]",
     )
     observation_metadata = models.ForeignKey(
         "ObservationMetadata",
@@ -255,7 +268,7 @@ class Observation(BaseModel):
         default=None,
         null=True,
         blank=True,
-        verbose_name="Observatie Metadata"
+        verbose_name="Observatie Metadata",
     )
     observation_process = models.ForeignKey(
         "ObservationProcess",
@@ -263,7 +276,7 @@ class Observation(BaseModel):
         default=None,
         null=True,
         blank=True,
-        verbose_name="Observatie Proces"
+        verbose_name="Observatie Proces",
     )
     observation_starttime = models.DateTimeField(
         blank=True, null=True, verbose_name="Starttijd"
@@ -299,6 +312,7 @@ class Observation(BaseModel):
         if mtvp is not None:
             return mtvp.measurement_time
         return None
+
     timestamp_first_measurement.fget.short_description = "Moment eerste meting"
 
     @property
@@ -312,6 +326,7 @@ class Observation(BaseModel):
         if mtvp is not None:
             return mtvp.measurement_time
         return None
+
     timestamp_last_measurement.fget.short_description = "Moment laatste meting"
 
     @property
@@ -319,6 +334,7 @@ class Observation(BaseModel):
         if self.observation_process:
             return self.observation_process.measurement_instrument_type
         return "-"
+
     measurement_type.fget.short_description = "Meting type"
 
     @property
@@ -326,6 +342,7 @@ class Observation(BaseModel):
         if self.observation_metadata:
             return self.observation_metadata.observation_type
         return "-"
+
     observation_type.fget.short_description = "Observatie type"
 
     @property
@@ -333,6 +350,7 @@ class Observation(BaseModel):
         if self.observation_metadata:
             return self.observation_metadata.status
         return "-"
+
     status.fget.short_description = "Status Metadata"
 
     @property
@@ -340,6 +358,7 @@ class Observation(BaseModel):
         if self.observation_starttime and self.observation_endtime:
             return self.observation_endtime - self.observation_starttime
         return None
+
     observationperiod.fget.short_description = "Observatie periode"
 
     @property
@@ -347,6 +366,7 @@ class Observation(BaseModel):
         if self.result_time:
             return self.result_time.date()
         return None
+
     date_stamp.fget.short_description = "Datum resultaattijd"
 
     @property
@@ -374,6 +394,7 @@ class Observation(BaseModel):
         if self.observation_type == "controlemeting":
             return "controlemeting"
         return f"regulier_{self.observation_type}"
+
     addition_type.fget.short_description = "Toevoegingstype"
 
     @property
@@ -382,11 +403,13 @@ class Observation(BaseModel):
         return MeasurementTvp.objects.filter(
             observation=self, measurement_time__gte=one_week_ago
         ).exists()
+
     active_measurement.fget.short_description = "Actieve meting"
 
     @property
     def nr_measurements(self):
         return len(MeasurementTvp.objects.filter(observation=self))
+
     nr_measurements.fget.short_description = "Aantal metingen"
 
     def __str__(self):
@@ -455,9 +478,19 @@ class Observation(BaseModel):
 class ObservationMetadata(BaseModel):
     observation_metadata_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     observation_type = models.CharField(
-        choices=OBSERVATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Observatie type"
+        choices=OBSERVATIONTYPE,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Observatie type",
     )
-    status = models.CharField(choices=STATUSCODE, max_length=200, blank=True, null=True, verbose_name="Mate beoordeling")
+    status = models.CharField(
+        choices=STATUSCODE,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Mate beoordeling",
+    )
     responsible_party = models.ForeignKey(
         Organisation,
         on_delete=models.SET_NULL,
@@ -484,22 +517,43 @@ class ObservationMetadata(BaseModel):
             )
         ]
 
+
 class ObservationProcess(BaseModel):
     observation_process_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     process_reference = models.CharField(
-        choices=PROCESSREFERENCE, max_length=200, blank=True, null=True, verbose_name="Proces referentie"
+        choices=PROCESSREFERENCE,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Proces referentie",
     )
     measurement_instrument_type = models.CharField(
-        choices=MEASUREMENTINSTRUMENTTYPE, max_length=200, blank=False, null=False, verbose_name="Meetinstrument type"
+        choices=MEASUREMENTINSTRUMENTTYPE,
+        max_length=200,
+        blank=False,
+        null=False,
+        verbose_name="Meetinstrument type",
     )
     air_pressure_compensation_type = models.CharField(
-        choices=AIRPRESSURECOMPENSATIONTYPE, max_length=200, blank=True, null=True, verbose_name="Luchtdrukcompensatie type"
+        choices=AIRPRESSURECOMPENSATIONTYPE,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Luchtdrukcompensatie type",
     )
     process_type = models.CharField(
-        choices=PROCESSTYPE, max_length=200, blank=True, null=True, verbose_name="Proces type"
+        choices=PROCESSTYPE,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Proces type",
     )
     evaluation_procedure = models.CharField(
-        choices=EVALUATIONPROCEDURE, max_length=200, blank=False, null=False, verbose_name="Evaluatie procedure"
+        choices=EVALUATIONPROCEDURE,
+        max_length=200,
+        blank=False,
+        null=False,
+        verbose_name="Evaluatie procedure",
     )
 
     def __str__(self):
@@ -623,7 +677,7 @@ class MeasurementTvp(BaseModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["observation", "measurement_time"],  # composite uniqueness
-                name="unique_observation_measurement_time"
+                name="unique_observation_measurement_time",
             )
         ]
 
@@ -639,13 +693,22 @@ class MeasurementPointMetadata(BaseModel):
         blank=True,
         null=True,
         default="nogNietBeoordeeld",
-        verbose_name="Status kwaliteitscontrole"
+        verbose_name="Status kwaliteitscontrole",
     )
     censor_reason = models.CharField(
-        choices=CENSORREASON, max_length=200, blank=True, null=True, default=None, verbose_name="Censuurreden"
+        choices=CENSORREASON,
+        max_length=200,
+        blank=True,
+        null=True,
+        default=None,
+        verbose_name="Censuurreden",
     )
-    censor_reason_datalens = models.CharField(max_length=200, blank=True, null=True, verbose_name="Censuurreden Datalens")
-    value_limit = models.CharField(max_length=50, blank=True, null=True, default=None, verbose_name="Limietwaarde")
+    censor_reason_datalens = models.CharField(
+        max_length=200, blank=True, null=True, verbose_name="Censuurreden Datalens"
+    )
+    value_limit = models.CharField(
+        max_length=50, blank=True, null=True, default=None, verbose_name="Limietwaarde"
+    )
 
     class Meta:
         managed = True
@@ -661,6 +724,7 @@ class MeasurementPointMetadata(BaseModel):
     @property
     def interpolation_code(self):
         return "discontinu"
+
     interpolation_code.fget.short_description = "Interpolatie code"
 
     def __str__(self):
@@ -711,10 +775,18 @@ class gld_registration_log(BaseModel):
     last_changed = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Laatste wijziging"
     )
-    corrections_applied = models.BooleanField(blank=True, null=True, verbose_name="Correcties toegepast")
-    timestamp_end_registration = models.DateTimeField(blank=True, null=True, verbose_name="Moment einde registratie")
+    corrections_applied = models.BooleanField(
+        blank=True, null=True, verbose_name="Correcties toegepast"
+    )
+    timestamp_end_registration = models.DateTimeField(
+        blank=True, null=True, verbose_name="Moment einde registratie"
+    )
     quality_regime = models.CharField(
-        choices=QUALITYREGIME, max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime"
+        choices=QUALITYREGIME,
+        max_length=254,
+        null=True,
+        blank=True,
+        verbose_name="Kwaliteitsregime",
     )
     file = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Bestand"
@@ -766,8 +838,8 @@ class gld_registration_log(BaseModel):
                 "monitoringPoints": monitoringpoints,
             }
 
-        request_reference = "GLD_StartRegistration_{}_tube_{}".format(
-            bro_id_gmw, str(filternumber)
+        request_reference = (
+            f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(filternumber)}"
         )
         gld_startregistration_request = brx.gld_registration_request(
             srcdoc="GLD_StartRegistration",
@@ -882,8 +954,8 @@ class gld_registration_log(BaseModel):
                 self.process_status = "succesfully_delivered_sourcedocuments"
 
         except Exception as e:
-            comments = "Exception occured during delivery of startself sourcedocument: {}".format(
-                e
+            comments = (
+                f"Exception occured during delivery of startself sourcedocument: {e}"
             )
             self.date_modified = datetime.datetime.now()
             self.comments = comments
@@ -1138,9 +1210,7 @@ class gld_addition_log(BaseModel):
                 self.process_status = "source_document_delivered"
 
         except Exception as e:
-            comments = (
-                "Error occured in attempting to deliver sourcedocument, {}".format(e)
-            )
+            comments = f"Error occured in attempting to deliver sourcedocument, {e}"
 
             self.date_modified = datetime.datetime.now()
             self.comments = comments

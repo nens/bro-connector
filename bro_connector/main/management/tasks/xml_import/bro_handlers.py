@@ -1,8 +1,8 @@
+import xml.etree.ElementTree as ET
+from abc import ABC, abstractmethod
+
 import requests
 import requests.auth
-from abc import ABC, abstractmethod
-import xml.etree.ElementTree as ET
-
 
 DB_NAME = "grondwatermeetnet"
 DB_USER = "postgres"
@@ -35,7 +35,7 @@ class GMWHandler(BROHandler):
         self.dict = {}
 
     def get_data(self, file: str) -> None:
-        with open(file, "r") as xml_file:
+        with open(file) as xml_file:
             data = xml_file.read()
             self.root = ET.fromstring(data)
 
@@ -229,7 +229,7 @@ class GMNHandler(BROHandler):
         else:
             fh = "nee"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={fh}")
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
@@ -265,7 +265,7 @@ class GARHandler(BROHandler):
         else:
             fh = "nee"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={fh}")
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
@@ -301,7 +301,7 @@ class FRDHandler(BROHandler):
         else:
             fh = "nee"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={fh}")
 
         self.root = ET.fromstring(gmw_verzoek.content)
 

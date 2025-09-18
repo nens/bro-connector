@@ -1,17 +1,17 @@
+import csv
 import json
 from collections import defaultdict
-import csv
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from ...utils.duplicate_checks import (
+    rank_based_on_bro_id,
+    rank_based_on_dates,
+    rank_based_on_quality,
+    rank_based_on_tubes,
     scenario_1,
     scenario_2,
     scenario_3,
-    rank_based_on_tubes,
-    rank_based_on_dates,
-    rank_based_on_quality,
-    rank_based_on_bro_id,
 )
 
 

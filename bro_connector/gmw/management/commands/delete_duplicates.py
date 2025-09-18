@@ -1,8 +1,9 @@
+from logging import getLogger
+
 from django.core.management.base import BaseCommand
 from gmw.models import (
     GroundwaterMonitoringWellStatic,
 )
-from logging import getLogger
 
 logger = getLogger(__name__)
 

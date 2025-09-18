@@ -1,10 +1,11 @@
+import datetime
+from logging import getLogger
+
 from django.core.management.base import BaseCommand
 from gld.models import (
     GroundwaterLevelDossier,
     Observation,
 )
-from logging import getLogger
-import datetime
 
 logger = getLogger(__name__)
 
@@ -42,15 +43,13 @@ class Command(BaseCommand):
                 except Exception as e:
                     logger.exception(e)
                     print(
-                        "No observations exist yet for GLD {}, please create an observation".format(
-                            gld_id
-                        )
+                        f"No observations exist yet for GLD {gld_id}, please create an observation"
                     )
                     continue
                 # use the metadata id and process id from the previous observation
                 new_observation = Observation(
                     observation_starttime=datetime.datetime.utcnow().replace(
-                        tzinfo=datetime.timezone.utc
+                        tzinfo=datetime.UTC
                     ),
                     observation_metadata_id=previous_observation_metadata_id,
                     observation_process_id=previous_observation_process_id,

@@ -1,23 +1,25 @@
+import datetime
+
+import reversion
+from django.core.cache import cache
 from django.db.models.signals import (
-    post_save,
     post_delete,
+    post_save,
     pre_save,
 )
-from django.core.cache import cache
 from django.dispatch import receiver
-from .models import (
-    gld_registration_log,
-    gld_addition_log,
-    GroundwaterLevelDossier,
-    MeasurementTvp,
-    MeasurementPointMetadata,
-    Observation,
-    ObservationProcess,
-    ObservationMetadata
-)
 from gmw.models import GroundwaterMonitoringTubeStatic
-import reversion
-import datetime
+
+from .models import (
+    GroundwaterLevelDossier,
+    MeasurementPointMetadata,
+    MeasurementTvp,
+    Observation,
+    ObservationMetadata,
+    ObservationProcess,
+    gld_addition_log,
+    gld_registration_log,
+)
 
 
 def _calculate_value(field_value: float, unit: str) -> float | None:
@@ -55,7 +57,8 @@ def _calculate_value_tube(
         return (field_value * 10.1974) + tube_top_position
     else:
         return None
-    
+
+
 @receiver([post_save, post_delete], sender=GroundwaterLevelDossier)
 @receiver([post_save, post_delete], sender=Observation)
 @receiver([post_save, post_delete], sender=ObservationProcess)
@@ -65,6 +68,7 @@ def _calculate_value_tube(
 def clear_map_cache(sender, **kwargs):
     print("Map cache cleared due to model change:", sender.__name__)
     cache.clear()
+
 
 @receiver(post_save, sender=gld_registration_log)
 def on_save_gld_registration_log(
@@ -154,6 +158,7 @@ def on_save_observation(sender, instance: Observation, **kwargs):
             observation_process=last_observation.observation_process,
         )
 
+
 @receiver(post_delete, sender=Observation)
 def on_delete_observation(sender, instance: Observation, **kwargs):
     gld: GroundwaterLevelDossier = instance.groundwater_level_dossier
@@ -172,6 +177,7 @@ def on_delete_observation(sender, instance: Observation, **kwargs):
         for obs in open_observations:
             obs: Observation
             obs.delete()
+
 
 @receiver(pre_save, sender=MeasurementTvp)
 def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):

@@ -1,12 +1,9 @@
-import re
-from collections import defaultdict
-from django.db import models
-from django.db.models.query import QuerySet
+from datetime import datetime
+
 from django.core.management.base import BaseCommand
-from gmn.models import GroundwaterMonitoringNet, MeasuringPoint, Subgroup
-from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic, GeoOhmCable
-import numpy as np
-from datetime import datetime, timedelta, tzinfo
+from gmn.models import GroundwaterMonitoringNet, MeasuringPoint
+from gmw.models import GeoOhmCable, GroundwaterMonitoringTubeStatic
+
 
 class Command(BaseCommand):
     """This command handles all 4 type of registrations for GMN's
@@ -29,6 +26,7 @@ class Command(BaseCommand):
     - PMG_kwantiteit_{extra}
 
     """
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--name",
@@ -48,9 +46,12 @@ def get_tubes_with_geo_ohm_cable():
     for tube in tubes:
         if GeoOhmCable.objects.filter(groundwater_monitoring_tube_static=tube):
             tube_ids.append(tube.groundwater_monitoring_tube_static_id)
-    geo_cable_tubes = GroundwaterMonitoringTubeStatic.objects.filter(groundwater_monitoring_tube_static_id__in=tube_ids)
+    geo_cable_tubes = GroundwaterMonitoringTubeStatic.objects.filter(
+        groundwater_monitoring_tube_static_id__in=tube_ids
+    )
 
     return geo_cable_tubes
+
 
 def create_monitoring_net(name, tubes):
     if not name:
@@ -70,13 +71,12 @@ def create_monitoring_net(name, tubes):
     if created:
         gmn.start_date_monitoring = datetime.now()
         gmn.save()
-    
+
     for tube in tubes:
         measuring_point, created = MeasuringPoint.objects.get_or_create(
-            gmn = gmn,
-            groundwater_monitoring_tube = tube,
+            gmn=gmn,
+            groundwater_monitoring_tube=tube,
         )
-        if created: 
+        if created:
             measuring_point.added_to_gmn_date = datetime.now()
             measuring_point.save()
-        

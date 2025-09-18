@@ -1,15 +1,15 @@
 import csv
-import logging
-from typing import Union
-from django.core.management.base import BaseCommand
 import datetime
-from gmw import models as gmw_models
+import logging
+
+from django.core.management.base import BaseCommand
 from gld import models as gld_models
+from gmw import models as gmw_models
 
 logger = logging.getLogger(__name__)
 
 
-def convert_value_to_float(val: str) -> Union[float, None]:
+def convert_value_to_float(val: str) -> float | None:
     if val == "dry":
         return None
     try:

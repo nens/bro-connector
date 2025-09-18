@@ -1,7 +1,7 @@
-from typing import Union
 import math
 
-def generate_put_code(nitg_code: str) -> Union[None, str]:
+
+def generate_put_code(nitg_code: str) -> None | str:
     if not nitg_code.startswith("B"):
         return None
 
@@ -25,7 +25,10 @@ def generate_put_code(nitg_code: str) -> Union[None, str]:
 
     return f"GMW{initial_code}{char}00{second_code}"
 
-def compute_map_view(wells, map_width_px=800, map_height_px=600, tile_size=256, max_zoom=19):
+
+def compute_map_view(
+    wells, map_width_px=800, map_height_px=600, tile_size=256, max_zoom=19
+):
     """
     Compute center and zoom for fitting given coordinates on a Mapbox/Leaflet map.
 
@@ -54,7 +57,7 @@ def compute_map_view(wells, map_width_px=800, map_height_px=600, tile_size=256, 
     # Convert latitude to Web Mercator Y
     def lat_to_mercator(lat):
         lat_rad = math.radians(lat)
-        return math.log(math.tan(lat_rad/2 + math.pi/4))
+        return math.log(math.tan(lat_rad / 2 + math.pi / 4))
 
     min_y = lat_to_mercator(min_lat)
     max_y = lat_to_mercator(max_lat)
@@ -74,7 +77,7 @@ def compute_map_view(wells, map_width_px=800, map_height_px=600, tile_size=256, 
     if bbox_width == 0 and bbox_height == 0:
         return {
             "lon": center_lon,
-            "lat": center_lat, 
+            "lat": center_lat,
             "zoom": max_zoom,
         }
 
@@ -82,9 +85,4 @@ def compute_map_view(wells, map_width_px=800, map_height_px=600, tile_size=256, 
     zoom_y = math.floor(math.log2(map_height_px / (bbox_height * tile_size)))
     zoom = min(zoom_x, zoom_y, max_zoom)
 
-    return {
-        "lon": center_lon,
-        "lat": center_lat,  
-        "zoom": max(0, zoom)
-    }
-
+    return {"lon": center_lon, "lat": center_lat, "zoom": max(0, zoom)}

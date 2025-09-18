@@ -1,10 +1,9 @@
 import os
 
-from django.core.management.base import BaseCommand
-from django.core.files import File
-from gmw.models import Picture, GroundwaterMonitoringWellStatic
-
 import pysftp
+from django.core.files import File
+from django.core.management.base import BaseCommand
+from gmw.models import GroundwaterMonitoringWellStatic, Picture
 from main import localsecret as ls
 
 

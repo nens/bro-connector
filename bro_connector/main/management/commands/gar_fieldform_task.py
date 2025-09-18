@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
-
-from main.utils.gar_fieldform import FieldFormGenerator
 from gmn.models import GroundwaterMonitoringNet
+from main.utils.gar_fieldform import FieldFormGenerator
 
 
 class Command(BaseCommand):

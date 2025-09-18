@@ -2,9 +2,7 @@ import logging
 
 import requests
 from django.conf import settings
-
 from gmw import models as gmw_models
-
 
 logger = logging.getLogger(__name__)
 

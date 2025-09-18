@@ -46,7 +46,7 @@ Object.keys(organisations).forEach((orgKey) => {
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
 function findObjectsByIds(ids, glds) {
-  return ids.map(id => 
+  return ids.map(id =>
     glds.find(gld => gld.groundwater_level_dossier_id === id)
   ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
 }
@@ -315,7 +315,7 @@ async function switchToValidationStatusMap() {
 
 //   // Create URL with current view parameters
 //   const url = `../map/validation/?lng=${center.lng}&lat=${center.lat}&zoom=${zoom}`;
-  
+
 //   // Open in new tab
 //   window.location.href = url;
 // }
@@ -325,14 +325,14 @@ function setInitialViewFromURL() {
   const lng = state.lon;
   const lat = state.lat;
   const zoom = state.zoom;
-  
+
   if (lng && lat && zoom) {
     return {
       center: [parseFloat(lng), parseFloat(lat)],
       zoom: parseFloat(zoom)
     };
   }
-  
+
   // Return default view if no parameters
   return {
     center: [3.945697, 51.522601], // Default Netherlands center
@@ -415,7 +415,7 @@ function setCheckboxesToState() {
           checkbox.checked = false;
           checkbox.indeterminate = false;
         } else if (group[id] === true) {
-          wellValue[id] = group[id];  
+          wellValue[id] = group[id];
           checkbox.checked = true;
           checkbox.indeterminate = false;
         } else {
@@ -431,7 +431,7 @@ function setCheckboxesToState() {
         const { gmns } = visibleMap;
         gmns[id] = !!group[id]
         checkbox.checked = gmns[id];
-      } 
+      }
     });
   });
 };
@@ -464,7 +464,7 @@ let shouldShowText = false;
 const toggleTextLayerVisibility = () => {
   const zoom = map.getZoom();
   shouldShowText = zoom >= 12;
-  
+
   try {
     isTextLayerVisible = !isTextLayerVisible;
     updateTextLayer()

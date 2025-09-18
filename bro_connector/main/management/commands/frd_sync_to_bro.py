@@ -1,31 +1,31 @@
 import os
 import time
-from typing import Type
-from django.db.models.query import QuerySet
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from django.core.management.base import BaseCommand
+from datetime import date, datetime
+
 import bro_exchange as brx
+from bro.models import Organisation
 from django.apps import apps
+from django.core.management.base import BaseCommand
+from django.db.models.query import QuerySet
 from frd.models import (
-    FormationResistanceDossier,
-    FrdSyncLog,
-    MeasurementConfiguration,
-    GeoOhmMeasurementMethod,
-    GeoOhmMeasurementValue,
-    ElectrodePair,
-    GMWElectrodeReference,
     CalculatedFormationresistanceMethod,
-    FormationresistanceSeries,
-    FormationresistanceRecord,
-    InstrumentConfiguration,
+    ElectrodePair,
     ElectromagneticMeasurementMethod,
     ElectromagneticRecord,
     ElectromagneticSeries,
+    FormationResistanceDossier,
+    FormationresistanceRecord,
+    FormationresistanceSeries,
+    FrdSyncLog,
+    GeoOhmMeasurementMethod,
+    GeoOhmMeasurementValue,
+    GMWElectrodeReference,
+    InstrumentConfiguration,
+    MeasurementConfiguration,
 )
-from bro.models import Organisation
-from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
-from datetime import datetime, date
+from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.settings.base import ENV
 
 
@@ -711,7 +711,7 @@ class GEMMeasurementRegistration(Registration):
             for measurement in measurements
         ]
 
-    def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
+    def _get_calculated_method(self) -> type[CalculatedFormationresistanceMethod]:
         """Queries the related CalculatedFormationresistanceMethod"""
         return CalculatedFormationresistanceMethod.objects.filter(
             geo_ohm_measurement_method=self.method_obj
@@ -737,7 +737,7 @@ class GEMMeasurementRegistration(Registration):
 
         return string
 
-    def _get_series(self, calculated_method) -> Type[FormationresistanceSeries]:
+    def _get_series(self, calculated_method) -> type[FormationresistanceSeries]:
         """Looks up the series related to calculated formation method"""
         return FormationresistanceSeries.objects.filter(
             calculated_formationresistance=calculated_method
@@ -815,7 +815,7 @@ class EMMConfigurationRegistration(Registration):
 class EMMMeasurementRegistration(Registration):
     """Creates and delivers 14_FRD_EMM_Measurement.xml files."""
 
-    def __init__(self, method: Type[ElectromagneticMeasurementMethod]):
+    def __init__(self, method: type[ElectromagneticMeasurementMethod]):
         super().__init__()
         self.method_obj = method
         self.frd_obj = self.method_obj.formation_resistance_dossier
@@ -898,7 +898,7 @@ class EMMMeasurementRegistration(Registration):
     def _get_records(self, series):
         return ElectromagneticRecord.objects.filter(series=series)
 
-    def _get_calculated_method(self) -> Type[CalculatedFormationresistanceMethod]:
+    def _get_calculated_method(self) -> type[CalculatedFormationresistanceMethod]:
         """Queries the related CalculatedFormationresistanceMethod"""
         return CalculatedFormationresistanceMethod.objects.filter(
             electromagnetic_measurement_method=self.method_obj

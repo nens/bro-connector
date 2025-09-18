@@ -1,17 +1,17 @@
 import datetime
+import logging
+
 import pytz
 from gmw.models import (
-    GroundwaterMonitoringWellStatic,
-    GroundwaterMonitoringWellDynamic,
-    GroundwaterMonitoringTubeDynamic,
-    GroundwaterMonitoringTubeStatic,
-    GeoOhmCable,
     Electrode,
     Event,
+    GeoOhmCable,
+    GroundwaterMonitoringTubeDynamic,
+    GroundwaterMonitoringTubeStatic,
+    GroundwaterMonitoringWellDynamic,
+    GroundwaterMonitoringWellStatic,
     gmw_registration_log,
 )
-
-import logging
 
 logger = logging.getLogger(__name__)
 

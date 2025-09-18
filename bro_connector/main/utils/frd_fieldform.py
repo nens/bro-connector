@@ -1,15 +1,14 @@
-from typing import List, Optional
-import json
-import pysftp
 import datetime
+import json
 import os
 import random
-from pyproj import Transformer
 
-from main import localsecret as ls
-from gmw import models as gmw_models
+import pysftp
 from frd import models as frd_models
 from gmn import models as gmn_models
+from gmw import models as gmw_models
+from main import localsecret as ls
+from pyproj import Transformer
 
 maximum_difference_ratio = 0.2
 
@@ -30,7 +29,7 @@ def convert_epsg28992_to_epsg4326(x, y):
 
 
 def generate_random_color():
-    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+    return f"#{random.randint(0, 0xFFFFFF):06x}"
 
 
 # From the FieldForm Github
@@ -102,7 +101,7 @@ def delete_old_files_from_ftp():
                     print(f"Deleted {file} (age: {file_age.days} days)")
 
 
-def generate_sublocation_fields(tube) -> List[str]:
+def generate_sublocation_fields(tube) -> list[str]:
     try:
         frd = frd_models.FormationResistanceDossier.objects.get(
             groundwater_monitoring_tube=tube
@@ -123,7 +122,7 @@ def calculate_minimum_resistance(formationresistance):
     return round(formationresistance * (1 - maximum_difference_ratio), 2)
 
 
-def generate_min_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
+def generate_min_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> list[dict]:
     frd = frd_models.FormationResistanceDossier.objects.get_or_create(
         groundwater_monitoring_tube=tube,
         assessment_type="geoohmkabelBepaling",
@@ -159,7 +158,7 @@ def calculate_maximum_resistance(formationresistance):
     return round(formationresistance * (1 + maximum_difference_ratio), 2)
 
 
-def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> List[dict]:
+def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> list[dict]:
     frd = frd_models.FormationResistanceDossier.objects.get_or_create(
         groundwater_monitoring_tube=tube,
         assessment_type="geoohmkabelBepaling",
@@ -211,12 +210,12 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
 
 
 class FieldFormGenerator:
-    inputfields: Optional[List[dict]]
+    inputfields: list[dict] | None
 
     # QuerySets
-    monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
-    wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
-    optimal: Optional[bool]
+    monitoringnetworks: list[gmn_models.GroundwaterMonitoringNet] | None
+    wells: list[gmw_models.GroundwaterMonitoringWellStatic] | None
+    optimal: bool | None
 
     def update_postfix(self, config: frd_models.MeasurementConfiguration) -> None:
         self.post_fix = config.configuration_name
