@@ -23,7 +23,6 @@ from .models import (
 @receiver([post_save, post_delete], sender=GroundwaterMonitoringWellStatic)
 @receiver([post_save, post_delete], sender=GroundwaterMonitoringTubeStatic)
 def clear_map_cache(sender, **kwargs):
-    print("Map cache cleared due to model change:", sender.__name__)
     cache.clear()
 
 

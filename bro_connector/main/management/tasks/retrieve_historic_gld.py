@@ -201,14 +201,19 @@ def run(
 
                         MeasurementTvp.objects.bulk_create(
                             ini.measurements,
-                            update_conflicts=True,
-                            update_fields=[
-                                "field_value",
-                                "field_value_unit",
-                                "calculated_value",
-                                "measurement_point_metadata",
-                            ],
-                            unique_fields=["observation", "measurement_time"],
+                            update_conflicts=False,
+                            ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB. 
+                            # update_conflicts=True,
+                            # update_fields=[
+                            #     "field_value", 
+                            #     "field_value_unit", 
+                            #     "calculated_value", 
+                            #     "measurement_point_metadata"
+                            # ],
+                            # unique_fields=[
+                            #     "observation", 
+                            #     "measurement_time"
+                            # ],
                             batch_size=5000,
                         )
                         ini.reset_measurement_number()

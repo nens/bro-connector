@@ -66,7 +66,6 @@ def _calculate_value_tube(
 @receiver([post_save, post_delete], sender=MeasurementTvp)
 @receiver([post_save, post_delete], sender=MeasurementPointMetadata)
 def clear_map_cache(sender, **kwargs):
-    print("Map cache cleared due to model change:", sender.__name__)
     cache.clear()
 
 

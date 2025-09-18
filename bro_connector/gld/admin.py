@@ -294,7 +294,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_id_bro",
     ]
 
-    inlines = (MeasurementTvpInline,)
+    # inlines = (MeasurementTvpInline,)
 
     actions = ["close_observation", "change_up_to_date_status"]
 

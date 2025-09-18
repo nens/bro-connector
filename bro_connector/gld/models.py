@@ -674,12 +674,13 @@ class MeasurementTvp(BaseModel):
         indexes = [
             models.Index(fields=["observation", "-measurement_time"]),
         ]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["observation", "measurement_time"],  # composite uniqueness
-                name="unique_observation_measurement_time",
-            )
-        ]
+        ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=["observation", "measurement_time"],  # composite uniqueness
+        #         name="unique_observation_measurement_time"
+        #     )
+        # ]
 
     def __str__(self) -> str:
         return f"{self.observation} {self.measurement_time} {self.calculated_value}"
