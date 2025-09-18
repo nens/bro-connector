@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-
 from main.utils.gmw_fieldform import FieldFormGenerator
 
 

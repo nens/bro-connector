@@ -1,8 +1,9 @@
+import datetime
+import xml.etree.ElementTree as ET
+from abc import ABC, abstractmethod
+
 import requests
 import requests.auth
-from abc import ABC, abstractmethod
-import xml.etree.ElementTree as ET
-import datetime
 
 DB_NAME = "grondwatermeetnet"
 DB_USER = "postgres"
@@ -34,15 +35,15 @@ class GMWHandler(BROHandler):
         self.positions = 0
         self.dict = {}
 
-    def get_data(self, id: str, full_history: bool, file = None):
+    def get_data(self, id: str, full_history: bool, file=None):
         if full_history:
             fh = "ja"
         else:
             fh = "nee"
-            
+
         if not file:
             basis_url = "https://publiek.broservices.nl/gm/gmw/v1/objects/"
-            gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+            gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={fh}")
             try:
                 self.root = ET.fromstring(gmw_verzoek.content)
             except Exception as e:
@@ -50,7 +51,7 @@ class GMWHandler(BROHandler):
                 print(f"{e}")
 
         if file:
-            with open(file, "r") as xml_file:
+            with open(file) as xml_file:
                 data = xml_file.read()
                 try:
                     self.root = ET.fromstring(data)
@@ -137,7 +138,7 @@ class GLDHandler(BROHandler):
         self.censoring_limit_unit = []
 
     def get_data(self, id: str, filtered: bool):
-        print("ID: ",id)
+        print("ID: ", id)
         basis_url = "https://publiek.broservices.nl/gm/gld/v1/objects/"
 
         now = datetime.datetime.now().date()
@@ -155,7 +156,7 @@ class GLDHandler(BROHandler):
         except Exception as e:
             self.root = None
             print(f"{e}")
-        
+
     def append_censoring(self) -> None:
         self.censoring_limit_value.append("None")
         self.censoring_limit_reason.append("None")
@@ -190,7 +191,9 @@ class GLDHandler(BROHandler):
                 # print("observations split: ",split)
                 if self.number_of_observations != 0:
                     # print(f"Adding {self.number_of_points} points to number_of_measurements at key {self.number_of_observations}")
-                    self.number_of_measurements[self.number_of_observations] = self.number_of_points
+                    self.number_of_measurements[self.number_of_observations] = (
+                        self.number_of_points
+                    )
                     # print(f"adding {self.number_of_points} to total_measurements")
                     # print(self.total_measurements)
                     self.total_measurements += self.number_of_points
@@ -211,7 +214,7 @@ class GLDHandler(BROHandler):
                 prefix = f"{self.number_of_observations}_"
                 self.reset_measurement_values()
 
-            if split[1] == "broId":                
+            if split[1] == "broId":
                 self.bro_ids.append(element.text)
 
             # If point, add prefix
@@ -288,7 +291,7 @@ class GLDHandler(BROHandler):
                 if tag == f"{self.number_of_observations}_point_qualifier_value":
                     self.qualifier.append(element.text)
                     values_value = self.qualifier
-                
+
                 if tag == f"{self.number_of_observations}_point_censoring_value":
                     self.censoring_limit_value[self.number_of_points - 1] = element.text
                     values_value = self.censoring_limit_value
@@ -355,7 +358,7 @@ class GMNHandler(BROHandler):
         else:
             fh = "nee"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={fh}")
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
@@ -391,7 +394,7 @@ class GARHandler(BROHandler):
         else:
             fh = "nee"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={fh}")
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
@@ -427,7 +430,7 @@ class FRDHandler(BROHandler):
         else:
             fh = "nee"
 
-        gmw_verzoek = requests.get("{}{}?fullHistory={}".format(basis_url, id, fh))
+        gmw_verzoek = requests.get(f"{basis_url}{id}?fullHistory={fh}")
 
         self.root = ET.fromstring(gmw_verzoek.content)
 

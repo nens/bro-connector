@@ -6,12 +6,11 @@ import pandas as pd
 import pastas as ps
 from dash import Input, Output, State, ctx, no_update
 from dash.exceptions import PreventUpdate
+from gwdatalens.app.src.components import ids
 from packaging.version import parse
 from pastas.extensions import register_plotly
 from pastas.io.pas import PastasEncoder
 from pastastore.version import __version__ as PASTASTORE_VERSION
-
-from gwdatalens.app.src.components import ids
 
 register_plotly()
 

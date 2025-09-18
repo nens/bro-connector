@@ -1,10 +1,11 @@
-import requests
 import json
 import time
+
 import geopandas as gpd
+import requests
+from gmw.models import GroundwaterMonitoringWellStatic
 from shapely.geometry import Point
 
-from gmw.models import GroundwaterMonitoringWellStatic
 from ...utils.bbox_extractor import BBOX_EXTRACTOR
 
 
@@ -152,7 +153,9 @@ def process_request_for_bbox(type, bbox):
 
         idx += 1
         if idx > 1e4:
-            raise Exception("Forced an exception because amount of iterations was too high (>10000).")
+            raise Exception(
+                "Forced an exception because amount of iterations was too high (>10000)."
+            )
 
         time.sleep(0.01)
 

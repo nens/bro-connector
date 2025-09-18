@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-
 from main.utils.frd_fieldform import FieldFormGenerator, delete_old_files_from_ftp
 
 

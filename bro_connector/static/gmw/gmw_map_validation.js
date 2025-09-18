@@ -44,17 +44,17 @@ const valueMap = {
     tentative: "voorlopig",
     unknown: "onbekend",
     none: null,
-  }  
+  }
 }
 
 // Show check or cross
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
 function findObjectsByIds(ids, glds) {
-  gld_unsorted = ids.map(id => 
+  gld_unsorted = ids.map(id =>
     glds.find(gld => gld.groundwater_level_dossier_id === id)
   );
-  
+
   return gld_unsorted.slice().sort((a, b) => a.tube_number - b.tube_number);
   // ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
 }
@@ -93,12 +93,12 @@ function getDateColor(observationType, dateString) {
   if (observationType === valueMap.type.controle) {
     if (diffYears <= 1 / 12 * 2) return '#4CAF50';      // measured within 2 months
     if (diffYears <= 1 / 12 * 6) return '#FFC107';     // measured within 6 months
-    return '#F44336';        
-  }  
+    return '#F44336';
+  }
   if (observationType === valueMap.type.regular) {
     if (diffYears <= 1 / 12) return '#4CAF50';      // measured within a month
     if (diffYears <= 1 / 12 * 2) return '#FFC107';     // measured within 2 months
-    return '#F44336';        
+    return '#F44336';
   }
   return '#9E9E9E';
 }
@@ -134,10 +134,10 @@ function getObsPageValue(latest_observation_id) {
 }
 
 // Create popup with well info + GLD entries
-const createPopup = (well) => { 
+const createPopup = (well) => {
   const glds_well = filterGLDs(updateGLDsState(findObjectsByIds(well.glds, glds), well), well); // sorting of this is different than sorting in icons when filternumbers are the same
   const popup = document.createElement("div");
-  const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;  
+  const objectPageUrl = `/admin/gmw/groundwatermonitoringwellstatic/${well.groundwater_monitoring_well_static_id}`;
   const BROloketUrl = `https://www.broloket.nl/ondergrondgegevens?bro-id=${well.bro_id}`;
 
   let gldsContent = "";
@@ -262,7 +262,7 @@ const wellIsShown = (well) => {
     return refreshActivePopup();
 
 return true;
-};    
+};
 
 const WHITE = [255, 255, 255];
 const BLACK = [0, 0, 0];
@@ -305,7 +305,7 @@ const filterGLDs = (glds, well) => {
   //   }
 
   // Look at checkbox and filter based on regular and controle
-  
+
   // If the controle is checked but regular not:
   //  - Per GLD, check the latest regular and latest controle time
   //  - If the latest controle is known, the gld should be shown
@@ -317,11 +317,11 @@ const filterGLDs = (glds, well) => {
 
   if (!visibleMap.type.controle) {
     glds = glds.filter(gld => gld.observation_type !== valueMap.type.controle);
-  }  
-  
+  }
+
   if (!visibleMap.type.regular) {
     glds = glds.filter(gld => gld.observation_type !== valueMap.type.regular);
-  }  
+  }
 
   if (glds.length > 0) {
     return filterGLDsByStatus(glds)
@@ -419,7 +419,7 @@ function renderPieToCanvas(data, empty = false, size = 64) {
     ctx.beginPath();
     ctx.arc(cx, cy, radius - 1, 0, 2 * Math.PI); // subtract 1 so stroke fits inside
     ctx.strokeStyle = '#9E9E9E';
-    ctx.lineWidth = 5;  
+    ctx.lineWidth = 5;
     ctx.stroke();
 
     // Small dot in the center
@@ -439,7 +439,7 @@ function renderPieToCanvas(data, empty = false, size = 64) {
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
     ctx.closePath();
-  
+
     ctx.fillStyle = slice.color;
     ctx.fill();
 
@@ -462,7 +462,7 @@ function renderPieToCanvas(data, empty = false, size = 64) {
         ctx.stroke();
       }
     }
-  
+
     startAngle += angle;
   }
 
@@ -471,22 +471,22 @@ function renderPieToCanvas(data, empty = false, size = 64) {
 }
 
 function buildPieData() {
-  return wells.map((well) => { 
-    const gldsData = findObjectsByIds(well.glds, glds); 
+  return wells.map((well) => {
+    const gldsData = findObjectsByIds(well.glds, glds);
     const gldsDataUpdated = updateGLDsState(gldsData, well)
     const gldsDataFiltered = filterGLDs(gldsDataUpdated, well);
     const pieChart = gldsDataFiltered.map(gld => ({
       color: getColorFromGLD(gld),
       type: gld.observation_type,
-    })); 
+    }));
     // Make sure that the checkbox of regular and controle is done correctly
 
-    const iconUrl = renderPieToCanvas(pieChart, well.glds.length < 1); 
+    const iconUrl = renderPieToCanvas(pieChart, well.glds.length < 1);
 
-    return {  
+    return {
       well,
-      iconUrl, 
-    }; 
+      iconUrl,
+    };
   });
 }
 
@@ -591,14 +591,14 @@ function setInitialViewFromURL() {
   const lng = state.lon;
   const lat = state.lat;
   const zoom = state.zoom;
-  
+
   if (lng && lat && zoom) {
     return {
       center: [parseFloat(lng), parseFloat(lat)],
       zoom: parseFloat(zoom)
     };
   }
-  
+
   // Return default view if no parameters
   return {
     center: [3.945697, 51.522601], // Default Netherlands center
@@ -679,7 +679,7 @@ let shouldShowText = false;
 const toggleTextLayerVisibility = () => {
   const zoom = map.getZoom();
   shouldShowText = zoom >= 12;
-  
+
   try {
     isTextLayerVisible = !isTextLayerVisible;
     updateTextLayer()
@@ -790,7 +790,7 @@ const deselectAllStatusCheckboxes = () => {
 
   updateGetData();
   updateGetSize();
-  updateTextLayer();  
+  updateTextLayer();
   refreshActivePopup();
 };
 
@@ -824,13 +824,13 @@ const handleStatusClick = (id, element) => {
   // console.log(id)
   const checkbox = element.querySelector('input[type="checkbox"]');
   const { status } = visibleMap;
-  
+
   status[id] = !status[id];
   checkbox.checked = status[id];
 
   updateGetData();
   updateGetSize();
-  updateTextLayer();  
+  updateTextLayer();
   refreshActivePopup();
 };
 

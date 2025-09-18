@@ -1,12 +1,11 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-
 from gwdatalens.app.settings import ASSETS_PATH
 
 from . import ids
 
 # load Modal helper text from MarkDown
-with open(ASSETS_PATH / "qc_dashboard_help.md", "r") as f:
+with open(ASSETS_PATH / "qc_dashboard_help.md") as f:
     help_md = dcc.Markdown("".join(f.readlines()), mathjax=True)
 
 

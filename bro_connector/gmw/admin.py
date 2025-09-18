@@ -1,36 +1,35 @@
+import logging
+from urllib.parse import urlencode
+
+import gmw.management.tasks.gmw_actions as gmw_actions
+import main.utils.validators_admin as validators_admin
+import reversion
 from django.contrib import admin, messages
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
-import reversion
-from reversion_compare.helpers import patch_admin
-import logging
 from django.urls import reverse
 from django.utils.html import format_html
-from urllib.parse import urlencode
-
-from . import models as gmw_models
 from gld.models import GroundwaterLevelDossier
-import gmw.management.tasks.gmw_actions as gmw_actions
-from . import forms as gmw_forms
 from gmn.models import MeasuringPoint
 from gmw.custom_filters import (
-    WellFilter,
-    TubeFilter,
     EventTypeFilter,
+    TubeFilter,
+    WellFilter,
 )
-import main.utils.validators_admin as validators_admin
 from main.utils.frd_fieldform import FieldFormGenerator
+from reversion_compare.helpers import patch_admin
 
+from . import forms as gmw_forms
+from . import models as gmw_models
 from .bro_validators import (
-    validate_well_static,
-    validate_well_dynamic,
-    validate_tube_static,
-    validate_tube_dynamic,
-    validate_geo_ohm_cable,
     validate_electrode,
+    validate_geo_ohm_cable,
+    validate_tube_dynamic,
+    validate_tube_static,
+    validate_well_dynamic,
+    validate_well_static,
 )
 from .bro_validators.well_validation import WellValidation
-
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +149,13 @@ class WellDynamicInline(admin.TabularInline):
                 "comment",
                 "comment_processed",
             )
-        return ["date_from", "date_till", "number_of_standpipes", "comment", "comment_processed"]
+        return [
+            "date_from",
+            "date_till",
+            "number_of_standpipes",
+            "comment",
+            "comment_processed",
+        ]
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.in_management is False:
@@ -256,7 +261,7 @@ class TubeDynamicInline(admin.TabularInline):
     show_change_link = True
 
     readonly_fields = ["date_from", "date_till", "comment", "comment_processed"]
-    
+
     ordering = ["-date_from"]
 
     extra = 0
@@ -418,26 +423,44 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         filter_ids = obj.open_comments_well_ids
         if not filter_ids:
             return "Geen openstaand commentaar"
-        
+
         url = (
-            reverse('admin:gmw_groundwatermonitoringwelldynamic_changelist')
+            reverse("admin:gmw_groundwatermonitoringwelldynamic_changelist")
             + "?"
-            + urlencode({"groundwater_monitoring_well_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
+            + urlencode(
+                {
+                    "groundwater_monitoring_well_dynamic_id__in": ",".join(
+                        str(id) for id in filter_ids
+                    )
+                }
+            )
         )
-        return format_html('<a href="{}" target="_blank">Link naar putobjecten</a>', url)
+        return format_html(
+            '<a href="{}" target="_blank">Link naar putobjecten</a>', url
+        )
+
     well_link.short_description = "Openstaand commentaar dynamische putten"
 
     def tube_link(self, obj):
         filter_ids = obj.open_comments_tube_ids
         if not filter_ids:
             return "Geen openstaand commentaar"
-        
+
         url = (
-            reverse('admin:gmw_groundwatermonitoringtubedynamic_changelist')
+            reverse("admin:gmw_groundwatermonitoringtubedynamic_changelist")
             + "?"
-            + urlencode({"groundwater_monitoring_tube_dynamic_id__in": ",".join(str(id) for id in filter_ids)})
+            + urlencode(
+                {
+                    "groundwater_monitoring_tube_dynamic_id__in": ",".join(
+                        str(id) for id in filter_ids
+                    )
+                }
+            )
         )
-        return format_html('<a href="{}" target="_blank">Link naar filterobjecten</a>', url)
+        return format_html(
+            '<a href="{}" target="_blank">Link naar filterobjecten</a>', url
+        )
+
     tube_link.short_description = "Openstaand commentaar dynamische filters"
 
     def save_model(
@@ -740,7 +763,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
         "inserted_part_length",
         "inserted_part_material",
         "screen_top_position",
-        "screen_bottom_position",        
+        "screen_bottom_position",
     ]
 
     def save_model(
@@ -791,7 +814,7 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
         # "electrode_count",
     )
 
-    list_filter = (TubeFilter,)    
+    list_filter = (TubeFilter,)
     autocomplete_fields = ["groundwater_monitoring_tube_static"]
     readonly_fields = ["electrode_count"]
 
@@ -941,7 +964,6 @@ class MaintenanceAdmin(admin.ModelAdmin):
         "execution_by",
     )
     autocomplete_fields = ["groundwater_monitoring_well_static"]
-    
 
 
 class GmwSyncLogAdmin(admin.ModelAdmin):

@@ -1,52 +1,28 @@
+import zipfile
+from datetime import datetime
+from logging import getLogger
+
+import polars as pl
 from django.db.models.signals import (
     pre_save,
 )
-import polars as pl
-import numpy as np
-from datetime import datetime
-from .models import GLDImport, GMNImport, BroImport
 from django.dispatch import receiver
-from io import BytesIO
-import zipfile
-import pandas as pd
-import geopandas as gpd
-import tempfile
-import os
-from pathlib import Path
-from datetime import datetime
-import shutil
-
-from main.utils.bbox_extractor import BBOX_EXTRACTOR
 from gmn.models import (
     GroundwaterMonitoringNet,
-    Subgroup,
     MeasuringPoint,
-)
-from logging import getLogger
-from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
-from gld.models import (
-    Observation,
-    MeasurementTvp,
-    MeasurementPointMetadata,
-    ObservationProcess,
-    ObservationMetadata,
-    GroundwaterLevelDossier,
-)
-from gld.choices import STATUSQUALITYCONTROL, CENSORREASON
-from main.management.tasks import (
-    retrieve_historic_gmw,
-    retrieve_historic_frd,
-    retrieve_historic_gld,
-    retrieve_historic_gmn,
+    Subgroup,
 )
 from tools.utils import (
+    get_monitoring_tube,
+    process_csv_file,
     process_zip_bro_file,
     process_zip_file,
-    process_csv_file,
-    get_monitoring_tube,
 )
 
+from .models import BroImport, GLDImport, GMNImport
+
 logger = getLogger("general")
+
 
 @receiver(pre_save, sender=BroImport)
 def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
@@ -61,12 +37,15 @@ def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
             "Geen bestand geupload. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
         )
     elif instance.file.name.endswith(".zip"):
-        process_zip_bro_file(instance)  # Process the ZIP file and update 'instance' as needed
+        process_zip_bro_file(
+            instance
+        )  # Process the ZIP file and update 'instance' as needed
     else:
         instance.validated = False
         instance.report += (
             "Ongeldig bestandstype. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
-        )  
+        )
+
 
 @receiver(pre_save, sender=GLDImport)
 def validate_and_process_file(sender, instance: GLDImport, **kwargs):
@@ -81,9 +60,7 @@ def validate_and_process_file(sender, instance: GLDImport, **kwargs):
         )
     if not instance.groundwater_monitoring_tube:
         instance.validated = False
-        instance.report += (
-            "Geen filterbuis geselecteerd om de GLD aan te koppelen.\n"
-        )
+        instance.report += "Geen filterbuis geselecteerd om de GLD aan te koppelen.\n"
     elif instance.file.name.endswith(".zip"):
         process_zip_file(
             instance

@@ -1,18 +1,19 @@
 from django.contrib import admin
-from django.utils.html import format_html
 from django.urls import reverse
-from .models import (
-    GroundwaterMonitoringNet,
-    Subgroup,
-    MeasuringPoint,
-    IntermediateEvent,
-    gmn_bro_sync_log,
-)
+from django.utils.html import format_html
 from gmn.management.tasks.gmn_sync import sync_gmn
-from reversion_compare.helpers import patch_admin
-from .forms import GroundwaterMonitoringNetForm, SubgroupForm
 from main.utils.frd_fieldform import FieldFormGenerator as FRD_FieldFormGenerator
 from main.utils.gld_fieldform import FieldFormGenerator as GLD_FieldFormGenerator
+from reversion_compare.helpers import patch_admin
+
+from .forms import GroundwaterMonitoringNetForm, SubgroupForm
+from .models import (
+    GroundwaterMonitoringNet,
+    IntermediateEvent,
+    MeasuringPoint,
+    Subgroup,
+    gmn_bro_sync_log,
+)
 
 
 def _register(model, admin_class):
@@ -21,7 +22,12 @@ def _register(model, admin_class):
 
 class MeasuringPointsInline(admin.TabularInline):
     model = MeasuringPoint
-    fields = ("measuring_point", "groundwater_monitoring_tube", "subgroup", "monitoring_networks")
+    fields = (
+        "measuring_point",
+        "groundwater_monitoring_tube",
+        "subgroup",
+        "monitoring_networks",
+    )
     readonly_fields = (
         "subgroup",
         "groundwater_monitoring_tube",
@@ -38,12 +44,12 @@ class MeasuringPointsInline(admin.TabularInline):
 
     def measuring_point(self, obj):
         if obj.code:
-            url = reverse('admin:gmn_measuringpoint_change', args=[obj.id])
+            url = reverse("admin:gmn_measuringpoint_change", args=[obj.id])
             return format_html('<a href="{}">{}</a>', url, obj.code)
         return ""
-    
+
     measuring_point.short_description = "Meetpunt"
-         
+
     def monitoring_networks(self, obj):
         nets = []
         for meetpunt in obj.groundwater_monitoring_tube.measuring_point.all().exclude(
@@ -82,7 +88,6 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
         "groundwater_aspect",
         "deliver_to_bro",
     )
-    
 
     readonly_fields = ("bro_name",)
 

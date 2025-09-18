@@ -1,5 +1,5 @@
-from django.core.management.base import BaseCommand
 import main.localsecret as ls
+from django.core.management.base import BaseCommand
 from main.utils.gld_fieldform import FieldFormGenerator
 
 

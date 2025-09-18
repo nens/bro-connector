@@ -1,10 +1,10 @@
-from gmw.models import GeoOhmCable, Electrode
 from gmw.choices import (
     ELECTRODEPACKINGMATERIAL,
-    ELECTRODESTATUS,
     ELECTRODEPACKINGMATERIAL_IMBRO,
+    ELECTRODESTATUS,
     ELECTRODESTATUS_IMBRO,
 )
+from gmw.models import Electrode, GeoOhmCable
 
 
 def validate_geo_ohm_cable(cable: GeoOhmCable) -> tuple[bool, str]:

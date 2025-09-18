@@ -6,9 +6,8 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 import traval
-from pandas import DataFrame, Series, Timedelta
-
 from gwdatalens.app.settings import settings
+from pandas import DataFrame, Series, Timedelta
 
 from .util import get_model_sim_pi
 

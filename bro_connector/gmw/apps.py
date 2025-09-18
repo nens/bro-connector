@@ -7,4 +7,4 @@ class GmwAanleveringConfig(AppConfig):
     verbose_name = "GMW"
 
     def ready(self):
-        import gmw.signals
+        pass

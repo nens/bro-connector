@@ -1,12 +1,12 @@
 import re
 from collections import defaultdict
+from datetime import datetime, timedelta
+
+from django.core.management.base import BaseCommand
 from django.db import models
 from django.db.models.query import QuerySet
-from django.core.management.base import BaseCommand
-from gmn.models import GroundwaterMonitoringNet, MeasuringPoint, Subgroup
-from gmw.models import GroundwaterMonitoringTubeStatic
-import numpy as np
-from datetime import datetime, timedelta, tzinfo
+from gmn.models import GroundwaterMonitoringNet, MeasuringPoint
+
 
 class Command(BaseCommand):
     """This command handles all 4 type of registrations for GMN's
@@ -30,6 +30,7 @@ class Command(BaseCommand):
     - PMG_kwantiteit_{extra}
 
     """
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--delete",
@@ -42,14 +43,14 @@ class Command(BaseCommand):
         delete = True if options["delete"] == "Yes" else False
         gmn_grouped = group_monitoring_nets()
         print(gmn_grouped)
-        
+
         for group, gmn_data in gmn_grouped.items():
             if GroundwaterMonitoringNet.objects.filter(name=group).all():
                 print(f"{group} already exists")
                 continue
-            
+
             # if group != "krw_kwantiteit_combined":
-                # continue
+            # continue
             # if delete:
             #     gmn_data = delete_base(group, gmn_data)
             gmn = create_monitoring_net(group, gmn_data)
@@ -57,38 +58,42 @@ class Command(BaseCommand):
             # if delete:
             #     remove_monitoring_nets(gmn, gmn_data)
 
+
 def delete_base(group, gmn_data):
     base = GroundwaterMonitoringNet.objects.filter(name=group).all()
     if base:
         for gmn in base:
             gmn.delete()
 
-    gmn_data_filtered = [item for item in gmn_data if item[1] != group]       
+    gmn_data_filtered = [item for item in gmn_data if item[1] != group]
 
     return gmn_data_filtered
-    
+
+
 def group_monitoring_nets():
-    gmn_names = GroundwaterMonitoringNet.objects.all().values_list('name', flat=True)
-    gmn_ids = GroundwaterMonitoringNet.objects.all().values_list('id', flat=True)
-    pattern = re.compile(r'^(.*?)[_]?(\d{4})$')
+    gmn_names = GroundwaterMonitoringNet.objects.all().values_list("name", flat=True)
+    gmn_ids = GroundwaterMonitoringNet.objects.all().values_list("id", flat=True)
+    pattern = re.compile(r"^(.*?)[_]?(\d{4})$")
 
     # Step 1: Identify all prefix-suffix pairs
     grouped = defaultdict(list)
     suffix_type = {}
 
-    for name,id in zip(gmn_names,gmn_ids):
+    for name, id in zip(gmn_names, gmn_ids):
         match = pattern.fullmatch(name)
         if match:
             prefix, suffix = match.group(1), match.group(2)
             grouped[prefix].append((suffix, id, name))
             suffix_type[suffix] = "year" if suffix.isdigit() else "extra"
     # Step 2: Identify "bare" prefix entries (no suffix)
-    for id, name in zip(gmn_ids,gmn_names):
+    for id, name in zip(gmn_ids, gmn_names):
         if name in grouped.keys():
             if name == "kwr_kwantiteit":
                 grouped[name].append(("2006", id, name))
             else:
-                grouped[name].append(("0", id, name))  # Assign suffix '2006' to treat as specific use case for krw_kwantiteit, else "0" (oldest)
+                grouped[name].append(
+                    ("0", id, name)
+                )  # Assign suffix '2006' to treat as specific use case for krw_kwantiteit, else "0" (oldest)
 
     # Step 3: Sort each group's items: bare < years < extra
     ## If monitoring_nets have the same name, take the one that is created first as oldest
@@ -111,54 +116,59 @@ def group_monitoring_nets():
 
     return grouped
 
+
 def create_monitoring_net(group, gmn_data):
     gmn_ids = [data[0] for data in gmn_data]
 
     base = GroundwaterMonitoringNet.objects.filter(name=group).first()
-    if base: 
+    if base:
         field_names = [
-            f.name for f in base.__class__._meta.get_fields()
+            f.name
+            for f in base.__class__._meta.get_fields()
             if isinstance(f, models.Field) and not f.auto_created and not f.primary_key
         ]
-        field_values = {
-            field: getattr(base, field)
-            for field in field_names
-        }
+        field_values = {field: getattr(base, field) for field in field_names}
         field_values.update(gmn_bro_id=None)
         gmn = GroundwaterMonitoringNet.objects.create(**field_values)
     else:
         oldest = GroundwaterMonitoringNet.objects.filter(id=gmn_ids[0]).first()
         field_names = [
-            f.name for f in oldest.__class__._meta.get_fields()
+            f.name
+            for f in oldest.__class__._meta.get_fields()
             if isinstance(f, models.Field) and not f.auto_created and not f.primary_key
         ]
-        field_values = {
-            field: getattr(oldest, field)
-            for field in field_names
-        }
+        field_values = {field: getattr(oldest, field) for field in field_names}
         field_values.update(name=group, gmn_bro_id=None)
         gmn = GroundwaterMonitoringNet.objects.create(**field_values)
 
     return gmn
 
+
 def update_monitoring_net(gmn: GroundwaterMonitoringNet, gmn_data):
     gmn_ids = [data[0] for data in gmn_data]
     gmn_names = [data[1] for data in gmn_data]
 
-    for i, (gmn_id, gmn_name) in enumerate(zip(gmn_ids,gmn_names)):
+    for i, (gmn_id, gmn_name) in enumerate(zip(gmn_ids, gmn_names)):
         next_gmn = GroundwaterMonitoringNet.objects.get(id=gmn_id)
         addition, removal = update_measuring_points(gmn, next_gmn)
         if addition:
             print("Added measuring points to GMN")
-        if removal: 
+        if removal:
             print("Removed measuring points to GMN")
 
-def update_measuring_points(gmn: GroundwaterMonitoringNet, next_gmn: GroundwaterMonitoringNet):
 
-    def case_measuring_point_needs_to_be_added(measuring_points: QuerySet[MeasuringPoint], next_measuring_points: QuerySet[MeasuringPoint]):
+def update_measuring_points(
+    gmn: GroundwaterMonitoringNet, next_gmn: GroundwaterMonitoringNet
+):
+    def case_measuring_point_needs_to_be_added(
+        measuring_points: QuerySet[MeasuringPoint],
+        next_measuring_points: QuerySet[MeasuringPoint],
+    ):
         measuring_point_codes = list(set([m.code for m in measuring_points]))
         next_measuring_point_codes = list(set([m.code for m in next_measuring_points]))
-        check = any([code not in measuring_point_codes for code in next_measuring_point_codes])
+        check = any(
+            [code not in measuring_point_codes for code in next_measuring_point_codes]
+        )
 
         if check:
             for measuring_point in next_measuring_points:
@@ -170,30 +180,44 @@ def update_measuring_points(gmn: GroundwaterMonitoringNet, next_gmn: Groundwater
                     print("Added and saved")
 
         return check
-    
-    def case_measuring_point_needs_to_be_removed(measuring_points: QuerySet[MeasuringPoint], next_measuring_points: QuerySet[MeasuringPoint]):
+
+    def case_measuring_point_needs_to_be_removed(
+        measuring_points: QuerySet[MeasuringPoint],
+        next_measuring_points: QuerySet[MeasuringPoint],
+    ):
         measuring_point_codes = list(set([m.code for m in measuring_points]))
         next_measuring_point_codes = list(set([m.code for m in next_measuring_points]))
-        check = any([code not in next_measuring_point_codes for code in measuring_point_codes])
+        check = any(
+            [code not in next_measuring_point_codes for code in measuring_point_codes]
+        )
 
         if check:
             for measuring_point in measuring_points:
-                if measuring_point.code not in next_measuring_point_codes and not measuring_point.deleted_from_gmn_date:
-                    measuring_point.deleted_from_gmn_date = get_gmn_start_date(next_gmn) - timedelta(days=1)
+                if (
+                    measuring_point.code not in next_measuring_point_codes
+                    and not measuring_point.deleted_from_gmn_date
+                ):
+                    measuring_point.deleted_from_gmn_date = get_gmn_start_date(
+                        next_gmn
+                    ) - timedelta(days=1)
                     measuring_point.save()
-        
+
         return check
-    
+
     measuring_points = MeasuringPoint.objects.filter(gmn=gmn).all()
     next_measuring_points = MeasuringPoint.objects.filter(gmn=next_gmn).all()
-    
-    addition_check = case_measuring_point_needs_to_be_added(measuring_points, next_measuring_points)
-    removal_check = case_measuring_point_needs_to_be_removed(measuring_points, next_measuring_points)
+
+    addition_check = case_measuring_point_needs_to_be_added(
+        measuring_points, next_measuring_points
+    )
+    removal_check = case_measuring_point_needs_to_be_removed(
+        measuring_points, next_measuring_points
+    )
 
     return addition_check, removal_check
 
-def get_gmn_start_date(gmn: GroundwaterMonitoringNet):
 
+def get_gmn_start_date(gmn: GroundwaterMonitoringNet):
     start_date = gmn.start_date_monitoring
 
     if not start_date:
@@ -202,9 +226,8 @@ def get_gmn_start_date(gmn: GroundwaterMonitoringNet):
         if year.isdigit():
             year = int(year)
         else:
-            year = 2006 # use case: krw_kantiteit
+            year = 2006  # use case: krw_kantiteit
 
         start_date = datetime(year, 1, 1)
-    
+
     return start_date
-        

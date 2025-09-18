@@ -1,6 +1,7 @@
+from django.conf import settings
+
 from ..tasks.duplicates_handler import GMWDuplicatesHandler
 from .bbox_handler import DataRetrieverBBOX
-from django.conf import settings
 
 
 def run(kvk_number, properties, logging):

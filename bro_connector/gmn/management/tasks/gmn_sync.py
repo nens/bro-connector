@@ -1,13 +1,14 @@
-from gmn.models import IntermediateEvent, GroundwaterMonitoringNet
+import logging
+
+from bro.models import Organisation
+from gmn.models import GroundwaterMonitoringNet, IntermediateEvent
 from main.management.commands.tasks.gmn_tasks.gmn_request_handlers import (
-    StartRegistrationGMN,
+    ClosureGMN,
     MeasuringPointAddition,
     MeasuringPointRemoval,
-    ClosureGMN,
+    StartRegistrationGMN,
 )
-from bro.models import Organisation
 from main.settings.base import ENV
-import logging
 
 logger = logging.getLogger(__name__)
 

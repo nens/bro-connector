@@ -2,7 +2,6 @@ import i18n
 import numpy as np
 import plotly.graph_objs as go
 from dash import dcc
-
 from gwdatalens.app.settings import MAPBOX_ACCESS_TOKEN, settings
 from gwdatalens.app.src.cache import TIMEOUT, cache
 from gwdatalens.app.src.components import ids
@@ -10,7 +9,7 @@ from gwdatalens.app.src.data import DataInterface
 from gwdatalens.app.src.utils import conditional_cache
 
 try:
-    with open(MAPBOX_ACCESS_TOKEN, "r", encoding="utf-8") as f:
+    with open(MAPBOX_ACCESS_TOKEN, encoding="utf-8") as f:
         mapbox_access_token = f.read()
 except FileNotFoundError:
     if settings["USE_MAPBOX"]:

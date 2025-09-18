@@ -7,7 +7,6 @@ import dash_bootstrap_components as dbc
 import i18n
 import pastastore as pst
 from dash import CeleryManager, Dash, DiskcacheManager
-
 from gwdatalens.app.callbacks import register_callbacks
 from gwdatalens.app.settings import CUSTOM_CSS_PATH, LOCALE_PATH, config, settings
 from gwdatalens.app.src.cache import cache

@@ -1,20 +1,15 @@
-from reversion_compare.helpers import patch_admin
-from django.db import models
+import datetime
+import os
+import tempfile
+from zipfile import ZipFile
+
 from django.contrib import admin, messages
+from django.db import models
 from django.db.models import fields
 from main.management.tasks.xml_import import xml_import
-from zipfile import ZipFile
-import os
+from reversion_compare.helpers import patch_admin
+
 from . import models as tools_models
-from main.management.tasks import (
-    retrieve_historic_gmw,
-    retrieve_historic_frd,
-    retrieve_historic_gld,
-    retrieve_historic_gmn,
-    retrieve_historic_gar,
-)
-import datetime
-import tempfile
 
 
 def _register(model, admin_class):
@@ -27,6 +22,7 @@ def get_searchable_fields(model_class: models.Model) -> list[str]:
         for f in model_class._meta.fields
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
+
 
 class BroImportAdmin(admin.ModelAdmin):
     search_fields = get_searchable_fields(tools_models.BroImport)
@@ -47,7 +43,14 @@ class BroImportAdmin(admin.ModelAdmin):
         "executed",
     )
 
-    readonly_fields = ["file_name", "import_date", "created_date", "report", "validated", "executed"]
+    readonly_fields = [
+        "file_name",
+        "import_date",
+        "created_date",
+        "report",
+        "validated",
+        "executed",
+    ]
 
     actions = ["update_import"]
 
@@ -103,7 +106,9 @@ class XMLImportAdmin(admin.ModelAdmin):
             obj.imported = False
             obj.checked = False
             if old_file:
-                obj.report = (obj.report or "") + f"\nSwitched the file from {old_file} to {obj.file}."
+                obj.report = (
+                    obj.report or ""
+                ) + f"\nSwitched the file from {old_file} to {obj.file}."
             else:
                 obj.report = (obj.report or "") + f"\nUploaded new file {obj.file}."
 
@@ -111,9 +116,9 @@ class XMLImportAdmin(admin.ModelAdmin):
 
     def _process_import(self, obj):
         """Handle XML/ZIP files"""
-        file_full_path  = obj.file.path
-        file_name  = os.path.basename(file_full_path)
-        file_dir  = os.path.dirname(file_full_path)
+        file_full_path = obj.file.path
+        file_name = os.path.basename(file_full_path)
+        file_dir = os.path.dirname(file_full_path)
         print(file_full_path, file_name, file_dir)
 
         if file_full_path.endswith(".xml"):
@@ -134,16 +139,23 @@ class XMLImportAdmin(admin.ModelAdmin):
 
                     if extracted_file.endswith(".xml"):
                         extracted_name = os.path.basename(extracted_path)
-                        completed, message = xml_import.import_xml(extracted_name, temp_dir)
+                        completed, message = xml_import.import_xml(
+                            extracted_name, temp_dir
+                        )
                         obj.checked = True
                         obj.imported = completed
                         obj.report = (obj.report or "") + message
                         obj.save()
                     else:
-                        obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
+                        obj.report = (
+                            (obj.report or "")
+                            + f"\nUNSUPPORTED FILE TYPE: {extracted_file} is not supported."
+                        )
                         obj.save()
         else:
-            obj.report = (obj.report or "") + f"\nUNSUPPORTED FILE TYPE: {file_name} is not supported."
+            obj.report = (
+                obj.report or ""
+            ) + f"\nUNSUPPORTED FILE TYPE: {file_name} is not supported."
             obj.save()
 
     def update_database(self, request, queryset):

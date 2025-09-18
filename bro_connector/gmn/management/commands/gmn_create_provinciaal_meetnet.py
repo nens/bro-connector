@@ -1,10 +1,11 @@
+from datetime import date
+
 from django.core.management.base import BaseCommand
 from gmn.models import (
     GroundwaterMonitoringNet,
     MeasuringPoint,
 )
 from gmw.models import GroundwaterMonitoringTubeStatic
-from datetime import date
 
 
 class Command(BaseCommand):

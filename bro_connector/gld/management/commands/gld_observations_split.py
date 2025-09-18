@@ -1,7 +1,7 @@
-from django.db import transaction
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.db.models import Count
-from gld.models import Observation, MeasurementTvp
+from gld.models import MeasurementTvp, Observation
 
 
 def split_large_observations(max_measurements_per_observation=7000):

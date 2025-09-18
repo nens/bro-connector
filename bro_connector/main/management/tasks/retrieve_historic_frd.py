@@ -1,8 +1,8 @@
+from frd.models import FormationResistanceDossier
+
 from ..tasks.bro_handlers import FRDHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
-
-from frd.models import FormationResistanceDossier
 
 # BBOX VALUES ZEELAND
 XMIN = 10000

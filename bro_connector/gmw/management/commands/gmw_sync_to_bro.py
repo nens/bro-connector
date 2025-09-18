@@ -1,7 +1,7 @@
+from django.apps import apps
 from django.core.management.base import BaseCommand
 from gmw.management.tasks import sync_gmw_events
 from main.settings.base import ENV
-from django.apps import apps
 
 
 def _is_demo(self):

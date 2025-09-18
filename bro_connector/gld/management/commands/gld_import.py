@@ -1,13 +1,13 @@
-from django.core.management.base import BaseCommand
-from django.contrib.gis.geos import Point
-from gmw.models import GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
-
 # import polars as pl
 import csv
-import re
 import os
+import re
 from datetime import datetime
+
 import pandas as pd
+from django.contrib.gis.geos import Point
+from django.core.management.base import BaseCommand
+from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 
 
 def parse_date_or_datetime(string):
@@ -31,7 +31,7 @@ def parse_date_or_datetime(string):
 
 
 def parse_csv_file(file_path: str):
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         # Skip the first line (if it's a header or irrelevant)
         # first_line = file.readline().strip()
         # print(f"Header/First Line: {first_line}")

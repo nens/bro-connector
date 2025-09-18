@@ -1,21 +1,21 @@
-from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringTubeDynamic
 from gmw.choices import (
-    TUBETYPE,
     BOOLEAN_CHOICES,
-    TUBEMATERIAL,
-    SOCKMATERIAL,
-    TUBETYPE_IMBRO,
-    TUBEMATERIAL_IMBRO,
-    SOCKMATERIAL_IMBRO,
-    TUBESTATUS,
-    TUBETOPPOSITIONINGMETHOD,
-    TUBEPACKINGMATERIAL,
     GLUE,
-    TUBESTATUS_IMBRO,
-    TUBETOPPOSITIONINGMETHOD_IMBRO,
-    TUBEPACKINGMATERIAL_IMBRO,
     GLUE_IMBRO,
+    SOCKMATERIAL,
+    SOCKMATERIAL_IMBRO,
+    TUBEMATERIAL,
+    TUBEMATERIAL_IMBRO,
+    TUBEPACKINGMATERIAL,
+    TUBEPACKINGMATERIAL_IMBRO,
+    TUBESTATUS,
+    TUBESTATUS_IMBRO,
+    TUBETOPPOSITIONINGMETHOD,
+    TUBETOPPOSITIONINGMETHOD_IMBRO,
+    TUBETYPE,
+    TUBETYPE_IMBRO,
 )
+from gmw.models import GroundwaterMonitoringTubeDynamic, GroundwaterMonitoringTubeStatic
 
 
 def validate_tube_static(tube: GroundwaterMonitoringTubeStatic) -> tuple[bool, str]:

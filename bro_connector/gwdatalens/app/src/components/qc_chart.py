@@ -1,5 +1,4 @@
 from dash import dcc, html
-
 from gwdatalens.app.settings import settings
 
 from ..cache import TIMEOUT, cache

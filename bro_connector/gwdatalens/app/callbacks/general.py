@@ -2,7 +2,6 @@ import dash_bootstrap_components as dbc
 import i18n
 from dash import Input, Output, State, ctx, html
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.settings import settings
 from gwdatalens.app.src.components import (
     ids,

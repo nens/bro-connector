@@ -1,23 +1,25 @@
-from django.db import models
+import datetime
 import logging
-import reversion
 import math
+
+import reversion
+from bro.models import Organisation
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from gmn.models import GroundwaterMonitoringNet
+from gmw.models import Electrode, GeoOhmCable, GroundwaterMonitoringTubeStatic
+from main.models import BaseModel
+
 from .choices import (
     ASSESSMENT_PROCEDURE,
     ASSESSMENT_TYPE,
-    PRESENT,
-    MEASURING_PROCEDURE,
-    QUALITY_CONTROL,
+    DELIVERY_TYPE_CHOICES,
     EVENT_TYPE_CHOICES,
     LEVERINGSTATUS_CHOICES,
-    DELIVERY_TYPE_CHOICES,
+    MEASURING_PROCEDURE,
+    PRESENT,
+    QUALITY_CONTROL,
 )
-from django.core.validators import MaxValueValidator, MinValueValidator
-from gmw.models import GroundwaterMonitoringTubeStatic, GeoOhmCable, Electrode
-from gmn.models import GroundwaterMonitoringNet
-import datetime
-from bro.models import Organisation
-from main.models import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,7 @@ class FormationResistanceDossier(BaseModel):
         null=True,
         blank=True,
         related_name="delivery_accountable_party_frd",
-        verbose_name="Bronhouder"
+        verbose_name="Bronhouder",
     )  # Could be property from tube
     delivery_responsible_party = models.ForeignKey(
         Organisation,
@@ -46,7 +48,7 @@ class FormationResistanceDossier(BaseModel):
         null=True,
         blank=True,
         related_name="delivery_responsible_party_frd",
-        verbose_name="Dataleverancier"
+        verbose_name="Dataleverancier",
     )  # Could be property from tube
     quality_regime = models.CharField(
         choices=(
@@ -56,7 +58,7 @@ class FormationResistanceDossier(BaseModel):
         max_length=255,
         null=True,
         blank=False,
-        verbose_name="Kwaliteitsregime"
+        verbose_name="Kwaliteitsregime",
     )
 
     # Data not required, but returned by the BRO.
@@ -65,7 +67,7 @@ class FormationResistanceDossier(BaseModel):
         max_length=255,
         null=True,
         blank=True,
-        verbose_name="Bepaling type"
+        verbose_name="Bepaling type",
     )
 
     # References to other tables
@@ -74,16 +76,28 @@ class FormationResistanceDossier(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="Filter"
+        verbose_name="Filter",
     )
     groundwater_monitoring_net = models.ForeignKey(
-        GroundwaterMonitoringNet, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Meetnet"
+        GroundwaterMonitoringNet,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Meetnet",
     )
 
-    deliver_to_bro = models.BooleanField(blank=False, null=True, verbose_name="Leveren aan BRO")
-    closure_date = models.DateField(blank=True, null=True, editable=False, verbose_name="Sluitingsdatum meetnet")
+    deliver_to_bro = models.BooleanField(
+        blank=False, null=True, verbose_name="Leveren aan BRO"
+    )
+    closure_date = models.DateField(
+        blank=True, null=True, editable=False, verbose_name="Sluitingsdatum meetnet"
+    )
     closed_in_bro = models.BooleanField(
-        blank=False, null=False, editable=True, default=False, verbose_name="Afgesloten in de BRO"
+        blank=False,
+        null=False,
+        editable=True,
+        default=False,
+        verbose_name="Afgesloten in de BRO",
     )
 
     @property
@@ -116,6 +130,7 @@ class FormationResistanceDossier(BaseModel):
             return electro_magnetic_method_date
         else:
             return None
+
     first_measurement.fget.short_description = "Datum eerste meting"
 
     @property
@@ -147,6 +162,7 @@ class FormationResistanceDossier(BaseModel):
             return electro_magnetic_method_date
         else:
             return None
+
     most_recent_measurement.fget.short_description = "Datum meest recente meting"
 
     def __str__(self):
@@ -158,6 +174,7 @@ class FormationResistanceDossier(BaseModel):
     @property
     def name(self):
         return f"FRD_{self.groundwater_monitoring_tube.__str__()}"
+
     name.fget.short_description = "Naam"
 
     def save(self, *args, **kwargs):
@@ -178,17 +195,33 @@ class FormationResistanceDossier(BaseModel):
 
 class ElectromagneticMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand dossier [FRD]"
+        FormationResistanceDossier,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Formatieweerstand dossier [FRD]",
     )
-    measurement_date = models.DateField(null=False, blank=True, verbose_name="Meetdatum")
+    measurement_date = models.DateField(
+        null=False, blank=True, verbose_name="Meetdatum"
+    )
     measuring_responsible_party = models.ForeignKey(
-        Organisation, on_delete=models.CASCADE, null=False, blank=True, verbose_name="Bronhouder"
+        Organisation,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=True,
+        verbose_name="Bronhouder",
     )
     measuring_procedure = models.CharField(
-        blank=False, max_length=235, choices=MEASURING_PROCEDURE, verbose_name="Meetprocedure"
+        blank=False,
+        max_length=235,
+        choices=MEASURING_PROCEDURE,
+        verbose_name="Meetprocedure",
     )
     assessment_procedure = models.CharField(
-        blank=False, max_length=235, choices=ASSESSMENT_PROCEDURE, verbose_name="Beoordeling procedure"
+        blank=False,
+        max_length=235,
+        choices=ASSESSMENT_PROCEDURE,
+        verbose_name="Beoordeling procedure",
     )
 
     def __str__(self):
@@ -202,56 +235,56 @@ class ElectromagneticMeasurementMethod(BaseModel):
 
 class InstrumentConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand dossier [FRD]"
+        FormationResistanceDossier,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Formatieweerstand dossier [FRD]",
     )
-    configuration_name = models.CharField(max_length=40, null=False, blank=False, verbose_name="Configuratie")
+    configuration_name = models.CharField(
+        max_length=40, null=False, blank=False, verbose_name="Configuratie"
+    )
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="Electromagnetische meetmethode"
+        verbose_name="Electromagnetische meetmethode",
     )
     relative_position_send_coil = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="Relatieve positie zendspoel"
+        null=True, blank=True, verbose_name="Relatieve positie zendspoel"
     )
     relative_position_receive_coil = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="Relatieve positie ontvangstspoel"
+        null=True, blank=True, verbose_name="Relatieve positie ontvangstspoel"
     )
     secondary_receive_coil = models.CharField(
         choices=PRESENT,
         max_length=200,
         blank=True,
         null=True,
-        verbose_name="Secundaire ontvangstspoel"
+        verbose_name="Secundaire ontvangstspoel",
     )
     relative_position_secondary_coil = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="Relatieve positie secundaire spoel"
+        null=True, blank=True, verbose_name="Relatieve positie secundaire spoel"
     )
     coilfrequency_known = models.CharField(
         choices=PRESENT,
         max_length=200,
         blank=True,
         null=True,
-        verbose_name="Frequentie spoel bekend"
+        verbose_name="Frequentie spoel bekend",
     )
     coilfrequency = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
-        verbose_name="Frequentie spoel"
+        verbose_name="Frequentie spoel",
     )  # Unit is kHz
     instrument_length = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(300)],
-        verbose_name="Instrumentlengte"
+        verbose_name="Instrumentlengte",
     )  # Unit is cm (centimeter)
 
     class Meta:
@@ -262,17 +295,33 @@ class InstrumentConfiguration(BaseModel):
 
 class GeoOhmMeasurementMethod(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=False, blank=False, verbose_name="Formatieweerstand dossier [FRD]"
+        FormationResistanceDossier,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        verbose_name="Formatieweerstand dossier [FRD]",
     )
-    measurement_date = models.DateField(null=False, blank=True, verbose_name="Meetdatum")
+    measurement_date = models.DateField(
+        null=False, blank=True, verbose_name="Meetdatum"
+    )
     measuring_responsible_party = models.ForeignKey(
-        Organisation, on_delete=models.CASCADE, null=False, blank=True, verbose_name="Bronhouder"
+        Organisation,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=True,
+        verbose_name="Bronhouder",
     )
     measuring_procedure = models.CharField(
-        blank=False, max_length=235, choices=MEASURING_PROCEDURE, verbose_name="Meetprocedure"
+        blank=False,
+        max_length=235,
+        choices=MEASURING_PROCEDURE,
+        verbose_name="Meetprocedure",
     )
     assessment_procedure = models.CharField(
-        blank=False, max_length=235, choices=ASSESSMENT_PROCEDURE, verbose_name="Beoordelingsprocedure"
+        blank=False,
+        max_length=235,
+        choices=ASSESSMENT_PROCEDURE,
+        verbose_name="Beoordelingsprocedure",
     )
 
     def __str__(self):
@@ -303,8 +352,12 @@ class GeoOhmMeasurementMethod(BaseModel):
 
 
 class GMWElectrodeReference(BaseModel):
-    cable_number = models.IntegerField(blank=True, null=True, verbose_name="Kabelnummer")
-    electrode_number = models.IntegerField(blank=True, null=True, verbose_name="Electrodenummer")
+    cable_number = models.IntegerField(
+        blank=True, null=True, verbose_name="Kabelnummer"
+    )
+    electrode_number = models.IntegerField(
+        blank=True, null=True, verbose_name="Electrodenummer"
+    )
 
     def __str__(self) -> str:
         return f"C{self.cable_number}E{self.electrode_number}"
@@ -323,7 +376,7 @@ class ElectrodePair(BaseModel):
         null=True,
         blank=False,
         related_name="electrode_one",
-        verbose_name="Electrode 1"
+        verbose_name="Electrode 1",
     )
     elektrode2 = models.ForeignKey(
         GMWElectrodeReference,
@@ -331,7 +384,7 @@ class ElectrodePair(BaseModel):
         null=True,
         blank=False,
         related_name="electrode_two",
-        verbose_name="Electrode 2"
+        verbose_name="Electrode 2",
     )
 
     def __str__(self):
@@ -345,7 +398,11 @@ class ElectrodePair(BaseModel):
 
 class MeasurementConfiguration(BaseModel):
     formation_resistance_dossier = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Formatieweerstand dossier [FRD]"
+        FormationResistanceDossier,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Formatieweerstand dossier [FRD]",
     )
     configuration_name = models.CharField(
         max_length=40, null=False, blank=False, unique=True, verbose_name="Configuratie"
@@ -356,7 +413,7 @@ class MeasurementConfiguration(BaseModel):
         null=True,
         blank=False,
         related_name="measurement_pair",
-        verbose_name="Meetpaar"
+        verbose_name="Meetpaar",
     )
     flowcurrent_pair = models.ForeignKey(
         ElectrodePair,
@@ -364,7 +421,7 @@ class MeasurementConfiguration(BaseModel):
         null=True,
         blank=False,
         related_name="flowcurrent_pair",
-        verbose_name="Stroompaar"
+        verbose_name="Stroompaar",
     )
 
     def __str__(self):
@@ -385,7 +442,7 @@ class ElectromagneticSeries(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=False,
-        verbose_name="Electromagnetische meetmethode"
+        verbose_name="Electromagnetische meetmethode",
     )
 
     class Meta:
@@ -396,11 +453,23 @@ class ElectromagneticSeries(BaseModel):
 
 class GeoOhmMeasurementValue(BaseModel):
     geo_ohm_measurement_method = models.ForeignKey(
-        GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Geo Ohm Meetmethode"
+        GeoOhmMeasurementMethod,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Geo Ohm Meetmethode",
     )
-    formationresistance = models.FloatField(validators=[MinValueValidator(0)], verbose_name="Formatieweerstand", help_text="Ohm")
+    formationresistance = models.FloatField(
+        validators=[MinValueValidator(0)],
+        verbose_name="Formatieweerstand",
+        help_text="Ohm",
+    )
     measurement_configuration = models.ForeignKey(
-        MeasurementConfiguration, on_delete=models.CASCADE, null=False, blank=False, verbose_name="Configuratie"
+        MeasurementConfiguration,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        verbose_name="Configuratie",
     )
     datetime = models.DateTimeField(blank=False, null=False, verbose_name="Meetmoment")
 
@@ -424,25 +493,29 @@ class GeoOhmMeasurementValue(BaseModel):
 
 class ElectromagneticRecord(BaseModel):
     series = models.ForeignKey(
-        ElectromagneticSeries, on_delete=models.CASCADE, null=True, blank=False, verbose_name="Electromagnetische Series"
+        ElectromagneticSeries,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=False,
+        verbose_name="Electromagnetische Series",
     )
 
     vertical_position = models.FloatField(
         validators=[MinValueValidator(-750), MaxValueValidator(325)],
         verbose_name="Verticale positie",
-        help_text="m NAP"
+        help_text="m NAP",
     )  # Unit = m (meter)
 
     primary_measurement = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(3000)],
-        verbose_name="Primaire meting"
+        verbose_name="Primaire meting",
     )  # Unit = mS/m (milliSiemens/meter)
 
     secondary_measurement = models.FloatField(
         blank=True,
         null=True,
         validators=[MinValueValidator(0), MaxValueValidator(3000)],
-        verbose_name="Secundaire meting"
+        verbose_name="Secundaire meting",
     )  # Unit = mS/m (milliSiemens/meter)
 
     @property
@@ -453,6 +526,7 @@ class ElectromagneticRecord(BaseModel):
             return self.secondary_measurement
         else:
             return None
+
     formationresistance.fget.short_description = "Formatieweerstand"
 
     class Meta:
@@ -463,23 +537,27 @@ class ElectromagneticRecord(BaseModel):
 
 class CalculatedFormationresistanceMethod(BaseModel):
     geo_ohm_measurement_method = models.ForeignKey(
-        GeoOhmMeasurementMethod, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Geo Ohm Meetmethode"
+        GeoOhmMeasurementMethod,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Geo Ohm Meetmethode",
     )
     electromagnetic_measurement_method = models.ForeignKey(
         ElectromagneticMeasurementMethod,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="Electromagnetische Meetmethode"
+        verbose_name="Electromagnetische Meetmethode",
     )
     responsible_party = models.CharField(
-        max_length=200,
-        null=True,
-        blank=False,
-        verbose_name="Bronhouder"
+        max_length=200, null=True, blank=False, verbose_name="Bronhouder"
     )
     assessment_procedure = models.CharField(
-        blank=False, max_length=235, choices=ASSESSMENT_PROCEDURE, verbose_name="Beoordelingsprocedure"
+        blank=False,
+        max_length=235,
+        choices=ASSESSMENT_PROCEDURE,
+        verbose_name="Beoordelingsprocedure",
     )
 
     class Meta:
@@ -504,7 +582,7 @@ class FormationresistanceSeries(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=False,
-        verbose_name="Berekende Formatieweerstand Methode"
+        verbose_name="Berekende Formatieweerstand Methode",
     )
 
     class Meta:
@@ -519,23 +597,30 @@ class FormationresistanceRecord(BaseModel):
     """
 
     series = models.ForeignKey(
-        FormationresistanceSeries, on_delete=models.CASCADE, null=True, blank=False, verbose_name="Formatieweerstand series"
+        FormationresistanceSeries,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=False,
+        verbose_name="Formatieweerstand series",
     )
 
     vertical_position = models.FloatField(
         validators=[MinValueValidator(-750), MaxValueValidator(325)],
         verbose_name="Verticale positie",
-        help_text="m NAP"
+        help_text="m NAP",
     )  # Unit = m (meter)
 
     formationresistance = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(10000)],
         verbose_name="Formatieweerstand",
-        help_text="Ohm.m"
+        help_text="Ohm.m",
     )  # Unit = ohm.m
 
     status_qualitycontrol = models.CharField(
-        blank=False, max_length=235, choices=QUALITY_CONTROL, verbose_name="Status kwaliteitscontrole"
+        blank=False,
+        max_length=235,
+        choices=QUALITY_CONTROL,
+        verbose_name="Status kwaliteitscontrole",
     )
 
     class Meta:
@@ -545,17 +630,25 @@ class FormationresistanceRecord(BaseModel):
 
 
 class FrdSyncLog(BaseModel):
-    synced = models.BooleanField(default=False, editable=False, verbose_name="Gesynchroniseerd")
+    synced = models.BooleanField(
+        default=False, editable=False, verbose_name="Gesynchroniseerd"
+    )
     date_modified = models.DateTimeField(auto_now=True, verbose_name="Datum aangepast")
-    bro_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="BRO ID")
+    bro_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="BRO ID"
+    )
     event_type = models.CharField(
         choices=EVENT_TYPE_CHOICES,
         blank=False,
         max_length=40,
-        verbose_name="Gebeurtenis type"
+        verbose_name="Gebeurtenis type",
     )
     frd = models.ForeignKey(
-        FormationResistanceDossier, on_delete=models.CASCADE, blank=True, null=True, verbose_name="FRD"
+        FormationResistanceDossier,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        verbose_name="FRD",
     )
     geo_ohm_measuring_method = models.ForeignKey(
         GeoOhmMeasurementMethod,
@@ -563,7 +656,7 @@ class FrdSyncLog(BaseModel):
         blank=True,
         null=True,
         default=None,
-        verbose_name="Geo Ohm Meetmethode"
+        verbose_name="Geo Ohm Meetmethode",
     )
     electomagnetic_method = models.ForeignKey(
         ElectromagneticMeasurementMethod,
@@ -571,22 +664,36 @@ class FrdSyncLog(BaseModel):
         blank=True,
         null=True,
         default=None,
-        verbose_name="Electromagnetische Meetmethode"
+        verbose_name="Electromagnetische Meetmethode",
     )
-    process_status = models.CharField(max_length=254, null=True, blank=True, verbose_name="Proces status")
-    comment = models.CharField(max_length=100000, null=True, blank=True, verbose_name="Commentaar")
-    xml_filepath = models.CharField(max_length=254, null=True, blank=True, verbose_name="Locatie XML bestand")
+    process_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Proces status"
+    )
+    comment = models.CharField(
+        max_length=100000, null=True, blank=True, verbose_name="Commentaar"
+    )
+    xml_filepath = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Locatie XML bestand"
+    )
     delivery_status = models.IntegerField(
-        choices=LEVERINGSTATUS_CHOICES, null=True, blank=True, default=0, verbose_name="Leveringsstatus"
+        choices=LEVERINGSTATUS_CHOICES,
+        null=True,
+        blank=True,
+        default=0,
+        verbose_name="Leveringsstatus",
     )
-    delivery_status_info = models.CharField(max_length=254, null=True, blank=True, verbose_name="Levering status info")
-    delivery_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="Levering ID")
+    delivery_status_info = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Levering status info"
+    )
+    delivery_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Levering ID"
+    )
     delivery_type = models.CharField(
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
         default="register",
-        verbose_name="Leveringstype"
+        verbose_name="Leveringstype",
     )
 
     def __str__(self):

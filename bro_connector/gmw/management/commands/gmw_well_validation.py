@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-
 from gmw.bro_validators.well_validation import WellValidation
 from gmw.models import GroundwaterMonitoringWellStatic
 

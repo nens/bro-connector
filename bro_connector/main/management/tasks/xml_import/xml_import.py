@@ -1,15 +1,20 @@
-from .bro_handlers import GMWHandler as xmlGMWHandler
-from ..bro_handlers import GMWHandler as broGMWHandler
-import gmw.models as gmw_models
-import bro.models as bro_models
 import datetime
-from string import punctuation, whitespace
-from django.conf import settings
-from django.contrib.gis.geos import Point
 import os
 import xml.etree.ElementTree as ET
+from string import punctuation, whitespace
+
+import bro.models as bro_models
+import gmw.models as gmw_models
+from django.conf import settings
+from django.contrib.gis.geos import Point
 from django.db.models.signals import post_save
-from gmw.signals import on_save_groundwater_monitoring_well_static, on_save_groundwater_monitoring_tube_static
+from gmw.signals import (
+    on_save_groundwater_monitoring_tube_static,
+    on_save_groundwater_monitoring_well_static,
+)
+
+from ..bro_handlers import GMWHandler as broGMWHandler
+from .bro_handlers import GMWHandler as xmlGMWHandler
 
 os.environ["PROJ_LIB"] = r"C:\OSGeo4W\share\proj"
 
@@ -19,7 +24,7 @@ def import_xml(file: str, path: str) -> tuple:
 
     # Read XML to detect type
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             xml_data = f.read()
             root = ET.fromstring(xml_data)
     except Exception as e:
@@ -30,7 +35,9 @@ def import_xml(file: str, path: str) -> tuple:
         gmw = xmlGMWHandler()
         id_key = "objectIdAccountableParty"
         gmw.get_data(file_path)
-    elif root.find(".//{*}GMW_PPO") is not None or root.find(".//{*}GMW_PO") is not None:
+    elif (
+        root.find(".//{*}GMW_PPO") is not None or root.find(".//{*}GMW_PO") is not None
+    ):
         gmw = broGMWHandler()
         id_key = "deliveryAccountableParty"
         # For broGMWHandler, full_history is required; set False for file import
@@ -48,11 +55,14 @@ def import_xml(file: str, path: str) -> tuple:
 
     # Check if already in DB
     try:
-        exists = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
-            internal_id=internal_id
-        ).exists() or gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
-            bro_id=bro_id
-        ).exists()
+        exists = (
+            gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
+                internal_id=internal_id
+            ).exists()
+            or gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
+                bro_id=bro_id
+            ).exists()
+        )
 
         if exists:
             message = f"\ninternal_id: {internal_id} or bro_id: {bro_id} is already in database."
@@ -63,8 +73,14 @@ def import_xml(file: str, path: str) -> tuple:
         pass
 
     try:
-        post_save.disconnect(on_save_groundwater_monitoring_well_static, sender=gmw_models.GroundwaterMonitoringWellStatic)
-        post_save.disconnect(on_save_groundwater_monitoring_tube_static, sender=gmw_models.GroundwaterMonitoringTubeStatic)
+        post_save.disconnect(
+            on_save_groundwater_monitoring_well_static,
+            sender=gmw_models.GroundwaterMonitoringWellStatic,
+        )
+        post_save.disconnect(
+            on_save_groundwater_monitoring_tube_static,
+            sender=gmw_models.GroundwaterMonitoringTubeStatic,
+        )
         # Initialize and create objects
         ini = InitializeData(gmw_dict)
         ini.well()
@@ -88,9 +104,15 @@ def import_xml(file: str, path: str) -> tuple:
         ini.reset_tube_number()
 
     finally:
-        post_save.connect(on_save_groundwater_monitoring_well_static, sender=gmw_models.GroundwaterMonitoringWellStatic)
-        post_save.connect(on_save_groundwater_monitoring_tube_static, sender=gmw_models.GroundwaterMonitoringTubeStatic)
- 
+        post_save.connect(
+            on_save_groundwater_monitoring_well_static,
+            sender=gmw_models.GroundwaterMonitoringWellStatic,
+        )
+        post_save.connect(
+            on_save_groundwater_monitoring_tube_static,
+            sender=gmw_models.GroundwaterMonitoringTubeStatic,
+        )
+
     completed = True
     message = f"\nPut {ini.gmw_dict.get('broId', None)} en bijbehorende filters gemaakt aan de hand van XML."
     return completed, message
@@ -177,17 +199,21 @@ class InitializeData:
     def increment_electrode_number(self):
         self.electrode_number = self.electrode_number + 1
         self.prefix = f"tube_{self.tube_number}_geo_ohm_{str(self.geo_ohm_number)}_electrode_{str(self.electrode_number)}_"
-   
+
     def get_accountable_party(self) -> bro_models.Organisation | None:
         kvk_nummer = self.gmw_dict.get("deliveryAccountableParty", None)
         if kvk_nummer is None:
             return None
         if kvk_nummer.isdigit():
-            organisation = bro_models.Organisation.objects.get_or_create(company_number=kvk_nummer)[0]
+            organisation = bro_models.Organisation.objects.get_or_create(
+                company_number=kvk_nummer
+            )[0]
             organisation.save()
             return organisation
         else:
-            organisation = bro_models.Organisation.objects.get_or_create(name=kvk_nummer)[0]
+            organisation = bro_models.Organisation.objects.get_or_create(
+                name=kvk_nummer
+            )[0]
             organisation.save()
             return organisation
 
@@ -235,11 +261,12 @@ class InitializeData:
                 vertical_datum=self.gmw_dict.get("verticalDatum", None),
                 last_horizontal_positioning_date=construction_date,
                 construction_coordinates=self.get_coordinates(),
-                deliver_gmw_to_bro = True,
-                complete_bro = True,
-                in_management = True
-                    if self.gmw_dict.get("deliveryAccountableParty", None) == settings.KVK_USER 
-                    else False, 
+                deliver_gmw_to_bro=True,
+                complete_bro=True,
+                in_management=True
+                if self.gmw_dict.get("deliveryAccountableParty", None)
+                == settings.KVK_USER
+                else False,
             )
         )
 

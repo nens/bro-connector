@@ -14,10 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.urls import path
-from gmw.views import gmw_map_context, gmw_map_validation_status_context, gmw_map_detail_context, gmw_map_state
-from main.dash import visualisatie_meetopstelling
 from django.contrib import admin
+from django.urls import path
+from gmw.views import (
+    gmw_map_context,
+    gmw_map_detail_context,
+    gmw_map_state,
+    gmw_map_validation_status_context,
+)
+from main.dash import visualisatie_meetopstelling
 
 # Some initialisation/discovery stuff
 admin.autodiscover()
@@ -25,7 +30,11 @@ visualisatie_meetopstelling  # noqa
 
 urlpatterns = [
     path("map/", gmw_map_context, name="gmw_map"),
-    path("map/validation/", gmw_map_validation_status_context, name="gmw_validation_status_map"),
+    path(
+        "map/validation/",
+        gmw_map_validation_status_context,
+        name="gmw_validation_status_map",
+    ),
     path("map/detail/", gmw_map_detail_context, name="gmw_detail_map"),
-    path("map/state/", gmw_map_state, name="gmw_map_state")
+    path("map/state/", gmw_map_state, name="gmw_map_state"),
 ]

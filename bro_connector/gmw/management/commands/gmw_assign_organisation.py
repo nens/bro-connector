@@ -1,6 +1,6 @@
+from bro.models import Organisation
 from django.core.management.base import BaseCommand
 from gmw.models import GroundwaterMonitoringWellStatic
-from bro.models import Organisation
 
 
 class Command(BaseCommand):

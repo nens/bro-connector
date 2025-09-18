@@ -1,6 +1,7 @@
+import logging
+
 from django.core.management.base import BaseCommand
 from gld import models
-import logging
 from gld.management.tasks import gld_actions
 
 logger = logging.getLogger(__name__)

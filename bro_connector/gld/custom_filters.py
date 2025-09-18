@@ -1,7 +1,7 @@
 from admin_auto_filters.filters import AutocompleteFilter
-from django.contrib.admin import SimpleListFilter
-from django.contrib import admin
 from bro.models import Organisation
+from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 
 
 class GLDFilter(AutocompleteFilter):

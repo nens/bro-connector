@@ -20,8 +20,8 @@ from django.contrib import admin
 from django.urls import include, path, reverse_lazy
 from django.views.generic.base import RedirectView
 from gwdatalens.app import app as gwdatalens_app
-from main.dash import visualisatie_meetopstelling
 from gwdatalens.views import render_gwdatalens_tool
+from main.dash import visualisatie_meetopstelling
 
 admin.autodiscover()
 gwdatalens_app  # noqa

@@ -1,8 +1,9 @@
+import datetime
+import xml.etree.ElementTree as ET
+
+import requests
 from django.core.management.base import BaseCommand
 from gld.models import GroundwaterLevelDossier
-import requests
-import xml.etree.ElementTree as ET
-import datetime
 
 
 class Command(BaseCommand):
