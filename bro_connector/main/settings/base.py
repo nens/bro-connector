@@ -301,6 +301,24 @@ ADMIN_REORDER = (
             "frd.FrdSyncLog",
         ),
     },
+    {
+        "app": "gar",
+        "label": "Grondwatersamenstellingsonderzoek (GAR)",  # Provincie Zeeland GWM - Data
+        "models": (
+            "gar.Analysis",
+            "gar.AnalysisProcesses",
+            "gar.FieldMeasurement",
+            "gar.FieldObservations",
+            "gar.FieldSamples",
+            "gar.GroundwaterCompositionResearches",
+            "gar.LaboratoryAnalyses",
+            "gar.StoffenGroepen",
+            "gar.TypeColourStrengths",
+            "gar.TypeColours",
+            "gar.TypeParameterlijsten",
+            "gar.TypeWaardebepalingsmethodes",
+        ),
+    },
 )
 
 
@@ -405,6 +423,8 @@ JAZZMIN_SETTINGS = {
         {"app": "gld"},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "frd"},
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "gar"},
         # gwdatalens app
         {"name": "GWDataLens", "url": "/gwdatalens", "permissions": ["auth.view_user"]},
     ],
@@ -461,6 +481,20 @@ JAZZMIN_SETTINGS = {
         "frd.ElectromagneticRecord",
         "frd.GeoOhmMeasurementValue",
         "frd.FrdSyncLog",
+        "gar",
+        "gar.Analysis",
+        "gar.AnalysisProcesses",
+        "gar.Combi",
+        "gar.FieldMeasurements",
+        "gar.FieldObservations",
+        "gar.FieldSamples",
+        "gar.GroundwaterCompositionResearches",
+        "gar.LaboratoryAnalyses",
+        "gar.StoffenGroepen",
+        "gar.TypeColourStrengths",
+        "gar.TypeColours",
+        "gar.TypeParameterlijsten",
+        "gar.TypeWaardebepalingsmethodes",
         "tools",
     ],
     "icons": {

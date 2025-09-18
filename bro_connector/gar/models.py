@@ -12,9 +12,9 @@ class Analyses(models.Model):
     analysis_id = models.AutoField(primary_key=True)
     analysis_process_id = models.IntegerField(blank=True, null=True)
     parameter_id = models.IntegerField(blank=True, null=True)
-    analysis_measurement_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    analysis_measurement_value = models.DecimalField(max_digits=65535, decimal_places=3, blank=True, null=True)
     limit_symbol = models.CharField(max_length=1, blank=True, null=True)
-    reporting_limit = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    reporting_limit = models.DecimalField(max_digits=65535, decimal_places=3, blank=True, null=True)
     quality_control_status_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
@@ -59,7 +59,7 @@ class FieldMeasurements(models.Model):
     field_measurement_id = models.AutoField(primary_key=True)
     field_sample_id = models.IntegerField(blank=True, null=True)
     parameter_id = models.IntegerField(blank=True, null=True)
-    field_measurement_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    field_measurement_value = models.DecimalField(max_digits=65535, decimal_places=3, blank=True, null=True)
     quality_control_status = models.IntegerField(blank=True, null=True)
 
     class Meta:
@@ -143,7 +143,7 @@ class StoffenGroepen(models.Model):
 
 
 class TypeColourStrengths(models.Model):
-    id = models.IntegerField(blank=True, null=True)
+    id = models.IntegerField(primary_key=True)
     omschrijving = models.CharField(blank=True, null=True)
     waarde = models.CharField(blank=True, null=True)
     d_begin = models.DateTimeField(blank=True, null=True)
@@ -155,7 +155,7 @@ class TypeColourStrengths(models.Model):
 
 
 class TypeColours(models.Model):
-    id = models.IntegerField(blank=True, null=True)
+    id = models.IntegerField(primary_key=True)
     description = models.CharField(max_length=255, blank=True, null=True)
     value = models.CharField(max_length=255, blank=True, null=True)
     startingtime = models.DateTimeField(blank=True, null=True)
@@ -181,7 +181,7 @@ class TypeParameterlijsten(models.Model):
 
 
 class TypeWaardebepalingsmethodes(models.Model):
-    id = models.IntegerField(blank=True, null=True)
+    id = models.IntegerField(primary_key=True)
     code = models.CharField(max_length=255, blank=True, null=True)
     omschrijving = models.CharField(blank=True, null=True)
     groep = models.CharField(max_length=255, blank=True, null=True)
@@ -195,7 +195,7 @@ class TypeWaardebepalingsmethodes(models.Model):
 
 
 class TypeWaardebepalingstechnieken(models.Model):
-    id = models.IntegerField(blank=True, null=True)
+    id = models.IntegerField(primary_key=True)
     code = models.CharField(max_length=255, blank=True, null=True)
     omschrijving = models.CharField(blank=True, null=True)
     d_begin = models.DateTimeField(blank=True, null=True)
