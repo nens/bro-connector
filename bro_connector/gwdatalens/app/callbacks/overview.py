@@ -2,7 +2,6 @@ import i18n
 import numpy as np
 import pandas as pd
 from dash import Input, Output, Patch, State, no_update
-
 from gwdatalens.app.settings import settings
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.components.overview_chart import plot_obs

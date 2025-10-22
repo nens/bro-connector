@@ -22,9 +22,6 @@ from dash import (
 )
 from dash import __version__ as DASH_VERSION
 from dash.exceptions import PreventUpdate
-from packaging.version import parse as parse_version
-from traval import rulelib
-
 from gwdatalens.app.settings import settings
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.components.overview_chart import plot_obs
@@ -33,6 +30,8 @@ from gwdatalens.app.src.components.qc_rules_form import (
     generate_kwargs_from_func,
     generate_traval_rule_components,
 )
+from packaging.version import parse as parse_version
+from traval import rulelib
 
 
 # %% TRAVAL TAB

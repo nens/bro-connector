@@ -10,9 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from main.localsecret import host, password, port, user, validation_key, database
+from main.localsecret import database, host, password, port, user, validation_key
 from main.settings.base import *  # noqa: F403
-
 
 DEBUG = True
 ROOT_URLCONF = "main.urls"
@@ -29,7 +28,9 @@ DATABASES = {
         "PASSWORD": password,
         "HOST": host,
         "PORT": port,
-        "OPTIONS": {"options": "-c search_path=django_admin,public"},
+        "OPTIONS": {
+            "options": "-c search_path=django_admin,public,gmw,gld,frd,gmn,gar,tools"
+        },
     },
 }
 

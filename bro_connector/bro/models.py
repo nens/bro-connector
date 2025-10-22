@@ -1,12 +1,13 @@
-from django.db import models
-from main import localsecret as ls
 import base64
-from django.db.models import CharField
+import random
+
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import random
+from django.db import models
+from django.db.models import CharField
+from main import localsecret as ls
 from main.models import BaseModel
 from main.utils.kvk_company_name import KVK_COMPANY_NAME
 
@@ -18,9 +19,10 @@ def get_color_value():
     blue = random.randint(0, 255)
 
     # Convert decimal values to hexadecimal and format them
-    color_code = "#{:02x}{:02x}{:02x}".format(red, green, blue)
+    color_code = f"#{red:02x}{green:02x}{blue:02x}"
 
     return color_code
+
 
 def get_company_name(company_number: int):
     # Extract company based on known company kvks. Manually extracted from: https://basisregistratieondergrond.nl/service-contact/formulieren/aangemeld-bro/
@@ -82,9 +84,14 @@ class SecureCharField(CharField):
 class Organisation(BaseModel):
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Naam")
     company_number = models.IntegerField(blank=True, verbose_name="KvK")
-    color = models.CharField(max_length=50, null=True, blank=True, verbose_name="Kleurcode")
+    color = models.CharField(
+        max_length=50, null=True, blank=True, verbose_name="Kleurcode"
+    )
     bro_user = SecureCharField(verbose_name="BRO Gebruikerstoken")
-    bro_token = SecureCharField(verbose_name="BRO Wachtwoordtoken", help_text="Beide tokens komen uit het bronhoudersportaal.")
+    bro_token = SecureCharField(
+        verbose_name="BRO Wachtwoordtoken",
+        help_text="Beide tokens komen uit het bronhoudersportaal.",
+    )
 
     class Meta:
         managed = True
@@ -110,15 +117,19 @@ class Organisation(BaseModel):
 
 
 class BROProject(BaseModel):
-    name = models.CharField(max_length=50, null=True, blank=True, verbose_name="Projectnaam")
-    project_number = models.IntegerField(null=False, blank=False, verbose_name="Projectnummer")
+    name = models.CharField(
+        max_length=50, null=True, blank=True, verbose_name="Projectnaam"
+    )
+    project_number = models.IntegerField(
+        null=False, blank=False, verbose_name="Projectnummer"
+    )
     owner = models.ForeignKey(
         Organisation,
         on_delete=models.SET_NULL,
         null=True,
         blank=False,
         related_name="owner",
-        verbose_name="Eigenaar"
+        verbose_name="Eigenaar",
     )
     authorized = models.ManyToManyField(
         Organisation, blank=True, related_name="authorized_company"

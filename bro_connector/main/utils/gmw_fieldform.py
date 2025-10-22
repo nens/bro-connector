@@ -5,12 +5,12 @@ import pysftp
 import datetime
 import os
 import random
-from pyproj import Transformer
 
-from main import localsecret as ls
-from gmw import models as gmw_models
 from frd import models as frd_models
 from gmn import models as gmn_models
+from gmw import models as gmw_models
+from main import localsecret as ls
+from pyproj import Transformer
 
 maximum_difference_ratio = 0.2
 
@@ -194,7 +194,7 @@ def convert_epsg28992_to_epsg4326(x, y):
 
 
 def generate_random_color():
-    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+    return f"#{random.randint(0, 0xFFFFFF):06x}"
 
 
 # From the FieldForm Github
@@ -300,12 +300,12 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
 
 
 class FieldFormGenerator:
-    inputfields: Optional[List[dict]] = input_field_options
+    inputfields: list[dict] | None = input_field_options
 
     # QuerySets
-    monitoringnetworks: Optional[List[gmn_models.GroundwaterMonitoringNet]]
-    wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
-    optimal: Optional[bool]
+    monitoringnetworks: list[gmn_models.GroundwaterMonitoringNet] | None
+    wells: list[gmw_models.GroundwaterMonitoringWellStatic] | None
+    optimal: bool | None
 
     def update_postfix(self, config: frd_models.MeasurementConfiguration) -> None:
         self.post_fix = config.configuration_name

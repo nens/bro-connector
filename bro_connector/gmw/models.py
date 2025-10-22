@@ -1,46 +1,46 @@
+import datetime
+
+import django.contrib.gis.db.models as geo_models
+import main.utils.validators_models as validators_models
+from bro.models import BROProject, Organisation
 from django.db import models
 from django.db.models import Manager
-import django.contrib.gis.db.models as geo_models
-from django.utils.html import format_html
 from django.template.loader import render_to_string
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from django.contrib import admin
 from gmw.choices import (
-    WELLHEADPROTECTOR_SUBTYPES,
-    WELLHEADPROTECTOR,
-    WELLSTABILITY,
-    WELLSTATUS,
-    GLUE,
-    GROUNDLEVELPOSITIONINGMETHOD,
-    QUALITYREGIME,
-    INITIALFUNCTION,
+    BOOLEAN_CHOICES,
+    COLLISION_PROTECTION_TYPES,
+    CONSTRUCTIONSTANDARD,
     DELIVERY_TYPE_CHOICES,
     DELIVERYCONTEXT,
-    HORIZONTALPOSITIONINGMETHOD,
-    VERTICALDATUM,
-    SALINITY_CHOICES,
     DEPTH_CHOICES,
-    LABELS,
-    LOCKS,
-    LOCALVERTICALREFERENCEPOINT,
+    ELECTRODEPACKINGMATERIAL,
+    ELECTRODESTATUS,
+    EVENTNAME,
     FOUNDATIONS,
+    GLUE,
+    GROUNDLEVELPOSITIONINGMETHOD,
+    HORIZONTALPOSITIONINGMETHOD,
+    INITIALFUNCTION,
+    KRW_CHOICES,
+    LABELS,
+    LOCALVERTICALREFERENCEPOINT,
+    LOCKS,
+    QUALITYREGIME,
+    SALINITY_CHOICES,
+    SOCKMATERIAL,
     TUBEMATERIAL,
     TUBEPACKINGMATERIAL,
     TUBESTATUS,
     TUBETOPPOSITIONINGMETHOD,
     TUBETYPE,
-    COLLISION_PROTECTION_TYPES,
-    BOOLEAN_CHOICES,
-    SOCKMATERIAL,
-    ELECTRODEPACKINGMATERIAL,
-    ELECTRODESTATUS,
-    EVENTNAME,
-    CONSTRUCTIONSTANDARD,
-    KRW_CHOICES,
+    VERTICALDATUM,
+    WELLHEADPROTECTOR,
+    WELLHEADPROTECTOR_SUBTYPES,
+    WELLSTABILITY,
+    WELLSTATUS,
 )
-import main.utils.validators_models as validators_models
-from bro.models import Organisation, BROProject
-import datetime
 from gmw.utils import generate_put_code
 from main.models import BaseModel
 from PIL import Image
@@ -55,7 +55,9 @@ def _get_token(owner: Organisation):
 
 
 class GroundwaterMonitoringWellStatic(BaseModel):
-    groundwater_monitoring_well_static_id = models.AutoField(primary_key=True, verbose_name="DB ID")
+    groundwater_monitoring_well_static_id = models.AutoField(
+        primary_key=True, verbose_name="DB ID"
+    )
     internal_id = models.CharField(
         max_length=50, verbose_name="Veldnaam", null=True, blank=True, unique=True
     )
@@ -156,7 +158,9 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         null=True,
         verbose_name="Lokaal verticaal referentiepunt",
     )
-    well_offset = models.FloatField(blank=True, null=True, verbose_name="Putverschuiving")
+    well_offset = models.FloatField(
+        blank=True, null=True, verbose_name="Putverschuiving"
+    )
     vertical_datum = models.CharField(
         choices=VERTICALDATUM,
         default="NAP",
@@ -206,7 +210,9 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     )  # Is the data in the table complete as required for the BRO
 
     # Customization fields
-    last_horizontal_positioning_date = models.DateField(blank=True, null=True, verbose_name="Laatste horizontale positioneringsdatum")
+    last_horizontal_positioning_date = models.DateField(
+        blank=True, null=True, verbose_name="Laatste horizontale positioneringsdatum"
+    )
     construction_coordinates = geo_models.PointField(
         srid=28992, blank=True, null=True, editable=False
     )  # This field type is a guess.
@@ -318,11 +324,16 @@ class GroundwaterMonitoringWellStatic(BaseModel):
                 filter_ids.append(id)
 
         return filter_ids
-    open_comments_well_ids.fget.short_description = "Dynamische put ids met openstaand commentaar"
-    
+
+    open_comments_well_ids.fget.short_description = (
+        "Dynamische put ids met openstaand commentaar"
+    )
+
     @property
     def open_comments_tube_ids(self):
-        tubes_static = GroundwaterMonitoringTubeStatic.objects.filter(groundwater_monitoring_well_static=self).all()
+        tubes_static = GroundwaterMonitoringTubeStatic.objects.filter(
+            groundwater_monitoring_well_static=self
+        ).all()
         filter_ids = []
         for tube in tubes_static:
             tubes_dynamic_unprocessed = GroundwaterMonitoringTubeDynamic.objects.filter(
@@ -335,8 +346,11 @@ class GroundwaterMonitoringWellStatic(BaseModel):
                     filter_ids.append(id)
 
         return filter_ids
-    open_comments_tube_ids.fget.short_description = "Dynamische filter ids met openstaand commentaar"
-    
+
+    open_comments_tube_ids.fget.short_description = (
+        "Dynamische filter ids met openstaand commentaar"
+    )
+
     @property
     def has_open_comments(self):
         if self.open_comments_well_ids or self.open_comments_tube_ids:
@@ -376,7 +390,9 @@ class GroundwaterMonitoringWellStatic(BaseModel):
 
 
 class GroundwaterMonitoringWellDynamic(BaseModel):
-    groundwater_monitoring_well_dynamic_id = models.AutoField(primary_key=True, verbose_name="DB ID")
+    groundwater_monitoring_well_dynamic_id = models.AutoField(
+        primary_key=True, verbose_name="DB ID"
+    )
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
@@ -391,7 +407,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         null=True,
         validators=[validators_models.maaiveldhoogte_validation],
         verbose_name="Maaiveld hoogte",
-        help_text="m NAP"
+        help_text="m NAP",
     )
     ground_level_positioning_method = models.CharField(
         choices=GROUNDLEVELPOSITIONINGMETHOD,
@@ -524,6 +540,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
             ).count()
             > 0
         )
+
     deliver_gld_to_bro.fget.short_description = "GLD aanleveren aan BRO"
 
     class Meta:
@@ -534,7 +551,9 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
 
 
 class GroundwaterMonitoringTubeStatic(BaseModel):
-    groundwater_monitoring_tube_static_id = models.AutoField(primary_key=True, verbose_name="DB ID")
+    groundwater_monitoring_tube_static_id = models.AutoField(
+        primary_key=True, verbose_name="DB ID"
+    )
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
@@ -653,7 +672,9 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
 
 
 class GroundwaterMonitoringTubeDynamic(BaseModel):
-    groundwater_monitoring_tube_dynamic_id = models.AutoField(primary_key=True, verbose_name="DB ID")
+    groundwater_monitoring_tube_dynamic_id = models.AutoField(
+        primary_key=True, verbose_name="DB ID"
+    )
     groundwater_monitoring_tube_static = models.ForeignKey(
         GroundwaterMonitoringTubeStatic,
         on_delete=models.CASCADE,
@@ -751,7 +772,6 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         if self.comment in [None, ""]:
             self.comment_processed = True
         super().save(*args, **kwargs)
-
 
     @property
     def date_till(self):
@@ -869,6 +889,7 @@ class GeoOhmCable(BaseModel):
         verbose_name = "Geo Ohm Kabel"
         verbose_name_plural = "Geo Ohm Kabels"
 
+
 class Electrode(BaseModel):
     electrode_static_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     geo_ohm_cable = models.ForeignKey(
@@ -982,28 +1003,53 @@ def get_current_values(instance):
 
 
 class gmw_registration_log(BaseModel):
-    bro_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="BRO ID")
-    event_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="Evenement ID")
-    validation_status = models.CharField(max_length=254, null=True, blank=True, verbose_name="Validatiestatus")
-    delivery_id = models.CharField(max_length=254, null=True, blank=True, verbose_name="Levering ID")
+    bro_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="BRO ID"
+    )
+    event_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Evenement ID"
+    )
+    validation_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Validatiestatus"
+    )
+    delivery_id = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Levering ID"
+    )
     delivery_type = models.CharField(
         choices=DELIVERY_TYPE_CHOICES,
         blank=False,
         max_length=40,
         default="register",
-        verbose_name="Type levering"
+        verbose_name="Type levering",
     )
-    delivery_status = models.CharField(max_length=254, null=True, blank=True, verbose_name="Leveringsstatus")
-    comments = models.CharField(max_length=10000, null=True, blank=True, verbose_name="Commentaar")
-    last_changed = models.CharField(max_length=254, null=True, blank=True, verbose_name="Laatst veranderd")
-    corrections_applied = models.BooleanField(blank=True, null=True, verbose_name="Correcties toegepast")
-    quality_regime = models.CharField(max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime")
-    file = models.CharField(max_length=254, null=True, blank=True, verbose_name="Bestand")
-    process_status = models.CharField(max_length=254, null=True, blank=True, verbose_name="Verwerkingsstatus")
+    delivery_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Leveringsstatus"
+    )
+    comments = models.CharField(
+        max_length=10000, null=True, blank=True, verbose_name="Commentaar"
+    )
+    last_changed = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Laatst veranderd"
+    )
+    corrections_applied = models.BooleanField(
+        blank=True, null=True, verbose_name="Correcties toegepast"
+    )
+    quality_regime = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Kwaliteitsregime"
+    )
+    file = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Bestand"
+    )
+    process_status = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Verwerkingsstatus"
+    )
 
     # Could possibly be removed later
     object_id_accountable_party = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Verantwoordelijke partij ID"
+        max_length=254,
+        null=True,
+        blank=True,
+        verbose_name="Verantwoordelijke partij ID",
     )
 
     @property
@@ -1011,6 +1057,7 @@ class gmw_registration_log(BaseModel):
         if self.event_id is not None:
             return Event.objects.get(change_id=self.event_id).event_name
         return "-"
+
     event_type.fget.short_description = "Type evenement"
 
     def __str__(self):
@@ -1062,9 +1109,7 @@ class Picture(BaseModel):
     recording_datetime = models.DateTimeField(
         blank=True, null=True, verbose_name="Fotomoment"
     )
-    is_main = models.BooleanField(
-        blank=True, default=False, verbose_name="Hoofdfoto"
-    )
+    is_main = models.BooleanField(blank=True, default=False, verbose_name="Hoofdfoto")
     picture = models.ImageField(
         upload_to="static/gmw/pictures/",
         blank=True,
@@ -1140,16 +1185,32 @@ class Picture(BaseModel):
 
 class MaintenanceParty(BaseModel):
     maintenance_party_id = models.AutoField(primary_key=True, verbose_name="DB ID")
-    surname = models.CharField(max_length=100, null=True, blank=True, verbose_name="Achternaam")
-    first_name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Voornaam")
-    function = models.CharField(max_length=100, null=True, blank=True, verbose_name="Functie")
-    organisation = models.CharField(max_length=100, null=True, blank=True, verbose_name="Organisatie")
-    adress = models.CharField(max_length=254, null=True, blank=True, verbose_name="Adres")
-    postal_code = models.CharField(max_length=50, null=True, blank=True, verbose_name="Postcode")
-    place = models.CharField(max_length=254, null=True, blank=True, verbose_name="Woonplaats")
+    surname = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name="Achternaam"
+    )
+    first_name = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name="Voornaam"
+    )
+    function = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name="Functie"
+    )
+    organisation = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name="Organisatie"
+    )
+    adress = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Adres"
+    )
+    postal_code = models.CharField(
+        max_length=50, null=True, blank=True, verbose_name="Postcode"
+    )
+    place = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Woonplaats"
+    )
     phone = models.IntegerField(blank=True, null=True, verbose_name="Telefoon")
     mobilephone = models.IntegerField(null=True, blank=True, verbose_name="Mobiel")
-    email = models.CharField(max_length=254, null=True, blank=True, verbose_name="Email")
+    email = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Email"
+    )
 
     def __str__(self):
         return f"{self.first_name} {self.surname}"
@@ -1175,11 +1236,17 @@ class Maintenance(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="Filter"
+        verbose_name="Filter",
     )
-    notification_date = models.DateField(blank=True, null=True, verbose_name="Meldingsdatum")
-    kind_of_maintenance = models.CharField(max_length=254, verbose_name="Type onderhoud")
-    description = models.CharField(max_length=254, null=True, blank=True, verbose_name="Beschrijving")
+    notification_date = models.DateField(
+        blank=True, null=True, verbose_name="Meldingsdatum"
+    )
+    kind_of_maintenance = models.CharField(
+        max_length=254, verbose_name="Type onderhoud"
+    )
+    description = models.CharField(
+        max_length=254, null=True, blank=True, verbose_name="Beschrijving"
+    )
     picture = models.ForeignKey(
         Picture, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Foto"
     )
@@ -1189,16 +1256,18 @@ class Maintenance(BaseModel):
         blank=True,
         null=True,
         related_name="reporter",
-        verbose_name="Melder"
+        verbose_name="Melder",
     )  # Maintenance_party_id
-    execution_date = models.DateField(blank=True, null=True, verbose_name="Uitvoeringsdatum")
+    execution_date = models.DateField(
+        blank=True, null=True, verbose_name="Uitvoeringsdatum"
+    )
     execution_by = models.ForeignKey(
         MaintenanceParty,
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
         related_name="executioner",
-        verbose_name="Uitvoerder"
+        verbose_name="Uitvoerder",
     )  # Maintenance_party_id
 
     class Meta:

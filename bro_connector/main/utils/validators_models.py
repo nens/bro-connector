@@ -1,6 +1,6 @@
 import datetime as dt
-from django.core.exceptions import ValidationError
 
+from django.core.exceptions import ValidationError
 
 #### GMW models validators
 

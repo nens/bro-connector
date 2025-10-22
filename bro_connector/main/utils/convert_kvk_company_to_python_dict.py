@@ -1,10 +1,11 @@
-from pathlib import Path
-import re
 import json
+import re
+from pathlib import Path
+
 
 def txt_to_dict(file_path):
     result = {}
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         for line in f:
             if not line.strip():
                 continue
@@ -30,10 +31,11 @@ def save_dict_to_file(dictionary, output_path):
         f.write("KVK_COMPANY_NAME = ")
         f.write(json.dumps(dictionary, indent=3, ensure_ascii=False))
 
+
 if __name__ == "__main__":
     home = Path().home() / "Downloads"
-    input_file = home / "input.txt"     # your source file
-    output_file = home / "output.txt"   # the file to save the dictionary
+    input_file = home / "input.txt"  # your source file
+    output_file = home / "output.txt"  # the file to save the dictionary
 
     data_dict = txt_to_dict(input_file)
     save_dict_to_file(data_dict, output_file)

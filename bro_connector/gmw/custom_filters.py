@@ -1,5 +1,6 @@
 from admin_auto_filters.filters import AutocompleteFilter
 from django.contrib.admin import SimpleListFilter
+
 from .models import Event
 
 

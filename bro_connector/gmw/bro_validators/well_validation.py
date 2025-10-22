@@ -1,4 +1,4 @@
-from gmw.bro_validators import well, tube, electrode
+from gmw.bro_validators import electrode, tube, well
 from gmw.models import Electrode, GeoOhmCable, GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 
 class WellValidation:

@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
 import logging
+from datetime import datetime
 
 import dash_bootstrap_components as dbc
 import numpy as np
@@ -9,17 +9,15 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 from django.shortcuts import get_object_or_404
 from django_plotly_dash import DjangoDash
-from plotly.subplots import make_subplots
-
 from gmw.models import (
     Electrode,
-    GroundwaterMonitoringTubeDynamic,
-    GroundwaterMonitoringTubeStatic,
+    Event,
     GeoOhmCable,
+    GroundwaterMonitoringTubeStatic,
     GroundwaterMonitoringWellDynamic,
     GroundwaterMonitoringWellStatic,
-    Event,
 )
+from plotly.subplots import make_subplots
 
 logger = logging.getLogger(__name__)
 
@@ -337,8 +335,10 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                 ]
                 filternummer = list(selection["filternummer"].values)
                 x_pos = []
-                for x,f in zip(list(subselection["x"].values),list(subselection["filter"].values)):
-                    index = filternummer.index(f) 
+                for x, f in zip(
+                    list(subselection["x"].values), list(subselection["filter"].values)
+                ):
+                    index = filternummer.index(f)
                     x_floor = np.floor(x)
                     pos = index + 1 + x - x_floor
                     x_pos.append(pos)
@@ -391,7 +391,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
         # Meetinstrument dieptes
         nans = False
         idx = 0
-        for i,f in enumerate(selection["filternummer"]):
+        for i, f in enumerate(selection["filternummer"]):
             bovenkant_buis = selection["bovenkant buis"][
                 selection["filternummer"] == f
             ].values[0]
@@ -402,8 +402,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             if pd.isna(positie_meetinstrument):
                 nans = True
                 continue
-   
-            x = [i+1,i+1]
+
+            x = [i + 1, i + 1]
             y = [bovenkant_buis, positie_meetinstrument]
             if f == 1:
                 showlegend = True
@@ -422,8 +422,8 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
             print("customdata")
             print(idx)
             trans = [
-                    [selection["positie meetinstrument"].values[idx]],
-                    [selection["diepte meetinstrument"].values[idx]],
+                [selection["positie meetinstrument"].values[idx]],
+                [selection["diepte meetinstrument"].values[idx]],
             ]
             print(trans)
             print(trans[1])
@@ -434,7 +434,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie):
                     y=y,
                     legendgroup="diepte druksensor",
                     showlegend=showlegend,
-                    name=f"druksensor",
+                    name="druksensor",
                     text=name,
                     marker=dict(
                         color="purple",
@@ -665,7 +665,7 @@ app.layout = html.Div(
 def update_output_div(data_tube, data_electrodes, event, options, referentie):
     selection = pd.DataFrame(data_tube)
     selection_electrode = pd.DataFrame(data_electrodes).replace({None: np.nan})
-    print("sel elec",selection_electrode)
+    print("sel elec", selection_electrode)
     fig = generate_graph(selection, selection_electrode, event, options, referentie)
 
     return fig
@@ -720,7 +720,6 @@ def get_dropdown_events(groundwater_monitoring_well_static_id):
 
 
 def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
-   
     if event.groundwater_monitoring_well_dynamic:
         return event.groundwater_monitoring_well_dynamic
 

@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 import i18n
 from dash import dcc, html
 from traval import rulelib
@@ -8,9 +6,7 @@ from ..data.interface import DataInterface
 from . import ids
 
 
-def render_selection_series_dropdown(
-    data: DataInterface, selected_data: Optional[List]
-):
+def render_selection_series_dropdown(data: DataInterface, selected_data: list | None):
     """Renders a dropdown component for selecting a time series.
 
     Parameters

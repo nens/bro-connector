@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from dash import ALL, Input, Output, Patch, State, ctx, dcc, no_update
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.settings import settings
 from gwdatalens.app.src.components import ids
 

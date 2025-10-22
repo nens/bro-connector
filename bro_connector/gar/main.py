@@ -1,9 +1,10 @@
 import os
-from jinja2 import Environment, FileSystemLoader
-import pandas as pd
 from time import perf_counter
-from tqdm import tqdm
+
+import pandas as pd
+from jinja2 import Environment, FileSystemLoader
 from print_timer import print_timer
+from tqdm import tqdm
 from zip import zip_output_main
 
 cwd = os.getcwd()

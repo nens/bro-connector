@@ -1,15 +1,14 @@
-from gld.models import (
-    GroundwaterLevelDossier,
-    gld_registration_log,
-    gld_addition_log,
-    Observation,
-)
-import os
 import logging
+import os
 import time
 
 from gld.management.commands import gld_sync_to_bro
-
+from gld.models import (
+    GroundwaterLevelDossier,
+    Observation,
+    gld_addition_log,
+    gld_registration_log,
+)
 from main.settings.base import ENV
 
 logger = logging.getLogger(__name__)

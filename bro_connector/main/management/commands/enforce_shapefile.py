@@ -1,10 +1,8 @@
+import geopandas as gpd
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from shapely.geometry import Point
-import geopandas as gpd
-
 from gmw.models import GroundwaterMonitoringWellStatic
+from shapely.geometry import Point
 
 
 class Command(BaseCommand):

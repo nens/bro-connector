@@ -1,15 +1,14 @@
-from typing import List, Optional
-import json
-import pysftp
 import datetime
+import json
 import os
 import random
-from pyproj import Transformer
 from pathlib import Path
 
-from main import localsecret as ls
-from gmw import models as gmw_models
+import pysftp
 from gmn import models as gmn_models
+from gmw import models as gmw_models
+from main import localsecret as ls
+from pyproj import Transformer
 
 input_field_options = {
     "grondwaterstand": {
@@ -64,7 +63,7 @@ def convert_epsg28992_to_epsg4326(x, y):
 
 
 def generate_random_color():
-    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+    return f"#{random.randint(0, 0xFFFFFF):06x}"
 
 
 # From the FieldForm Github
@@ -133,13 +132,13 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
 
 
 class FieldFormGenerator:
-    inputfields: List[dict] = input_field_options
+    inputfields: list[dict] = input_field_options
 
     # QuerySets
-    monitoringnetworks: Optional[list[gmn_models.GroundwaterMonitoringNet]]
-    wells: Optional[List[gmw_models.GroundwaterMonitoringWellStatic]]
-    optimal: Optional[bool]
-    ftp_path: Optional[Path]
+    monitoringnetworks: list[gmn_models.GroundwaterMonitoringNet] | None
+    wells: list[gmw_models.GroundwaterMonitoringWellStatic] | None
+    optimal: bool | None
+    ftp_path: Path | None
 
     def __init__(self, *args, **kwargs) -> None:
         self.ftp_path = kwargs.get("ftp_path", None)

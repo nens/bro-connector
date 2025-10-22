@@ -1,9 +1,8 @@
+from gmn.models import GroundwaterMonitoringNet
+
 from ..tasks.bro_handlers import GMNHandler
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
-
-
-from gmn.models import GroundwaterMonitoringNet
 
 # BBOX VALUES ZEELAND
 XMIN = 10000

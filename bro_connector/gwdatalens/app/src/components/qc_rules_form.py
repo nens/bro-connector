@@ -3,7 +3,6 @@ from inspect import signature
 import dash_bootstrap_components as dbc
 import numpy as np
 from dash import html
-
 from gwdatalens.app.settings import settings
 
 from ..data import DataInterface
