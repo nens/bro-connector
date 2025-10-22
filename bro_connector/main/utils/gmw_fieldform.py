@@ -1,4 +1,5 @@
 from typing import List, Optional
+import logging
 import json
 import pysftp
 import datetime
@@ -180,6 +181,7 @@ input_fields_well = [
     "foto 5",
 ]
 
+logger = logging.getLogger(__name__)
 
 def convert_epsg28992_to_epsg4326(x, y):
     # Create a Transformer object for converting from EPSG:28992 to EPSG:4326
@@ -345,6 +347,12 @@ class FieldFormGenerator:
 
             well_name = well.__str__()
             well_state = well.state.order_by("date_from").last()
+            if well_state is None:
+                logger.warning(
+                    f"No state found for well {well_name}, skipping this well."
+                )
+                continue
+
             well_location = {
                 f"{well_name}": {
                     "lat": lat,
