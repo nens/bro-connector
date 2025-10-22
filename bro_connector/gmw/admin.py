@@ -353,7 +353,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
     change_form_template = r"admin\change_form_well.html"
 
-    search_fields = ("groundwater_monitoring_well_static_id", "well_code", "bro_id")
+    search_fields = ("groundwater_monitoring_well_static_id", "well_code", "bro_id", "internal_id", "nitg_code", "olga_code")
 
     list_display = (
         "groundwater_monitoring_well_static_id",
@@ -374,6 +374,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "in_management",
     )
     readonly_fields = (
+        "well_code",
         "lat",
         "lon",
         "report",
@@ -504,11 +505,11 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         originele_put = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
             groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
         ).first()
-
-        if (originele_put.coordinates.x != x or originele_put.coordinates.y != y) and originele_put.last_horizontal_positioning_date == obj.last_horizontal_positioning_date:
-            message = "Waarde van 'Laatste horizontale positioneringsdatum' moet worden aangepast bij wijzigen van coördinaten. Datum van vandaag gehanteerd."
-            self.message_user(request, message, level="WARNING")
-            obj.last_horizontal_positioning_date = datetime.datetime.now().date()
+        if originele_put is not None:
+            if (originele_put.coordinates.x != x or originele_put.coordinates.y != y) and originele_put.last_horizontal_positioning_date == obj.last_horizontal_positioning_date:
+                message = "Waarde van 'Laatste horizontale positioneringsdatum' moet worden aangepast bij wijzigen van coördinaten. Datum van vandaag gehanteerd."
+                self.message_user(request, message, level="WARNING")
+                obj.last_horizontal_positioning_date = datetime.datetime.now().date()
 
         # x- & y-coördinate check within dutch boundaries EPSG:28992
         (valid, message) = validators_admin.x_within_netherlands(obj)
