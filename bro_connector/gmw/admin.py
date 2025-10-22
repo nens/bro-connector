@@ -929,8 +929,8 @@ class EventAdmin(admin.ModelAdmin):
     def save_model(self, request, obj: gmw_models.Event, form, change):
         valid = True
 
+        obj.save()
         if obj.event_name == "constructie":
-            print(obj.electrodes)
             report_e = ""
             valid_e = True
             for electrode in obj.electrodes.all():
@@ -963,9 +963,13 @@ class EventAdmin(admin.ModelAdmin):
                     report_td += rep_td
                     valid_td = val_td
 
-            valid_wd, report_wd = validate_well_dynamic(
-                obj.groundwater_monitoring_well_dynamic
-            )
+            if obj.groundwater_monitoring_well_dynamic is not None:
+                valid_wd, report_wd = validate_well_dynamic(
+                    obj.groundwater_monitoring_well_dynamic
+                )
+            else:
+                valid_ws, report_ws = False, "No dynamic well\n"
+                
             valid_ws, report_ws = validate_well_static(
                 obj.groundwater_monitoring_well_static
             )
