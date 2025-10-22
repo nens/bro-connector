@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from main.utils.gmw_fieldform import FieldFormGenerator
+from main.utils.gmw_fieldform import FieldFormGenerator, delete_old_files_from_ftp
 
 
 class Command(BaseCommand):
@@ -9,4 +9,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         generator = FieldFormGenerator()
         generator.generate()
-        # delete_old_files_from_ftp()
+        delete_old_files_from_ftp()
