@@ -7,7 +7,7 @@ import logging
 from django.urls import reverse
 from django.utils.html import format_html
 from urllib.parse import urlencode
-
+import datetime
 from . import models as gmw_models
 from gld.models import GroundwaterLevelDossier
 import gmw.management.tasks.gmw_actions as gmw_actions
@@ -45,6 +45,27 @@ def get_searchable_fields(model_class):
         for f in model_class._meta.fields
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
+
+def create_or_delete_tubes(obj: gmw_models.GroundwaterMonitoringWellStatic, nr_of_monitoring_tubes: int) -> None:
+    current_tube_numbers = obj.tube.values_list("tube_number", flat=True)
+    current_tube_count = len(current_tube_numbers)
+    if nr_of_monitoring_tubes > current_tube_count:
+        # Create new tubes for any number not in current list
+        for i in range(1, nr_of_monitoring_tubes + 1):
+            if i not in current_tube_numbers:
+                gmw_models.GroundwaterMonitoringTubeStatic.objects.create(
+                    groundwater_monitoring_well_static=obj,
+                    tube_number=str(i),
+                )
+
+    ## Currently we will not automatically delete tubes
+
+    # elif nr_of_monitoring_tubes < current_tube_count:
+    #     # Delete excess tubes
+    #     tubes_to_delete = obj.tube.all().order_by("-groundwater_monitoring_tube_static_id")[:current_tube_count - nr_of_monitoring_tubes]
+    #     for tube in tubes_to_delete:
+    #         tube.delete()
+
 
 
 class EventsInline(admin.TabularInline):
@@ -366,7 +387,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
     fieldsets = [
         (
-            "",
+            "General",
             {
                 "fields": [
                     "well_code",
@@ -393,6 +414,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "vertical_datum",
                     "last_horizontal_positioning_date",
                     "well_link",
+                    "nr_of_monitoring_tubes",
                     "tube_link",
                     "report",
                     "bro_actions",
@@ -401,6 +423,15 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "lat",
                     "lon",
                     "map_preview",
+                ],
+            },
+        ),
+        (
+            "Initiële coordinaten",
+            {
+                "fields": [
+                    "cx",
+                    "cy",
                 ],
             },
         ),
@@ -452,8 +483,18 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         cx = form.cleaned_data["cx"]
         cy = form.cleaned_data["cy"]
 
+        nr_of_monitoring_tubes = form.cleaned_data["nr_of_monitoring_tubes"]
+
         # Werk de waarden van de afgeleide attributen bij in het model
         obj.coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
+        logger.info(f"X: {x}, Y: {y}, CX: '{cx}', CY: '{cy}', construction_coordinates: {obj.construction_coordinates}")
+        logger.info((x == "" and y == "" and obj.construction_coordinates is None))
+        logger.info(x is not None and y is not None)
+        if (x is not None and y is not None) and (cx == "" and cy == "" and obj.construction_coordinates is None):
+            obj.construction_coordinates = GEOSGeometry(
+                f"POINT ({x} {y})", srid=28992
+            )
+
         if cx != "" and cy != "":
             obj.construction_coordinates = GEOSGeometry(
                 f"POINT ({cx} {cy})", srid=28992
@@ -463,6 +504,11 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         originele_put = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
             groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
         ).first()
+
+        if (originele_put.coordinates.x != x or originele_put.coordinates.y != y) and originele_put.last_horizontal_positioning_date == obj.last_horizontal_positioning_date:
+            message = "Waarde van 'Laatste horizontale positioneringsdatum' moet worden aangepast bij wijzigen van coördinaten. Datum van vandaag gehanteerd."
+            self.message_user(request, message, level="WARNING")
+            obj.last_horizontal_positioning_date = datetime.datetime.now().date()
 
         # x- & y-coördinate check within dutch boundaries EPSG:28992
         (valid, message) = validators_admin.x_within_netherlands(obj)
@@ -511,8 +557,11 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                 "Er zijn nog acties vereist om het BRO Compleet te maken",
             )
 
-        # Sla het model op
         obj.save()
+        if obj.pk is not None and nr_of_monitoring_tubes != obj.tube.count():
+            create_or_delete_tubes(obj, nr_of_monitoring_tubes)
+
+        super().save_model(request, obj, form, change)
 
     @admin.action(description="Lever GMW aan BRO")
     def deliver_to_bro(self, request, queryset):
