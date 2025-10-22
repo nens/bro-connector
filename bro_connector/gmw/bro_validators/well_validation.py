@@ -1,6 +1,5 @@
 from gmw.bro_validators import electrode, tube, well
-from gmw.models import GeoOhmCable
-
+from gmw.models import Electrode, GeoOhmCable, GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
 
 class WellValidation:
     def __init__(self):
@@ -29,7 +28,7 @@ class WellValidation:
                 )
             self.add_to_report(com_bro_el_stat, bro_act_el_stat)
 
-    def geo_ohm_cable(self, tube_static):
+    def geo_ohm_cable(self, tube_static: GroundwaterMonitoringTubeStatic):
         # geo ohm cable query
         geo_ohm_cable_query = tube_static.geo_ohm_cable.all()
         for geo_ohm_cable in geo_ohm_cable_query:
@@ -49,7 +48,7 @@ class WellValidation:
             # electrode static check
             self.electrode(geo_ohm_cable)
 
-    def tube_dynamic(self, tube_static):
+    def tube_dynamic(self, tube_static: GroundwaterMonitoringTubeStatic):
         # tube dynamic query
         tube_dynamic_query = tube_static.state.all()
         for tube_dynamic in tube_dynamic_query:
@@ -66,7 +65,7 @@ class WellValidation:
                 )
             self.add_to_report(com_bro_tube_dyn, bro_act_tube_dyn)
 
-    def tube_static(self, well_static):
+    def tube_static(self, well_static: GroundwaterMonitoringWellStatic):
         # tube static query
         tube_static_query = well_static.tube.all()
         for tube_static in tube_static_query:
@@ -88,7 +87,7 @@ class WellValidation:
             # geo ohm cable check
             self.geo_ohm_cable(tube_static)
 
-    def well_dynamic(self, well_static):
+    def well_dynamic(self, well_static: GroundwaterMonitoringWellStatic):
         # well dynamic query
         well_dynamic_query = well_static.state.all()
         for well_dynamic in well_dynamic_query:
@@ -105,7 +104,7 @@ class WellValidation:
                 )
             self.add_to_report(com_bro_well_dyn, bro_act_well_dyn)
 
-    def well_complete(self, well_static):
+    def well_complete(self, well_static: GroundwaterMonitoringWellStatic):
         # well static validation
         com_bro_well_stat, bro_act_well_stat = well.validate_well_static(well_static)
 

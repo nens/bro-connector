@@ -777,8 +777,7 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
         groundwater_monitoring_well_static=monitoring_well
     )
     for filtr in filters:
-        filtr_history = event.groundwater_monitoring_tube_dynamic.first()
-        print(filtr_history.date_from)
+        filtr_history = filtr.state.filter(date_from__lte=datetime_event).last() if event.event_name.lower() != "constructie" else filtr.state.first()
         filt_dict = (
             {
                 "nummer": filtr.tube_number,

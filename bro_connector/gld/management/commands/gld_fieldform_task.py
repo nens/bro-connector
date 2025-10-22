@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
         # Create HMN FieldFrom
         try:
-            generator2 = FieldFormGenerator(ftp_path=ls.ftp_gld_hnm_path)
+            generator2 = FieldFormGenerator(ftp_path=ls.ftp_gld_hmn_path)
             generator2.generate()
             # generator2.delete_old_files_from_ftp()
         except Exception as e:

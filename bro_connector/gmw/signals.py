@@ -27,13 +27,21 @@ def clear_map_cache(sender, **kwargs):
 
 
 @receiver(post_save, sender=GroundwaterMonitoringWellStatic)
-def on_save_groundwater_monitoring_well_static(sender, instance, created, **kwargs):
+def on_save_groundwater_monitoring_well_static(sender, instance:GroundwaterMonitoringWellStatic, created, **kwargs):
     if created and not instance.state.exists():
         GroundwaterMonitoringWellDynamic.objects.create(
             groundwater_monitoring_well_static=instance,
             date_from=datetime.datetime.now(),
         )
 
+    if instance.event.filter(event_name="constructie").count() == 0:
+        Event.objects.get_or_create(
+            groundwater_monitoring_well_static=instance,
+            event_name="constructie",
+            defaults={
+                "event_date": instance.construction_date,
+            },
+        )
 
 @receiver(post_delete, sender=GroundwaterMonitoringWellStatic)
 def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):

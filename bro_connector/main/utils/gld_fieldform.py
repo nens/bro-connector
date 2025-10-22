@@ -141,7 +141,7 @@ class FieldFormGenerator:
     ftp_path: Path | None
 
     def __init__(self, *args, **kwargs) -> None:
-        self.ftp_path = kwargs.get("path", None)
+        self.ftp_path = kwargs.get("ftp_path", None)
         if self.ftp_path:
             self.monitoringnetworks = [self._get_monitoring_network_for_path()]
 
@@ -149,13 +149,9 @@ class FieldFormGenerator:
         self,
     ) -> gmn_models.GroundwaterMonitoringNet | None:
         if self.ftp_path == "/GLD_HMN":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
-                name="terreinbeheerders"
-            )
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(name="terreinbeheerders").first()
         elif self.ftp_path == "/GLD_PMG":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.first(
-                name="Meetrondes Kantonniers"
-            )
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(name="Meetrondes Kantonniers").first()
         else:
             raise ValueError(f"Unknown Path: {self.ftp_path}.")
 
@@ -306,6 +302,15 @@ class FieldFormGenerator:
 
         print(data)
         # Store the file locally
+        if self.ftp_path == ls.ftp_gld_pmg_path:
+            write_location_file(
+                data=data, filename=f"../fieldforms/gld/pmg/locations_{date_string}.json"
+            )
+        elif self.ftp_path == ls.ftp_gld_hmn_path:
+            write_location_file(
+                data=data, filename=f"../fieldforms/gld/hmn/locations_{date_string}.json"
+            )
+            
         write_location_file(
             data=data, filename=f"../fieldforms/gld/locations_{date_string}.json"
         )
