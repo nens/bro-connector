@@ -381,6 +381,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "deliver_gmw_to_bro",
                     "complete_bro",
                     "quality_regime",
+                    "construction_date",
                     "project",
                     "delivery_context",
                     "construction_standard",
