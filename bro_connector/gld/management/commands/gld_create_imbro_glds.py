@@ -23,22 +23,23 @@ def get_imbroa_measurements_after_2020(glds: list[GroundwaterLevelDossier]) -> d
     
     measurements = {}
     for gld in glds:
+        gld_name = gld.__str__()
         observations_imbroa_regular = Observation.objects.filter(
             groundwater_level_dossier=gld, 
             observation_metadata__observation_type="reguliereMeting"
         )
         measurements_imbroa_regular = MeasurementTvp.objects.filter(observation__in=observations_imbroa_regular)
-        measurements_imbroa_post_2020_regular  = measurements_imbroa_regular.filter(measurement_time__gte=datetime(2021,1,1))
+        measurements_imbroa_post_2020_regular  = list(measurements_imbroa_regular.filter(measurement_time__gte=datetime(2021,1,1)))
         
         observations_imbroa_control = Observation.objects.filter(
             groundwater_level_dossier=gld, 
             observation_metadata__observation_type="controlemeting"
         )
         measurements_imbroa_control = MeasurementTvp.objects.filter(observation__in=observations_imbroa_control)
-        measurements_imbroa_post_2020_control  = measurements_imbroa_control.filter(measurement_time__gte=datetime(2021,1,1))
+        measurements_imbroa_post_2020_control  = list(measurements_imbroa_control.filter(measurement_time__gte=datetime(2021,1,1)))
 
         if measurements_imbroa_post_2020_regular or measurements_imbroa_post_2020_control:      
-            measurements[gld] = [measurements_imbroa_post_2020_regular, measurements_imbroa_post_2020_control]
+            measurements[gld_name] = [measurements_imbroa_post_2020_regular, measurements_imbroa_post_2020_control]
         
     return measurements   
 
@@ -52,13 +53,15 @@ def create_imbro_dossiers(tube: GroundwaterMonitoringTubeStatic, measurements: d
             gld_imbro, created = GroundwaterLevelDossier.objects.get_or_create(
                 groundwater_monitoring_tube=tube, quality_regime="IMBRO"
             )
+            gld_imbro.save()
             glds_imbro.append(gld_imbro)
+            summary["total_imbro_glds_processed"] += 1
             if created:
-                summary["total_glds_created"] += 1
+                summary["total_imbro_glds_created"] += 1
 
     return glds_imbro, summary
 
-def create_regular_observations(glds, summary):
+def create_regular_observations(glds, measurements, summary):
     if not glds:
         return {}, summary
     
@@ -77,18 +80,20 @@ def create_regular_observations(glds, summary):
     
     observations = {}
     for gld in glds:
+        gld_name = gld.__str__()
         observation, created = Observation.objects.get_or_create(
             groundwater_level_dossier = gld,
             observation_process = observation_process_regular,
             observation_metadata = observation_metadata_regular,
         )
-        observations[gld]= observation
+        observations[gld_name]= observation
+        summary["total_imbro_regular_observations_processed"] += 1
         if created:
             summary["total_imbro_regular_observations_created"] += 1
 
     return observations, summary
 
-def create_control_observations(glds, summary):
+def create_control_observations(glds, measurements, summary):
     if not glds:
         return {}, summary
     
@@ -106,12 +111,14 @@ def create_control_observations(glds, summary):
     
     observations = {}
     for gld in glds:
+        gld_name = gld.__str__()        
         observation, created = Observation.objects.get_or_create(
             groundwater_level_dossier = gld,
             observation_process = observation_process_control,
             observation_metadata = observation_metadata_control,
         )
-        observations[gld] = observation
+        observations[gld_name] = observation
+        summary["total_imbro_control_observations_processed"] += 1
         if created:
             summary["total_imbro_control_observations_created"] += 1
 
@@ -128,15 +135,15 @@ def create_imbro_measurements(
     for gld_imbroa, (measurements_regular, measurements_control) in measurements.items():
         if observation_type == "reguliereMeting":
             measurements_imbroa = measurements_regular
-            dummy_observation = observations_regular[gld_imbroa]
+            dummy_observation = observations_regular.get(gld_imbroa, None)
         elif observation_type == "controlemeting":
             measurements_imbroa = measurements_control
-            dummy_observation = observations_control[gld_imbroa]
+            dummy_observation = observations_control.get(gld_imbroa, None)
         else:
             measurements_imbroa = []
             dummy_observation = None
         if not measurements_imbroa or not dummy_observation:
-            logger.info("No measurements or observation in data")
+            # logger.info("No measurements or observation in data")
             return summary
         
         measurements_imbroa: list[MeasurementTvp]      
@@ -166,14 +173,13 @@ def create_imbro_measurements(
             ) for mtvp, mm in zip(measurements_imbroa, measurement_metadatas_imbro)
         ])
         if observation_type == "reguliereMeting":
-            summary["total_regular_measurements_moved_to_imbro"] += 1
+            summary["total_imbro_regular_measurements_created"] += len(measurements_imbroa)
         elif observation_type == "controlemeting":
-            summary["total_control_measurements_moved_to_imbro"] += 1
-
-    logger.info(summary)
+            summary["total_imbro_control_measurements_created"] += len(measurements_imbroa)
 
     with transaction.atomic():
         try:
+            logger.info(f"Bulk creating measurements for for GLDs {list(measurements.keys())}")
             MeasurementPointMetadata.objects.bulk_create(
                 measurement_metadatas_imbro,
                 update_conflicts=False,
@@ -187,6 +193,8 @@ def create_imbro_measurements(
         except Exception as e:
             print(f"Bulk updating/creating failed.")
 
+    return summary
+
 
 def create_imbro_glds():
     """
@@ -198,8 +206,11 @@ def create_imbro_glds():
     """
     
     summary = {
+        "total_imbro_glds_processed": 0,
         "total_imbro_glds_created": 0,
+        "total_imbro_regular_observations_processed": 0,
         "total_imbro_regular_observations_created": 0,
+        "total_imbro_control_observations_processed": 0,
         "total_imbro_control_observations_created": 0,
         "total_imbro_regular_measurements_created": 0,
         "total_imbro_control_measurements_created": 0,
@@ -208,20 +219,19 @@ def create_imbro_glds():
     tubes = GroundwaterMonitoringTubeStatic.objects.filter(
         groundwater_monitoring_well_static__delivery_accountable_party=Organisation.objects.get(company_number="20168636")
     )
-    logger.info(f"Number of tubes: {len(tubes)}")
+    # logger.info(f"Number of tubes: {len(tubes)}")
 
     for tube in tubes:
-        logger.info(f"Tube: {tube}")
+        # logger.info(f"Tube: {tube}")
         glds_imbroa = get_imbroa_glds(tube)
-        logger.info(f"Number of glds: {len(glds_imbroa)}")
+        # logger.info(f"Number of glds: {len(glds_imbroa)}")
         measurements_imbro = get_imbroa_measurements_after_2020(glds_imbroa)
-        logger.info(measurements_imbro.keys())
+        # logger.info(measurements_imbro.keys())
         glds_imbro, summary = create_imbro_dossiers(tube, measurements_imbro, summary)
-        logger.info(glds_imbro)
-        logger.info(summary)
-        
-        dummy_regular_observations, summary = create_regular_observations(glds_imbro, summary)
-        dummy_control_observations, summary = create_control_observations(glds_imbro, summary)
+        # logger.info(glds_imbro)
+
+        dummy_regular_observations, summary = create_regular_observations(glds_imbro, measurements_imbro, summary)
+        dummy_control_observations, summary = create_control_observations(glds_imbro, measurements_imbro, summary)
         summary = create_imbro_measurements(measurements_imbro, "reguliereMeting", dummy_regular_observations, dummy_control_observations, summary)
         summary = create_imbro_measurements(measurements_imbro, "controlemeting", dummy_regular_observations, dummy_control_observations, summary)
 
@@ -230,11 +240,21 @@ def create_imbro_glds():
     
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        # Example usage
-        result = create_imbro_glds()
-        logger.info("IMBRO/A to IMBRO Summary:")
-        logger.info(f"Total GLDs Created: {result['total_imbro_glds_created']}")
-        logger.info(f"Total Regular Observations Created: {result['total_imbro_regular_observations_created']}")
-        logger.info(f"Total Control Observations Created: {result['total_imbro_control_observations_created']}")
-        logger.info(f"Total Regular Measurements Created: {result['total_imbro_regular_measurements_created']}")
-        logger.info(f"Total Control Measurements Created: {result['total_imbro_control_measurements_created']}")
+        ## CAUTION!!!!!
+        ## This script will create measurement duplicates from gld imbroa measurements after 2021-01-01 and store them in a new imbro gld
+        ## In doing so this script will create duplicates of gld imbro measurements if this process has already been run
+        ## Only accept the terms below if you are okay with this.
+
+        I_WILLINGLY_RUN_THIS_SCRIPT_AND_REALISE_THAT_I_MIGHT_CREATE_MEASUREMENT_DUPLICATES = True
+
+        if I_WILLINGLY_RUN_THIS_SCRIPT_AND_REALISE_THAT_I_MIGHT_CREATE_MEASUREMENT_DUPLICATES:
+            result = create_imbro_glds()
+            logger.info("IMBRO/A to IMBRO Summary:")
+            logger.info(f"Total GLDs Processed: {result['total_imbro_glds_processed']}")
+            logger.info(f"Total GLDs Created: {result['total_imbro_glds_created']}")
+            logger.info(f"Total Regular Observations Processed: {result['total_imbro_regular_observations_processed']}")
+            logger.info(f"Total Regular Observations Created: {result['total_imbro_regular_observations_created']}")
+            logger.info(f"Total Control Observations Processed: {result['total_imbro_control_observations_processed']}")
+            logger.info(f"Total Control Observations Created: {result['total_imbro_control_observations_created']}")
+            logger.info(f"Total Regular Measurements Created: {result['total_imbro_regular_measurements_created']}")
+            logger.info(f"Total Control Measurements Created: {result['total_imbro_control_measurements_created']}")
