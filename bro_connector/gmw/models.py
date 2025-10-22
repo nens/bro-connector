@@ -344,7 +344,9 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         return False
 
     def __str__(self):
-        if self.well_code:
+        if self.internal_id:
+            return str(self.internal_id)
+        elif self.well_code:
             return str(self.well_code)
         elif self.bro_id:
             return str(self.bro_id)
