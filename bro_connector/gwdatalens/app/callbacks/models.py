@@ -65,7 +65,7 @@ def register_model_callbacks(app, data):
         Raises
         ------
         PreventUpdate
-            If `n_clicks`  is None or `value`  is None.
+            If `n_clicks` is None or `value` is None.
         """
         if n_clicks is not None:
             if value is not None:
@@ -91,7 +91,7 @@ def register_model_callbacks(app, data):
 
                     if value in data.pstore.oseries_names:
                         # update stored copy
-                        data.pstore.update_oseries(ts, value)
+                        data.pstore.update_oseries(ts, value, force=True)
                     else:
                         # add series to database
                         metadata = data.db.gmw_gdf.loc[value].to_dict()
@@ -176,7 +176,7 @@ def register_model_callbacks(app, data):
         Raises
         ------
         PreventUpdate
-            If `n_clicks`  is None or `mljson`  is None.
+            If `n_clicks` is None or `mljson` is None.
         """
         if n_clicks is None:
             raise PreventUpdate
@@ -257,8 +257,8 @@ def register_model_callbacks(app, data):
                 )
             except Exception as e:
                 return (
-                    {"layout": {"title": i18n.t("general.no_model")}},
-                    {"layout": {"title": i18n.t("general.no_model")}},
+                    {"layout": {"title": {"text": i18n.t("general.no_model")}}},
+                    {"layout": {"title": {"text": i18n.t("general.no_model")}}},
                     True,
                     (
                         True,  # show alert
@@ -273,8 +273,8 @@ def register_model_callbacks(app, data):
                 )
         elif value is None:
             return (
-                {"layout": {"title": i18n.t("general.no_model")}},
-                {"layout": {"title": i18n.t("general.no_model")}},
+                {"layout": {"title": {"text": i18n.t("general.no_model")}}},
+                {"layout": {"title": {"text": i18n.t("general.no_model")}}},
                 True,
                 (
                     False,  # show alert

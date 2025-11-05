@@ -1,4 +1,5 @@
 import i18n
+import plotly.express as px
 import plotly.graph_objs as go
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
@@ -47,7 +48,7 @@ def render(data, selected_data):
     )
 
 
-def plot_obs(names, data):
+def plot_obs(names, data, plot_manual_obs=False):
     """Plots observation data for given monitoring wells and tube numbers.
 
     Parameters
@@ -72,13 +73,14 @@ def plot_obs(names, data):
     - For multiple names, plots the timeseries data with markers and lines.
     """
     if names is None:
-        return {"layout": {"title": i18n.t("general.no_plot")}}
+        return {"layout": {"title": {"text": i18n.t("general.no_plot")}}}
 
-    hasobs = list(data.db.list_locations())
+    hasobs = list(data.db.list_observation_wells_with_data())
     no_data = []
 
     traces = []
-    for name in names:
+    colors = px.colors.qualitative.Dark24
+    for i, name in enumerate(names):
         # split into monitoringwell and tube_number
         if "-" in name:
             monitoring_well, tube_nr = name.split("-")
@@ -143,8 +145,8 @@ def plot_obs(names, data):
                     legendrank=legendrank,
                 )
                 traces.append(trace_i)
-            # add controle metingen
 
+            # add controle metingen
             manual_obs = data.db.get_timeseries(
                 monitoring_well, tube_nr, observation_type="controlemeting"
             )
@@ -167,13 +169,38 @@ def plot_obs(names, data):
                 x=ts.index,
                 y=ts.values,
                 mode="markers+lines",
-                line={"width": 1},
-                marker={"size": 3},
+                line={"width": 1, "color": colors[i % len(colors)]},
+                marker={"size": 3, "line_color": colors[i % len(colors)]},
                 name=wellcode,
                 legendgroup=wellcode,
+                # name=name,
+                # legendgroup=f"{name}-{tube_nr}",
                 showlegend=True,
+                legendrank=1001,
             )
             traces.append(trace_i)
+            if plot_manual_obs:
+                # add controle metingen
+                manual_obs = data.db.get_timeseries(
+                    monitoring_well, tube_nr, observation_type="controlemeting"
+                )
+                if not manual_obs.empty:
+                    trace_mo_i = go.Scattergl(
+                        x=manual_obs.index,
+                        y=manual_obs[data.db.value_column],
+                        mode="markers",
+                        marker={
+                            "size": 8,
+                            "symbol": "x-thin",
+                            "line_width": 2,
+                            "line_color": colors[i % len(colors)],
+                        },
+                        name=i18n.t("general.manual_observations"),
+                        legendgroup=f"{name}-{tube_nr}",
+                        legendrank=1000,
+                        showlegend=True,
+                    )
+                    traces.append(trace_mo_i)
     layout = {
         # "xaxis": {"range": [sim.index[0], sim.index[-1]]},
         "yaxis": {"title": "(m NAP)"},

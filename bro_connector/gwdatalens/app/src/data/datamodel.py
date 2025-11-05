@@ -18,6 +18,19 @@ class Well(Base):
     reference_system: Mapped[str]
 
 
+class WellDynamic(Base):
+    __tablename__ = "groundwater_monitoring_well_dynamic"
+    ground_water_monitoring_well_dynamic_id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
+    ground_level_position: Mapped[float]
+    groundwater_monitoring_well_static_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "groundwater_monitoring_well_static.groundwater_monitoring_well_static_id"
+        )
+    )
+
+
 class TubeStatic(Base):
     __tablename__ = "groundwater_monitoring_tube_static"
     groundwater_monitoring_tube_static_id: Mapped[int] = mapped_column(primary_key=True)

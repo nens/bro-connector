@@ -12,7 +12,7 @@ def get_app():
 def run(debug=settings["DEBUG"], port=settings["PORT"]):
     app = get_app()
     if debug:
-        app.run_server(debug=debug, port=port)
+        app.run(debug=debug, port=port)
     else:
         from waitress import serve
 
@@ -31,6 +31,6 @@ run_dashboard = run
 if __name__ == "__main__":
     if settings["DEBUG"]:
         app = get_app()
-        app.run_server(debug=settings["DEBUG"])
+        app.run(debug=settings["DEBUG"])
     else:
         run()

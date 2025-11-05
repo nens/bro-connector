@@ -24,7 +24,7 @@ def render(data):
 
     Notes
     -----
-    - If `data.traval.traval_result`  is None, an empty DataFrame is used.
+    - If `data.traval.traval_result` is None, an empty DataFrame is used.
     - The table includes columns for [datetime, values, comments, incoming QC status,
       update QC status, category].
     - The table supports native filtering and virtualization for performance.

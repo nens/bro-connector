@@ -29,8 +29,8 @@ else:
             config["database"] = dbase["database"]
     except FileNotFoundError:
         print(
-            f"No {DATALENS_APP_PATH}/database.toml file found. Ignore this message if using "
-            "HydropandasDataSource."
+            f"No {DATALENS_APP_PATH}/database.toml file found. "
+            "Ignore this message if using HydropandasDataSource."
         )
 
 # %% set paths accordingly

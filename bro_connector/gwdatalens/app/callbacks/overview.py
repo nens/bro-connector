@@ -149,7 +149,11 @@ def register_overview_callbacks(app, data):
                     )
                 else:
                     return (
-                        {"layout": {"title": i18n.t("general.no_data_selection")}},
+                        {
+                            "layout": {
+                                "title": {"text": i18n.t("general.no_data_selection")}
+                            }
+                        },
                         table,
                         (True, "warning", f"No data to plot for: {names}."),
                         (pd.Timestamp.now().isoformat(), False),
@@ -157,7 +161,7 @@ def register_overview_callbacks(app, data):
             except Exception as e:
                 # raise e
                 return (
-                    {"layout": {"title": i18n.t("general.no_series")}},
+                    {"layout": {"title": {"text": i18n.t("general.no_series")}}},
                     data.db.gmw_gdf.loc[:, usecols].reset_index().to_dict("records"),
                     (
                         True,  # show alert
@@ -178,7 +182,7 @@ def register_overview_callbacks(app, data):
         else:
             table = data.db.gmw_gdf.loc[:, usecols].reset_index().to_dict("records")
             return (
-                {"layout": {"title": i18n.t("general.no_series")}},
+                {"layout": {"title": {"text": i18n.t("general.no_series")}}},
                 table,
                 (False, None, None),
                 (pd.Timestamp.now().isoformat(), False),
