@@ -12,8 +12,8 @@ import polars as pl
 logger = logging.getLogger(__name__)
 
 def read_sensorbucket_multiflexmeter_data(csv):
-    df = pl.read_csv(csv, skip_rows=3, ignore_errors=True)
-
+    df = pl.read_csv(csv, has_header=True, separator=";", ignore_errors=True)
+    print(df.head())
     df_device = (
         df.select([
             "device code",
@@ -269,7 +269,7 @@ def create_imbro_measurements(
                 censor_reason = mm.censor_reason,
                 censor_reason_datalens = mm.censor_reason_datalens,
                 value_limit = mm.value_limit,
-            ) for mm in measurement_metadatas_imbroa
+            ) if mm else MeasurementPointMetadata() for mm in measurement_metadatas_imbroa
         ])
         measurements_imbro.extend([
             MeasurementTvp(
@@ -305,6 +305,10 @@ def create_imbro_measurements(
             )
         except Exception as e:
             print(f"Bulk updating/creating failed.")
+
+    for observation in observations:
+        observation.observation_starttime = observation.timestamp_first_measurement
+        observation.save(update_fields=["observation_starttime"])
 
     return summary
 

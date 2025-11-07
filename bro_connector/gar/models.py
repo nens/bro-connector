@@ -19,7 +19,7 @@ class Analyses(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'analyses'
+        db_table = 'gar"."analyses'
 
 
 class AnalysisProcesses(models.Model):
@@ -31,7 +31,7 @@ class AnalysisProcesses(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'analysis_processes'
+        db_table = 'gar"."analysis_processes'
 
 
 class Combi(models.Model):
@@ -52,7 +52,7 @@ class Combi(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'combi'
+        db_table = 'gar"."analysis_combiprocesses'
 
 
 class FieldMeasurements(models.Model):
@@ -64,7 +64,7 @@ class FieldMeasurements(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'field_measurements'
+        db_table = 'gar"."field_measurements'
 
 
 class FieldObservations(models.Model):
@@ -85,7 +85,7 @@ class FieldObservations(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'field_observations'
+        db_table = 'gar"."field_observations'
 
 
 class FieldSamples(models.Model):
@@ -100,7 +100,7 @@ class FieldSamples(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'field_samples'
+        db_table = 'gar"."field_samples'
 
 
 class GroundwaterCompositionResearches(models.Model):
@@ -113,7 +113,7 @@ class GroundwaterCompositionResearches(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'groundwater_composition_researches'
+        db_table = 'gar"."groundwater_composition_researches'
 
 
 class LaboratoryAnalyses(models.Model):
@@ -123,7 +123,7 @@ class LaboratoryAnalyses(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'laboratory_analyses'
+        db_table = 'gar"."laboratory_analyses'
 
 
 class StoffenGroepen(models.Model):
@@ -139,7 +139,7 @@ class StoffenGroepen(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'stoffen_groepen'
+        db_table = 'gar"."stoffen_groepen'
 
 
 class TypeColourStrengths(models.Model):
@@ -151,7 +151,7 @@ class TypeColourStrengths(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'type_colour_strengths'
+        db_table = 'gar"."type_colour_strengths'
 
 
 class TypeColours(models.Model):
@@ -163,7 +163,7 @@ class TypeColours(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'type_colours'
+        db_table = 'gar"."type_colours'
 
 
 class TypeParameterlijsten(models.Model):
@@ -177,7 +177,7 @@ class TypeParameterlijsten(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'type_parameterlijsten'
+        db_table = 'gar"."type_parameterlijsten'
 
 
 class TypeWaardebepalingsmethodes(models.Model):
@@ -191,7 +191,7 @@ class TypeWaardebepalingsmethodes(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'type_waardebepalingsmethodes'
+        db_table = 'gar"."type_waardebepalingsmethodes'
 
 
 class TypeWaardebepalingstechnieken(models.Model):
@@ -203,4 +203,4 @@ class TypeWaardebepalingstechnieken(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'type_waardebepalingstechnieken'
+        db_table = 'gar"."type_waardebepalingstechnieken'
