@@ -1,3 +1,4 @@
+
 import dash_bootstrap_components as dbc
 import i18n
 from dash import dcc, html
@@ -42,17 +43,17 @@ def render_datepicker_tmin(data, selected_data):
         A Dash DatePickerSingle component for selecting a start time.
     """
     if selected_data is not None and len(selected_data) == 1:
-        name = selected_data[0]
+        name = selected_data
         try:
-            tmintmax = data.pstore.get_tmin_tmax("oseries", name)
-            start_date = tmintmax.loc[name, "tmin"].to_pydatetime()
+            tmintmax = data.pstore.get_tmin_tmax(libname="oseries", names=name)
+            start_date = tmintmax.loc[name[0], "tmin"].to_pydatetime()
             disabled = False
         except Exception:
             start_date = None
             disabled = True
     else:
         start_date = None
-        disabled = True
+        disabled = False
 
     return dcc.DatePickerSingle(
         date=start_date,
@@ -87,17 +88,17 @@ def render_datepicker_tmax(data, selected_data):
         A Dash DatePickerSingle component for selecting a end time.
     """
     if selected_data is not None and len(selected_data) == 1:
-        name = selected_data[0]
+        name = selected_data
         try:
-            tmintmax = data.pstore.get_tmin_tmax("oseries", name)
-            end_date = tmintmax.loc[name, "tmax"].to_pydatetime()
+            tmintmax = data.pstore.get_tmin_tmax(libname="oseries", names=name)
+            end_date = tmintmax.loc[name[0], "tmax"].to_pydatetime()
             disabled = False
         except Exception:
             end_date = None
             disabled = True
     else:
         end_date = None
-        disabled = True
+        disabled = False
 
     return dcc.DatePickerSingle(
         date=end_date,

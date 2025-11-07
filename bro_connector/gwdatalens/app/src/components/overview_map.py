@@ -31,7 +31,7 @@ def render(
         id=ids.OVERVIEW_MAP,
         figure=draw_map_mapbox(
             df,
-            mapbox_access_token=mapbox_access_token,
+            mapbox_access_token=MAPBOX_ACCESS_TOKEN,
             selected_data=selected_data,
         )
         if settings["USE_MAPBOX"]

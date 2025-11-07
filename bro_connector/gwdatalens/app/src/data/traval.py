@@ -306,7 +306,8 @@ class TravalInterface:
 
         manual_obs = self.db.get_timeseries(
             gmw_id, tube_id, observation_type="controlemeting"
-        )
+        )[self.db.value_column]
+        manual_obs.name = "controlemeting"
         if not manual_obs.empty:
             additional_series = [manual_obs]
         else:

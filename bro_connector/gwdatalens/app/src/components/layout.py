@@ -20,7 +20,8 @@ def create_layout(app: Dash, data: DataInterface) -> html.Div:
         html containing app layout.
     """
     return html.Div(
-        id="main",
+        id="gwdatalans-main",
+        className="gwdatalens-main",
         children=[
             dcc.Store(id=ids.SELECTED_OSERIES_STORE),
             dcc.Store(id=ids.PASTAS_MODEL_STORE),

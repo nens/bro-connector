@@ -1,3 +1,4 @@
+
 import i18n
 from dash import dcc, html
 from traval import rulelib
@@ -6,7 +7,9 @@ from ..data.interface import DataInterface
 from . import ids
 
 
-def render_selection_series_dropdown(data: DataInterface, selected_data: list | None):
+def render_selection_series_dropdown(
+    data: DataInterface, selected_data: list | None
+):
     """Renders a dropdown component for selecting a time series.
 
     Parameters
@@ -22,7 +25,7 @@ def render_selection_series_dropdown(data: DataInterface, selected_data: list | 
     html.Div
         A Dash HTML Div component containing the dropdown.
     """
-    locs = data.db.list_locations()
+    locs = data.db.list_observation_wells_with_data()
     locs = sorted(locs, key=lambda n: data.db.gmw_gdf.loc[n, "wellcode_name"])
     options = [{"label": f"{data.db.get_wellcode(i)}", "value": i} for i in locs]
 
@@ -65,7 +68,9 @@ def render_additional_series_dropdown(data: DataInterface, selected_data):
         selection.
     """
     if selected_data is not None:
-        locs = data.db.list_locations_sorted_by_distance(selected_data[0])
+        locs = data.db.list_observation_wells_with_data_sorted_by_distance(
+            selected_data[0]
+        )
         options = [
             {
                 "label": data.db.get_wellcode(i) + f" ({row.distance / 1e3:.1f} km)",

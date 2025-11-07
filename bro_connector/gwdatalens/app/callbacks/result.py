@@ -19,7 +19,7 @@ def register_result_callbacks(app, data):
     # )
     # def multi_edit_qc_results_table(filtered_data, selected_cells):
     #     # if no selection do nothing
-    #     if selected_cells  is None or selected_cells == []:
+    #     if selected_cells is None or selected_cells == []:
     #         raise PreventUpdate
 
     #     # check columns
@@ -507,3 +507,22 @@ def register_result_callbacks(app, data):
             return tables[i]
         else:
             raise PreventUpdate
+
+    # NOTE: this callback does not work in DEBUG mode
+    if not settings["DEBUG"]:
+        app.clientside_callback(
+            """
+            function() {
+                //console.log(dash_clientside.callback_context);
+                const triggered_id = dash_clientside.callback_context.triggered_id;
+                //use this to set the focus on last active component
+                document.lastActiveElement.focus(); 
+                return;
+            }
+            """,
+            # Hidden div output no longer necessary in since dash 2.17
+            # Output("hidden-div", "children"),
+            # This triggers the javascript callback:
+            Input({"type": ids.QC_RESULT_MARK_OBS_BUTTONS, "index": ALL}, "n_clicks"),
+            prevent_initial_call=True,
+        )
