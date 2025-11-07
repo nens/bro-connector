@@ -34,16 +34,16 @@
     cursor: pointer;
 }
 
-button {
+.gwdatalens-main button[id*="-button"] {
     background-color: #006f92 !important;
     font-size: medium;
 }
 
-button.btn-close {
+.gwdatalens-main button.btn-close {
     background-color: #ffffff00 !important;
 }
 
-button[id*="clear-button"] {
+.gwdatalens-main button[id*="clear-button"] {
     background-color: darkred !important;
 }
 
@@ -380,7 +380,7 @@ Defines the .dbc class
 
 
 /* .Select-menu-outer {
-    border: var(--bs-border-width) solid var(--bs-border-color);
+    border: var(--bs-border-width) solid var(--bs-border-color); 
     background-color: transparent;
 } */
 

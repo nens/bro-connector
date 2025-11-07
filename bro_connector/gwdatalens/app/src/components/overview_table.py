@@ -33,6 +33,7 @@ def render(data: DataInterface, selected_data=None):
     df = data.db.gmw_gdf.reset_index()
     usecols = [
         "id",
+        "name",
         "bro_id",
         "wellcode_name",
         "tube_number",

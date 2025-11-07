@@ -278,7 +278,7 @@ def render_qc_chart(figure: dict):
         A Dash HTML Div component containing the QC result chart
     """
     if figure is None:
-        figure = {"layout": {"title": "No traval result."}}
+        figure = {"layout": {"title": {"text": "No traval result."}}}
     else:
         figure["layout"]["dragmode"] = "select"
 

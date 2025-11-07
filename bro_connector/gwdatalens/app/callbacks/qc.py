@@ -82,10 +82,10 @@ def register_qc_callbacks(app, data):
         Output(ids.QC_CHART_STORE_1, "data"),
         Input(ids.QC_DROPDOWN_SELECTION, "value"),
         Input(ids.QC_DROPDOWN_ADDITIONAL, "value"),
-        State(ids.QC_DROPDOWN_ADDITIONAL, "disabled"),
+        # State(ids.QC_DROPDOWN_ADDITIONAL, "disabled"),  # NOTE: not sure what for?
         State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
     )
-    def plot_qc_time_series(value, additional_values, disabled, traval_figure):
+    def plot_qc_time_series(value, additional_values, traval_figure):
         """Plot time series.
 
         Parameters
@@ -96,8 +96,6 @@ def register_qc_callbacks(app, data):
         additional_values : list or None
             Additional series to include in the plot. If None, no additional series
             will be included.
-        disabled : bool
-            whether to disable the dropdown.
         traval_figure : tuple or None
             A tuple containing a stored name and a traval-result figure. If the stored
             name matches the primary series name, the traval-figure will be returned.
@@ -109,14 +107,8 @@ def register_qc_callbacks(app, data):
             available.
         """
         if value is None:
-            return {"layout": {"title": "No series selected."}}
-        elif disabled:
-            raise PreventUpdate
+            return {"layout": {"title": {"text": "No series selected."}}}
         else:
-            if data.db.source == "bro":
-                name = value.split("-")[0]
-            else:
-                name = value
             if additional_values is not None:
                 additional = additional_values
             else:
@@ -124,10 +116,10 @@ def register_qc_callbacks(app, data):
 
             if traval_figure is not None:
                 stored_name, figure = traval_figure
-                if stored_name == name:
+                if stored_name == value:
                     return figure
 
-            return plot_obs([name] + additional, data)
+            return plot_obs([value] + additional, data)
 
     @app.callback(
         Output(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_1, "data"),
@@ -154,7 +146,7 @@ def register_qc_callbacks(app, data):
         if value is not None:
             # value = value.split("-")
             # value[1] = int(value[1])
-            locs = data.db.list_locations_sorted_by_distance(value)
+            locs = data.db.list_observation_wells_with_data_sorted_by_distance(value)
             options = [
                 {
                     "label": data.db.get_wellcode(i)
@@ -367,7 +359,7 @@ def register_qc_callbacks(app, data):
             irule = data.traval._ruleset.get_rule(istep=i)
             irule_orig = data.traval.ruleset.get_rule(istep=i)
             for (k, v), (_, vorig) in zip(
-                irule["kwargs"].items(), irule_orig["kwargs"].items()
+                irule["kwargs"].items(), irule_orig["kwargs"].items(), strict=False
             ):
                 if callable(vorig):
                     if name is not None:
@@ -735,7 +727,7 @@ def register_qc_callbacks(app, data):
                     only_unvalidated=only_unvalidated,
                 )
                 return (
-                    # {"layout": {"title": "Running TRAVAL..."}},  # figure
+                    # {"layout": {"title": {"text": "Running TRAVAL..."}}},  # figure
                     (name, figure),
                     result.reset_index().to_dict("records"),
                     None,
@@ -750,7 +742,7 @@ def register_qc_callbacks(app, data):
             except Exception as e:
                 # raise(e)
                 return (
-                    # {"layout": {"title": "Running TRAVAL..."}},  # figure
+                    # {"layout": {"title": {"text": "Running TRAVAL..."}}},  # figure
                     no_update,
                     no_update,
                     None,

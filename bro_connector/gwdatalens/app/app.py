@@ -1,8 +1,8 @@
 # %%
 import logging
 import os
+from pathlib import Path
 
-# from pathlib import Path
 import dash_bootstrap_components as dbc
 import i18n
 import pastastore as pst
@@ -19,7 +19,7 @@ from gwdatalens.app.src.data import (
 )
 
 logging.basicConfig()
-logger = logging.getLogger()
+logger = logging.getLogger("gwdatalens")
 logger.setLevel(logging.INFO)
 
 # %% set some variables
@@ -30,7 +30,7 @@ external_stylesheets = [
 
 # %% main app
 
-# %% set the locale and load the translations
+# set the locale and load the translations
 i18n.set("locale", settings["LOCALE"])
 i18n.load_path.append(LOCALE_PATH)
 
@@ -48,7 +48,7 @@ db = PostgreSQLDataSource(config=config["database"])
 
 # %% load pastastore
 name = config["pastastore"]["name"]
-pastastore_path = config["pastastore"]["path"]
+pastastore_path = Path(config["pastastore"]["path"])
 
 if name.endswith(".zip"):
     pstore = pst.PastaStore.from_zip(pastastore_path / name)

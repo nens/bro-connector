@@ -10,7 +10,7 @@ import i18n
 import numpy as np
 import pandas as pd
 from pyproj import Transformer
-from sqlalchemy import create_engine, func, select, update
+from sqlalchemy import create_engine, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from . import datamodel
@@ -30,10 +30,12 @@ class DataSourceTemplate(ABC):
     -------
     gmw_gdf : gpd.GeoDataFrame
         Get head observations metadata as GeoDataFrame.
-    list_locations:  List[str]
+    list_locations: List[str]
         List of measurement location names.
-    list_locations_sorted_by_distance : List[str]
-        List of measurement location names, sorted by distance.
+    list_observation_wells: List[str]
+        List of observation well names.
+    list_observation_wells_with_data_sorted_by_distance : List[str]
+        List of observation well names, sorted by distance.
     get_timeseries : pd.DataFrame
         Get time series.
     save_qualifier :
@@ -52,7 +54,7 @@ class DataSourceTemplate(ABC):
         """
 
     @abstractmethod
-    def list_locations(self) -> list[str]:
+    def list_observation_wells_with_data(self) -> list[str]:
         """List of measurement location names.
 
         Returns
@@ -62,7 +64,7 @@ class DataSourceTemplate(ABC):
         """
 
     @abstractmethod
-    def list_locations_sorted_by_distance(self, name) -> list[str]:
+    def list_observation_wells_with_data_sorted_by_distance(self, name) -> list[str]:
         """List of measurement location names, sorted by distance.
 
         Parameters
@@ -157,8 +159,10 @@ class PostgreSQLDataSource(DataSourceTemplate):
     gmw_gdf
         Returns all unique piezometers as a GeoDataFrame.
     list_locations
+        Returns a list of unique measurement locations.
+    list_observation_wells_with_data
         Returns a list of locations that contain groundwater level dossiers.
-    list_locations_sorted_by_distance
+    list_observation_wells_with_data_sorted_by_distance
         Returns a list of locations sorted by distance from a given location.
     get_timeseries
         Returns a Pandas DataFrame for the measurements for a given location.
@@ -237,10 +241,12 @@ class PostgreSQLDataSource(DataSourceTemplate):
         """
         stmt = (
             select(
+                datamodel.Well.groundwater_monitoring_well_static_id,
                 datamodel.Well.bro_id,
                 datamodel.Well.well_code,
                 datamodel.Well.nitg_code,
                 datamodel.TubeStatic.tube_number,
+                datamodel.WellDynamic.ground_level_position,
                 datamodel.TubeDynamic.tube_top_position,
                 datamodel.TubeDynamic.plain_tube_part_length,
                 datamodel.TubeStatic.screen_length,
@@ -249,13 +255,23 @@ class PostgreSQLDataSource(DataSourceTemplate):
             )
             .join(datamodel.TubeStatic)
             .join(datamodel.TubeDynamic)
+            .join(datamodel.WellDynamic)
             .select_from(datamodel.Well)
         )
-        # tubes = pd.read_sql(stmt, con=engine)
         with self.engine.connect() as con:
             gdf = gpd.GeoDataFrame.from_postgis(stmt, con=con, geom_col="coordinates")
-        # for duplicates only keep the last combination of bro_id and tube_number
-        gdf = gdf[~gdf.duplicated(subset=["bro_id", "tube_number"], keep="last")]
+        # for duplicates only keep the last version of bro_id, nitg_code and tube_number
+        gdf = gdf[
+            ~gdf.duplicated(
+                subset=[
+                    "groundwater_monitoring_well_static_id",
+                    "bro_id",
+                    "nitg_code",
+                    "tube_number",
+                ],
+                keep="last",
+            )
+        ]
 
         # make sure all locations are in EPSG:28992
         msg = "Other coordinate reference systems than RD not supported yet"
@@ -265,23 +281,32 @@ class PostgreSQLDataSource(DataSourceTemplate):
         gdf["screen_top"] = gdf["tube_top_position"] - gdf["plain_tube_part_length"]
         gdf["screen_bot"] = gdf["screen_top"] - gdf["screen_length"]
 
-        gdf["name"] = gdf.loc[:, ["bro_id", "tube_number"]].apply(
-            lambda p: f"{p.iloc[0]}-{p.iloc[1]:03g}", axis=1
+        # use first non-NA of bro_id, nitg_code, groundwater_monitoring_well_static_id as prefix
+        prefix = (
+            gdf["bro_id"]
+            .fillna(gdf["nitg_code"])
+            .fillna(gdf["groundwater_monitoring_well_static_id"].astype("string"))
         )
         gdf["wellcode_name"] = gdf.loc[:, ["well_code", "tube_number"]].apply(
             lambda p: f"{p.iloc[0]}-{p.iloc[1]:03g}", axis=1
         )
+        gdf["name"] = prefix + "-" + gdf["tube_number"].apply("{:03g}".format)
 
-        # set bro_id and tube_number as index
+        # set bro_id|nitg_code|gmw_static_id and tube_number as index
         gdf = gdf.set_index("name")
 
         # add number of measurements
         gdf["metingen"] = 0
-        count = self.count_measurements_per_filter()
-        count.index = (
-            count["bro_id"] + "-" + count["tube_number"].apply("{:03g}".format)
+        count = self.count_measurements_per_tube()
+        prefix = (
+            count["bro_id"]
+            .fillna(count["nitg_code"])
+            .fillna(count["groundwater_monitoring_well_static_id"].astype("string"))
         )
-        gdf.loc[count.index, "metingen"] = count["Metingen"].values
+        count.index = prefix + "-" + count["tube_number"].apply("{:03g}".format)
+        # use shared index in case count contains other locations than gdf
+        shared_index = gdf.index.intersection(count.index)
+        gdf.loc[shared_index, "metingen"] = count.loc[shared_index, "Metingen"].values
 
         # add location data in RD and lat/lon in WGS84
         gdf["x"] = gdf.geometry.x
@@ -302,11 +327,79 @@ class PostgreSQLDataSource(DataSourceTemplate):
 
         return gdf
 
+    def get_tube_numbers(self, wid):
+        stmt = (
+            select(datamodel.TubeStatic.tube_number)
+            .join(
+                datamodel.Well,
+                datamodel.TubeStatic.groundwater_monitoring_well_static_id
+                == datamodel.Well.groundwater_monitoring_well_static_id,
+            )
+            .where(
+                or_(
+                    datamodel.Well.groundwater_monitoring_well_static_id
+                    == self._to_int(wid),
+                    datamodel.Well.bro_id == wid,
+                    datamodel.Well.nitg_code == wid,
+                )
+            )
+            .order_by(datamodel.TubeStatic.tube_number)
+        )
+        with self.engine.connect() as con:
+            names = pd.read_sql(stmt, con=con)
+        names = wid + names.map(lambda s: f"-{s:03g}")
+        return names.squeeze("columns").to_list()
+
     @lru_cache  # noqa: B019
-    def list_locations(self) -> list[str]:
+    def list_locations(self) -> pd.DataFrame:
+        # Get unique locations
+        stmt = (
+            select(
+                datamodel.Well.groundwater_monitoring_well_static_id,
+                datamodel.Well.bro_id,
+                datamodel.Well.nitg_code,
+            )
+            .distinct()
+            .order_by(datamodel.Well.bro_id)
+        )
+        with self.engine.connect() as con:
+            locs = pd.read_sql(stmt, con=con)
+        return locs
+
+    @lru_cache  # noqa: B019
+    def list_observation_wells(self) -> list[str]:
+        """Return a list of observation wells.
+
+        Returns
+        -------
+        List[str]
+            List of measurement location names.
+        """
+        # get all grundwater level dossiers
+        stmt = select(
+            datamodel.Well.groundwater_monitoring_well_static_id,
+            datamodel.Well.bro_id,
+            datamodel.Well.nitg_code,
+            datamodel.TubeStatic.tube_number,
+        ).join(datamodel.TubeStatic)
+
+        with self.engine.connect() as con:
+            obswells = pd.read_sql(stmt, con=con)
+
+        prefix = (
+            obswells["bro_id"]
+            .fillna(obswells["nitg_code"])
+            .fillna(obswells["groundwater_monitoring_well_static_id"].astype("string"))
+        )
+        # get names
+        names = prefix + "-" + obswells["tube_number"].apply("{:03g}".format)
+        return names.tolist()
+
+    @lru_cache  # noqa: B019
+    def list_observation_wells_with_data(self) -> list[str]:
         """Return a list of locations that contain groundwater level dossiers.
 
-        Each location is defined by a tuple of length 2: bro_id and tube_id.
+        Each location is defines by a tuple of length 2: bro_id/well_code and tube_id.
 
         Returns
         -------
@@ -316,7 +409,9 @@ class PostgreSQLDataSource(DataSourceTemplate):
         # get all groundwater level dossiers
         stmt = (
             select(
+                datamodel.Well.groundwater_monitoring_well_static_id,
                 datamodel.Well.bro_id,
+                datamodel.Well.nitg_code,
                 datamodel.TubeStatic.tube_number,
                 func.count(
                     datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id
@@ -325,18 +420,58 @@ class PostgreSQLDataSource(DataSourceTemplate):
             .join(datamodel.TubeStatic)
             .join(datamodel.Well)
             .group_by(
+                datamodel.Well.groundwater_monitoring_well_static_id,
                 datamodel.Well.bro_id,
+                datamodel.Well.nitg_code,
                 datamodel.TubeStatic.tube_number,
             )
             .select_from(datamodel.GroundwaterLevelDossier)
         )
         with self.engine.connect() as con:
-            count = pd.read_sql(stmt, con=con)
-        loc_df = count.loc[count["Number of glds"] > 0][["bro_id", "tube_number"]]
-        locations = [
-            f"{t[0]}-{t[1]:03g}" for t in loc_df.itertuples(index=False, name=None)
+            obswells = pd.read_sql(stmt, con=con)
+        obswells = obswells.loc[
+            obswells["Number of glds"] > 0,
+            [
+                "groundwater_monitoring_well_static_id",
+                "bro_id",
+                "nitg_code",
+                "tube_number",
+            ],
         ]
-        return locations
+
+        prefix = (
+            obswells["bro_id"]
+            .fillna(obswells["nitg_code"])
+            .fillna(obswells["groundwater_monitoring_well_static_id"].astype("string"))
+        )
+        # get names
+        obswells = prefix + "-" + obswells["tube_number"].apply("{:03g}".format)
+        return obswells.tolist()
+
+    def list_observation_wells_with_data_sorted_by_distance(self, name) -> list[str]:
+        """List locations sorted by their distance from a given location.
+
+        Parameters
+        ----------
+        name : str
+            The name of the location from which distances are calculated.
+
+        Returns
+        -------
+        List[str]
+            A list of location names sorted by their distance from the given location.
+        """
+        # only locations with data:
+        gdf = self.gmw_gdf.copy()
+        # gdf = gdf.loc[gdf["metingen"] > 0]
+
+        p = gdf.loc[name, "coordinates"]
+
+        gdf.drop(name, inplace=True)
+        dist = gdf.distance(p)
+        dist.name = "distance"
+        distsorted = gdf.join(dist, how="right").sort_values("distance", ascending=True)
+        return distsorted
 
     def get_wellcode(self, name):
         well_code = self.gmw_gdf.at[name, "well_code"]
@@ -366,29 +501,6 @@ class PostgreSQLDataSource(DataSourceTemplate):
         else:
             return well_code.iloc[0]
 
-    def list_locations_sorted_by_distance(self, name) -> list[str]:
-        """List locations sorted by their distance from a given location.
-
-        Parameters
-        ----------
-        name : str
-            The name of the location from which distances are calculated.
-
-        Returns
-        -------
-        List[str]
-            A list of location names sorted by their distance from the given location.
-        """
-        gdf = self.gmw_gdf.copy()
-
-        p = gdf.loc[name, "coordinates"]
-
-        gdf.drop(name, inplace=True)
-        dist = gdf.distance(p)
-        dist.name = "distance"
-        distsorted = gdf.join(dist, how="right").sort_values("distance", ascending=True)
-        return distsorted
-
     def get_nitg_code(self, i):
         """Return the nitg code for a given index.
 
@@ -407,6 +519,13 @@ class PostgreSQLDataSource(DataSourceTemplate):
             return f" ({nitg})"
         else:
             return ""
+
+    @staticmethod
+    def _to_int(v):
+        try:
+            return int(v)
+        except ValueError:
+            return -1
 
     def get_timeseries(
         self,
@@ -440,6 +559,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         # for getting manual observations using a single ID string.
         if tube_id is None:
             gmw_id, tube_id = gmw_id.split("-")
+
         stmt = (
             select(
                 datamodel.MeasurementTvp.measurement_time,
@@ -460,7 +580,12 @@ class PostgreSQLDataSource(DataSourceTemplate):
             .join(datamodel.TubeStatic)
             .join(datamodel.Well)
             .filter(
-                datamodel.Well.bro_id.in_([gmw_id]),
+                or_(
+                    datamodel.Well.groundwater_monitoring_well_static_id
+                    == self._to_int(gmw_id),
+                    datamodel.Well.bro_id == str(gmw_id),
+                    datamodel.Well.nitg_code == str(gmw_id),
+                ),
                 datamodel.TubeStatic.tube_number.in_([tube_id]),
                 datamodel.ObservationMetadata.observation_type == observation_type,
             )
@@ -507,7 +632,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         else:
             return df
 
-    def count_measurements_per_filter(self) -> pd.Series | pd.DataFrame:
+    def count_measurements_per_tube(self) -> pd.Series:
         """Count the number of measurements per filter.
 
         Returns
@@ -517,7 +642,9 @@ class PostgreSQLDataSource(DataSourceTemplate):
         """
         stmt = (
             select(
+                datamodel.Well.groundwater_monitoring_well_static_id,
                 datamodel.Well.bro_id,
+                datamodel.Well.nitg_code,
                 datamodel.TubeStatic.tube_number,
                 func.count(
                     func.distinct(datamodel.MeasurementTvp.measurement_time)
@@ -528,8 +655,13 @@ class PostgreSQLDataSource(DataSourceTemplate):
             .join(datamodel.GroundwaterLevelDossier)
             .join(datamodel.TubeStatic)
             .join(datamodel.Well)
-            .where(datamodel.ObservationMetadata.observation_type == "reguliereMeting")
-            .group_by(datamodel.Well.bro_id, datamodel.TubeStatic.tube_number)
+            .group_by(
+                datamodel.Well.groundwater_monitoring_well_static_id,
+                datamodel.Well.bro_id,
+                datamodel.Well.nitg_code,
+                datamodel.TubeStatic.tube_number,
+            )
+            .filter(datamodel.ObservationMetadata.observation_type == "reguliereMeting")
         )
         with self.engine.connect() as con:
             count = pd.read_sql(stmt, con=con)
@@ -672,7 +804,7 @@ class HydropandasDataSource(DataSourceTemplate):
         return gdf
 
     @lru_cache  # noqa: B019
-    def list_locations(self) -> list[tuple[str, int]]:
+    def list_observation_wells_with_data(self) -> list[tuple[str, int]]:
         """Return a list of locations that contain groundwater level dossiers.
 
         Each location is defines by a tuple of length 2: bro-id and tube_id.
@@ -690,7 +822,7 @@ class HydropandasDataSource(DataSourceTemplate):
             locations.append(index)
         return locations
 
-    def list_locations_sorted_by_distance(self, name):
+    def list_observation_wells_with_data_sorted_by_distance(self, name):
         gdf = self.gmw_gdf.copy()
         p = gdf.loc[name, "geometry"]
         gdf.drop(name, inplace=True)

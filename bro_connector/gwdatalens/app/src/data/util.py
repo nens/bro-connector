@@ -48,7 +48,7 @@ def get_model_sim_pi(
 
     Notes
     -----
-    If `savedir` is provided and `ml`  is not None, the prediction interval is loaded
+    If `savedir` is provided and `ml` is not None, the prediction interval is loaded
     from a file. Otherwise, it is computed using the model.
     """
     if savedir is not None and ml is not None:

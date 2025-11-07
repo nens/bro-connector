@@ -9,7 +9,7 @@ BACKGROUND_CALLBACKS = false # false is recommended at this moment
 USE_MAPBOX = false           # set to True to use Mapbox for plotting, requires access token
 
 [pastastore]
-name = "zeeland_bro"            # name of the pastastore database
-path = "./gwdatalens/pastasdb/" # path to pastastore database
+name = "zeeland_bro"            # name of the pastas database
+path = "./gwdatalens/pastasdb/" # path to pastas model database
 connector = "pas"               # database connector
 update_knmi = true              # update knmi data in pastas database on startup
