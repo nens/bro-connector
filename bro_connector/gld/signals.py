@@ -3,6 +3,7 @@ import datetime
 import reversion
 from django.core.cache import cache
 from django.db.models.signals import (
+    pre_delete,
     post_delete,
     post_save,
     pre_save,
@@ -107,12 +108,13 @@ def on_save_gld_addition_log(sender, instance: gld_addition_log, created, **kwar
                 "Updated up_to_date_in_bro as delivery was succesful."
             )
 
-
 @receiver(post_delete, sender=MeasurementTvp)
-def on_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
+def post_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     metadata = instance.measurement_point_metadata
+    
     if metadata:
-        metadata.delete()
+        # This avoids calling metadata.delete(), so no recursion
+        MeasurementPointMetadata.objects.filter(pk=metadata.pk).delete()
 
 
 @receiver(pre_save, sender=Observation)

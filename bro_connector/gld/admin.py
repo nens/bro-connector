@@ -111,7 +111,6 @@ class MeasurementTvpInline(admin.TabularInline):
     extra = 0
     max_num = 0
 
-
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_tube",
@@ -233,7 +232,7 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
 
 
 class MeasurementTvpAdmin(admin.ModelAdmin):
-    list_max_show_all = 1000  # Prevents loading all records
+    list_max_show_all = 10  # Prevents loading all records
 
     list_display = ("__str__",)
     ordering = ("-measurement_time",)
@@ -294,7 +293,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_id_bro",
     ]
 
-    # inlines = (MeasurementTvpInline,)
+    inlines = (MeasurementTvpInline,)
 
     actions = ["close_observation", "change_up_to_date_status"]
 

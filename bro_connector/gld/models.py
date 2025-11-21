@@ -243,7 +243,7 @@ class GroundwaterLevelDossier(BaseModel):
     nr_measurements.fget.short_description = "Aantal metingen"
 
     def __str__(self):
-        return f"GLD_{self.groundwater_monitoring_tube.__str__()}"
+        return f"GLD_{self.groundwater_monitoring_tube.__str__()}_{self.quality_regime}"
 
     class Meta:
         managed = True
@@ -663,7 +663,7 @@ class MeasurementTvp(BaseModel):
     )
     measurement_point_metadata = models.ForeignKey(
         "MeasurementPointMetadata",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="Meting metadata",
