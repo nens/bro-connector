@@ -26,9 +26,6 @@ class DjangoTableToDict:
 
     def update_static_well(self, well) -> dict:
         static_well_data = {
-            "registrationObjectType": well.registration_object_type,
-            "broId": well.bro_id,
-            "requestReference": well.request_reference,
             "deliveryAccountableParty": well.delivery_accountable_party,
             "deliveryResponsibleParty": well.delivery_responsible_party,
             "qualityRegime": well.quality_regime,
@@ -46,6 +43,9 @@ class DjangoTableToDict:
             "offset": well.well_offset,
             "verticalDatum": well.vertical_datum,
         }
+        if well.bro_id is not None:
+            static_well_data.update({"broId": well.bro_id})
+
         return static_well_data
 
     def update_static_tube(self, tube: models.GroundwaterMonitoringTubeStatic) -> dict:
@@ -86,7 +86,7 @@ class DjangoTableToDict:
 
         if tube.number_of_geo_ohm_cables > 0:
             geo_ohm_cable_number = 0
-            for geo_ohm_cable in tube.geo_ohm_cables.all():
+            for geo_ohm_cable in tube.geo_ohm_cable.all():
                 geo_ohm_cable_data = self.update_static_geo_ohm_cable(geo_ohm_cable)
 
                 static_tube_data["geoOhmCables"][geo_ohm_cable_number] = (
@@ -127,7 +127,6 @@ class DjangoTableToDict:
         self, dynamic_well: models.GroundwaterMonitoringWellDynamic
     ) -> dict:
         dynamic_well_data = {
-            "numberOfStandpipes": dynamic_well.number_of_standpipes,
             "groundLevelStable": dynamic_well.ground_level_stable,
             "owner": dynamic_well.owner,
             "wellHeadProtector": dynamic_well.well_head_protector,

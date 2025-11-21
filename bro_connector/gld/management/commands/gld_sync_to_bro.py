@@ -322,16 +322,7 @@ def set_delivery_accountable_party(
 
 class GldSyncHandler:
     def __init__(self):
-        self.demo = self._is_demo()
-
-        # Currently not yet dynamically implemented
-        self.monitoringnetworks = None
-        self.demo = self._is_demo()
-
-    def _is_demo(self):
-        if ENV == "production":
-            return False
-        return True
+        self.is_demo = ENV == "production"
 
     def _set_bro_info(self, well: GroundwaterMonitoringWellStatic) -> None:
         self.bro_info = form_bro_info(well)
@@ -349,7 +340,7 @@ class GldSyncHandler:
         internal_id = well.internal_id
         quality_regime = well.quality_regime
         delivery_accountable_party = set_delivery_accountable_party(
-            well, self._is_demo()
+            well, self.is_demo
         )
         print("Delivery accountable party: ", delivery_accountable_party)
         try:
@@ -422,7 +413,7 @@ class GldSyncHandler:
 
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=self.bro_info, demo=self.demo, api="v2"
+                payload, bro_info=self.bro_info, demo=self.is_demo, api="v2"
             )
         except Exception as e:
             validation_status = validation_info["status"]
@@ -469,7 +460,7 @@ class GldSyncHandler:
                 token=self.bro_info["token"],
                 api="v2",
                 project_id=self.bro_info["projectnummer"],
-                demo=self.demo,
+                demo=self.is_demo,
             )
 
             if upload_info == "Error":
@@ -525,7 +516,7 @@ class GldSyncHandler:
                 token=self.bro_info["token"],
                 api="v2",
                 project_id=self.bro_info["projectnummer"],
-                demo=self.demo,
+                demo=self.is_demo,
             )
 
             if (
@@ -905,7 +896,7 @@ class GldSyncHandler:
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=self.bro_info, demo=self.demo, api="v2"
+                payload, bro_info=self.bro_info, demo=self.is_demo, api="v2"
             )
             validation_status = validation_info["status"]
 
@@ -953,7 +944,7 @@ class GldSyncHandler:
             upload_info = brx.upload_sourcedocs_from_dict(
                 request,
                 token=self.bro_info["token"],
-                demo=self.demo,
+                demo=self.is_demo,
                 api="v2",
                 project_id=self.bro_info["projectnummer"],
             )
@@ -996,7 +987,7 @@ class GldSyncHandler:
             upload_info = brx.check_delivery_status(
                 gld_addition.delivery_id,
                 token=self.bro_info["token"],
-                demo=self.demo,
+                demo=self.is_demo,
                 api="v2",
                 project_id=self.bro_info["projectnummer"],
             )

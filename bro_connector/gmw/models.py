@@ -1043,7 +1043,6 @@ class gmw_registration_log(BaseModel):
     process_status = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Verwerkingsstatus"
     )
-
     # Could possibly be removed later
     object_id_accountable_party = models.CharField(
         max_length=254,

@@ -13,12 +13,13 @@ from main.management.tasks.django_tools_bro import (
     getAllIntermediateEvents,
     getConstruction,
 )
-from main.settings.base import ENV
+from main.settings.base import ENV, BASE_DIR
 
 logger = logging.getLogger(__name__)
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
+REGISTRATIONS_DIR = f"{BASE_DIR}/gmw/registrations/"
 
 def _is_demo():
     if ENV == "production":
@@ -184,49 +185,40 @@ class GetSourceDocData:
     def handle_individual_tube(
         self,
         dynamic_tube: models.GroundwaterMonitoringTubeDynamic,
-        tube_number: int,
         sourcedoctype: str,
-    ) -> None:
+    ) -> dict:
         # Static
         static_tube_data = self.get_data.update_static_tube(
             dynamic_tube.groundwater_monitoring_tube_static
         )
-        self.datafile["monitoringTubes"][tube_number] = static_tube_data
 
         # Dynamic
         dynamic_tube_data = self.get_data.update_dynamic_tube(
             dynamic_tube, sourcedoctype
         )
-        self.datafile["monitoringTubes"][tube_number].update(dynamic_tube_data)
+        static_tube_data.update(dynamic_tube_data)
 
         # material used
         material_used = self.create_material_used_dict(
             tube_static=dynamic_tube.groundwater_monitoring_tube_static,
             tube_dynamic=dynamic_tube,
         )
-        self.datafile["monitoringTubes"][tube_number].update(material_used)
+        static_tube_data.update(material_used)
+        return static_tube_data
+
 
     def handle_individual_geo_ohm_cable(
-        self, geo_ohm_cable: models.GeoOhmCable, tube_number, geo_ohm_number
-    ) -> None:
+        self, geo_ohm_cable: models.GeoOhmCable
+    ) -> dict:
         # Static
-        static_tube_data = self.get_data.update_static_geo_ohm_cable(geo_ohm_cable)
-        self.datafile["monitoringTubes"][tube_number]["geoOhmCables"][
-            geo_ohm_number
-        ] = static_tube_data
+        return self.get_data.update_static_geo_ohm_cable(geo_ohm_cable)
+        
 
     def handle_individual_electrode(
         self,
         electrode_static: models.Electrode,
-        tube_number,
-        geo_ohm_number,
-        electrode_number,
-    ):
-        # Static
-        static_tube_data = self.get_data.update_static_electrode(electrode_static)
-        self.datafile["monitoringTubes"][tube_number]["geoOhmCables"][geo_ohm_number][
-            "electrodes"
-        ][electrode_number] = static_tube_data
+    ) -> dict:
+        return self.get_data.update_static_electrode(electrode_static)
 
     def handle_dynamic_well(
         self, well_dynamic: models.GroundwaterMonitoringWellDynamic
@@ -273,51 +265,41 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_Construction_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
         delivered_location = self.create_delivered_location_dict(well)
         self.datafile.update(delivered_location)
 
-        self.datafile["monitoringTubes"] = {}
+        self.datafile["monitoringTubes"] = []
         for tube in well.tube.all():
-            tube_dynamic = (
-                models.GroundwaterMonitoringTubeDynamic.objects.filter(
-                    groundwater_monitoring_tube_static=tube
-                )
-                .order_by("groundwater_monitoring_tube_dynamic_id")
-                .first()
-            )
-
-            self.handle_individual_tube(
+            tube_dynamic = tube.state.order_by("date_from").first()
+            tube_data = self.handle_individual_tube(
                 dynamic_tube=tube_dynamic,
-                tube_number=tube.tube_number,
                 sourcedoctype="construction",
             )
-
-            self.datafile["monitoringTubes"][tube.tube_number]["geoOhmCables"] = {}
+            geo_ohm_cables = []
             for geo_ohm_cable in tube.geo_ohm_cable.all():
-                self.handle_individual_geo_ohm_cable(
+                geo_ohm_cable_data = self.handle_individual_geo_ohm_cable(
                     geo_ohm_cable=geo_ohm_cable,
-                    tube_number=tube.tube_number,
-                    geo_ohm_number=geo_ohm_cable.cable_number,
                 )
-                self.datafile["monitoringTubes"][tube.tube_number]["geoOhmCables"][
-                    geo_ohm_cable.cable_number
-                ]["electrodes"] = {}
-
+                electrodes = []
                 for electrode in geo_ohm_cable.electrode.all():
-                    self.handle_individual_electrode(
+                    electrode_data = self.handle_individual_electrode(
                         electrode_static=electrode,
-                        tube_number=tube.tube_number,
-                        geo_ohm_number=geo_ohm_cable.cable_number,
-                        electrode_number=electrode.electrode_number,
                     )
+                    electrodes.append(electrode_data)
+                geo_ohm_cable_data["electrodes"] = electrodes
+                geo_ohm_cables.append(geo_ohm_cable_data)
+            tube_data["geoOhmCables"] = geo_ohm_cables
+            self.datafile["monitoringTubes"].append(tube_data)
 
-        self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
+        initial_well_state = well.state.order_by("date_from").first()
+        self.handle_dynamic_well(initial_well_state)
         delivered_vertical_position = self.create_delivered_vertical_position_dict(
-            well_static=event.groundwater_monitoring_well_static,
-            well_dynamic=event.groundwater_monitoring_well_dynamic,
+            well_static=well,
+            well_dynamic=initial_well_state,
         )
 
         self.datafile.update(delivered_vertical_position)
@@ -333,6 +315,7 @@ class GetSourceDocData:
         well = event.groundwater_monitoring_well_static
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_Shortening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -348,21 +331,20 @@ class GetSourceDocData:
         self.datafile.update({"numberOfTubesLengthened": 0})
 
         # Get tube information
-        self.datafile["monitoringTubes"] = {}
+        self.datafile["monitoringTubes"] = []
         for tube_state in event.groundwater_monitoring_tube_dynamic.all():
             tube_static: models.GroundwaterMonitoringTubeStatic = (
                 tube_state.groundwater_monitoring_tube_static
             )
-            self.handle_individual_tube(
-                tube_state, tube_static.tube_number, "shortening"
+            tube_data = self.handle_individual_tube(
+                tube_state, "shortening"
             )
             material_used = self.create_material_used_dict(
                 tube_static=tube_static,
                 tube_dynamic=tube_state,
             )
-            self.datafile["monitoringTubes"][tube_static.tube_number].update(
-                material_used
-            )
+            tube_data.update(material_used)
+            self.datafile["monitoringTubes"].append(tube_data)
 
     def lengthening(self, event: models.Event) -> None:
         """
@@ -372,6 +354,7 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_Lengthening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -391,16 +374,15 @@ class GetSourceDocData:
             tube_static: models.GroundwaterMonitoringTubeStatic = (
                 tube_state.groundwater_monitoring_tube_static
             )
-            self.handle_individual_tube(
-                tube_state, tube_static.tube_number, "lengthening"
+            tube_data = self.handle_individual_tube(
+                tube_state, "lengthening"
             )
             material_used = self.create_material_used_dict(
                 tube_static=tube_static,
                 tube_dynamic=tube_state,
             )
-            self.datafile["monitoringTubes"][tube_static.tube_number].update(
-                material_used
-            )
+            tube_data.update(material_used)
+            self.datafile["monitoringTubes"].append(tube_data)
 
     def positions_measuring_well(self, event: models.Event) -> None:
         self.handle_dynamic_well(event.groundwater_monitoring_well_dynamic)
@@ -423,12 +405,12 @@ class GetSourceDocData:
         )
 
         try:
-            self.datafile["monitoringTubes"] = {}
-            self.handle_individual_tube(
+            self.datafile["monitoringTubes"] = []
+            tube_data = self.handle_individual_tube(
                 dynamic_tube=tube_event.groundwater_monitoring_well_tube_dynamic,
-                tube_number=0,
                 sourcedoctype="positions_measuring",
             )
+            self.datafile["monitoringTubes"].append(tube_data)
         except Exception as e:
             logger.exception(e)
             self.datafile.update({"numberOfMonitoringTubes": 0})
@@ -440,10 +422,9 @@ class GetSourceDocData:
     ) -> None:
         well = tube_state.groundwater_monitoring_tube_static.groundwater_monitoring_well_static
 
-        self.datafile["monitoringTubes"] = {}
-        self.handle_individual_tube(
+        self.datafile["monitoringTubes"] = []
+        tube_data = self.handle_individual_tube(
             tube_state,
-            tube_state.groundwater_monitoring_tube_static.tube_number,
             "positions_measuring",
         )
 
@@ -452,7 +433,7 @@ class GetSourceDocData:
                 well_static=well,
                 well_dynamic=well_state,
             )
-
+            self.datafile["monitoringTubes"].append(tube_data)
             self.datafile.update(delivered_vertical_position)
         except Exception as e:
             logger.exception(e)
@@ -462,13 +443,13 @@ class GetSourceDocData:
         """
         Retrieve all the data from the Django database to make it available for positionsmeasuring generation.
         """
-        self.datafile.update({"numberOfMonitoringTubes": 1})
         well = models.GroundwaterMonitoringWellStatic.objects.get(
             bro_id=str(event.groundwater_monitoring_well_static)
         )
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_Measuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -478,10 +459,14 @@ class GetSourceDocData:
         if event.groundwater_monitoring_well_dynamic is not None:
             self.positions_measuring_well(event)
 
+        monitoring_tubes = []
         for tube in event.groundwater_monitoring_tube_dynamic.all():
-            self.positions_measuring_tube(
+            tube_data = self.positions_measuring_tube(
                 tube, event.groundwater_monitoring_well_dynamic
             )
+            monitoring_tubes.append(tube_data)
+
+        self.datafile.update({"monitoringTubes": monitoring_tubes})
 
     def well_head_protector(self, event: models.Event) -> None:
         """
@@ -491,6 +476,7 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_WellHeadProtector_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -511,6 +497,7 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_Positions_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -531,6 +518,7 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_GroundLevelMeasuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -554,6 +542,7 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
+        static_well_data.update({"requestReference": f"{well.internal_id}_GroundLevel_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -605,7 +594,6 @@ def set_delivery_accountable_party(well: models.GroundwaterMonitoringWellStatic)
 
 def create_sourcedocs(
     event: models.Event,
-    registrations_dir,
     source_doc_type: str,
     # Might want to add a variable for with or without history
 ):
@@ -651,7 +639,7 @@ def create_sourcedocs(
         filename = request_reference + ".xml"
         gmw_registration_request.generate()
         gmw_registration_request.write_request(
-            output_dir=registrations_dir, filename=filename
+            output_dir=REGISTRATIONS_DIR, filename=filename
         )
 
         process_status = f"succesfully_generated_{source_doc_type}_request"
@@ -685,16 +673,14 @@ def create_sourcedocs(
 
 def create_construction_sourcedocs(
     event: models.Event,
-    registrations_dir,
 ):
     """
     Try to create registration sourcedocuments for a well/tube/quality regime
     Registration requests are saved to .xml file in registrations folder
     """
-    demo = _is_demo()
     well = event.groundwater_monitoring_well_static
 
-    delivery_accountable_party = set_delivery_accountable_party(well, demo)
+    delivery_accountable_party = set_delivery_accountable_party(well)
 
     # Retrieve general static information of the well
     get_srcdoc_data = GetSourceDocData()
@@ -709,64 +695,49 @@ def create_construction_sourcedocs(
     event_date = get_event_date(event)
     srcdocdata.update({"eventDate": event_date})
 
-    # How many records are already registered -> change the reference
-    records_in_register = records_in_registrations(srcdocdata["broId"])
+    logger.info(srcdocdata["requestReference"])
+    logger.info(str(delivery_accountable_party))
+    logger.info(str(well.quality_regime))
+    logger.info(srcdocdata)
 
-    if srcdocdata["broId"] is None:
-        request_reference = f"{srcdocdata['id']}_Construction_{records_in_register}"
-    else:
-        request_reference = f"{srcdocdata['broId']}_Construction_{records_in_register}"
-    # Check what kind of request is required and make as followed.
-    # Registrate with history
-    try:
-        construction_request = brx.gmw_registration_request(
-            srcdoc="GMW_Construction",
-            requestReference=request_reference,
-            deliveryAccountableParty=str(delivery_accountable_party),
-            qualityRegime=well.quality_regime,
-            srcdocdata=srcdocdata,
-        )
+    construction_request = brx.gmw_registration_request(
+        srcdoc="GMW_Construction",
+        requestReference=srcdocdata['requestReference'],
+        deliveryAccountableParty=str(delivery_accountable_party),
+        qualityRegime=well.quality_regime,
+        srcdocdata=srcdocdata,
+    )
+    logger.info(f"formatted construction sourcedocument for event {event.change_id}")
 
-        filename = request_reference + ".xml"
-        construction_request.generate()
-        construction_request.write_request(
-            output_dir=registrations_dir, filename=filename
-        )
+    filename = srcdocdata['requestReference'] + ".xml"
 
-        process_status = "succesfully_generated_Construction_request"
-        models.gmw_registration_log.objects.update_or_create(
-            event_id=event.change_id,
-            defaults=dict(
-                quality_regime=well.quality_regime,
-                bro_id=srcdocdata["broId"],
-                comments="succesfully generated Construction request",
-                date_modified=datetime.datetime.now(),
-                validation_status=None,
-                process_status=process_status,
-                file=filename,
-                object_id_accountable_party=srcdocdata["objectIdAccountableParty"],
-            ),
-        )
+    construction_request.generate()
+    logger.info(f"Generated {filename}")
+    logger.info(f"Wrote construction sourcedocument {os.path.join(REGISTRATIONS_DIR, filename)}")
+    construction_request.write_request(
+        output_dir=REGISTRATIONS_DIR, filename=filename
+    )
+    logger.info(f"Wrote construction sourcedocument {os.path.join(REGISTRATIONS_DIR, filename)}")
+    process_status = "succesfully_generated_Construction_request"
+    models.gmw_registration_log.objects.update_or_create(
+        event_id=event.change_id,
+        defaults=dict(
+            quality_regime=well.quality_regime,
+            bro_id=srcdocdata.get("broId", None),
+            comments="succesfully generated Construction request",
+            date_modified=datetime.datetime.now(),
+            validation_status=None,
+            process_status=process_status,
+            file=filename,
+            object_id_accountable_party=srcdocdata["objectIdAccountableParty"],
+        ),
+    )
 
-    except Exception as e:
-        models.gmw_registration_log.objects.update_or_create(
-            event_id=event.change_id,
-            defaults=dict(
-                bro_id=srcdocdata["broId"],
-                comments=f"Failed to create construction source document: {e}",
-                date_modified=datetime.datetime.now(),
-                process_status="failed_to_generate_source_documents",
-                quality_regime=well.quality_regime,
-            ),
-        )
-
-
-def handle_not_valid_or_error(registration, validation_info):
+def handle_not_valid_or_error(registration: models.gmw_registration_log, validation_info):
     defaults = dict(
         validation_status=validation_info["status"],
         process_status="source_document_validation_succesful",
     )
-
     try:
         validation_errors = validation_info["errors"]
         comments = f"Validated registration document, found errors: {validation_errors}"
@@ -779,27 +750,37 @@ def handle_not_valid_or_error(registration, validation_info):
             defaults.update({"delivery_status": "geleverd", "delivery_id": "onbekend"})
 
         models.gmw_registration_log.objects.update_or_create(
-            id=registration, defaults=defaults
+            id=registration.id, defaults=defaults
         )
     except Exception as e:
         comments = f"No errors found, details: {e}"
         defaults.update({"comments": comments})
         models.gmw_registration_log.objects.update_or_create(
-            id=registration, defaults=defaults
+            id=registration.id, defaults=defaults
         )
 
 
 def validate_gmw_registration_request(
-    registration: models.gmw_registration_log, registrations_dir, bro_info
+    registration: models.gmw_registration_log, bro_info
 ):
     """
     Validate generated registration sourcedocuments
     """
     demo = _is_demo()
     file = registration.file
-    source_doc_file = os.path.join(registrations_dir, file)
+    source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
     payload = open(source_doc_file)
-    print(bro_info)
+    print(bro_info, demo)
+    def met_projectnummer(bro_info):
+        return bro_info.get("projectnummer") not in (None, "")
+    
+    proj_str = (
+        "" if not met_projectnummer(bro_info) else f"{bro_info['projectnummer']}/"
+    )
+    url_prefix = "demo" if demo else "www"
+    upload_url = (
+        f"https://{url_prefix}.bronhouderportaal-bro.nl/api/v2/{proj_str}validatie"
+    )
     validation_info = brx.validate_sourcedoc(payload, bro_info, demo=demo, api="v2")
     validation_status = validation_info["status"]
 
@@ -814,7 +795,10 @@ def validate_gmw_registration_request(
                 process_status="source_document_validation_succesful",
             ),
         )
-
+    elif str(validation_status) == "401":
+        registration.comments = f"Niet geautoriseerd om te leveren op {bro_info['projectnummer']} - {validation_info}"
+        registration.process_status="source_document_validation_succesful"
+        registration.save(update_fields=["comments", "process_status"])
     else:
         handle_not_valid_or_error(
             registration=registration, validation_info=validation_info
@@ -822,7 +806,7 @@ def validate_gmw_registration_request(
 
 
 def deliver_sourcedocuments(
-    registration: models.gmw_registration_log, registrations_dir, bro_info
+    registration: models.gmw_registration_log, bro_info
 ):
     """
     Deliver generated registration sourcedoc to the BRO
@@ -839,7 +823,7 @@ def deliver_sourcedocuments(
 
     try:
         file = registration.file
-        source_doc_file = os.path.join(registrations_dir, file)
+        source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
         payload = open(source_doc_file)
         request = {file: payload}
 
@@ -907,7 +891,7 @@ def update_event_based_on_levering(registration: models.gmw_registration_log) ->
 
 
 def check_delivery_status_levering(
-    registration: models.gmw_registration_log, registrations_dir, bro_info
+    registration: models.gmw_registration_log, bro_info
 ):
     """
     Check the status of a registration delivery
@@ -962,7 +946,7 @@ def check_delivery_status_levering(
 
             # Remove the sourcedocument file if delivery is approved
             file = registration.file
-            source_doc_file = os.path.join(registrations_dir, file)
+            source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
             os.remove(source_doc_file)
 
         else:
@@ -997,9 +981,6 @@ def delete_existing_failed_registrations(event: models.Event):
 
 
 class EventsHandler:
-    def __init__(self, registrations_dir):
-        self.registrations_dir = registrations_dir
-
     def create_type_sourcedoc(self, event: models.Event):
         """
         Possible event_types:
@@ -1015,7 +996,6 @@ class EventsHandler:
         delete_existing_failed_registrations(event)
         create_sourcedocs(
             event=event,
-            registrations_dir=self.registrations_dir,
             source_doc_type=EVENTNAME2TYPE[event.event_name],
         )
 
@@ -1023,11 +1003,10 @@ class EventsHandler:
         delete_existing_failed_registrations(event)
         create_construction_sourcedocs(
             event=event,
-            registrations_dir=self.registrations_dir,
         )
 
 
-def gmw_create_sourcedocs_wells(registrations_dir):
+def gmw_create_sourcedocs_wells():
     """
     Run gmw registrations for all monitoring wells in the database
     Registrations has to be run multiple times to get all tubes registered
@@ -1035,7 +1014,7 @@ def gmw_create_sourcedocs_wells(registrations_dir):
     """
 
     # Pak de construction events, filter welke events al in de BRO staan
-    events_handler = EventsHandler(registrations_dir)
+    events_handler = EventsHandler()
     for construction in getConstruction():
         events_handler.create_construction(event=construction)
 
@@ -1058,7 +1037,7 @@ def delivered_but_not_approved(registration):
         return False
 
 
-def gmw_check_existing_registrations(registrations_dir):
+def gmw_check_existing_registrations():
     """
     This function loops over all exists registrations in the database
     Depending on the status one of the following actions is carried out:
@@ -1101,7 +1080,7 @@ def gmw_check_existing_registrations(registrations_dir):
 
         if delivered_but_not_approved(registration):
             # The registration has been delivered, but not yet approved
-            check_delivery_status_levering(registration, registrations_dir, bro_info)
+            check_delivery_status_levering(registration, REGISTRATIONS_DIR, bro_info)
             continue
 
         if (
@@ -1110,7 +1089,6 @@ def gmw_check_existing_registrations(registrations_dir):
         ):
             validate_gmw_registration_request(
                 registration,
-                registrations_dir,
                 bro_info,
             )
 
@@ -1126,7 +1104,6 @@ def gmw_check_existing_registrations(registrations_dir):
             # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
             validate_gmw_registration_request(
                 registration,
-                registrations_dir,
                 bro_info,
             )
 
@@ -1137,7 +1114,6 @@ def gmw_check_existing_registrations(registrations_dir):
         ):
             deliver_sourcedocuments(
                 registration,
-                registrations_dir,
                 bro_info,
             )
 
@@ -1150,7 +1126,6 @@ def gmw_check_existing_registrations(registrations_dir):
             # The registration has been delivered, but not yet approved
             check_delivery_status_levering(
                 registration,
-                registrations_dir,
                 bro_info,
             )
 
@@ -1163,7 +1138,6 @@ def gmw_check_existing_registrations(registrations_dir):
             else:
                 deliver_sourcedocuments(
                     registration,
-                    registrations_dir,
                     bro_info,
                 )
 

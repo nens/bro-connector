@@ -3,12 +3,14 @@
 
 import os
 import sys
+import logging
 
 from main.settings.base import ENV
 
 
 def main():
     """Run administrative tasks."""
+    logging.basicConfig(level=logging.INFO)
     if ENV == "production":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.production")
     elif ENV == "staging":

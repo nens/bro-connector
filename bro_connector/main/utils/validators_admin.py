@@ -42,10 +42,10 @@ def get_ahn_from_lizard(obj) -> float:
     except requests.exceptions.HTTPError:
         return -9999
 
-    print(res.json(), settings.LIZARD_SETTINGS["headers"])
-    print(res.json()["results"][0]["value"])
-
-    return res.json()["results"][0]["value"]
+    try:
+        result = res.json()["results"][0]["value"]
+    except (KeyError, IndexError):
+        return -9999
 
 
 #######################
