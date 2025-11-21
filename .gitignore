@@ -2,7 +2,6 @@
 **/.cache/
 **/*.xml
 **/localsecret.py
-*.docx
 **/*.dot
 bro_connector/gld_aanlevering/migrations
 bro_connector/bro_connector_gld/migrations
