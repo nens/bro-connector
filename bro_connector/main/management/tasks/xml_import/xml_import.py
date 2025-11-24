@@ -61,7 +61,7 @@ def import_xml(file: str, path: str) -> tuple:
             ).exists()
             or gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
                 bro_id=bro_id
-            ).exists()
+            ).exists() if bro_id is not None else False
         )
 
         if exists:

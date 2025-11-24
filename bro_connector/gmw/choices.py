@@ -176,7 +176,7 @@ DELIVERYCONTEXT = (
     ("NBW", "NBW"),
     ("NR", "NR"),
     ("OGW", "OGW"),
-    ("OG", "OW"),
+    ("OW", "OW"),
     ("publiekeTaak", "publiekeTaak"),
     ("WW", "WW"),
     ("archiefoverdracht", "archiefoverdracht"),
@@ -352,11 +352,11 @@ DELIVERY_TYPE_CHOICES = (
 )
 
 KRW_CHOICES = (
-    ("NLGWSC0001", "NLGWSC0001"),
-    ("NLGWSC0002", "NLGWSC0002"),
-    ("NLGWSC0003", "NLGWSC0003"),
-    ("NLGWSC0004", "NLGWSC0004"),
-    ("NLGWSC0005", "NLGWSC0005"),
+    ("NLGWSC0001", "Zoet, Duin"),
+    ("NLGWSC0002", "Zoet, Dekzand"),
+    ("NLGWSC0003", "Zoet, Kreek"),
+    ("NLGWSC0004", "Zout, Ondiepe Zand"),
+    ("NLGWSC0005", "Zout, Diepe Zand"),
 )
 
 BOOLEAN_CHOICES = (

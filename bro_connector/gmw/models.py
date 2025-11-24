@@ -69,6 +69,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        default=1,
         verbose_name="Project",
     )
     delivery_accountable_party = models.ForeignKey(
@@ -76,6 +77,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        default=1,
         related_name="delivery_accountable_party",
         verbose_name="Bronhouder",
     )
@@ -84,6 +86,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        default=1,
         related_name="delivery_responsible_party",
         verbose_name="Dataleverancier",
     )
@@ -100,6 +103,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="OW",
         verbose_name="Kader aanlevering",
     )
     construction_standard = models.CharField(
@@ -114,6 +118,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="stand",
         verbose_name="Initiële functie",
     )
     nitg_code = models.CharField(
@@ -141,13 +146,14 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         verbose_name="Standaard coordinaten",
     )
     reference_system = models.CharField(
-        max_length=256, blank=True, null=True, verbose_name="Referentie stelsel"
+        max_length=256, blank=True, null=True, verbose_name="Referentie stelsel", default="RD"
     )
     horizontal_positioning_method = models.CharField(
         choices=HORIZONTALPOSITIONINGMETHOD,
         max_length=200,
         blank=True,
         null=True,
+        default="GPS200tot1000cm",
         verbose_name="Methode horizontale locatiebepaling",
     )
     local_vertical_reference_point = models.CharField(
@@ -414,6 +420,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="RTKGPS20tot100cm",
         verbose_name="Methode positiebepaling maaiveld",
     )
     ground_level_stable = models.CharField(
@@ -421,6 +428,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=254,
         null=True,
         blank=True,
+        default="nee",
         verbose_name="Maaiveld stabiliteit",
     )
     well_stability = models.CharField(
@@ -428,19 +436,21 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="instabiel", # Ik ga er vanuit dat dit niet standaard verankert is.
         verbose_name="Putstabiliteit",
     )
     owner = models.IntegerField(
-        blank=True, null=True, verbose_name="Eigenaar"
+        blank=True, null=True, verbose_name="Eigenaar", default=20168636
     )  # Should actually also be an organisation
     maintenance_responsible_party = models.IntegerField(
-        blank=True, null=True, verbose_name="Onderhoud verantwoordelijke partij"
+        blank=True, null=True, verbose_name="Onderhoud verantwoordelijke partij", default=20168636
     )
     well_head_protector = models.CharField(
         choices=WELLHEADPROTECTOR,
         max_length=200,
         blank=True,
         null=True,
+        default="kokerDeelsMetaal",
         verbose_name="Beschermconstructie",
     )
     # CUSTOMIZATION FIELDS
@@ -449,6 +459,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         choices=WELLHEADPROTECTOR_SUBTYPES,
         null=True,
         blank=True,
+        default="DN200",
         verbose_name="Beschermconstructie subtype",
     )
     foundation = models.CharField(
@@ -456,6 +467,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         choices=FOUNDATIONS,
         null=True,
         blank=True,
+        default="geen",
         verbose_name="Fundering",
     )
     collision_protection = models.CharField(
@@ -463,13 +475,14 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         choices=COLLISION_PROTECTION_TYPES,
         null=True,
         blank=True,
+        default="geen",
         verbose_name="Aanrijbescherming",
     )
     lock = models.CharField(
-        max_length=254, choices=LOCKS, null=True, blank=True, verbose_name="Slot"
+        max_length=254, choices=LOCKS, null=True, blank=True, verbose_name="Slot", default="sleutel"
     )
     key = models.CharField(
-        max_length=254, blank=True, null=True, verbose_name="Sleutel"
+        max_length=254, blank=True, null=True, verbose_name="Sleutel", default="ABUS Titalium sleutel te vinden bij Provincie Zeeland Meetnetbeheerder"
     )
     place = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Plaats"
@@ -481,7 +494,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=254, null=True, blank=True, verbose_name="Toegankelijkheid"
     )
     label = models.CharField(
-        max_length=254, choices=LABELS, null=True, blank=True, verbose_name="Label"
+        max_length=254, choices=LABELS, null=True, blank=True, verbose_name="Label", default="aluplaatje"
     )
 
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
@@ -570,13 +583,14 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         verbose_name="Buisnummer",
     )
     tube_type = models.CharField(
-        choices=TUBETYPE, max_length=200, blank=True, null=True, verbose_name="Buistype"
+        choices=TUBETYPE, max_length=200, blank=True, null=True, verbose_name="Buistype", default="standaardbuis"
     )
     artesian_well_cap_present = models.CharField(
         choices=BOOLEAN_CHOICES,
         max_length=200,
         blank=True,
         null=True,
+        default="nee",
         verbose_name="Voorzien van drukdop",
     )
     sediment_sump_present = models.CharField(
@@ -584,6 +598,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="nee",
         verbose_name="Voorzien van zandvang",
     )
     tube_material = models.CharField(
@@ -591,10 +606,11 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="peHighDensity",
         verbose_name="Buismateriaal",
     )
     screen_length = models.FloatField(
-        blank=True, null=True, verbose_name="Filterlengte"
+        blank=True, null=True, verbose_name="Filterlengte", default=1.0
     )
     sock_material = models.CharField(
         choices=SOCKMATERIAL,
@@ -602,6 +618,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         blank=True,
         null=True,
         verbose_name="Kousmateriaal",
+        default="nylon"
     )
     sediment_sump_length = models.FloatField(
         blank=True,
@@ -692,6 +709,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="nee",
         verbose_name="Variabele diameter",
     )
     tube_status = models.CharField(
@@ -699,6 +717,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="gebruiksklaar",
         verbose_name="Buisstatus",
     )
     tube_top_position = models.FloatField(
@@ -728,6 +747,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="RTKGPS20tot100cm",
         verbose_name="Methode locatiebepaling bovenkantbuis",
     )
     tube_packing_material = models.CharField(
@@ -735,10 +755,11 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
+        default="bentonietFiltergrind",
         verbose_name="Aanvul materiaal buis",
     )
     glue = models.CharField(
-        choices=GLUE, max_length=200, blank=True, null=True, verbose_name="Lijm"
+        choices=GLUE, max_length=200, blank=True, null=True, verbose_name="Lijm", default="geen"
     )
     plain_tube_part_length = models.FloatField(
         blank=True, null=True, verbose_name="Lengte stijgbuis"
