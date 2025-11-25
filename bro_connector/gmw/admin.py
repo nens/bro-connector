@@ -412,6 +412,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "complete_bro",
                     "quality_regime",
                     "construction_date",
+                    "removal_date",
                     "project",
                     "delivery_context",
                     "construction_standard",

@@ -178,6 +178,9 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     construction_date = models.DateField(
         blank=True, null=True, verbose_name="Inrichtingsdatum"
     )
+    removal_date = models.DateField(
+        blank=True, null=True, verbose_name="Verwijderingsdatum"
+    )
     aquifer_layer = models.CharField(
         max_length=30,
         blank=True,
@@ -376,6 +379,13 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     def save(self, *args, **kwargs):
         # Call the parent class's save method
         super().save(*args, **kwargs)
+        if self.removal_date is not None and self.event.filter(event_name="opruimen").count() == 0:
+            Event.objects.create(
+                event_name="opruimen",
+                groundwater_monitoring_well_static=self,
+                event_date=self.removal_date,
+            )
+            
 
         if self.well_code is None and self.nitg_code is not None:
             print("Generate wellcode.")

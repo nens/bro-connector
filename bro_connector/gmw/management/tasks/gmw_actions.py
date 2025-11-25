@@ -165,87 +165,15 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
     for construction in construction_events:
         events_handler.create_construction(event=construction)
 
-    electrodeStatus_events = GetEvents.electrodeStatus(well)
-    for electrode_status in electrodeStatus_events:
-        events_handler.create_type_sourcedoc(
-            event=electrode_status, event_type="ElectrodeStatus"
-        )
+    for event in well.event.exclude(event_name="constructie").filter(
+        delivered_to_bro=False
+    ):
+        events_handler.create_type_sourcedoc(event=event)
 
-    groundLevel_events = GetEvents.groundLevel(well)
-    for ground_level in groundLevel_events:
-        events_handler.create_type_sourcedoc(
-            event=ground_level, event_type="GroundLevel"
-        )
 
-    groundLevelMeasuring_events = GetEvents.groundLevelMeasuring(well)
-    for ground_level_measuring in groundLevelMeasuring_events:
-        events_handler.create_type_sourcedoc(
-            event=ground_level_measuring, event_type="GroundLevelMeasuring"
-        )
-
-    insertion_events = GetEvents.insertion(well)
-    for insertion in insertion_events:
-        events_handler.create_type_sourcedoc(event=insertion, event_type="Insertion")
-
-    lengthening_events = GetEvents.lengthening(well)
-    for lengthening in lengthening_events:
-        events_handler.create_type_sourcedoc(
-            event=lengthening, event_type="Lengthening"
-        )
-
-    maintainer_events = GetEvents.maintainer(well)
-    for maintainer in maintainer_events:
-        events_handler.create_type_sourcedoc(event=maintainer, event_type="Maintainer")
-
-    owner_events = GetEvents.owner(well)
-    for owner in owner_events:
-        events_handler.create_type_sourcedoc(events=owner, event_type="Owner")
-
-    positionsMeasuring_events = GetEvents.positionsMeasuring(well)
-    for positions_measuring in positionsMeasuring_events:
-        events_handler.create_type_sourcedoc(
-            event=positions_measuring, event_type="PositionsMeasuring"
-        )
-
-    positions_events = GetEvents.positions(well)
-    for position in positions_events:
-        events_handler.create_type_sourcedoc(event=position, event_type="Positions")
-
-    shift_events = GetEvents.shift(well)
-    for shift in shift_events:
-        events_handler.create_type_sourcedoc(events=shift, event_type="Shift")
-
-    shortening_events = GetEvents.shortening(well)
-    for shortening in shortening_events:
-        events_handler.create_type_sourcedoc(event=shortening, event_type="Shortening")
-
-    tubeStatus_events = GetEvents.tubeStatus(well)
-    for tube_status in tubeStatus_events:
-        events_handler.create_type_sourcedoc(event=tube_status, event_type="TubeStatus")
-
-    wellHeadProtector_events = GetEvents.wellHeadProtector(well)
-    for well_head_protector in wellHeadProtector_events:
-        events_handler.create_type_sourcedoc(
-            event=well_head_protector, event_type="WellHeadProtector"
-        )
-
-    events = (
-        construction_events
-        | electrodeStatus_events
-        | groundLevelMeasuring_events
-        | groundLevel_events
-        | insertion_events
-        | lengthening_events
-        | maintainer_events
-        | owner_events
-        | positionsMeasuring_events
-        | positions_events
-        | shift_events
-        | shortening_events
-        | tubeStatus_events
-        | wellHeadProtector_events
-    )
-    for event in events:
+    for event in well.event.filter(
+        delivered_to_bro=False
+    ):
         logger.info(f"Checking registration for event: {event}")
         registration = gmw_registration_log.objects.get(
             event_id=event.change_id,

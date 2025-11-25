@@ -15,6 +15,7 @@ EVENTNAME2TYPE = {
     "buisstatusVeranderd": "TubeStatus",
     "buisdeelIngeplaatst": "Insertion",
     "maaiveldVerlegd": "Shift",
+    "opruimen": "Removal",
 }
 
 

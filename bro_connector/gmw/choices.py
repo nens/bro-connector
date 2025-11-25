@@ -384,6 +384,7 @@ EVENTNAME = (
     ("nieuweInmetingMaaiveld", "nieuweInmetingMaaiveld"),
     ("nieuweInmetingPosities", "nieuweInmetingPosities"),
     ("onderhouderVeranderd", "onderhouderVeranderd"),
+    ("opruimen", "opruimen"),
     ("verkenningenAchterafRegistreren", "verkenningenAchterafRegistreren"),
 )
 

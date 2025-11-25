@@ -253,6 +253,12 @@ class GetSourceDocData:
         if source_doc_type == "GroundLevel":
             self.ground_level(event)
 
+        if source_doc_type == "Removal":
+            well = event.groundwater_monitoring_well_static
+            self.datafile.update({"requestReference": f"{well.internal_id}_Removal_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+            self.datafile.update({"broId": well.bro_id})
+            self.datafile.update({"wellRemovalDate": get_event_date(event)})
+
     def construction(self, event: models.Event) -> None:
         """
         Retrieve all the data from the Django database to make it available for construction generation.
@@ -578,10 +584,10 @@ def validate_source_doc_type(source_doc_type):
         "GMW_TubeStatus",
         "GMW_Insertion",
         "GMW_Shift",
-        "GMW_Removal",
         "GMW_GroundLevelMeasuring",
         "GMW_PositionsMeasuring",
         "GMW_ConstructionWithHistory",
+        "GMW_Removal",
     ]
 
     if full_source_doc_type not in allowed_srcdocs:
@@ -988,7 +994,7 @@ class EventsHandler:
         GroundLevel, Owner, Shortening, Positions,
         ElectrodeStatus, Maintainer, TubeStatus,
         Insertion, Shift, Removal, GroundLevelMeasuring,
-        PositionsMeasuring, ConstructionWithHistory'
+        PositionsMeasuring, ConstructionWithHistory', Removal
 
         Construction has its own function.
 
