@@ -238,11 +238,11 @@ class InitializeData:
                 bro_id=self.gmw_dict.get("broId", None),
                 internal_id=self.gmw_dict.get("objectIdAccountableParty", None),
                 delivery_accountable_party=self.get_accountable_party(),
-                construction_standard=self.gmw_dict.get("constructionStandard", None),
+                construction_standard=self.gmw_dict.get("constructionStandard", "onbekend"),
                 coordinates=self.get_coordinates(),
-                delivery_context=self.gmw_dict.get("deliveryContext", None),
+                delivery_context=self.gmw_dict.get("deliveryContext", "onbekend"),
                 horizontal_positioning_method=self.gmw_dict.get(
-                    "horizontalPositioningMethod", None
+                    "horizontalPositioningMethod", "onbekend"
                 ),
                 initial_function=self.gmw_dict.get("initialFunction", None),
                 nitg_code=self.gmw_dict.get("nitgCode", None),
@@ -251,10 +251,10 @@ class InitializeData:
                 reference_system=self.gmw_dict.get("CRS", "rd"),
                 well_offset=self.gmw_dict.get("offset", None),
                 local_vertical_reference_point=self.gmw_dict.get(
-                    "localVerticalReferencePoint", None
+                    "localVerticalReferencePoint", "NAP"
                 ),
                 well_code=self.gmw_dict.get("wellCode", None),
-                vertical_datum=self.gmw_dict.get("verticalDatum", None),
+                vertical_datum=self.gmw_dict.get("verticalDatum", "NAP"),
                 last_horizontal_positioning_date=construction_date,
                 construction_coordinates=self.get_coordinates(),
                 deliver_gmw_to_bro=True,
@@ -278,18 +278,25 @@ class InitializeData:
         )
 
     def well_dynamic(self):
+        well_stability = self.gmw_dict.get("wellStability", None)
+        ground_stability = self.gmw_dict.get("groundLevelStability", "onbekend")
+        if well_stability is None and ground_stability == "ja":
+            well_stability = "stabielNAP"
+        elif well_stability is None:
+            well_stability = "onbekend"
+        
         self.meetpuntgeschiedenis_instance = (
             gmw_models.GroundwaterMonitoringWellDynamic.objects.create(
                 groundwater_monitoring_well_static=self.meetpunt_instance,
                 date_from=self.meetpunt_instance.last_horizontal_positioning_date,
                 owner=self.gmw_dict.get("owner", None),
-                ground_level_stable=self.gmw_dict.get("groundLevelStable", None),
-                well_stability=self.gmw_dict.get("wellStability", None),
+                ground_level_stable=ground_stability,
+                well_stability=well_stability ,
                 ground_level_position=self.gmw_dict.get("groundLevelPosition", None),
                 ground_level_positioning_method=self.gmw_dict.get(
-                    "groundLevelPositioningMethod", None
+                    "groundLevelPositioningMethod", "onbekend"
                 ),
-                well_head_protector=self.gmw_dict.get("wellHeadProtector", None),
+                well_head_protector=self.gmw_dict.get("wellHeadProtector", "onbekend"),
             )
         )
 
@@ -297,7 +304,6 @@ class InitializeData:
         self.meetpuntgeschiedenis_instance.save()
 
     def filter(self):
-        print(self.gmw_dict)
         zandvang_aanwezig = get_sediment_sump_present(self.gmw_dict, self.prefix)
         arthesisch_water_aanwezig = get_artesian_well_cap_present(
             self.gmw_dict, self.prefix
@@ -311,10 +317,10 @@ class InitializeData:
                 self.prefix + "sedimentSumpLength", None
             ),  # not in XML --> might be because sediment sump not present, if else statement.
             sediment_sump_present=zandvang_aanwezig,
-            sock_material=self.gmw_dict.get(self.prefix + "sockMaterial", None),
-            tube_material=self.gmw_dict.get(self.prefix + "tubeMaterial", None),
-            tube_number=int(self.gmw_dict.get(self.prefix + "tubeNumber", None)),
-            tube_type=self.gmw_dict.get(self.prefix + "tubeType", None),
+            sock_material=self.gmw_dict.get(self.prefix + "sockMaterial", "onbekend"),
+            tube_material=self.gmw_dict.get(self.prefix + "tubeMaterial", "onbekend"),
+            tube_number=int(self.gmw_dict.get(self.prefix + "tubeNumber", 1)),
+            tube_type=self.gmw_dict.get(self.prefix + "tubeType", "standaardbuis"),
         )
         self.filter_instance.save()
 
@@ -324,9 +330,9 @@ class InitializeData:
                 groundwater_monitoring_tube_static=self.filter_instance,
                 date_from=self.meetpunt_instance.last_horizontal_positioning_date,
                 tube_packing_material=self.gmw_dict.get(
-                    self.prefix + "tubePackingMaterial", None
+                    self.prefix + "tubePackingMaterial", "onbekend"
                 ),
-                glue=self.gmw_dict.get(self.prefix + "glue", None),
+                glue=self.gmw_dict.get(self.prefix + "glue", "onbekend"),
                 inserted_part_diameter=self.gmw_dict.get(
                     self.prefix + "insertedPartDiameter", None
                 ),
@@ -339,7 +345,7 @@ class InitializeData:
                 plain_tube_part_length=self.gmw_dict.get(
                     self.prefix + "plainTubePartLength", None
                 ),
-                tube_status=self.gmw_dict.get(self.prefix + "tubeStatus", None),
+                tube_status=self.gmw_dict.get(self.prefix + "tubeStatus", "gebruiksklaar"),
                 tube_top_diameter=get_float_item_or_none(
                     self.gmw_dict.get(self.prefix + "tubeTopDiameter", None)
                 ),
@@ -347,10 +353,10 @@ class InitializeData:
                     self.prefix + "tubeTopPosition", None
                 ),
                 tube_top_positioning_method=self.gmw_dict.get(
-                    self.prefix + "tubeTopPositioningMethod", None
+                    self.prefix + "tubeTopPositioningMethod", "onbekend"
                 ),
                 variable_diameter=self.gmw_dict.get(
-                    self.prefix + "variableDiameter", None
+                    self.prefix + "variableDiameter", "nee"
                 ),
             )
         )
