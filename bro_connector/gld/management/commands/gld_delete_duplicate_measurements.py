@@ -36,7 +36,6 @@ class Command(BaseCommand):
                 ids_to_delete.extend(ids[1:])  # keep the first, delete the rest
 
         print(ids_to_delete)
-        stop
 
         if not ids_to_delete:
             self.stdout.write(self.style.SUCCESS("✅ No duplicates found."))
