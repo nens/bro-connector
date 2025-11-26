@@ -128,12 +128,8 @@ def get_sediment_sump_present(dict: dict, prefix: str) -> bool | None:
         ignore = punctuation + whitespace
         aanwezig = aanwezig.translate(str.maketrans("", "", ignore))
 
-    if aanwezig == "ja":
-        return "ja"
-
-    elif aanwezig == "nee":
-        return "nee"
-
+    if aanwezig in ["ja", "nee"]:
+        return aanwezig
     else:
         return "onbekend"
 
@@ -142,20 +138,18 @@ def get_artesian_well_cap_present(dict: dict, prefix: str) -> bool | None:
     artesian = str(
         dict.get(prefix + "artesianWellCapPresent", None),
     )
-
+    
     if artesian is not None:
         # Remove all unnecessary chars
         ignore = punctuation + whitespace
         artesian = artesian.translate(str.maketrans("", "", ignore))
+        # Clean whitespace and lowercase
+        artesian = artesian.lower().strip()
 
-    if artesian == "ja":
-        return True
-
-    elif artesian == "nee":
-        return False
-
+    if artesian in ["ja", "nee"]:
+        return artesian
     else:
-        return None
+        return "onbekend"
 
 
 def get_float_item_or_none(item):
@@ -303,6 +297,7 @@ class InitializeData:
         self.meetpuntgeschiedenis_instance.save()
 
     def filter(self):
+        print(self.gmw_dict)
         zandvang_aanwezig = get_sediment_sump_present(self.gmw_dict, self.prefix)
         arthesisch_water_aanwezig = get_artesian_well_cap_present(
             self.gmw_dict, self.prefix
