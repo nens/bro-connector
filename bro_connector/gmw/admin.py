@@ -1,3 +1,4 @@
+import datetime
 import logging
 from urllib.parse import urlencode
 
@@ -9,9 +10,6 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
 from django.urls import reverse
 from django.utils.html import format_html
-from urllib.parse import urlencode
-import datetime
-from . import models as gmw_models
 from gld.models import GroundwaterLevelDossier
 from gmn.models import MeasuringPoint
 from gmw.custom_filters import (
@@ -48,7 +46,10 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
-def create_or_delete_tubes(obj: gmw_models.GroundwaterMonitoringWellStatic, nr_of_monitoring_tubes: int) -> None:
+
+def create_or_delete_tubes(
+    obj: gmw_models.GroundwaterMonitoringWellStatic, nr_of_monitoring_tubes: int
+) -> None:
     current_tube_numbers = obj.tube.values_list("tube_number", flat=True)
     current_tube_count = len(current_tube_numbers)
     if nr_of_monitoring_tubes > current_tube_count:
@@ -67,7 +68,6 @@ def create_or_delete_tubes(obj: gmw_models.GroundwaterMonitoringWellStatic, nr_o
     #     tubes_to_delete = obj.tube.all().order_by("-groundwater_monitoring_tube_static_id")[:current_tube_count - nr_of_monitoring_tubes]
     #     for tube in tubes_to_delete:
     #         tube.delete()
-
 
 
 class EventsInline(admin.TabularInline):
@@ -361,7 +361,14 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellStaticForm
     change_form_template = r"admin\change_form_well.html"
 
-    search_fields = ("groundwater_monitoring_well_static_id", "well_code", "bro_id", "internal_id", "nitg_code", "olga_code")
+    search_fields = (
+        "groundwater_monitoring_well_static_id",
+        "well_code",
+        "bro_id",
+        "internal_id",
+        "nitg_code",
+        "olga_code",
+    )
 
     list_display = (
         "groundwater_monitoring_well_static_id",
@@ -515,13 +522,15 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
 
         # Werk de waarden van de afgeleide attributen bij in het model
         obj.coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
-        logger.info(f"X: {x}, Y: {y}, CX: '{cx}', CY: '{cy}', construction_coordinates: {obj.construction_coordinates}")
-        logger.info((x == "" and y == "" and obj.construction_coordinates is None))
+        logger.info(
+            f"X: {x}, Y: {y}, CX: '{cx}', CY: '{cy}', construction_coordinates: {obj.construction_coordinates}"
+        )
+        logger.info(x == "" and y == "" and obj.construction_coordinates is None)
         logger.info(x is not None and y is not None)
-        if (x is not None and y is not None) and (cx == "" and cy == "" and obj.construction_coordinates is None):
-            obj.construction_coordinates = GEOSGeometry(
-                f"POINT ({x} {y})", srid=28992
-            )
+        if (x is not None and y is not None) and (
+            cx == "" and cy == "" and obj.construction_coordinates is None
+        ):
+            obj.construction_coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
 
         if cx != "" and cy != "":
             obj.construction_coordinates = GEOSGeometry(
@@ -533,7 +542,11 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
             groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
         ).first()
         if originele_put is not None:
-            if (originele_put.coordinates.x != x or originele_put.coordinates.y != y) and originele_put.last_horizontal_positioning_date == obj.last_horizontal_positioning_date:
+            if (
+                (originele_put.coordinates.x != x or originele_put.coordinates.y != y)
+                and originele_put.last_horizontal_positioning_date
+                == obj.last_horizontal_positioning_date
+            ):
                 message = "Waarde van 'Laatste horizontale positioneringsdatum' moet worden aangepast bij wijzigen van coördinaten. Datum van vandaag gehanteerd."
                 self.message_user(request, message, level="WARNING")
                 obj.last_horizontal_positioning_date = datetime.datetime.now().date()
@@ -777,10 +790,11 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     search_fields = (
         "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
+        "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__internal_id",
+        "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code",
         "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id",
         "groundwater_monitoring_tube_static__tube_number",
         "date_from",
-        "groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code",
     )
     list_display = (
         "groundwater_monitoring_tube_dynamic_id",
@@ -970,7 +984,7 @@ class EventAdmin(admin.ModelAdmin):
                 )
             else:
                 valid_ws, report_ws = False, "No dynamic well\n"
-                
+
             valid_ws, report_ws = validate_well_static(
                 obj.groundwater_monitoring_well_static
             )

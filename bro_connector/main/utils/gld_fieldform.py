@@ -149,9 +149,13 @@ class FieldFormGenerator:
         self,
     ) -> gmn_models.GroundwaterMonitoringNet | None:
         if self.ftp_path == "/GLD_HMN":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(name="terreinbeheerders").first()
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
+                name="terreinbeheerders"
+            ).first()
         elif self.ftp_path == "/GLD_PMG":
-            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(name="Meetrondes Kantonniers").first()
+            gmn = gmn_models.GroundwaterMonitoringNet.objects.filter(
+                name="Meetrondes Kantonniers"
+            ).first()
         else:
             raise ValueError(f"Unknown Path: {self.ftp_path}.")
 
@@ -304,13 +308,15 @@ class FieldFormGenerator:
         # Store the file locally
         if self.ftp_path == ls.ftp_gld_pmg_path:
             write_location_file(
-                data=data, filename=f"../fieldforms/gld/pmg/locations_{date_string}.json"
+                data=data,
+                filename=f"../fieldforms/gld/pmg/locations_{date_string}.json",
             )
         elif self.ftp_path == ls.ftp_gld_hmn_path:
             write_location_file(
-                data=data, filename=f"../fieldforms/gld/hmn/locations_{date_string}.json"
+                data=data,
+                filename=f"../fieldforms/gld/hmn/locations_{date_string}.json",
             )
-            
+
         write_location_file(
             data=data, filename=f"../fieldforms/gld/locations_{date_string}.json"
         )

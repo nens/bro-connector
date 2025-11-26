@@ -13,13 +13,14 @@ from main.management.tasks.django_tools_bro import (
     getAllIntermediateEvents,
     getConstruction,
 )
-from main.settings.base import ENV, BASE_DIR
+from main.settings.base import BASE_DIR, ENV
 
 logger = logging.getLogger(__name__)
 
 failed_update_strings = ["failed_once", "failed_twice", "failed_thrice"]
 
 REGISTRATIONS_DIR = f"{BASE_DIR}/gmw/registrations/"
+
 
 def _is_demo():
     if ENV == "production":
@@ -206,13 +207,11 @@ class GetSourceDocData:
         static_tube_data.update(material_used)
         return static_tube_data
 
-
     def handle_individual_geo_ohm_cable(
         self, geo_ohm_cable: models.GeoOhmCable
     ) -> dict:
         # Static
         return self.get_data.update_static_geo_ohm_cable(geo_ohm_cable)
-        
 
     def handle_individual_electrode(
         self,
@@ -255,7 +254,11 @@ class GetSourceDocData:
 
         if source_doc_type == "Removal":
             well = event.groundwater_monitoring_well_static
-            self.datafile.update({"requestReference": f"{well.internal_id}_Removal_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+            self.datafile.update(
+                {
+                    "requestReference": f"{well.internal_id}_Removal_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                }
+            )
             self.datafile.update({"broId": well.bro_id})
             self.datafile.update({"wellRemovalDate": get_event_date(event)})
 
@@ -271,7 +274,11 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_Construction_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_Construction_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -321,7 +328,11 @@ class GetSourceDocData:
         well = event.groundwater_monitoring_well_static
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_Shortening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_Shortening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -342,9 +353,7 @@ class GetSourceDocData:
             tube_static: models.GroundwaterMonitoringTubeStatic = (
                 tube_state.groundwater_monitoring_tube_static
             )
-            tube_data = self.handle_individual_tube(
-                tube_state, "shortening"
-            )
+            tube_data = self.handle_individual_tube(tube_state, "shortening")
             material_used = self.create_material_used_dict(
                 tube_static=tube_static,
                 tube_dynamic=tube_state,
@@ -360,7 +369,11 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_Lengthening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_Lengthening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -380,9 +393,7 @@ class GetSourceDocData:
             tube_static: models.GroundwaterMonitoringTubeStatic = (
                 tube_state.groundwater_monitoring_tube_static
             )
-            tube_data = self.handle_individual_tube(
-                tube_state, "lengthening"
-            )
+            tube_data = self.handle_individual_tube(tube_state, "lengthening")
             material_used = self.create_material_used_dict(
                 tube_static=tube_static,
                 tube_dynamic=tube_state,
@@ -455,7 +466,11 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_Measuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_Measuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -482,7 +497,11 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_WellHeadProtector_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_WellHeadProtector_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -503,7 +522,11 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_Positions_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_Positions_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -524,7 +547,11 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_GroundLevelMeasuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_GroundLevelMeasuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -548,7 +575,11 @@ class GetSourceDocData:
 
         # Get all static well data
         static_well_data = self.get_data.update_static_well(well)
-        static_well_data.update({"requestReference": f"{well.internal_id}_GroundLevel_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"})
+        static_well_data.update(
+            {
+                "requestReference": f"{well.internal_id}_GroundLevel_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            }
+        )
         self.datafile.update(static_well_data)
 
         # Get delivered vertical position
@@ -708,22 +739,24 @@ def create_construction_sourcedocs(
 
     construction_request = brx.gmw_registration_request(
         srcdoc="GMW_Construction",
-        requestReference=srcdocdata['requestReference'],
+        requestReference=srcdocdata["requestReference"],
         deliveryAccountableParty=str(delivery_accountable_party),
         qualityRegime=well.quality_regime,
         srcdocdata=srcdocdata,
     )
     logger.info(f"formatted construction sourcedocument for event {event.change_id}")
 
-    filename = srcdocdata['requestReference'] + ".xml"
+    filename = srcdocdata["requestReference"] + ".xml"
 
     construction_request.generate()
     logger.info(f"Generated {filename}")
-    logger.info(f"Wrote construction sourcedocument {os.path.join(REGISTRATIONS_DIR, filename)}")
-    construction_request.write_request(
-        output_dir=REGISTRATIONS_DIR, filename=filename
+    logger.info(
+        f"Wrote construction sourcedocument {os.path.join(REGISTRATIONS_DIR, filename)}"
     )
-    logger.info(f"Wrote construction sourcedocument {os.path.join(REGISTRATIONS_DIR, filename)}")
+    construction_request.write_request(output_dir=REGISTRATIONS_DIR, filename=filename)
+    logger.info(
+        f"Wrote construction sourcedocument {os.path.join(REGISTRATIONS_DIR, filename)}"
+    )
     process_status = "succesfully_generated_Construction_request"
     models.gmw_registration_log.objects.update_or_create(
         event_id=event.change_id,
@@ -739,7 +772,10 @@ def create_construction_sourcedocs(
         ),
     )
 
-def handle_not_valid_or_error(registration: models.gmw_registration_log, validation_info):
+
+def handle_not_valid_or_error(
+    registration: models.gmw_registration_log, validation_info
+):
     defaults = dict(
         validation_status=validation_info["status"],
         process_status="source_document_validation_succesful",
@@ -777,9 +813,10 @@ def validate_gmw_registration_request(
     source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
     payload = open(source_doc_file)
     print(bro_info, demo)
+
     def met_projectnummer(bro_info):
         return bro_info.get("projectnummer") not in (None, "")
-    
+
     proj_str = (
         "" if not met_projectnummer(bro_info) else f"{bro_info['projectnummer']}/"
     )
@@ -787,7 +824,11 @@ def validate_gmw_registration_request(
     upload_url = (
         f"https://{url_prefix}.bronhouderportaal-bro.nl/api/v2/{proj_str}validatie"
     )
-    validation_info = brx.validate_sourcedoc(payload, bro_info, demo=demo, api="v2")
+    validation_info = brx.validate_sourcedoc(
+        payload,
+        bro_info,
+        demo=demo,
+    )
     validation_status = validation_info["status"]
 
     if validation_info["status"] == "VALIDE":
@@ -803,7 +844,7 @@ def validate_gmw_registration_request(
         )
     elif str(validation_status) == "401":
         registration.comments = f"Niet geautoriseerd om te leveren op {bro_info['projectnummer']} - {validation_info}"
-        registration.process_status="source_document_validation_succesful"
+        registration.process_status = "source_document_validation_succesful"
         registration.save(update_fields=["comments", "process_status"])
     else:
         handle_not_valid_or_error(
@@ -811,9 +852,7 @@ def validate_gmw_registration_request(
         )
 
 
-def deliver_sourcedocuments(
-    registration: models.gmw_registration_log, bro_info
-):
+def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info):
     """
     Deliver generated registration sourcedoc to the BRO
     """
@@ -839,7 +878,6 @@ def deliver_sourcedocuments(
             password=bro_info["token"]["pass"],
             project_id=bro_info["projectnummer"],
             demo=demo,
-            api="v2",
         )
 
         if upload_info == "Error":
@@ -896,9 +934,7 @@ def update_event_based_on_levering(registration: models.gmw_registration_log) ->
     event.save(update_fields=["delivered_to_bro"])
 
 
-def check_delivery_status_levering(
-    registration: models.gmw_registration_log, bro_info
-):
+def check_delivery_status_levering(registration: models.gmw_registration_log, bro_info):
     """
     Check the status of a registration delivery
     Logs the status of the delivery in the database
@@ -927,7 +963,6 @@ def check_delivery_status_levering(
             delivery_id,
             token=bro_info["token"],
             demo=demo,
-            api="v2",
             project_id=bro_info["projectnummer"],
         )
 

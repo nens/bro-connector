@@ -29,14 +29,14 @@ from .bbox_handler import DataRetrieverBBOX
 logger = logging.getLogger(__name__)
 
 
-def run(
+def run(  # noqa C901
     kvk_number: str = None,
     bro_type: str = "gmw",
     handler: str = "shape",
     shp_file: str = None,
     delete: bool = False,
 ) -> dict:
-    if shp_file == None:
+    if shp_file is None:
         shp_file = settings.POLYGON_SHAPEFILE
     shp = shp_file
     bbox_settings = BBOX_EXTRACTOR(shp=shp, use_bbox=True).bbox_settings
@@ -371,10 +371,8 @@ class InitializeData:
                     },
                 )
             )
-        except:
-            print(
-                "Raised a MultipleObjectsReturned exception. Now taking the dynamic tube with the highest primary key."
-            )
+        except Exception as e:
+            print(f"{e}. Now taking the dynamic tube with the highest primary key.")
             self.gmtd = (
                 GroundwaterMonitoringTubeDynamic.objects.filter(
                     groundwater_monitoring_tube_static=self.gmts,

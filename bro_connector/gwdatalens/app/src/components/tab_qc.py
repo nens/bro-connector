@@ -1,4 +1,3 @@
-
 import dash_bootstrap_components as dbc
 import i18n
 from dash import dcc, html

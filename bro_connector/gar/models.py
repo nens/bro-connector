@@ -12,9 +12,13 @@ class Analyses(models.Model):
     analysis_id = models.AutoField(primary_key=True)
     analysis_process_id = models.IntegerField(blank=True, null=True)
     parameter_id = models.IntegerField(blank=True, null=True)
-    analysis_measurement_value = models.DecimalField(max_digits=65535, decimal_places=3, blank=True, null=True)
+    analysis_measurement_value = models.DecimalField(
+        max_digits=65535, decimal_places=3, blank=True, null=True
+    )
     limit_symbol = models.CharField(max_length=1, blank=True, null=True)
-    reporting_limit = models.DecimalField(max_digits=65535, decimal_places=3, blank=True, null=True)
+    reporting_limit = models.DecimalField(
+        max_digits=65535, decimal_places=3, blank=True, null=True
+    )
     quality_control_status_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
@@ -59,7 +63,9 @@ class FieldMeasurements(models.Model):
     field_measurement_id = models.AutoField(primary_key=True)
     field_sample_id = models.IntegerField(blank=True, null=True)
     parameter_id = models.IntegerField(blank=True, null=True)
-    field_measurement_value = models.DecimalField(max_digits=65535, decimal_places=3, blank=True, null=True)
+    field_measurement_value = models.DecimalField(
+        max_digits=65535, decimal_places=3, blank=True, null=True
+    )
     quality_control_status = models.IntegerField(blank=True, null=True)
 
     class Meta:

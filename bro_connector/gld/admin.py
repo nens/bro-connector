@@ -111,6 +111,7 @@ class MeasurementTvpInline(admin.TabularInline):
     extra = 0
     max_num = 0
 
+
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
         "groundwater_monitoring_tube",

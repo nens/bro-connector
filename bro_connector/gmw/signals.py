@@ -1,16 +1,16 @@
 import datetime
 
+import reversion
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-import reversion
 
 from .models import (
+    Event,
     GroundwaterMonitoringTubeDynamic,
     GroundwaterMonitoringTubeStatic,
     GroundwaterMonitoringWellDynamic,
     GroundwaterMonitoringWellStatic,
-    Event,
     gmw_registration_log,
 )
 
@@ -30,7 +30,9 @@ def clear_map_cache(sender, **kwargs):
 
 
 @receiver(post_save, sender=GroundwaterMonitoringWellStatic)
-def on_save_groundwater_monitoring_well_static(sender, instance:GroundwaterMonitoringWellStatic, created, **kwargs):
+def on_save_groundwater_monitoring_well_static(
+    sender, instance: GroundwaterMonitoringWellStatic, created, **kwargs
+):
     if created and not instance.state.exists():
         GroundwaterMonitoringWellDynamic.objects.create(
             groundwater_monitoring_well_static=instance,
@@ -45,6 +47,7 @@ def on_save_groundwater_monitoring_well_static(sender, instance:GroundwaterMonit
                 "event_date": instance.construction_date,
             },
         )
+
 
 @receiver(post_delete, sender=GroundwaterMonitoringWellStatic)
 def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):

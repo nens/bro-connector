@@ -319,7 +319,7 @@ class FieldFormGenerator:
 
         return groups
 
-    def generate(self):
+    def generate(self):  # noqa C901
         data = {}
         configs = frd_models.MeasurementConfiguration.objects.all().distinct(
             "configuration_name"

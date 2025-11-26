@@ -146,7 +146,11 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         verbose_name="Standaard coordinaten",
     )
     reference_system = models.CharField(
-        max_length=256, blank=True, null=True, verbose_name="Referentie stelsel", default="RD"
+        max_length=256,
+        blank=True,
+        null=True,
+        verbose_name="Referentie stelsel",
+        default="RD",
     )
     horizontal_positioning_method = models.CharField(
         choices=HORIZONTALPOSITIONINGMETHOD,
@@ -379,13 +383,15 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     def save(self, *args, **kwargs):
         # Call the parent class's save method
         super().save(*args, **kwargs)
-        if self.removal_date is not None and self.event.filter(event_name="opruimen").count() == 0:
+        if (
+            self.removal_date is not None
+            and self.event.filter(event_name="opruimen").count() == 0
+        ):
             Event.objects.create(
                 event_name="opruimen",
                 groundwater_monitoring_well_static=self,
                 event_date=self.removal_date,
             )
-            
 
         if self.well_code is None and self.nitg_code is not None:
             print("Generate wellcode.")
@@ -446,14 +452,17 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
-        default="instabiel", # Ik ga er vanuit dat dit niet standaard verankert is.
+        default="instabiel",  # Ik ga er vanuit dat dit niet standaard verankert is.
         verbose_name="Putstabiliteit",
     )
     owner = models.IntegerField(
         blank=True, null=True, verbose_name="Eigenaar", default=20168636
     )  # Should actually also be an organisation
     maintenance_responsible_party = models.IntegerField(
-        blank=True, null=True, verbose_name="Onderhoud verantwoordelijke partij", default=20168636
+        blank=True,
+        null=True,
+        verbose_name="Onderhoud verantwoordelijke partij",
+        default=20168636,
     )
     well_head_protector = models.CharField(
         choices=WELLHEADPROTECTOR,
@@ -489,10 +498,19 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         verbose_name="Aanrijbescherming",
     )
     lock = models.CharField(
-        max_length=254, choices=LOCKS, null=True, blank=True, verbose_name="Slot", default="sleutel"
+        max_length=254,
+        choices=LOCKS,
+        null=True,
+        blank=True,
+        verbose_name="Slot",
+        default="sleutel",
     )
     key = models.CharField(
-        max_length=254, blank=True, null=True, verbose_name="Sleutel", default="ABUS Titalium sleutel te vinden bij Provincie Zeeland Meetnetbeheerder"
+        max_length=254,
+        blank=True,
+        null=True,
+        verbose_name="Sleutel",
+        default="ABUS Titalium sleutel te vinden bij Provincie Zeeland Meetnetbeheerder",
     )
     place = models.CharField(
         max_length=254, null=True, blank=True, verbose_name="Plaats"
@@ -504,7 +522,12 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=254, null=True, blank=True, verbose_name="Toegankelijkheid"
     )
     label = models.CharField(
-        max_length=254, choices=LABELS, null=True, blank=True, verbose_name="Label", default="aluplaatje"
+        max_length=254,
+        choices=LABELS,
+        null=True,
+        blank=True,
+        verbose_name="Label",
+        default="aluplaatje",
     )
 
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
@@ -593,7 +616,12 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         verbose_name="Buisnummer",
     )
     tube_type = models.CharField(
-        choices=TUBETYPE, max_length=200, blank=True, null=True, verbose_name="Buistype", default="standaardbuis"
+        choices=TUBETYPE,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Buistype",
+        default="standaardbuis",
     )
     artesian_well_cap_present = models.CharField(
         choices=BOOLEAN_CHOICES,
@@ -628,7 +656,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         blank=True,
         null=True,
         verbose_name="Kousmateriaal",
-        default="nylon"
+        default="nylon",
     )
     sediment_sump_length = models.FloatField(
         blank=True,
@@ -769,7 +797,12 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
         verbose_name="Aanvul materiaal buis",
     )
     glue = models.CharField(
-        choices=GLUE, max_length=200, blank=True, null=True, verbose_name="Lijm", default="geen"
+        choices=GLUE,
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Lijm",
+        default="geen",
     )
     plain_tube_part_length = models.FloatField(
         blank=True, null=True, verbose_name="Lengte stijgbuis"

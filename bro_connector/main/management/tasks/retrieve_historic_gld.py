@@ -56,14 +56,14 @@ def within_bbox(coordinates) -> bool:
     return False
 
 
-def run(
+def run(  # noqa C901
     kvk_number: str = None,
     bro_type: str = "gld",
     handler: str = "shape",
     shp_file: str = None,
     delete: bool = False,
 ) -> dict:
-    if shp_file == None:
+    if shp_file is None:
         shp_file = settings.POLYGON_SHAPEFILE
     shp = shp_file
     bbox_settings = BBOX_EXTRACTOR(shp=shp, use_bbox=True).bbox_settings
@@ -202,16 +202,16 @@ def run(
                         MeasurementTvp.objects.bulk_create(
                             ini.measurements,
                             update_conflicts=False,
-                            ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB. 
+                            ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
                             # update_conflicts=True,
                             # update_fields=[
-                            #     "field_value", 
-                            #     "field_value_unit", 
-                            #     "calculated_value", 
+                            #     "field_value",
+                            #     "field_value_unit",
+                            #     "calculated_value",
                             #     "measurement_point_metadata"
                             # ],
                             # unique_fields=[
-                            #     "observation", 
+                            #     "observation",
                             #     "measurement_time"
                             # ],
                             batch_size=5000,
@@ -308,7 +308,8 @@ def get_bro_id_by_type(bro_ids: list[str], bro_type: str):
                 bro_id = id
                 break
         return bro_id
-    except:
+    except Exception as e:
+        logger.info(f"Could not get bro_id by type {bro_type}: {e}")
         return None
 
 

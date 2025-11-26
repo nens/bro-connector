@@ -149,7 +149,7 @@ class TravalInterface:
         )
         return ruleset
 
-    def run_traval(
+    def run_traval(  # noqa C901
         self,
         gmw_id,
         tube_id,
@@ -325,7 +325,7 @@ class TravalInterface:
         return df, figure
 
     @staticmethod
-    def plot_traval_result(
+    def plot_traval_result(  # noqa C901
         detector,
         model=None,
         tmin=None,
@@ -414,7 +414,7 @@ class TravalInterface:
                 traces.append(trace_i)
 
         if additional_series is not None:
-            if isinstance(additional_series, (Series, DataFrame)):
+            if isinstance(additional_series, (Series | DataFrame)):
                 additional_series = [additional_series]
             elif not isinstance(additional_series, list):
                 raise ValueError(

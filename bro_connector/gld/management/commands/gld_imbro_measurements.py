@@ -1,9 +1,15 @@
-from django.core.management.base import BaseCommand
-from gld.models import GroundwaterLevelDossier, Observation, ObservationProcess, MeasurementTvp
 from datetime import datetime
+
+from django.core.management.base import BaseCommand
 from django.utils.timezone import make_aware, utc
+from gld.models import (
+    GroundwaterLevelDossier,
+    MeasurementTvp,
+    Observation,
+)
 
 cutoff = make_aware(datetime(2021, 1, 1), utc)
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -22,7 +28,11 @@ class Command(BaseCommand):
                     observation=observation,
                     measurement_time__gt=cutoff,
                 )
-                first_measurement_time = measurements.order_by("measurement_time").first().measurement_time if measurements.exists() else "1900-01-01"
+                first_measurement_time = (
+                    measurements.order_by("measurement_time").first().measurement_time
+                    if measurements.exists()
+                    else "1900-01-01"
+                )
 
                 # Move measurements from imbro a to imbro
                 imbro_observation = Observation.objects.filter(
@@ -33,8 +43,10 @@ class Command(BaseCommand):
 
                 if imbro_observation is None:
                     continue
-                
-                print(f"Moving {len(measurements)} measurements from observation {observation.observation_id} to {imbro_observation.observation_id}")
+
+                print(
+                    f"Moving {len(measurements)} measurements from observation {observation.observation_id} to {imbro_observation.observation_id}"
+                )
                 for measurement in measurements:
                     if MeasurementTvp.objects.filter(
                         observation=imbro_observation,
@@ -46,8 +58,6 @@ class Command(BaseCommand):
                     measurement.observation = imbro_observation
                     measurement.save()
 
-
-
             observations = Observation.objects.filter(
                 groundwater_level_dossier=dossier,
                 observation_starttime__lt=cutoff,
@@ -58,7 +68,11 @@ class Command(BaseCommand):
                     observation=observation,
                     measurement_time__gt=cutoff,
                 )
-                first_measurement_time = measurements.order_by("measurement_time").first().measurement_time if measurements.exists() else "1900-01-01"
+                first_measurement_time = (
+                    measurements.order_by("measurement_time").first().measurement_time
+                    if measurements.exists()
+                    else "1900-01-01"
+                )
 
                 # Move measurements from imbro a to imbro
                 imbro_observation = Observation.objects.filter(
@@ -70,7 +84,9 @@ class Command(BaseCommand):
                 if imbro_observation is None:
                     continue
 
-                print(f"Moving {len(measurements)} measurements from observation {observation.observation_id} to {imbro_observation.observation_id}")
+                print(
+                    f"Moving {len(measurements)} measurements from observation {observation.observation_id} to {imbro_observation.observation_id}"
+                )
                 for measurement in measurements:
                     if MeasurementTvp.objects.filter(
                         observation=imbro_observation,

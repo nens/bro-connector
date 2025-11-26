@@ -20,7 +20,7 @@ def get_searchable_fields(model_class: models.Model) -> list[str]:
     return [
         f.name
         for f in model_class._meta.fields
-        if isinstance(f, (fields.CharField, fields.AutoField))
+        if isinstance(f, (fields.CharField | fields.AutoField))
     ]
 
 

@@ -1,5 +1,6 @@
-import os
 import logging
+import os
+
 import reversion
 from bro.models import Organisation
 from gmw.management.commands.gmw_sync_to_bro import _get_registrations_dir
@@ -12,6 +13,7 @@ from gmw.models import (
 from . import sync_gmw_events as gmw_sync
 
 logger = logging.getLogger(__name__)
+
 
 def _get_token(owner: Organisation):
     return {
@@ -170,10 +172,7 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
     ):
         events_handler.create_type_sourcedoc(event=event)
 
-
-    for event in well.event.filter(
-        delivered_to_bro=False
-    ):
+    for event in well.event.filter(delivered_to_bro=False):
         logger.info(f"Checking registration for event: {event}")
         registration = gmw_registration_log.objects.get(
             event_id=event.change_id,
@@ -241,8 +240,7 @@ def gmw_check_registrations(registration: gmw_registration_log):
     # It means something went wrong during validation (e.g BRO server error)
     # Even if a document is invalid, the validation process has succeeded and won't be reattempted
     elif (
-        registration.process_status
-        == "failed_to_validate_source_documents"
+        registration.process_status == "failed_to_validate_source_documents"
         or registration.validation_status != "VALIDE"
     ):
         # If we failed to validate the sourcedocument, try again
@@ -254,16 +252,14 @@ def gmw_check_registrations(registration: gmw_registration_log):
 
     # If validation is succesful and the document is valid, try a delivery
     if (
-        registration.process_status
-        == "source_document_validation_succesful"
+        registration.process_status == "source_document_validation_succesful"
         and registration.validation_status == "VALIDE"
     ):
         gmw_sync.deliver_sourcedocuments(registration, bro_info)
 
     # If delivery is succesful, check the status of the delivery
     if (
-        registration.process_status
-        == "succesfully_delivered_sourcedocuments"
+        registration.process_status == "succesfully_delivered_sourcedocuments"
         and registration.delivery_status != "OPGENOMEN_LVBRO"
         and registration.delivery_id is not None
     ):
@@ -274,10 +270,7 @@ def gmw_check_registrations(registration: gmw_registration_log):
         )
 
     # If the delivery failed previously, we can retry
-    if (
-        registration.process_status
-        == "failed_to_deliver_sourcedocuments"
-    ):
+    if registration.process_status == "failed_to_deliver_sourcedocuments":
         # This will not be the case on the first try
         if registration.delivery_status == "failed_thrice":
             # TODO report with mail?

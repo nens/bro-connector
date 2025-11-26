@@ -28,7 +28,12 @@ class BinaryFileInput(forms.ClearableFileInput):
 
 
 class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
-    nr_of_monitoring_tubes = forms.IntegerField(label="Aantal monitoringsbuizen", required=True, min_value=0, help_text="Aantal meetbuizen dat moet worden aangemaakt.")
+    nr_of_monitoring_tubes = forms.IntegerField(
+        label="Aantal monitoringsbuizen",
+        required=True,
+        min_value=0,
+        help_text="Aantal meetbuizen dat moet worden aangemaakt.",
+    )
     x = forms.CharField(label="X-coördinaat", required=True)
     y = forms.CharField(label="Y-coördinaat", required=True)
     cx = forms.CharField(label="Constructie X-coördinaat", required=False)
@@ -50,7 +55,9 @@ class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
 
         # Wijs de waarde toe aan het initial attribuut van het veld
         if self.instance.pk is not None:
-            self.fields["nr_of_monitoring_tubes"].initial = self.instance.tube.all().count()
+            self.fields[
+                "nr_of_monitoring_tubes"
+            ].initial = self.instance.tube.all().count()
 
         if self.instance.coordinates:
             self.fields["x"].initial = self.instance.x

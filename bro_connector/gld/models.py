@@ -888,7 +888,7 @@ class gld_registration_log(BaseModel):
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=gmw.get_bro_info(), demo=DEMO, api="v2"
+                payload, bro_info=gmw.get_bro_info(), demo=DEMO
             )
             validation_status = validation_info["status"]
 
@@ -941,7 +941,6 @@ class gld_registration_log(BaseModel):
             upload_info = brx.upload_sourcedocs_from_dict(
                 request,
                 token=bro_info["token"],
-                api="v2",
                 project_id=bro_info["projectnummer"],
                 demo=DEMO,
             )
@@ -990,7 +989,6 @@ class gld_registration_log(BaseModel):
                 bro_info["projectnummer"],
                 self.delivery_id,
                 demo=DEMO,
-                api="v2",
             )
             delivery_status = delivery_info.json()["status"]
             self.date_modified = datetime.datetime.now()
@@ -1146,7 +1144,9 @@ class gld_addition_log(BaseModel):
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=gmw.get_bro_info(), demo=DEMO, api="v2"
+                payload,
+                bro_info=gmw.get_bro_info(),
+                demo=DEMO,
             )
             validation_status = validation_info["status"]
 
@@ -1197,7 +1197,6 @@ class gld_addition_log(BaseModel):
             upload_info = brx.upload_sourcedocs_from_dict(
                 request,
                 token=bro_info["token"],
-                api="v2",
                 project_id=bro_info["projectnummer"],
                 demo=DEMO,
             )
@@ -1244,7 +1243,6 @@ class gld_addition_log(BaseModel):
                 token=bro_info["token"],
                 project_id=bro_info["projectnummer"],
                 demo=DEMO,
-                api="v2",
             )
             delivery_status = delivery_info.json()["status"]
             self.date_modified = datetime.datetime.now()

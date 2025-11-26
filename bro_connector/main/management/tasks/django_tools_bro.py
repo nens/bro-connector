@@ -49,7 +49,7 @@ class DjangoTableToDict:
 
         return static_well_data
 
-    def update_static_tube(self, tube: models.GroundwaterMonitoringTubeStatic) -> dict:
+    def update_static_tube(self, tube: models.GroundwaterMonitoringTubeStatic) -> dict:  # noqa C901
         cap_present = "onbekend"
         if tube.artesian_well_cap_present:
             if tube.artesian_well_cap_present:

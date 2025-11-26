@@ -516,7 +516,7 @@ def register_result_callbacks(app, data):
                 //console.log(dash_clientside.callback_context);
                 const triggered_id = dash_clientside.callback_context.triggered_id;
                 //use this to set the focus on last active component
-                document.lastActiveElement.focus(); 
+                document.lastActiveElement.focus();
                 return;
             }
             """,

@@ -8,6 +8,7 @@ from pathlib import Path
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from django.db import transaction
 from gld.choices import CENSORREASON, STATUSQUALITYCONTROL
 from gld.models import (
     GroundwaterLevelDossier,
@@ -22,7 +23,6 @@ from main.management.tasks import (
     retrieve_historic_gld,
     retrieve_historic_gmw,
 )
-from django.db import transaction
 
 from .models import BroImport, GLDImport
 
@@ -80,7 +80,7 @@ def detect_csv_separator(file):
         return ","
 
 
-def format_message(
+def format_message(  # noqa C901
     handler: str, type: str, kvk: int, shp: str, count: int, imported: int
 ) -> dict:
     if type in ["gar", "gmn", "frd"]:
@@ -335,7 +335,7 @@ def process_zip_file(instance: GLDImport):
         zip_buffer.close()
 
 
-def process_csv_file(instance: GLDImport):
+def process_csv_file(instance: GLDImport):  # noqa C901
     # Validate CSV file
     reader = validate_csv(instance.file, instance.file.name, instance)
     time_col = "time" if "time" in reader.columns else "tijd"
@@ -388,7 +388,7 @@ def process_csv_file(instance: GLDImport):
         for index, row in reader.iterrows():
             value = row[value_col]
             time = row[time_col]
-            if time in times: 
+            if time in times:
                 if not duplicates:
                     instance.report += "Duplicaten gevonden in de tijd waardes. Alleen de eerste voorgekomen waardes gebruikt.\n\n"
                 duplicates = True
@@ -437,22 +437,24 @@ def process_csv_file(instance: GLDImport):
                 MeasurementTvp.objects.bulk_create(
                     mtvps,
                     update_conflicts=False,
-                    ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB. 
-                    # update_conflicts=True, 
+                    ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
+                    # update_conflicts=True,
                     # update_fields=[
-                    #     "field_value", 
-                    #     "field_value_unit", 
-                    #     "calculated_value", 
+                    #     "field_value",
+                    #     "field_value_unit",
+                    #     "calculated_value",
                     #     "measurement_point_metadata"
                     # ],
                     # unique_fields=[
-                    #     "observation", 
+                    #     "observation",
                     #     "measurement_time"
                     # ],
                     batch_size=5000,
                 )
             except Exception as e:
-                instance.report += f"Bulk updating/creating failed for observation: {Obs}"
+                instance.report += (
+                    f"Bulk updating/creating failed for observation: {Obs}"
+                )
                 logger.info(f"Bulk updating/creating failed for observation: {Obs}")
                 logger.exception(e)
                 instance.executed = False
@@ -478,7 +480,7 @@ def process_csv_file(instance: GLDImport):
         instance.executed = True
 
 
-def validate_csv(file, filename: str, instance: GLDImport):
+def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
     time_col = None
     seperator = ","  # detect_csv_separator(file)
     reader = pd.read_csv(file, header=0, index_col=False, sep=seperator)

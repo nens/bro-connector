@@ -339,9 +339,7 @@ class GldSyncHandler:
         bro_id_gmw = well.bro_id
         internal_id = well.internal_id
         quality_regime = well.quality_regime
-        delivery_accountable_party = set_delivery_accountable_party(
-            well, self.is_demo
-        )
+        delivery_accountable_party = set_delivery_accountable_party(well, self.is_demo)
         print("Delivery accountable party: ", delivery_accountable_party)
         try:
             monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filtrnr}]
@@ -413,7 +411,9 @@ class GldSyncHandler:
 
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=self.bro_info, demo=self.is_demo, api="v2"
+                payload,
+                bro_info=self.bro_info,
+                demo=self.is_demo,
             )
         except Exception as e:
             validation_status = validation_info["status"]
@@ -458,7 +458,6 @@ class GldSyncHandler:
             upload_info = brx.upload_sourcedocs_from_dict(
                 request,
                 token=self.bro_info["token"],
-                api="v2",
                 project_id=self.bro_info["projectnummer"],
                 demo=self.is_demo,
             )
@@ -514,7 +513,6 @@ class GldSyncHandler:
             upload_info = brx.check_delivery_status(
                 delivery_id,
                 token=self.bro_info["token"],
-                api="v2",
                 project_id=self.bro_info["projectnummer"],
                 demo=self.is_demo,
             )
@@ -896,7 +894,9 @@ class GldSyncHandler:
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=self.bro_info, demo=self.is_demo, api="v2"
+                payload,
+                bro_info=self.bro_info,
+                demo=self.is_demo,
             )
             validation_status = validation_info["status"]
 
@@ -945,7 +945,6 @@ class GldSyncHandler:
                 request,
                 token=self.bro_info["token"],
                 demo=self.is_demo,
-                api="v2",
                 project_id=self.bro_info["projectnummer"],
             )
 
@@ -988,7 +987,6 @@ class GldSyncHandler:
                 gld_addition.delivery_id,
                 token=self.bro_info["token"],
                 demo=self.is_demo,
-                api="v2",
                 project_id=self.bro_info["projectnummer"],
             )
             delivery_status = upload_info.json()["status"]

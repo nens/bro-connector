@@ -309,7 +309,6 @@ class Registration(ABC):
                 payload=xml_payload,
                 bro_info=self.bro_info,
                 demo=self.demo,
-                api="v2",
             )
 
         except Exception as e:
@@ -359,7 +358,6 @@ class Registration(ABC):
                 token=self.bro_info["token"],
                 demo=self.demo,
                 project_id=self.bro_info["projectnummer"],
-                api="v2",
             )
 
         except Exception as e:
@@ -402,7 +400,6 @@ class Registration(ABC):
                 identifier=self.log.delivery_id,
                 token=self.bro_info["token"],
                 demo=self.demo,
-                api="v2",
                 project_id=self.bro_info["projectnummer"],
             )
         except Exception as e:

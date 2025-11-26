@@ -30,7 +30,7 @@ def update_or_create_subgroup(df: pl.DataFrame, subgroup: Subgroup) -> None:
                 groundwater_monitoring_tube=tube,
                 defaults={
                     "code": tube.__str__(),
-                }
+                },
             )[0]
             measuring_point.subgroup.add(subgroup)
             print(measuring_point)
@@ -49,7 +49,13 @@ class Command(BaseCommand):
         if not csv_path or not csv_path.endswith(".csv"):
             raise ValueError("Invalid CSV-file supplied.")
 
-        df = pl.read_csv(csv_path, separator=";", ignore_errors=True, truncate_ragged_lines=True, has_header=True)
+        df = pl.read_csv(
+            csv_path,
+            separator=";",
+            ignore_errors=True,
+            truncate_ragged_lines=True,
+            has_header=True,
+        )
         print(df.columns)
 
         gmn = GroundwaterMonitoringNet.objects.update_or_create(

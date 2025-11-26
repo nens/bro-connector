@@ -169,48 +169,21 @@ class GLDHandler(BROHandler):
             }
         )
 
-    def root_data_to_dictionary(self):
+    def root_data_to_dictionary(self):  # noqa C901
         self.reset_values()
         prefix = f"{self.number_of_observations}_"
-        # print("Number of measurements dict: ",self.number_of_measurements)
-        # print("Number of dict: ",self.dict)
 
         for element in self.root.iter():
             tag = element.tag
             split = tag.split("}")
-            # if split[1].startswith("obs"):
-            #     print(split)
-            # print(tag, split)
-            # if split[1] == "OM_Observation":
-            #     print(element)
-            #     print(element.attrib)
-            #     stop
 
             if split[1] == "observation":
-                # print("Number of point when reaching a new obs: ",self.number_of_points)
-                # print("observations split: ",split)
                 if self.number_of_observations != 0:
-                    # print(f"Adding {self.number_of_points} points to number_of_measurements at key {self.number_of_observations}")
                     self.number_of_measurements[self.number_of_observations] = (
                         self.number_of_points
                     )
-                    # print(f"adding {self.number_of_points} to total_measurements")
-                    # print(self.total_measurements)
                     self.total_measurements += self.number_of_points
-                    # print(self.total_measurements)
-                    # if self.number_of_observations == 1:
-                    #     self.number_of_measurements[self.number_of_observations] = self.number_of_points
-                    # else:
-                    #     count_dictionary_cumulative[self.number_of_observations] = self.number_of_points
-                    #     self.number_of_measurements[self.number_of_observations] = (
-                    #         self.number_of_points
-                    #         - count_dictionary_cumulative[self.number_of_observations - 1]
-                    #     )
                 self.number_of_observations = self.number_of_observations + 1
-                # if self.number_of_observations > 2:
-                #     stop
-                # if self.number_of_observations == 3:
-                #     stop
                 prefix = f"{self.number_of_observations}_"
                 self.reset_measurement_values()
 

@@ -241,7 +241,9 @@ class StartRegistrationGMN:
             print(self.acces_token_bro_portal)
 
             validation_info = brx.validate_sourcedoc(
-                payload, bro_info=self.acces_token_bro_portal, demo=self.demo, api="v2"
+                payload,
+                bro_info=self.acces_token_bro_portal,
+                demo=self.demo,
             )
 
             errors_count = len(validation_info["errors"])
@@ -306,7 +308,6 @@ class StartRegistrationGMN:
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
                 project_id=self.acces_token_bro_portal["projectnummer"],
-                api="v2",
             )
 
             # Log the result
@@ -376,7 +377,6 @@ class StartRegistrationGMN:
                 self.gmn_bro_register_log_obj.delivery_id,
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
-                api="v2",
                 project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
@@ -681,7 +681,9 @@ class MeasuringPointAddition:
             payload = open(filepath)
 
             validation_info = brx.validate_sourcedoc(
-                payload, self.acces_token_bro_portal, self.demo, api="v2"
+                payload,
+                self.acces_token_bro_portal,
+                self.demo,
             )
 
             errors_count = len(validation_info["errors"])
@@ -745,7 +747,6 @@ class MeasuringPointAddition:
                 request,
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
-                api="v2",
                 project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
@@ -819,7 +820,6 @@ class MeasuringPointAddition:
                 self.gmn_bro_addition_log_obj.delivery_id,
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
-                api="v2",
                 project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
@@ -1102,7 +1102,9 @@ class MeasuringPointRemoval:
             payload = open(filepath)
 
             validation_info = brx.validate_sourcedoc(
-                payload, self.acces_token_bro_portal, self.demo, api="v2"
+                payload,
+                self.acces_token_bro_portal,
+                self.demo,
             )
 
             errors_count = len(validation_info["errors"])
@@ -1166,7 +1168,6 @@ class MeasuringPointRemoval:
                 request,
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
-                api="v2",
                 project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
@@ -1239,7 +1240,6 @@ class MeasuringPointRemoval:
                 self.gmn_bro_removal_log_obj.delivery_id,
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
-                api="v2",
                 project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
@@ -1504,7 +1504,9 @@ class ClosureGMN:
             payload = open(filepath)
 
             validation_info = brx.validate_sourcedoc(
-                payload, self.acces_token_bro_portal, self.demo, api="v2"
+                payload,
+                self.acces_token_bro_portal,
+                self.demo,
             )
 
             errors_count = len(validation_info["errors"])
@@ -1568,7 +1570,6 @@ class ClosureGMN:
                 request,
                 token=self.acces_token_bro_portal["token"],
                 demo=self.demo,
-                api="v2",
                 project_id=self.acces_token_bro_portal["projectnummer"],
             )
 
@@ -1639,7 +1640,6 @@ class ClosureGMN:
                 self.gmn_bro_closure_log_obj.delivery_id,
                 token=self.acces_token_bro_portal,
                 demo=self.demo,
-                api="v2",
                 project_id=self.acces_token_bro_portal["projectnummer"],
             )
 

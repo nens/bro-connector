@@ -1,5 +1,10 @@
 from gmw.bro_validators import electrode, tube, well
-from gmw.models import Electrode, GeoOhmCable, GroundwaterMonitoringWellStatic, GroundwaterMonitoringTubeStatic
+from gmw.models import (
+    GeoOhmCable,
+    GroundwaterMonitoringTubeStatic,
+    GroundwaterMonitoringWellStatic,
+)
+
 
 class WellValidation:
     def __init__(self):

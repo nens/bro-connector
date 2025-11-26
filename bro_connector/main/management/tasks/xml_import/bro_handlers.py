@@ -118,7 +118,7 @@ class GLDHandler(BROHandler):
 
         self.root = ET.fromstring(gmw_verzoek.content)
 
-    def root_data_to_dictionary(self):
+    def root_data_to_dictionary(self):  # noqa C901
         tags = []
         values = []
         point_value = []

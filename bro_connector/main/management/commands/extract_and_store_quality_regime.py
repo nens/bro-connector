@@ -49,7 +49,7 @@ def extract_quality_regime(gld: GroundwaterLevelDossier, filtered):
         namespaces = {"brocom": "http://www.broservices.nl/xsd/brocommon/3.0"}
         quality_regime_xml = root.find(".//brocom:qualityRegime", namespaces)
 
-        if quality_regime_xml == None:
+        if quality_regime_xml is None:
             quality_regime = "IMBRO/A"
             print("No quality regime in xml for id: ", bro_id)
         else:

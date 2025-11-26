@@ -44,6 +44,7 @@ def get_ahn_from_lizard(obj) -> float:
 
     try:
         result = res.json()["results"][0]["value"]
+        return float(result)
     except (KeyError, IndexError):
         return -9999
 
