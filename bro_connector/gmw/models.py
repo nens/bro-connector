@@ -444,7 +444,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=254,
         null=True,
         blank=True,
-        default="nee",
+        default="ja",
         verbose_name="Maaiveld stabiliteit",
     )
     well_stability = models.CharField(
@@ -452,7 +452,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         max_length=200,
         blank=True,
         null=True,
-        default="instabiel",  # Ik ga er vanuit dat dit niet standaard verankert is.
+        default="stabielNAP",  # Ik ga er vanuit dat dit niet standaard verankert is.
         verbose_name="Putstabiliteit",
     )
     owner = models.IntegerField(
