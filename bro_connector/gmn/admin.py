@@ -19,6 +19,11 @@ from .models import (
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
+class SubgroupMeasuringPointInline(admin.TabularInline):
+    model = MeasuringPoint.subgroup.through
+    extra = 0
+    verbose_name = "Meetpunt"
+    verbose_name_plural = "Meetpunten"
 
 class MeasuringPointsInline(admin.TabularInline):
     model = MeasuringPoint
@@ -133,6 +138,8 @@ class SubgroupAdmin(admin.ModelAdmin):
         "gmn",
         "name",
     )
+
+    inlines = (SubgroupMeasuringPointInline,)
 
 
 class MeasuringPointAdmin(admin.ModelAdmin):
