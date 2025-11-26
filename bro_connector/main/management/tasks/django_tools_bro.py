@@ -50,26 +50,11 @@ class DjangoTableToDict:
         return static_well_data
 
     def update_static_tube(self, tube: models.GroundwaterMonitoringTubeStatic) -> dict:  # noqa C901
-        cap_present = "onbekend"
-        if tube.artesian_well_cap_present:
-            if tube.artesian_well_cap_present:
-                cap_present = "ja"
-            elif tube.artesian_well_cap_present is False:
-                cap_present = "nee"
-
-        sump_present = "onbekend"
-
-        if tube.sediment_sump_present:
-            if tube.sediment_sump_present:
-                cap_present = "ja"
-            elif tube.sediment_sump_present is False:
-                cap_present = "nee"
-
         static_tube_data = {
             "tubeNumber": tube.tube_number,
             "tubeType": tube.tube_type,
-            "artesianWellCapPresent": cap_present,
-            "sedimentSumpPresent": sump_present,
+            "artesianWellCapPresent": tube.artesian_well_cap_present,
+            "sedimentSumpPresent": tube.sediment_sump_present,
             "numberOfGeoOhmCables": tube.number_of_geo_ohm_cables,
             "tubeMaterial": tube.tube_material,
             "screen": {
