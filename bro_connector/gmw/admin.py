@@ -605,8 +605,23 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     @admin.action(description="Lever GMW aan BRO")
-    def deliver_to_bro(self, request, queryset):
+    def deliver_to_bro(self, request, queryset: list[gmw_models.GroundwaterMonitoringWellStatic]):
         for well in queryset:
+            if well.in_management is False:
+                self.message_user(
+                    request,
+                    f"Meetpunt {well} staat niet in beheer en kan niet worden geleverd.",
+                    level="ERROR",
+                )
+                continue
+            if well.deliver_gmw_to_bro is False:
+                self.message_user(
+                    request,
+                    f"Meetpunt {well} is niet gemarkeerd voor levering aan BRO.",
+                    level="ERROR",
+                )
+                continue
+
             gmw_actions.check_and_deliver(well)
 
     @admin.action(description="Check GMW status uit BRO")
