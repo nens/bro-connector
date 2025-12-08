@@ -5,7 +5,6 @@ import os
 
 import bro_exchange as brx
 import reversion
-from bro.models import Organisation
 from gmw import models
 from main.management.tasks.django_tools_bro import (
     EVENTNAME2TYPE,
@@ -26,20 +25,6 @@ def _is_demo():
     if ENV == "production":
         return False
     return True
-
-
-def _get_token(owner: Organisation):
-    return {
-        "user": owner.bro_user,
-        "pass": owner.bro_token,
-    }
-
-
-def form_bro_info(well: models.GroundwaterMonitoringWellStatic) -> dict:
-    return {
-        "token": _get_token(well.delivery_accountable_party),
-        "projectnummer": well.project_number,
-    }
 
 
 def bro_info_missing(bro_info: dict, gmn_name: str) -> bool:
@@ -1019,6 +1004,7 @@ def check_delivery_status_levering(
         registration.comments = f"Error occured during status check of delivery: {e}"
         registration.save(update_fields=["comments"])
 
+
 def delete_existing_failed_registrations(event: models.Event):
     delivery_type = "register" if event.correction_reason is None else "replace"
     models.gmw_registration_log.objects.filter(
@@ -1117,7 +1103,7 @@ def gmw_check_existing_registrations():
             continue
 
         source_doc_type = registration.event_type
-        bro_info = form_bro_info(event.groundwater_monitoring_well_static)
+        bro_info = event.groundwater_monitoring_well_static.get_bro_info()
         if bro_info_missing(
             bro_info, event.groundwater_monitoring_well_static.__str__()
         ):
@@ -1127,7 +1113,7 @@ def gmw_check_existing_registrations():
             # The registration has been delivered, but not yet approved
             check_delivery_status_levering(registration, REGISTRATIONS_DIR, bro_info)
             continue
-        
+
         if (
             registration.process_status
             == f"succesfully_generated_{source_doc_type}_request"
@@ -1136,7 +1122,6 @@ def gmw_check_existing_registrations():
                 registration,
                 bro_info,
             )
-
 
         # If an error occured during validation, try again
         # Failed to validate sourcedocument doesn't mean the document is valid/invalid

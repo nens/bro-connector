@@ -5,7 +5,6 @@ from collections import defaultdict
 from datetime import date, datetime
 
 import bro_exchange as brx
-from bro.models import Organisation
 from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db.models.query import QuerySet
@@ -27,20 +26,6 @@ from frd.models import (
 )
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.settings.base import ENV
-
-
-def _get_token(owner: Organisation):
-    return {
-        "user": owner.bro_user,
-        "pass": owner.bro_token,
-    }
-
-
-def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
-    return {
-        "token": _get_token(well.delivery_accountable_party),
-        "projectnummer": well.project_number,
-    }
 
 
 def get_xml_payload(xml_filepath):
@@ -277,13 +262,11 @@ class Registration(ABC):
 
     def _set_bro_info(self, obj):
         if isinstance(obj, FormationResistanceDossier):
-            self.bro_info = form_bro_info(
-                obj.groundwater_monitoring_tube.groundwater_monitoring_well_static
-            )
+            self.bro_info = obj.groundwater_monitoring_tube.groundwater_monitoring_well_static.get_bro_info()
         elif isinstance(obj, GroundwaterMonitoringWellStatic):
-            self.bro_info = form_bro_info(obj)
+            self.bro_info = obj.get_bro_info()
         elif isinstance(obj, GroundwaterMonitoringTubeStatic):
-            self.bro_info = form_bro_info(obj.groundwater_monitoring_well_static)
+            self.bro_info = obj.groundwater_monitoring_well_static.get_bro_info()
         else:
             self.bro_info = {
                 "token": {

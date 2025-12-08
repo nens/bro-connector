@@ -998,10 +998,10 @@ class gld_registration_log(BaseModel):
 
         try:
             delivery_info = brx.check_delivery_status(
-                bro_info["token"],
-                bro_info["projectnummer"],
                 self.delivery_id,
+                token=bro_info["token"],
                 demo=DEMO,
+                project_id=bro_info["projectnummer"],
             )
             delivery_status = delivery_info.json()["status"]
             self.date_modified = datetime.datetime.now()
@@ -1011,6 +1011,8 @@ class gld_registration_log(BaseModel):
             self.process_status = "delivery_status_checked"
 
         except Exception as e:
+            logger.info(f"Failed to check delivery status: {e}")
+            delivery_status = "failed_to_deliver"
             comments = f"Failed to check delivery status: {e}"
             self.date_modified = datetime.datetime.now()
             self.comments = comments

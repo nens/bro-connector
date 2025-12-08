@@ -8,7 +8,6 @@ from xml.etree import ElementTree as ET
 
 import bro_exchange as brx
 import reversion
-from bro.models import Organisation
 from django.apps import apps
 from django.core.management.base import BaseCommand
 from gld import models
@@ -291,20 +290,6 @@ def create_new_observations():
             new_observation.save()
 
 
-def _get_token(owner: Organisation):
-    return {
-        "user": owner.bro_user,
-        "pass": owner.bro_token,
-    }
-
-
-def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
-    return {
-        "token": _get_token(well.delivery_accountable_party),
-        "projectnummer": well.project_number,
-    }
-
-
 def retrieve_responsible_kvk_from_observation(observation: models.Observation):
     return observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party.company_number
 
@@ -322,10 +307,10 @@ def set_delivery_accountable_party(
 
 class GldSyncHandler:
     def __init__(self):
-        self.is_demo = ENV == "production"
+        self.is_demo = ENV != "production"
 
     def _set_bro_info(self, well: GroundwaterMonitoringWellStatic) -> None:
-        self.bro_info = form_bro_info(well)
+        self.bro_info = well.get_bro_info()
 
     def create_start_registration_sourcedocs(
         self,
@@ -506,15 +491,14 @@ class GldSyncHandler:
         None.
 
         """
-
         delivery_id = registration.delivery_id
 
         try:
             upload_info = brx.check_delivery_status(
                 delivery_id,
                 token=self.bro_info["token"],
+                demo=True,
                 project_id=self.bro_info["projectnummer"],
-                demo=self.is_demo,
             )
 
             if (
@@ -528,7 +512,7 @@ class GldSyncHandler:
                 registration.delivery_status = upload_info.json()["brondocuments"][0][
                     "status"
                 ]
-                registration.last_changed = upload_info.json()["lastChanged"]
+                registration.last_changed = upload_info.json().get("lastChanged")
                 registration.comments = "Startregistration request approved"
                 registration.process_status = "delivery_approved"
                 registration.save()
@@ -549,16 +533,15 @@ class GldSyncHandler:
                 os.remove(source_doc_file)
 
             else:
-                logger.info(upload_info.json())
                 registration.delivery_status = upload_info.json()["status"]
-                registration.last_changed = upload_info.json()["lastChanged"]
+                registration.last_changed = upload_info.json().get("lastChanged")
                 registration.comments = "Startregistration request not yet approved"
                 registration.save()
 
         except Exception as e:
             comments = f"Error occured during status check of delivery: {e}.\n"
             registration.comments += comments
-            registration.save()
+            registration.save(update_fields=["comments"])
 
     def handle_all_start_registrations(self):
         """

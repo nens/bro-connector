@@ -585,7 +585,6 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 bro_id=registration_log.gmw_bro_id
             )
             gld._set_bro_info(well)
-
             delivery_id = registration_log.delivery_id
             if delivery_id is None:
                 pending_messages.append(

@@ -8,12 +8,11 @@ import main.utils.validators_admin as validators_admin
 import reversion
 from django.contrib import admin, messages
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib import admin
-from django.utils.translation import gettext_lazy as _
 from django.db.models import fields
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 from gld.models import GroundwaterLevelDossier
 from gmn.models import MeasuringPoint
 from gmw.custom_filters import (
@@ -91,22 +90,24 @@ def Export_selected_items_to_csv(self, request, queryset):
 
 admin.site.add_action(Export_selected_items_to_csv)
 
+
 class BroIdNullFilter(admin.SimpleListFilter):
-    title = _('Met/Zonder BRO-ID')  # label in the sidebar
-    parameter_name = 'bro_id_null'
+    title = _("Met/Zonder BRO-ID")  # label in the sidebar
+    parameter_name = "bro_id_null"
 
     def lookups(self, request, model_admin):
         return (
-            ('yes', _('Geen BRO-ID')),
-            ('no', _('Met BRO-ID')),
+            ("yes", _("Geen BRO-ID")),
+            ("no", _("Met BRO-ID")),
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'yes':
+        if self.value() == "yes":
             return queryset.filter(bro_id__isnull=True)
-        if self.value() == 'no':
+        if self.value() == "no":
             return queryset.filter(bro_id__isnull=False)
         return queryset
+
 
 class EventsInline(admin.TabularInline):
     model = gmw_models.Event
@@ -425,7 +426,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "nitg_code",
         "well_code",
         "in_management",
-        BroIdNullFilter
+        BroIdNullFilter,
     )
     readonly_fields = (
         "well_code",

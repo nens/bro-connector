@@ -714,6 +714,20 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
 
         return gmn_ids
 
+    def save(self, *args, **kwargs):
+        # Ensure tube_number is an integer
+        if (
+            self.groundwater_monitoring_well_static.in_management is not None
+            and self.deliver_gld_to_bro
+            != self.groundwater_monitoring_well_static.in_management
+        ):
+            # If in management, the default should be yes
+            self.deliver_gld_to_bro = (
+                self.groundwater_monitoring_well_static.in_management
+            )
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         if self.groundwater_monitoring_well_static:
             well = f"{self.groundwater_monitoring_well_static.__str__()}"

@@ -54,6 +54,9 @@ def handle_start_registrations(
     dossier: GroundwaterLevelDossier,
     deliver: bool,
 ) -> None:
+    logger.info(
+        f"Handling start registrations for dossier {dossier.groundwater_level_dossier_id}"
+    )
     well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
     # Handle start registrations
     tube_number = dossier.groundwater_monitoring_tube.tube_number
@@ -64,6 +67,9 @@ def handle_start_registrations(
         gmw_bro_id=well.bro_id,
         filter_number=tube_number,
         quality_regime=well.quality_regime,
+    )
+    logger.info(
+        f"Found {gld_registration_logs.count()} existing registration logs for well {well.bro_id} and tube {tube_number}"
     )
 
     # Check if there is already a registration for this tube
@@ -98,6 +104,7 @@ def handle_start_registrations(
             )
 
     for log in gld_registration_logs:
+        logger.info(f"Checking existing start registration: {log}")
         gld.check_existing_startregistrations(log)
 
 
@@ -312,6 +319,7 @@ def check_status(dossier: GroundwaterLevelDossier) -> None:
         print(tube.deliver_gld_to_bro)
         return
 
+    logger.info(f"Check status for dossier {dossier.groundwater_level_dossier_id}")
     handle_start_registrations(dossier, deliver=False)
 
     handle_additions(dossier, deliver=False)
