@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.db.models import Model, fields
 from django.http import HttpResponse
 from main.management.commands.frd_sync_to_bro import FRDSync
+from django.utils.translation import gettext_lazy as _
 from reversion_compare.helpers import patch_admin
 
 from .models import (

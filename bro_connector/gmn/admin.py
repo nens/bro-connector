@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from gmn.management.tasks.gmn_sync import sync_gmn
+from django.utils.translation import gettext_lazy as _
 from main.utils.frd_fieldform import FieldFormGenerator as FRD_FieldFormGenerator
 from main.utils.gld_fieldform import FieldFormGenerator as GLD_FieldFormGenerator
 from reversion_compare.helpers import patch_admin

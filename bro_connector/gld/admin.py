@@ -7,6 +7,7 @@ import reversion
 from django.contrib import admin, messages
 from django.db.models import fields
 from django.http import HttpResponse
+from django.utils.translation import gettext_lazy as _
 from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
 )
@@ -471,9 +472,12 @@ class gld_registration_logAdmin(admin.ModelAdmin):
         pending_messages = []
 
         for registration_log in queryset:
-            well = GroundwaterMonitoringWellStatic.objects.get(
-                bro_id=registration_log.gmw_bro_id
-            )
+            dossier = registration_log.groundwaterleveldossier
+            if dossier is None:
+                registration_log.comments += f"\nCannot find groundwaterleveldossier with GMW-FilterNR-Quality: {registration_log.gmw_bro_id}-{registration_log.filter_number}-{registration_log.quality_regime}."
+                registration_log.save(update_fields=["comments"])
+                continue
+            well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
             gld._set_bro_info(well)
 
             if registration_log.delivery_id is not None:
@@ -485,7 +489,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 )
             else:
                 gld.create_start_registration_sourcedocs(
-                    well, registration_log.filter_number
+                    dossier
                 )
                 pending_messages.append(
                     (
