@@ -1,4 +1,3 @@
-from typing import Optional, Dict, List
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -17,16 +16,16 @@ class ElectrodeModel(BaseModel):
 
 class GeoOhmCableModel(BaseModel):
     cableNumber: int
-    electrodes: Dict[int, ElectrodeModel] = Field(default_factory=dict)
+    electrodes: dict[int, ElectrodeModel] = Field(default_factory=dict)
 
 
 class ScreenModel(BaseModel):
-    screenLength: Optional[float]
-    sockMaterial: Optional[str]
+    screenLength: float | None
+    sockMaterial: str | None
 
 
 class SedimentSumpModel(BaseModel):
-    sedimentSumpLength: Optional[float]
+    sedimentSumpLength: float | None
 
 
 class TubeStaticModel(BaseModel):
@@ -37,8 +36,8 @@ class TubeStaticModel(BaseModel):
     numberOfGeoOhmCables: int
     tubeMaterial: str
     screen: ScreenModel
-    sedimentSump: Optional[SedimentSumpModel] = None
-    geoOhmCables: Dict[int, GeoOhmCableModel] = Field(default_factory=dict)
+    sedimentSump: SedimentSumpModel | None = None
+    geoOhmCables: dict[int, GeoOhmCableModel] = Field(default_factory=dict)
 
 
 class WellStaticModel(BaseModel):
@@ -56,9 +55,9 @@ class WellStaticModel(BaseModel):
     referenceSystem: str
     horizontalPositioningMethod: str
     localVerticalReferencePoint: str
-    offset: Optional[str]
+    offset: str | None
     verticalDatum: str
-    broId: Optional[str] = None
+    broId: str | None = None
 
 
 class WellDynamicModel(BaseModel):
@@ -68,33 +67,33 @@ class WellDynamicModel(BaseModel):
     deliverGldToBro: str
     groundLevelPosition: str
     groundLevelPositioningMethod: str
-    wellStability: Optional[str] = None
-    maintenanceResponsibleParty: Optional[str] = None
+    wellStability: str | None = None
+    maintenanceResponsibleParty: str | None = None
 
 
 class TubeDynamicConstructionModel(BaseModel):
-    tubeTopDiameter: Optional[float]
-    variableDiameter: Optional[str]
+    tubeTopDiameter: float | None
+    variableDiameter: str | None
     tubeStatus: str
-    tubeTopPosition: Optional[float]
-    tubeTopPositioningMethod: Optional[str]
-    tubePackingMaterial: Optional[str]
-    glue: Optional[str]
-    plainTubePartLength: Optional[float]
-    insertedPartDiameter: Optional[float]
-    insertedPartLength: Optional[float]
-    insertedPartMaterial: Optional[str]
+    tubeTopPosition: float | None
+    tubeTopPositioningMethod: str | None
+    tubePackingMaterial: str | None
+    glue: str | None
+    plainTubePartLength: float | None
+    insertedPartDiameter: float | None
+    insertedPartLength: float | None
+    insertedPartMaterial: str | None
 
 
 class TubeDynamicPositionsModel(BaseModel):
-    tubeTopPosition: Optional[float]
-    tubeTopPositioningMethod: Optional[str]
+    tubeTopPosition: float | None
+    tubeTopPositioningMethod: str | None
 
 
 class TubeDynamicLengthChangeModel(BaseModel):
-    tubeTopPosition: Optional[float]
-    tubeTopPositioningMethod: Optional[str]
-    plainTubePartLength: Optional[float]
+    tubeTopPosition: float | None
+    tubeTopPositioningMethod: str | None
+    plainTubePartLength: float | None
 
 
 class TubeDynamicStatusModel(BaseModel):

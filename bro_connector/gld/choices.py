@@ -3,6 +3,13 @@ QUALITYREGIME = (
     ("IMBRO/A", "IMBRO/A"),
 )
 
+CORRECTION_REASON = (
+    ("eigenCorrectie", "Eigen correctie"),
+    ("inOnderzoek", "In onderzoek"),
+    ("kwaliteitsregime", "Kwaliteitsregime"),
+    ("bronhouder", "bronhouder"),
+)
+
 REGISTRATIONSTATUS = (
     ("geregistreerd", "geregistreerd"),
     ("aangevuld", "aangevuld"),

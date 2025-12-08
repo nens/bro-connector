@@ -132,6 +132,12 @@ class GroundwaterLevelDossier(BaseModel):
         blank=True,
         verbose_name="Kwaliteitsregime",
     )
+    # correction_reason = models.CharField(
+    #     choices=CORRECTION_REASON,
+    #     null=True,
+    #     blank=True,
+    #     verbose_name="Correctie reden"
+    # )
     research_start_date = models.DateField(
         blank=True, null=True, verbose_name="Onderzoeksstartdatum"
     )
@@ -296,6 +302,13 @@ class Observation(BaseModel):
     up_to_date_in_bro = models.BooleanField(
         default=False, editable=False, verbose_name="Up to date in BRO"
     )
+
+    # correction_reason = models.CharField(
+    #     choices=CORRECTION_REASON,
+    #     null=True,
+    #     blank=True,
+    #     verbose_name="Correctie reden"
+    # )
 
     observation_id_bro = models.CharField(
         max_length=200,

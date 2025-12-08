@@ -549,6 +549,7 @@ class GldSyncHandler:
                 os.remove(source_doc_file)
 
             else:
+                logger.info(upload_info.json())
                 registration.delivery_status = upload_info.json()["status"]
                 registration.last_changed = upload_info.json()["lastChanged"]
                 registration.comments = "Startregistration request not yet approved"

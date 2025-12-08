@@ -138,7 +138,7 @@ def get_artesian_well_cap_present(dict: dict, prefix: str) -> bool | None:
     artesian = str(
         dict.get(prefix + "artesianWellCapPresent", None),
     )
-    
+
     if artesian is not None:
         # Remove all unnecessary chars
         ignore = punctuation + whitespace
@@ -238,7 +238,9 @@ class InitializeData:
                 bro_id=self.gmw_dict.get("broId", None),
                 internal_id=self.gmw_dict.get("objectIdAccountableParty", None),
                 delivery_accountable_party=self.get_accountable_party(),
-                construction_standard=self.gmw_dict.get("constructionStandard", "onbekend"),
+                construction_standard=self.gmw_dict.get(
+                    "constructionStandard", "onbekend"
+                ),
                 coordinates=self.get_coordinates(),
                 delivery_context=self.gmw_dict.get("deliveryContext", "onbekend"),
                 horizontal_positioning_method=self.gmw_dict.get(
@@ -284,14 +286,14 @@ class InitializeData:
             well_stability = "stabielNAP"
         elif well_stability is None:
             well_stability = "onbekend"
-        
+
         self.meetpuntgeschiedenis_instance = (
             gmw_models.GroundwaterMonitoringWellDynamic.objects.create(
                 groundwater_monitoring_well_static=self.meetpunt_instance,
                 date_from=self.meetpunt_instance.last_horizontal_positioning_date,
                 owner=self.gmw_dict.get("owner", None),
                 ground_level_stable=ground_stability,
-                well_stability=well_stability ,
+                well_stability=well_stability,
                 ground_level_position=self.gmw_dict.get("groundLevelPosition", None),
                 ground_level_positioning_method=self.gmw_dict.get(
                     "groundLevelPositioningMethod", "onbekend"
@@ -345,7 +347,9 @@ class InitializeData:
                 plain_tube_part_length=self.gmw_dict.get(
                     self.prefix + "plainTubePartLength", None
                 ),
-                tube_status=self.gmw_dict.get(self.prefix + "tubeStatus", "gebruiksklaar"),
+                tube_status=self.gmw_dict.get(
+                    self.prefix + "tubeStatus", "gebruiksklaar"
+                ),
                 tube_top_diameter=get_float_item_or_none(
                     self.gmw_dict.get(self.prefix + "tubeTopDiameter", None)
                 ),
