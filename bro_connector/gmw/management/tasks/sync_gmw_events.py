@@ -226,6 +226,9 @@ class GetSourceDocData:
         self.datafile.update(dynamic_well_data)
 
     def execute_for_type(self, source_doc_type, event: models.Event) -> None:
+        if event.correction_reason is not None:
+            self.datafile.update({"correctionReason": event.correction_reason})
+
         if source_doc_type == "Construction":
             well_construction_date = get_event_date(event)
             self.datafile.update({"wellConstructionDate": well_construction_date})
@@ -664,18 +667,31 @@ def create_sourcedocs(
     # Check what kind of request is required and make as followed.
     # Registrate with history
     try:
-        gmw_registration_request = brx.gmw_registration_request(
-            srcdoc=f"GMW_{source_doc_type}",
-            requestReference=request_reference,
-            deliveryAccountableParty=str(delivery_accountable_party),
-            qualityRegime=quality_regime,
-            broId=srcdocdata["broId"],
-            srcdocdata=srcdocdata,
-        )
+        if event.correction_reason is None:
+            delivery_type = "register"
+            gmw_request = brx.gmw_registration_request(
+                srcdoc=f"GMW_{source_doc_type}",
+                requestReference=request_reference,
+                deliveryAccountableParty=str(delivery_accountable_party),
+                qualityRegime=quality_regime,
+                broId=srcdocdata["broId"],
+                srcdocdata=srcdocdata,
+            )
+        else:
+            delivery_type = "replace"
+            gmw_request = brx.gmw_replace_request(
+                srcdoc=f"GMW_{source_doc_type}",
+                correctionReason=event.correction_reason,
+                requestReference=request_reference,
+                deliveryAccountableParty=str(delivery_accountable_party),
+                qualityRegime=quality_regime,
+                broId=srcdocdata["broId"],
+                srcdocdata=srcdocdata,
+            )
 
         filename = request_reference + ".xml"
-        gmw_registration_request.generate()
-        gmw_registration_request.write_request(
+        gmw_request.generate()
+        gmw_request.write_request(
             output_dir=REGISTRATIONS_DIR, filename=filename
         )
 
@@ -683,6 +699,7 @@ def create_sourcedocs(
         models.gmw_registration_log.objects.update_or_create(
             bro_id=srcdocdata["broId"],
             event_id=event.change_id,
+            delivery_type=delivery_type,
             quality_regime=quality_regime,
             defaults=dict(
                 comments=f"succesfully generated {source_doc_type} request",
@@ -699,6 +716,7 @@ def create_sourcedocs(
         models.gmw_registration_log.objects.update_or_create(
             bro_id=srcdocdata["broId"],
             event_id=event.change_id,
+            delivery_type=delivery_type,
             quality_regime=quality_regime,
             defaults=dict(
                 comments=f"Failed to create {source_doc_type} source document: {e}",
@@ -737,13 +755,26 @@ def create_construction_sourcedocs(
     logger.info(str(well.quality_regime))
     logger.info(srcdocdata)
 
-    construction_request = brx.gmw_registration_request(
-        srcdoc="GMW_Construction",
-        requestReference=srcdocdata["requestReference"],
-        deliveryAccountableParty=str(delivery_accountable_party),
-        qualityRegime=well.quality_regime,
-        srcdocdata=srcdocdata,
-    )
+    if event.correction_reason is None:
+        delivery_type = "register"
+        construction_request = brx.gmw_registration_request(
+            srcdoc="GMW_Construction",
+            requestReference=srcdocdata["requestReference"],
+            deliveryAccountableParty=str(delivery_accountable_party),
+            qualityRegime=well.quality_regime,
+            srcdocdata=srcdocdata,
+        )
+    else:
+        delivery_type = "replace"
+        construction_request = brx.gmw_replace_request(
+            srcdoc="GMW_Construction",
+            correctionReason=event.correction_reason,
+            broId=event.groundwater_monitoring_well_static.bro_id,
+            requestReference=srcdocdata["requestReference"],
+            deliveryAccountableParty=str(delivery_accountable_party),
+            qualityRegime=well.quality_regime,
+            srcdocdata=srcdocdata,
+        )
     logger.info(f"formatted construction sourcedocument for event {event.change_id}")
 
     filename = srcdocdata["requestReference"] + ".xml"
@@ -760,6 +791,7 @@ def create_construction_sourcedocs(
     process_status = "succesfully_generated_Construction_request"
     models.gmw_registration_log.objects.update_or_create(
         event_id=event.change_id,
+        delivery_type = delivery_type,
         defaults=dict(
             quality_regime=well.quality_regime,
             bro_id=srcdocdata.get("broId", None),
@@ -812,29 +844,18 @@ def validate_gmw_registration_request(
     file = registration.file
     source_doc_file = os.path.join(REGISTRATIONS_DIR, file)
     payload = open(source_doc_file)
-    print(bro_info, demo)
 
-    def met_projectnummer(bro_info):
-        return bro_info.get("projectnummer") not in (None, "")
-
-    proj_str = (
-        "" if not met_projectnummer(bro_info) else f"{bro_info['projectnummer']}/"
-    )
-    url_prefix = "demo" if demo else "www"
-    upload_url = (
-        f"https://{url_prefix}.bronhouderportaal-bro.nl/api/v2/{proj_str}validatie"
-    )
     validation_info = brx.validate_sourcedoc(
         payload,
         bro_info,
         demo=demo,
     )
-    validation_status = validation_info["status"]
-
-    if validation_info["status"] == "VALIDE":
+    validation_status = validation_info.get("status")
+    validation_status = "VALIDE"
+    if validation_status == "VALIDE":
         comments = "Succesfully validated sourcedocument, no errors"
         models.gmw_registration_log.objects.update_or_create(
-            id=registration,
+            id=registration.pk,
             defaults=dict(
                 date_modified=datetime.datetime.now(),
                 comments=comments,
@@ -872,6 +893,7 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
         payload = open(source_doc_file)
         request = {file: payload}
 
+        logger.debug(f"Uploading: {request} - {bro_info} - {demo}")
         upload_info = brx.upload_sourcedocs_from_dict(
             request,
             user=bro_info["token"]["user"],
@@ -879,11 +901,12 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
             project_id=bro_info["projectnummer"],
             demo=demo,
         )
+        logger.debug(upload_info)
 
         if upload_info == "Error":
             comments = "Error occured during delivery of sourcedocument"
             models.gmw_registration_log.objects.update_or_create(
-                id=registration,
+                id=registration.id,
                 defaults={
                     "date_modified": datetime.datetime.now(),
                     "comments": comments,
@@ -892,14 +915,13 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
                 },
             )
         else:
-            print(upload_info.text)
             delivery_id = upload_info.json()["identifier"]
             delivery_status = upload_info.json()["status"]
             lastchanged = upload_info.json()["lastChanged"]
             comments = "Succesfully delivered registration sourcedocument"
 
             models.gmw_registration_log.objects.update_or_create(
-                id=registration,
+                id=registration.id,
                 defaults={
                     "date_modified": datetime.datetime.now(),
                     "comments": comments,
@@ -911,11 +933,12 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
             )
 
     except Exception as e:
+        logger.debug(f"Exception: {e}")
         comments = (
             f"Exception occured during delivery of registration sourcedocument: {e}"
         )
         models.gmw_registration_log.objects.update_or_create(
-            id=registration,
+            id=registration.id,
             defaults={
                 "date_modified": datetime.datetime.now(),
                 "comments": comments,
@@ -924,17 +947,7 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
             },
         )
 
-
-def update_event_based_on_levering(registration: models.gmw_registration_log) -> None:
-    event = models.Event.objects.get(
-        change_id=registration.event_id,
-    )
-
-    event.delivered_to_bro = True
-    event.save(update_fields=["delivered_to_bro"])
-
-
-def check_delivery_status_levering(registration: models.gmw_registration_log, bro_info):
+def check_delivery_status_levering(registration: models.gmw_registration_log, bro_info: dict):
     """
     Check the status of a registration delivery
     Logs the status of the delivery in the database
@@ -966,24 +979,20 @@ def check_delivery_status_levering(registration: models.gmw_registration_log, br
             project_id=bro_info["projectnummer"],
         )
 
-        print(upload_info.json())
         if (
             upload_info.json()["status"] == "DOORGELEVERD"
             and upload_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO"
         ):
-            record, created = models.gmw_registration_log.objects.update_or_create(
-                id=registration,
-                defaults=dict(
-                    bro_id=upload_info.json()["brondocuments"][0]["broId"],
-                    delivery_status=upload_info.json()["brondocuments"][0]["status"],
-                    last_changed=upload_info.json()["lastChanged"],
-                    comments="registration request approved",
-                    process_status="delivery_approved",
-                ),
-            )
+            registration.bro_id = upload_info.json()["brondocuments"][0]["broId"]
+            registration.delivery_status = upload_info.json()["brondocuments"][0]["status"]
+            registration.last_changed = upload_info.json()["lastChanged"]
+            registration.comments = "registration request approved"
+            registration.process_status = "delivery_approved"
 
             # Update the event
-            update_event_based_on_levering(registration)
+            models.Event.objects.filter(
+                change_id=registration.event_id,
+            ).update(delivered_to_bro=True, correction_reason=None)
 
             # Remove the sourcedocument file if delivery is approved
             file = registration.file
@@ -991,23 +1000,14 @@ def check_delivery_status_levering(registration: models.gmw_registration_log, br
             os.remove(source_doc_file)
 
         else:
-            record, created = models.gmw_registration_log.objects.update_or_create(
-                id=registration,
-                defaults=dict(
-                    delivery_status=upload_info.json()["status"],
-                    last_changed=upload_info.json()["lastChanged"],
-                    comments="registration request not yet approved",
-                ),
-            )
-
+            registration.delivery_status = upload_info.json()["brondocuments"][0]["status"]
+            registration.last_changed = upload_info.json()["lastChanged"]
+            registration.comments = "registration request not yet approved"
+        
+        registration.save()
     except Exception as e:
-        record, created = models.gmw_registration_log.objects.update_or_create(
-            id=registration,
-            defaults=dict(
-                comments=f"Error occured during status check of delivery: {e}"
-            ),
-        )
-
+        registration.comments=f"Error occured during status check of delivery: {e}"
+        registration.save(update_fields=["comments"])
 
 def get_registration_validation_status(registration):
     registration = models.gmw_registration_log.objects.get(id=registration)
@@ -1016,8 +1016,9 @@ def get_registration_validation_status(registration):
 
 
 def delete_existing_failed_registrations(event: models.Event):
+    delivery_type = "register" if event.correction_reason is None else "replace"
     models.gmw_registration_log.objects.filter(
-        event_id=event.change_id, process_status="failed_to_generate_source_documents"
+        event_id=event.change_id, process_status="failed_to_generate_source_documents", delivery_type=delivery_type
     ).delete()
 
 
@@ -1063,7 +1064,7 @@ def gmw_create_sourcedocs_wells():
         events_handler.create_type_sourcedoc(event=event)
 
 
-def delivered_but_not_approved(registration):
+def delivered_but_not_approved(registration: models.gmw_registration_log) -> bool:
     """
     Checks if a registration is delivered but not yet approved.
     """
@@ -1073,9 +1074,7 @@ def delivered_but_not_approved(registration):
         and registration.delivery_id is not None
     ):
         return True
-
-    else:
-        return False
+    return False
 
 
 def gmw_check_existing_registrations():

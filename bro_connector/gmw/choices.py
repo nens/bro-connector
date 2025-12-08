@@ -469,3 +469,10 @@ COLLISION_PROTECTION_TYPES = (
     ("hekwerk", "hekwerk"),
     ("onbekend", "onbekend"),
 )
+
+CORRECTION_REASON_OPTIONS = (
+    ("eigenCorrectie", "Eigen correctie"),
+    ("inOnderzoek", "In onderzoek"),
+    ("kwaliteitsregime", "Kwaliteitsregime"),
+    ("bronhouder", "bronhouder"),
+)

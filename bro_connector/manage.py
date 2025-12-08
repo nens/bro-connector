@@ -10,12 +10,14 @@ from main.settings.base import ENV
 
 def main():
     """Run administrative tasks."""
-    logging.basicConfig(level=logging.INFO)
     if ENV == "production":
+        logging.basicConfig(level=logging.INFO)
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.production")
     elif ENV == "staging":
+        logging.basicConfig(level=logging.INFO)
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.staging")
     elif ENV == "development" or ENV == "demo":
+        logging.basicConfig(level=logging.DEBUG)
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.development")
 
     try:

@@ -25,7 +25,7 @@ class DjangoTableToDict:
         self.geo_ohm_cables = {}
         self.electrodes = {}
 
-    def update_static_well(self, well) -> dict:
+    def update_static_well(self, well: models.GroundwaterMonitoringWellStatic) -> dict:
         static_well_data = {
             "deliveryAccountableParty": well.delivery_accountable_party,
             "deliveryResponsibleParty": well.delivery_responsible_party,
@@ -216,95 +216,4 @@ def getConstruction():
 def getAllIntermediateEvents():
     return models.Event.objects.filter(delivered_to_bro=False).exclude(
         event_name="constructie"
-    )
-
-
-def getWellHeadProtector():
-    return models.Event.objects.filter(
-        event_name="beschermconstructieVeranderd",
-        delivered_to_bro=False,
-    )
-
-
-def getLengthening():
-    return models.Event.objects.filter(
-        event_name="buisOpgelengd",
-        delivered_to_bro=False,
-    )
-
-
-def getShortening():
-    return models.Event.objects.filter(
-        event_name="buisIngekort",
-        delivered_to_bro=False,
-    )
-
-
-def getGroundLevelMeasuring():
-    return models.Event.objects.filter(
-        event_name="nieuweInmetingMaaiveld",
-        delivered_to_bro=False,
-    )
-
-
-def getPositionsMeasuring():
-    return models.Event.objects.filter(
-        event_name="nieuweInmetingPosities",
-        delivered_to_bro=False,
-    )
-
-
-def getGroundLevel():
-    return models.Event.objects.filter(
-        event_name="nieuweBepalingMaaiveld",
-        delivered_to_bro=False,
-    )
-
-
-def getOwner():
-    return models.Event.objects.filter(
-        event_name="eigenaarVeranderd",
-        delivered_to_bro=False,
-    )
-
-
-def getPositions():
-    return models.Event.objects.filter(
-        event_name="inmeting",
-        delivered_to_bro=False,
-    )
-
-
-def getElectrodeStatus():
-    return models.Event.objects.filter(
-        event_name="electrodeStatus",
-        delivered_to_bro=False,
-    )
-
-
-def getMaintainer():
-    return models.Event.objects.filter(
-        event_name="onderhouderVeranderd",
-        delivered_to_bro=False,
-    )
-
-
-def getTubeStatus():
-    return models.Event.objects.filter(
-        event_name="buisstatusVeranderd",
-        delivered_to_bro=False,
-    )
-
-
-def getInsertion():
-    return models.Event.objects.filter(
-        event_name="buisdeelIngeplaatst",
-        delivered_to_bro=False,
-    )
-
-
-def getShift():
-    return models.Event.objects.filter(
-        event_name="maaiveldVerlegd",
-        delivered_to_bro=False,
     )
