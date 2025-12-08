@@ -61,12 +61,15 @@ def handle_start_registrations(
     # Handle start registrations
     tube_number = dossier.groundwater_monitoring_tube.tube_number
 
+    delivery_type = "register" if dossier.correction_reason is None else "replace"
+
     gld = gld_sync_to_bro.GldSyncHandler()
 
     gld_registration_logs = gld_registration_log.objects.filter(
         gmw_bro_id=well.bro_id,
         filter_number=tube_number,
         quality_regime=well.quality_regime,
+        delivery_type=delivery_type,
     )
     logger.info(
         f"Found {gld_registration_logs.count()} existing registration logs for well {well.bro_id} and tube {tube_number}"
@@ -78,13 +81,12 @@ def handle_start_registrations(
         # Create a new configuration by creating startregistration sourcedocs
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
-        if deliver and not dossier.gld_bro_id:
+        if deliver and not dossier.gld_bro_id or delivery_type == "replace":
             gld._set_bro_info(well)
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
             registration = gld.create_start_registration_sourcedocs(
-                well,
-                tube_number,
+                dossier
             )
             logger.info(f"Registration created: {registration}")
             registration.validate_sourcedocument()
@@ -211,7 +213,7 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
 
     # Create GLD Registration Log
     print(f"Check and deliver for dossier {dossier.groundwater_level_dossier_id}")
-    if is_broid(dossier.gld_bro_id):
+    if is_broid(dossier.gld_bro_id) and dossier.correction_reason is None:
         gld_start_registration = gld_registration_log.objects.update_or_create(
             gmw_bro_id=dossier.gmw_bro_id,
             gld_bro_id=dossier.gld_bro_id,
@@ -228,10 +230,12 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
             ),
         )[0]
     else:
+        delivery_type = "register" if dossier.correction_reason is None else "replace"
         gld_start_registration = gld_registration_log.objects.update_or_create(
             gmw_bro_id=dossier.gmw_bro_id,
             gld_bro_id=dossier.gld_bro_id,
             filter_number=dossier.tube_number,
+            delivery_type=delivery_type,
             quality_regime=dossier.quality_regime
             if dossier.quality_regime
             else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,

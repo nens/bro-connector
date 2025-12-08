@@ -214,26 +214,6 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     return source_document_data, addition_type
 
 
-def get_gld_registration_data_for_observation(observation: models.Observation):
-    """
-    Each observation has a GLD id and GWM id
-    When delivering the observations we get the GLD id from the observation
-    We use the GWM id to get the quality regime for the well in which the measurement was taken
-    """
-
-    # Get the GLD bro id
-    gld = observation.groundwater_level_dossier
-    gld_bro_id = gld.gld_bro_id
-    gmw_bro_id = gld.gmw_bro_id
-
-    # Get the quality regime for the well
-    # TODO quality regime changes, new well in database?
-    gmw_well = GroundwaterMonitoringWellStatic.objects.get(bro_id=gmw_bro_id)
-    quality_regime = gmw_well.quality_regime
-
-    return gld_bro_id, quality_regime
-
-
 def form_addition_type(observation: models.Observation) -> str:
     if observation.observation_type == "controlemeting":
         return "controlemeting"
@@ -314,43 +294,56 @@ class GldSyncHandler:
 
     def create_start_registration_sourcedocs(
         self,
-        well: GroundwaterMonitoringWellStatic,
-        filtrnr,
+        dossier: models.GroundwaterLevelDossier,
     ) -> models.gld_registration_log:
         """
         Try to create startregistration sourcedocuments for a well/tube/quality regime
         Startregistration requests are saved to .xml file in startregistrations folder
         """
+        well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+        tube_number = dossier.groundwater_monitoring_tube.tube_number
+
         bro_id_gmw = well.bro_id
         internal_id = well.internal_id
-        quality_regime = well.quality_regime
+        quality_regime = dossier.quality_regime
         delivery_accountable_party = set_delivery_accountable_party(well, self.is_demo)
-        print("Delivery accountable party: ", delivery_accountable_party)
         try:
-            monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filtrnr}]
+            monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": tube_number}]
 
-            if self.monitoringnetworks is None:
+            if dossier.groundwater_monitoring_net.count() == 0:
                 srcdocdata = {
-                    "objectIdAccountableParty": f"{internal_id}{str(filtrnr)}",
+                    "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
                     "monitoringPoints": monitoringpoints,
                 }
             else:
                 srcdocdata = {
-                    "objectIdAccountableParty": f"{internal_id}{str(filtrnr)}",
-                    "groundwaterMonitoringNets": self.monitoringnetworks,  #
+                    "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
+                    "groundwaterMonitoringNets": dossier.groundwater_monitoring_net.all().values_list("gmn_bro_id"),  #
                     "monitoringPoints": monitoringpoints,
                 }
 
             request_reference = (
-                f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(filtrnr)}"
+                f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(tube_number)}"
             )
-            gld_startregistration_request = brx.gld_registration_request(
-                srcdoc="GLD_StartRegistration",
-                requestReference=request_reference,
-                deliveryAccountableParty=delivery_accountable_party,
-                qualityRegime=quality_regime,
-                srcdocdata=srcdocdata,
-            )
+
+            delivery_type = "register" if dossier.correction_reason is None else "replace"
+            if delivery_type == "register":
+                gld_startregistration_request = brx.gld_registration_request(
+                    srcdoc="GLD_StartRegistration",
+                    requestReference=request_reference,
+                    deliveryAccountableParty=delivery_accountable_party,
+                    qualityRegime=quality_regime,
+                    srcdocdata=srcdocdata,
+                )
+            else:
+                gld_startregistration_request = brx.gld_replace_request(
+                    srcdoc="GLD_StartRegistration",
+                    correctionReason=dossier.correction_reason, # Have to take this from GroundwaterLeveldossier somehow
+                    requestReference=request_reference,
+                    deliveryAccountableParty=delivery_accountable_party,
+                    qualityRegime=quality_regime,
+                    srcdocdata=srcdocdata,
+                )
 
             filename = request_reference + ".xml"
             gld_startregistration_request.generate()
@@ -360,7 +353,7 @@ class GldSyncHandler:
             process_status = "succesfully_generated_startregistration_request"
             return models.gld_registration_log.objects.update_or_create(
                 gmw_bro_id=bro_id_gmw,
-                filter_number=filtrnr,
+                filter_number=tube_number,
                 quality_regime=quality_regime,
                 defaults=dict(
                     comments="Succesfully generated startregistration request",
@@ -375,7 +368,7 @@ class GldSyncHandler:
             process_status = "failed_to_generate_source_documents"
             return models.gld_registration_log.objects.update_or_create(
                 gmw_bro_id=bro_id_gmw,
-                filter_number=filtrnr,
+                filter_number=tube_number,
                 quality_regime=quality_regime,
                 defaults=dict(
                     comments=f"Failed to create startregistration source document: {e}",
@@ -517,15 +510,12 @@ class GldSyncHandler:
                 registration.process_status = "delivery_approved"
                 registration.save()
 
-                tube = models.GroundwaterMonitoringTubeStatic.objects.get(
-                    groundwater_monitoring_well_static__bro_id=registration.gmw_bro_id,
-                    tube_number=registration.filter_number,
-                )
-                gld = models.GroundwaterLevelDossier.objects.get(
-                    groundwater_monitoring_tube=tube
-                )
-                gld.gld_bro_id = upload_info.json()["brondocuments"][0]["broId"]
-                gld.save()
+                gld = registration.groundwaterleveldossier
+                if gld is not None:
+                    gld.gld_bro_id = upload_info.json()["brondocuments"][0]["broId"]
+                    gld.save()
+                else:
+                    registration.comments += f"\nCould not find groundwaterleveldossier with GMW-FilterNR-Quality: {registration.gmw_bro_id}-{registration.filter_number}-{registration.quality_regime}"
 
                 # Remove the sourcedocument file if delivery is approved
                 file = registration.file
@@ -550,61 +540,44 @@ class GldSyncHandler:
         This will not interfere with additions, as a check will be done on registration availibility
         """
 
-        gwm_wells = GroundwaterMonitoringWellStatic.objects.all()
+        dossiers = models.GroundwaterLevelDossier.objects.filter(
+            gld_bro_id__isnull=True
+        )
         # Loop over all GMW objects in the database
-        for well in gwm_wells:
+        for dossier in dossiers:
             # Ignore wells that are not (yet) delivered to BRO
-            if well.deliver_gmw_to_bro is False:
+            if dossier.groundwater_monitoring_tube.deliver_gld_to_bro is False:
                 continue
 
-            # Get some well properties
-            quality_regime = "IMBRO"  ## FIXME: derive from GLD
-
-            # Loop over all filters within the well
-            for tube in well.tube.all():
-                tube_id = tube.tube_number
-
-                # Ignore filters that should not be delivered to BRO
-                if tube.deliver_gld_to_bro is False:
-                    continue
-
-                # Check if there is already a registration for this tube
-                if not models.gld_registration_log.objects.filter(
-                    gmw_bro_id=well.bro_id,
-                    filter_number=tube_id,
-                    quality_regime=quality_regime,
-                ).exists():
-                    # There is not a GLD registration object with this configuration
-                    # Create a new configuration by creating startregistration sourcedocs
-                    # By creating the sourcedocs (or failng to do so), a registration is made in the database
-                    # This registration is used to track the progress of the delivery in further steps
-                    # Check if a GLD already has a start registration
-                    gld = models.GroundwaterLevelDossier.objects.get(
-                        groundwater_monitoring_tube=tube
-                    )
-
-                    if gld.gld_bro_id:
-                        models.gld_registration_log.objects.get_or_create(
-                            gmw_bro_id=gld.gmw_bro_id,
-                            gld_bro_id=gld.gld_bro_id,
-                            filter_number=gld.tube_number,
+            delivery_type = "register" if dossier.correction_reason is None else "replace"
+            # Check if there is already a registration for this tube
+            if not models.gld_registration_log.objects.filter(
+                gmw_bro_id=dossier.gmw_bro_id,
+                filter_number=dossier.tube_number,
+                quality_regime=dossier.quality_regime,
+                delivery_type=delivery_type,
+            ).exists():
+                if dossier.gld_bro_id and delivery_type == "register":
+                    models.gld_registration_log.objects.get_or_create(
+                        gmw_bro_id=dossier.gmw_bro_id,
+                        gld_bro_id=dossier.gld_bro_id,
+                        filter_number=dossier.tube_number,
+                        delivery_type="register",
+                        defaults=dict(
+                            validation_status="VALID",
+                            delivery_id=None,
                             delivery_type="register",
-                            defaults=dict(
-                                validation_status="VALID",
-                                delivery_id=None,
-                                delivery_type="register",
-                                delivery_status="OPGENOMEN_LVBRO",
-                                comments="Imported into BRO-Connector.",
-                                quality_regime=gld.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
-                            ),
-                        )
-                        continue
-
-                    gld_registration_log = self.create_start_registration_sourcedocs(
-                        well,
-                        tube_id,
+                            delivery_status="OPGENOMEN_LVBRO",
+                            comments="Imported into BRO-Connector.",
+                            quality_regime=dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+                        ),
                     )
-                    self.deliver_startregistration_sourcedocuments(gld_registration_log)
+                    continue
+                
+                gld_registration_log = self.create_start_registration_sourcedocs(
+                    dossier
+                )
+                self.deliver_startregistration_sourcedocuments(gld_registration_log)
 
     def read_observation_id_from_xml(self, xml_string) -> str:
         # Define the namespaces
@@ -645,9 +618,13 @@ class GldSyncHandler:
         None.
 
         """
-        well = GroundwaterMonitoringWellStatic.objects.get(
-            bro_id=registration.gmw_bro_id
-        )
+        dossier = registration.groundwaterleveldossier
+        if dossier is None:
+            registration.comments += f"\nCannot find groundwaterleveldossier with GMW-FilterNR-Quality: {registration.gmw_bro_id}-{registration.filter_number}-{registration.quality_regime}."
+            registration.save(update_fields=["comments"])
+            return
+        
+        well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
         self._set_bro_info(well)
 
         logger.info(self.bro_info)
@@ -669,7 +646,7 @@ class GldSyncHandler:
                 logger.error(
                     "Failed to generate source documents, so registration log is invalid somehow."
                 )
-                self.create_start_registration_sourcedocs(well, registration)
+                self.create_start_registration_sourcedocs(dossier)
                 return
             # Validate the created sourcedocument
             if (
@@ -747,9 +724,8 @@ class GldSyncHandler:
 
         measurement_timeseries_tvp = get_timeseries_tvp_for_observation_id(observation)
 
-        gld_bro_id, quality_regime = get_gld_registration_data_for_observation(
-            observation
-        )
+        gld_bro_id = observation.groundwater_level_dossier.gld_bro_id
+        quality_regime = observation.groundwater_level_dossier.quality_regime
 
         # try to create source document
         try:

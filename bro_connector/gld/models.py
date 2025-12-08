@@ -27,6 +27,7 @@ from main.models import BaseModel
 from .choices import (
     AIRPRESSURECOMPENSATIONTYPE,
     CENSORREASON,
+    CORRECTION_REASON,
     DELIVERY_TYPE_CHOICES,
     EVALUATIONPROCEDURE,
     MEASUREMENTINSTRUMENTTYPE,
@@ -132,12 +133,12 @@ class GroundwaterLevelDossier(BaseModel):
         blank=True,
         verbose_name="Kwaliteitsregime",
     )
-    # correction_reason = models.CharField(
-    #     choices=CORRECTION_REASON,
-    #     null=True,
-    #     blank=True,
-    #     verbose_name="Correctie reden"
-    # )
+    correction_reason = models.CharField(
+        choices=CORRECTION_REASON,
+        null=True,
+        blank=True,
+        verbose_name="Correctie reden"
+    )
     research_start_date = models.DateField(
         blank=True, null=True, verbose_name="Onderzoeksstartdatum"
     )
@@ -303,12 +304,12 @@ class Observation(BaseModel):
         default=False, editable=False, verbose_name="Up to date in BRO"
     )
 
-    # correction_reason = models.CharField(
-    #     choices=CORRECTION_REASON,
-    #     null=True,
-    #     blank=True,
-    #     verbose_name="Correctie reden"
-    # )
+    correction_reason = models.CharField(
+        choices=CORRECTION_REASON,
+        null=True,
+        blank=True,
+        verbose_name="Correctie reden"
+    )
 
     observation_id_bro = models.CharField(
         max_length=200,
@@ -826,6 +827,30 @@ class gld_registration_log(BaseModel):
             )
         ]
 
+    @property
+    def groundwaterleveldossier(self) -> GroundwaterLevelDossier | None:
+        groundwater_monitoring_well = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
+        tube = groundwater_monitoring_well.tube.get(tube_number=self.filter_number)
+        try:
+            return GroundwaterLevelDossier.objects.get(
+                groundwater_monitoring_tube=tube,
+                quality_regime=self.quality_regime,
+            )
+        except GroundwaterLevelDossier.MultipleObjectsReturned:
+            return None
+        except GroundwaterLevelDossier.DoesNotExist:
+            return None
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            db = gld_registration_log.objects.get(self.pk)
+            if self.delivery_status == "OPGENOMEN_LVBRO" and db.delivery_status != "OPGENOMEN_LVBRO":
+                gld = self.groundwaterleveldossier
+                gld.correction_reason = None
+                gld.save(update_fields=["correction_reason"])
+        
+        super().save(*args, **kwargs)
+
     def generate_sourcedocument(
         self,
     ) -> str:
@@ -861,13 +886,24 @@ class gld_registration_log(BaseModel):
         request_reference = (
             f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(filternumber)}"
         )
-        gld_startregistration_request = brx.gld_registration_request(
-            srcdoc="GLD_StartRegistration",
-            requestReference=request_reference,
-            deliveryAccountableParty=delivery_accountable_party,
-            qualityRegime=quality_regime,
-            srcdocdata=srcdocdata,
-        )
+        if self.delivery_type == "register":
+            gld_startregistration_request = brx.gld_registration_request(
+                srcdoc="GLD_StartRegistration",
+                requestReference=request_reference,
+                deliveryAccountableParty=delivery_accountable_party,
+                qualityRegime=quality_regime,
+                srcdocdata=srcdocdata,
+            )
+        else:
+            correction_reason = self.groundwaterleveldossier.correction_reason 
+            gld_startregistration_request = brx.gld_replace_request(
+                srcdoc="GLD_StartRegistration",
+                correctionReason=correction_reason,
+                requestReference=request_reference,
+                deliveryAccountableParty=delivery_accountable_party,
+                qualityRegime=quality_regime,
+                srcdocdata=srcdocdata,
+            )
 
         filename = request_reference + ".xml"
         gld_startregistration_request.generate()
@@ -1010,6 +1046,11 @@ class gld_registration_log(BaseModel):
             self.last_changed = delivery_info.json()["lastChanged"]
             self.process_status = "delivery_status_checked"
 
+            if self.delivery_status == "OPGENOMEN_LVBRO" and self.delivery_type == "replace":
+                gld = self.groundwaterleveldossier
+                gld.correction_reason = None
+                gld.save(update_fields=["correction_reason"])
+
         except Exception as e:
             logger.info(f"Failed to check delivery status: {e}")
             delivery_status = "failed_to_deliver"
@@ -1113,8 +1154,6 @@ class gld_addition_log(BaseModel):
                 broId=self.observation.groundwater_level_dossier.gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,
             )
-            print(gld_addition_registration_request)
-
             gld_addition_registration_request.generate()
             gld_addition_registration_request.write_request(
                 output_dir=ADDITION_DIR, filename=filename

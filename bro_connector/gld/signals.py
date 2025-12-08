@@ -74,13 +74,7 @@ def on_save_gld_registration_log(
     sender, instance: gld_registration_log, created, **kwargs
 ):
     if instance.gld_bro_id is not None:
-        tube = GroundwaterMonitoringTubeStatic.objects.get(
-            groundwater_monitoring_well_static__bro_id=instance.gmw_bro_id,
-            tube_number=instance.filter_number,
-        )
-        gld = GroundwaterLevelDossier.objects.get(
-            groundwater_monitoring_tube=tube, quality_regime=instance.quality_regime
-        )
+        gld = instance.groundwaterleveldossier
         if gld.gld_bro_id != instance.gld_bro_id:
             with reversion.create_revision():
                 gld.gld_bro_id = instance.gld_bro_id
