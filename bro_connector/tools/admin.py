@@ -194,16 +194,17 @@ class GLDImportAdmin(admin.ModelAdmin):
 
 class GMNImportAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
+        "__str__",
+        "monitoring_network",
         "validated",
         "executed",
     )
-
     list_filter = (
         "validated",
         "executed",
     )
 
+    
     def save_model(self, request, obj, form, change):
         # Save the object first
         super().save_model(request, obj, form, change)

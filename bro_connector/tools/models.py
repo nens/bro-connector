@@ -22,6 +22,7 @@ from gmn.choices import (
     PROVINCIE_NAMEN,
 )
 from gmw.models import GroundwaterMonitoringTubeStatic
+from gmn.models import GroundwaterMonitoringNet
 from main.models import BaseModel
 from tools.choices import BRO_HANDLERS, BRO_TYPES
 
@@ -288,58 +289,7 @@ class GMNImport(BaseModel):
         blank=True,
         verbose_name="Meetpunten bestand",
     )
-    name = models.CharField(
-        max_length=255, null=True, blank=False, verbose_name="Meetnet"
-    )
-    province_name = models.CharField(
-        max_length=50,
-        choices=PROVINCIE_NAMEN,
-        verbose_name="Provincie",
-        blank=False,
-        null=False,
-    )
-    bro_domain = models.CharField(
-        max_length=50,
-        choices=BRO_DOMEINEN,
-        verbose_name="BRO Domein",
-        blank=False,
-        null=False,
-    )
-    regio = models.CharField(
-        max_length=100, verbose_name="Regio", blank=True, null=True
-    )
-    delivery_context = models.CharField(
-        blank=False,
-        max_length=235,
-        verbose_name="Kader aanlevering",
-        choices=KADER_AANLEVERING_GMN,
-    )
-    monitoring_purpose = models.CharField(
-        blank=False,
-        max_length=235,
-        verbose_name="Monitoringdoel",
-        choices=MONITORINGDOEL,
-    )
-    groundwater_aspect = models.CharField(
-        blank=False,
-        max_length=235,
-        verbose_name="Grondwateraspect",
-        choices=(
-            ("kwaliteit", "kwaliteit"),
-            ("kwantiteit", "kwantiteit"),
-        ),
-    )
-    start_date_monitoring = models.DateField(blank=False, null=True)
-    quality_regime = models.CharField(
-        choices=(
-            ("IMBRO", "IMBRO"),
-            ("IMBRO/A", "IMBRO/A"),
-        ),
-        max_length=255,
-        null=True,
-        blank=False,
-        verbose_name="Kwaliteitsregime",
-    )
+    monitoring_network = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, null=False, blank=False)
     validated = models.BooleanField(
         null=True, blank=True, default=True, editable=False, verbose_name="Gevalideerd"
     )
@@ -354,7 +304,7 @@ class GMNImport(BaseModel):
     )
 
     def __str__(self):
-        return self.name
+        return f"Import_{self.monitoring_network.name}_{self.date_created.date()}"
 
     class Meta:
         managed = True
