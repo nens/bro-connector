@@ -1,4 +1,7 @@
+import csv
+
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from gmn.management.tasks.gmn_sync import sync_gmn
@@ -16,14 +19,34 @@ from .models import (
 )
 
 
+def Export_selected_items_to_csv(self, request, queryset):
+    meta = self.model._meta
+    field_names = [field.name for field in meta.fields]
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f"attachment; filename={meta}.csv"
+    writer = csv.writer(response)
+
+    writer.writerow(field_names)
+    for obj in queryset:
+        writer.writerow([getattr(obj, field) for field in field_names])
+
+    return response
+
+
+admin.site.add_action(Export_selected_items_to_csv)
+
+
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
+
 
 class SubgroupMeasuringPointInline(admin.TabularInline):
     model = MeasuringPoint.subgroup.through
     extra = 0
     verbose_name = "Meetpunt"
     verbose_name_plural = "Meetpunten"
+
 
 class MeasuringPointsInline(admin.TabularInline):
     model = MeasuringPoint

@@ -1,3 +1,4 @@
+import csv
 import datetime
 import logging
 from urllib.parse import urlencode
@@ -7,7 +8,10 @@ import main.utils.validators_admin as validators_admin
 import reversion
 from django.contrib import admin, messages
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 from django.db.models import fields
+from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from gld.models import GroundwaterLevelDossier
@@ -69,6 +73,40 @@ def create_or_delete_tubes(
     #     for tube in tubes_to_delete:
     #         tube.delete()
 
+
+def Export_selected_items_to_csv(self, request, queryset):
+    meta = self.model._meta
+    field_names = [field.name for field in meta.fields]
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f"attachment; filename={meta}.csv"
+    writer = csv.writer(response)
+
+    writer.writerow(field_names)
+    for obj in queryset:
+        writer.writerow([getattr(obj, field) for field in field_names])
+
+    return response
+
+
+admin.site.add_action(Export_selected_items_to_csv)
+
+class BroIdNullFilter(admin.SimpleListFilter):
+    title = _('Met/Zonder BRO-ID')  # label in the sidebar
+    parameter_name = 'bro_id_null'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', _('Geen BRO-ID')),
+            ('no', _('Met BRO-ID')),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(bro_id__isnull=True)
+        if self.value() == 'no':
+            return queryset.filter(bro_id__isnull=False)
+        return queryset
 
 class EventsInline(admin.TabularInline):
     model = gmw_models.Event
@@ -387,6 +425,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         "nitg_code",
         "well_code",
         "in_management",
+        BroIdNullFilter
     )
     readonly_fields = (
         "well_code",
@@ -605,7 +644,9 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     @admin.action(description="Lever GMW aan BRO")
-    def deliver_to_bro(self, request, queryset: list[gmw_models.GroundwaterMonitoringWellStatic]):
+    def deliver_to_bro(
+        self, request, queryset: list[gmw_models.GroundwaterMonitoringWellStatic]
+    ):
         for well in queryset:
             if well.in_management is False:
                 self.message_user(
@@ -998,7 +1039,7 @@ class EventAdmin(admin.ModelAdmin):
                     obj.groundwater_monitoring_well_dynamic
                 )
             else:
-                valid_ws, report_ws = False, "No dynamic well\n"
+                valid_wd, report_wd = False, "No dynamic well\n"
 
             valid_ws, report_ws = validate_well_static(
                 obj.groundwater_monitoring_well_static

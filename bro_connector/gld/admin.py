@@ -1,3 +1,4 @@
+import csv
 import datetime
 import os
 from collections import Counter
@@ -5,6 +6,7 @@ from collections import Counter
 import reversion
 from django.contrib import admin, messages
 from django.db.models import fields
+from django.http import HttpResponse
 from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
 )
@@ -23,6 +25,24 @@ from .custom_filters import (
     OrganisationFilter,
     TubeFilter,
 )
+
+
+def Export_selected_items_to_csv(self, request, queryset):
+    meta = self.model._meta
+    field_names = [field.name for field in meta.fields]
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f"attachment; filename={meta}.csv"
+    writer = csv.writer(response)
+
+    writer.writerow(field_names)
+    for obj in queryset:
+        writer.writerow([getattr(obj, field) for field in field_names])
+
+    return response
+
+
+admin.site.add_action(Export_selected_items_to_csv)
 
 
 def _register(model, admin_class):

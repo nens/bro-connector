@@ -1,5 +1,8 @@
+import csv
+
 from django.contrib import admin
 from django.db.models import Model, fields
+from django.http import HttpResponse
 from main.management.commands.frd_sync_to_bro import FRDSync
 from reversion_compare.helpers import patch_admin
 
@@ -19,6 +22,24 @@ from .models import (
     InstrumentConfiguration,
     MeasurementConfiguration,
 )
+
+
+def Export_selected_items_to_csv(self, request, queryset):
+    meta = self.model._meta
+    field_names = [field.name for field in meta.fields]
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f"attachment; filename={meta}.csv"
+    writer = csv.writer(response)
+
+    writer.writerow(field_names)
+    for obj in queryset:
+        writer.writerow([getattr(obj, field) for field in field_names])
+
+    return response
+
+
+admin.site.add_action(Export_selected_items_to_csv)
 
 
 def _register(model: Model, admin_class: admin.ModelAdmin):
