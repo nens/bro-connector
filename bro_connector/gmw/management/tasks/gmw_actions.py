@@ -2,8 +2,8 @@ import logging
 import os
 
 import reversion
-from django.apps import apps
 from bro.models import Organisation
+from django.apps import apps
 from gmw.models import (
     Event,
     GroundwaterMonitoringWellStatic,
@@ -27,6 +27,7 @@ def form_bro_info(well: GroundwaterMonitoringWellStatic) -> dict:
         "token": _get_token(well.delivery_accountable_party),
         "projectnummer": well.project_number,
     }
+
 
 def _get_registrations_dir(app: str):
     app_config = apps.get_app_config(app)
@@ -57,19 +58,23 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
 
     # Pak de construction events, filter welke events al in de BRO staan
     construction_events = well.event.filter(
-            groundwater_monitoring_well_static=well,
-            event_name="constructie",
-            delivered_to_bro=False,
-        )
+        groundwater_monitoring_well_static=well,
+        event_name="constructie",
+        delivered_to_bro=False,
+    )
 
     # Check if a registrations directory has been made.
     create_registrations_folder()
 
     events_handler = gmw_sync.EventsHandler()
-    logger.debug(f"Processing well: {well} with {construction_events.count()} construction events.")
+    logger.debug(
+        f"Processing well: {well} with {construction_events.count()} construction events."
+    )
     for construction in construction_events:
         logger.debug(f"Processing {construction}")
-        delivery_type = "register" if construction.correction_reason is None else "replace"
+        delivery_type = (
+            "register" if construction.correction_reason is None else "replace"
+        )
         if gmw_registration_log.objects.filter(
             event_id=construction.change_id,
             delivery_type=delivery_type,
@@ -79,7 +84,7 @@ def check_and_deliver(well: GroundwaterMonitoringWellStatic) -> None:
                 f"Registration for construction event {construction} already exists. Skipping creation.",
             )
             continue
-        
+
         events_handler.create_construction(event=construction)
 
     for event in well.event.exclude(event_name="constructie").filter(

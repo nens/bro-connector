@@ -12,6 +12,7 @@ from gmw.choices import (
     BOOLEAN_CHOICES,
     COLLISION_PROTECTION_TYPES,
     CONSTRUCTIONSTANDARD,
+    CORRECTION_REASON_OPTIONS,
     DELIVERY_TYPE_CHOICES,
     DELIVERYCONTEXT,
     DEPTH_CHOICES,
@@ -28,7 +29,6 @@ from gmw.choices import (
     LOCALVERTICALREFERENCEPOINT,
     LOCKS,
     QUALITYREGIME,
-    CORRECTION_REASON_OPTIONS,
     SALINITY_CHOICES,
     SOCKMATERIAL,
     TUBEMATERIAL,
@@ -1044,7 +1044,7 @@ class Event(BaseModel):
         choices=CORRECTION_REASON_OPTIONS,
         null=True,
         blank=True,
-        verbose_name="Correctie reden"
+        verbose_name="Correctie reden",
     )
     delivered_to_bro = models.BooleanField(
         blank=True, default=False, verbose_name="Aangeleverd aan BRO"
@@ -1070,7 +1070,7 @@ class Event(BaseModel):
             current_db = Event.objects.get(change_id=self.change_id)
             if current_db.correction_reason != self.correction_reason:
                 self.delivered_to_bro = False
-        
+
         super().save(*args, **kwargs)
 
 

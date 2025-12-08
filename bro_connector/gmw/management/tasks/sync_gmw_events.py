@@ -691,9 +691,7 @@ def create_sourcedocs(
 
         filename = request_reference + ".xml"
         gmw_request.generate()
-        gmw_request.write_request(
-            output_dir=REGISTRATIONS_DIR, filename=filename
-        )
+        gmw_request.write_request(output_dir=REGISTRATIONS_DIR, filename=filename)
 
         process_status = f"succesfully_generated_{source_doc_type}_request"
         models.gmw_registration_log.objects.update_or_create(
@@ -791,7 +789,7 @@ def create_construction_sourcedocs(
     process_status = "succesfully_generated_Construction_request"
     models.gmw_registration_log.objects.update_or_create(
         event_id=event.change_id,
-        delivery_type = delivery_type,
+        delivery_type=delivery_type,
         defaults=dict(
             quality_regime=well.quality_regime,
             bro_id=srcdocdata.get("broId", None),
@@ -947,7 +945,10 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
             },
         )
 
-def check_delivery_status_levering(registration: models.gmw_registration_log, bro_info: dict):
+
+def check_delivery_status_levering(
+    registration: models.gmw_registration_log, bro_info: dict
+):
     """
     Check the status of a registration delivery
     Logs the status of the delivery in the database
@@ -978,13 +979,16 @@ def check_delivery_status_levering(registration: models.gmw_registration_log, br
             demo=demo,
             project_id=bro_info["projectnummer"],
         )
+        logger.info(upload_info.json())
 
         if (
             upload_info.json()["status"] == "DOORGELEVERD"
             and upload_info.json()["brondocuments"][0]["status"] == "OPGENOMEN_LVBRO"
         ):
             registration.bro_id = upload_info.json()["brondocuments"][0]["broId"]
-            registration.delivery_status = upload_info.json()["brondocuments"][0]["status"]
+            registration.delivery_status = upload_info.json()["brondocuments"][0][
+                "status"
+            ]
             registration.last_changed = upload_info.json()["lastChanged"]
             registration.comments = "registration request approved"
             registration.process_status = "delivery_approved"
@@ -1000,25 +1004,27 @@ def check_delivery_status_levering(registration: models.gmw_registration_log, br
             os.remove(source_doc_file)
 
         else:
-            registration.delivery_status = upload_info.json()["brondocuments"][0]["status"]
+            registration.delivery_status = upload_info.json()["brondocuments"][0][
+                "status"
+            ]
             registration.last_changed = upload_info.json()["lastChanged"]
-            registration.comments = "registration request not yet approved"
-        
+            brondocument = upload_info.json()["brondocuments"][0]
+            if "errors" in brondocument:
+                registration.comments = f"{brondocument['errors']}"
+            else:
+                registration.comments = "registration request not yet approved"
+
         registration.save()
     except Exception as e:
-        registration.comments=f"Error occured during status check of delivery: {e}"
+        registration.comments = f"Error occured during status check of delivery: {e}"
         registration.save(update_fields=["comments"])
-
-def get_registration_validation_status(registration):
-    registration = models.gmw_registration_log.objects.get(id=registration)
-    validation_status = registration.validation_status
-    return validation_status
-
 
 def delete_existing_failed_registrations(event: models.Event):
     delivery_type = "register" if event.correction_reason is None else "replace"
     models.gmw_registration_log.objects.filter(
-        event_id=event.change_id, process_status="failed_to_generate_source_documents", delivery_type=delivery_type
+        event_id=event.change_id,
+        process_status="failed_to_generate_source_documents",
+        delivery_type=delivery_type,
     ).delete()
 
 
@@ -1112,7 +1118,6 @@ def gmw_check_existing_registrations():
 
         source_doc_type = registration.event_type
         bro_info = form_bro_info(event.groundwater_monitoring_well_static)
-        print(bro_info)
         if bro_info_missing(
             bro_info, event.groundwater_monitoring_well_static.__str__()
         ):
@@ -1122,7 +1127,7 @@ def gmw_check_existing_registrations():
             # The registration has been delivered, but not yet approved
             check_delivery_status_levering(registration, REGISTRATIONS_DIR, bro_info)
             continue
-
+        
         if (
             registration.process_status
             == f"succesfully_generated_{source_doc_type}_request"
@@ -1132,13 +1137,14 @@ def gmw_check_existing_registrations():
                 bro_info,
             )
 
+
         # If an error occured during validation, try again
         # Failed to validate sourcedocument doesn't mean the document is valid/invalid
         # It means something went wrong during validation (e.g BRO server error)
         # Even if a document is invalid, the validation process has succeeded and won't be reattempted
         elif (
             registration.process_status == "failed_to_validate_source_documents"
-            or get_registration_validation_status(registration) != "VALIDE"
+            or registration.validation_status != "VALIDE"
         ):
             # If we failed to validate the sourcedocument, try again
             # TODO maybe limit amount of retries? Do not expect validation to fail multiple times..
@@ -1150,7 +1156,7 @@ def gmw_check_existing_registrations():
         # If validation is succesful and the document is valid, try a delivery
         if (
             registration.process_status == "source_document_validation_succesful"
-            and get_registration_validation_status(registration) == "VALIDE"
+            and registration.validation_status == "VALIDE"
         ):
             deliver_sourcedocuments(
                 registration,
