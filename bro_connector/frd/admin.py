@@ -42,6 +42,23 @@ def Export_selected_items_to_csv(self, request, queryset):
 admin.site.add_action(Export_selected_items_to_csv)
 
 
+class BroIdNullFilter(admin.SimpleListFilter):
+    title = _("Met/Zonder BRO-ID")  # label in the sidebar
+    parameter_name = "bro_id_null"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", _("Geen BRO-ID")),
+            ("no", _("Met BRO-ID")),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(bro_id__isnull=True)
+        if self.value() == "no":
+            return queryset.filter(bro_id__isnull=False)
+        return queryset
+
 def _register(model: Model, admin_class: admin.ModelAdmin):
     admin.site.register(model, admin_class)
 
@@ -69,6 +86,7 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube",
         "delivery_accountable_party",
         "deliver_to_bro",
+        BroIdNullFilter,
     )
 
     autocomplete_fields = ["groundwater_monitoring_tube"]
