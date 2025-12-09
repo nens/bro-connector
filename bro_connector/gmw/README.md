@@ -20,41 +20,52 @@ classDiagram
         str well_code
         int monitoring_pdok_id
         coordinates coordinates
-        coordinates coordinates_4236
+        coordinates coordinates_4326
         str reference_system
         str horizontal_positioning_method
         str local_vertical_reference_point
         float well_offset
         str vertical_datum
+        date construction_date
+        date removal_date
+        str aquifer_layer
+        str salinity
         bool in_management
+        str well_status
+        str bro_actions
         bool deliver_gmw_to_bro
         bool complete_bro
         date last_horizontal_positioning_date
         coordinates construction_coordinates
     }
     GroundwaterMonitoringWellStatic ..> "is registered in a" BROProject
+    GroundwaterMonitoringWellStatic ..> "bronhouder" Organisation
+    GroundwaterMonitoringWellStatic ..> "dataleverancier" Organisation
 
     class GroundwaterMonitoringWellDynamic{
         int groundwater_monitoring_well_dynamic_id
         GroundwaterMonitoringWellStatic groundwater_monitoring_well_static
         datetime date_from
+        float ground_level_position
+        str ground_level_positioning_method
         str ground_level_stable
         str well_stability
         int owner
         int maintenance_responsible_party
         str well_head_protector
-        float ground_level_position
-        str ground_level_positioning_method
         str well_head_protector_subtype
+        str foundation
+        str collision_protection
         str lock
         str key
         str place
         str street
         str location_description
         str label
-        str foundation
-        str collision_protection
-        str remark
+        str comment
+        bool comment_processed
+        str bro_actions
+        bool complete_bro
     }
     GroundwaterMonitoringWellDynamic ..> "belongs to a" GroundwaterMonitoringWellStatic
 
@@ -70,6 +81,9 @@ classDiagram
         float screen_length
         str sock_material
         float sediment_sump_length
+        str bro_actions
+        str krw_body
+        str gwl_depth
     }
     GroundwaterMonitoringTubeStatic ..> "is found in a" GroundwaterMonitoringWellStatic
 
@@ -81,6 +95,8 @@ classDiagram
         str variable_diameter
         str tube_status
         float tube_top_position
+        float sensor_depth
+        str sensor_id
         str tube_top_positioning_method
         str tube_packing_material
         str glue
@@ -88,6 +104,9 @@ classDiagram
         float inserted_part_diameter
         float inserted_part_length
         str inserted_part_material
+        str comment
+        bool comment_processed
+        str bro_actions
     }
     GroundwaterMonitoringTubeDynamic ..> "belongs to a" GroundwaterMonitoringTubeStatic
 
@@ -95,25 +114,20 @@ classDiagram
         int geo_ohm_cable_id
         GroundwaterMonitoringTubeStatic groundwater_monitoring_tube_static
         int cable_number
+        str bro_actions
     }
     GeoOhmCable ..> "is connected to a" GroundwaterMonitoringTubeStatic
 
-    class ElectrodeStatic{
+    class Electrode{
         int electrode_static_id
         GeoOhmCable geo_ohm_cable
         str electrode_packing_material
         str electrode_position
         int electrode_number
-    }
-    ElectrodeStatic ..> "is part of a" GeoOhmCable
-
-    class ElectrodeDynamic{
-        int electrode_dynamic_id
-        ElectrodeStatic electrode_static
-        datetime date_from
         str electrode_status
+        str bro_actions
     }
-    ElectrodeDynamic ..> "belongs to a" ElectrodeStatic
+    Electrode ..> "is part of a" GeoOhmCable
 
     class Event{
         int change_id
@@ -122,16 +136,18 @@ classDiagram
         GroundwaterMonitoringWellStatic groundwater_monitoring_well_static
         GroundwaterMonitoringWellDynamic groundwater_monitoring_well_dynamic
         GroundwaterMonitoringTubeDynamic groundwater_monitoring_tube_dynamic
-        ElectrodeDynamic electrode_dynamic
+        Electrode electrodes
+        str correction_reason
         bool delivered_to_bro
+        str bro_actions
+        bool complete_bro
     }
     Event ..> "happens in a" GroundwaterMonitoringWellStatic
     Event ..> "changes" GroundwaterMonitoringWellDynamic
     Event ..> "changes" GroundwaterMonitoringTubeDynamic
-    Event ..> "changes" ElectrodeDynamic
+    Event ..> "changes" Electrode
 
     class gmw_registration_log{
-        str date_modified
         str bro_id
         str event_id
         str validation_status
@@ -151,6 +167,7 @@ classDiagram
         int picture_id
         GroundwaterMonitoringWellStatic groundwater_monitoring_well_static
         datetime recording_datetime
+        bool is_main
         image picture
         str description
     }
@@ -183,9 +200,10 @@ classDiagram
         MaintenanceParty execution_by
     }
     Maintenance ..> "done for a" GroundwaterMonitoringWellStatic
-    Maintenance ..> "execution by" MaintenanceParty
-
-
+    Maintenance ..> "done for a" GroundwaterMonitoringTubeStatic
+    Maintenance ..> "reported by" MaintenanceParty
+    Maintenance ..> "executed by" MaintenanceParty
+    Maintenance ..> "has picture" Picture
 
     class Organisation{
         str name
@@ -194,6 +212,7 @@ classDiagram
         int bro_user
         int bro_token
     }
+    
     class BROProject{
         str name
         int project_number

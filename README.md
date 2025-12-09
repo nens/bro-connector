@@ -19,24 +19,149 @@ Deze ReadMe bevat de volgende beschrijvingen:
 Hieronder staat de globale architectuur van de BRO-connector weergegeven. De applicatie is zowel lokaal als op een server te installeren. Dit laatste is aan te raden voor een productieomgeving, waarbij de applicatie is ontwikkeld voor een Windows-omgeving als zal deze onder voorbehoud ook draaien op ene Linux server. De applicatie is ontwikkeld in Django, een webframework voor Python en maakt gebruikt van een PostgreSQL database voor de opslag. De webserver is via een https verbinding op te zetten zodat gebruikers vanaf hun computer de gegevens via een browser kunnen raadplegen. Daarnaast maakt de applicatie verbinding met het bronhouderportaal van de BRO voor het ophalen en toesturen van gegevens.
 <img src=bro_connector/static/img/architectuur.png width="720">
 
-## Installeren van Django applicatie
-Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard installatie is deze uit te voeren via het script in de folder bro_connector\installation_help\install.cmd. Daarnaast kun je ook handmatige de installatie via een drietal stappen doorlopen waardoor je als gebruiker meer controle hebt over de procedure.
-1. Clone 'bro-connector' naar een computer of (virtuele) server
-2. Installeer een python virtual environment vanuit 'requirements.py' met Python versie 3.11
-    - Voor het aanmaken en leveren van requests wordt het softwarepakket 'bro-exchange' gebruikt, voor meer informatie zie repo: https://github.com/nens/bro-exchange/. Dit pakket wordt automatisch geïnstalleerd vanuit de requirements.
-    ```pip install -r requirements.txt```
-3. Configureer de applicatie
-    - Maak een database aan met postgis extensie (minimaal Postgresql 13 met PostGIS 3.4)
-    - Maak een schema 'django_admin' in de postgres database aan, hierin komen de admin-tabellen.
-    - Specifieke instellingen staan in de main/localsecret.py. Hiervoor is een template toegevoegd (main/localsecret_template.py) Daarin staat gedefiniëerd of het een productieomgeving, stagingomgeving of development omgeving betreft incl. settings en aanvullende keys. Voor het aanmaken van een Fernet en Salt key kunnen de scripts in bro_connector\installation_help\python_scripts uitgevoerd worden.
-    - Initialiseer de admin tabellen voor django door vanuit de folder bro_connector met de volgende commando's te draaien:
-    ```
-    python manage.py makemigrations bro tools gmw gld gmn frd
-    python manage.py migrate
-    ```
-    - De overige tabellen staan al in de database, maar moeten nog gesynchroniseerd worden met de django applicatie.
-    - Draai eerst 'python manage.py makemigrations' en vervolgens 'python manage.py migrate' (of python manage.py migrate --fake wanneer stap 3 is uitgevoerd).
-    - Maak een superuser met 'python manage.py createsuperuser' .
+## Installatie vanaf 2026
+### Vereisten
+
+Zorg ervoor dat je de volgende software hebt geïnstalleerd voordat je begint:
+
+1. **PostgreSQL met PostGIS extensie**
+   - Download en installeer PostgreSQL vanaf de officiële website
+   - Activeer de PostGIS extensie voor ondersteuning van ruimtelijke data
+
+2. **GDAL DLL**
+   - Installeer via OSGeo4W: https://trac.osgeo.org/osgeo4w/
+   - Noteer de GDAL versie voor latere configuratie (bijv. "309" of "310")
+
+3. **Python**
+   - Python 3.12 of compatibele versie
+   - Zorg dat Python toegankelijk is vanaf de command line
+
+4. **(Optioneel) uv Package Manager**
+   - Voor snellere installatie van dependencies
+   - Het installatiescript detecteert en gebruikt dit automatisch indien beschikbaar
+
+## Installatiestappen
+
+### 1. Voer het Installatiescript Uit
+
+Navigeer naar de installatiemap en voer uit:
+
+```cmd
+bro_connector\installation_help\install.cmd
+```
+
+Het script begeleidt je door de volgende stappen:
+
+### 2. Python Configuratie
+
+- Voer je Python pad in of druk op Enter om systeem Python te gebruiken
+- Het script verifieert je Python installatie
+
+### 3. Virtual Environment
+
+- Het script creëert een virtual environment in `.venv`
+- Als er al een virtual environment bestaat, kun je kiezen om deze opnieuw aan te maken of de bestaande te gebruiken
+
+### 4. Installatie van Dependencies
+
+Het installatieprogramma zal:
+- GDAL installeren vanuit het meegeleverde wheel-bestand (indien beschikbaar)
+- Alle vereiste packages installeren vanuit `requirements.txt`
+- Noodzakelijke patches toepassen op third-party packages (reversion en admin_auto_filters)
+
+### 5. Genereren van Beveiligingssleutels
+
+Het script genereert automatisch:
+- **Fernet encryption key** (opgeslagen in `fernet_key.txt`)
+- **Salt string** (opgeslagen in `salt.txt`)
+
+Deze sleutels zijn essentieel voor beveiliging en worden toegevoegd aan je configuratie.
+
+### 6. Database Configuratie
+
+Wanneer gevraagd, geef de volgende gegevens op:
+- PostgreSQL gebruikersnaam (standaard: postgres)
+- PostgreSQL wachtwoord
+- PostgreSQL versie (bijv. 16)
+
+Het script zal:
+- De database `bro_connector_db` aanmaken
+- Benodigde schema's aanmaken vanuit `create_schemas.sql`
+
+### 7. Aanmaken van Configuratiebestand
+
+Geef de volgende optionele gegevens op wanneer gevraagd:
+- FTP server details (IP, gebruikersnaam, wachtwoord)
+- Lizard API validatiesleutel
+
+Het script maakt `main/localsecret.py` aan met je configuratie.
+
+## Stappen na Installatie
+
+### 1. Controleer de Configuratie
+
+Open en controleer het gegenereerde configuratiebestand:
+```
+main/localsecret.py
+```
+
+Verifieer:
+- Beveiligingssleutels zijn correct ingesteld
+- GDAL_DLL_VERSION komt overeen met je geïnstalleerde GDAL versie (bijv. "309" of "310")
+- Database credentials zijn correct
+- FTP en API credentials zijn accuraat
+- Environment is correct ingesteld (development/staging/production)
+
+### 2. Voer Django Migraties Uit
+
+Activeer de virtual environment en voer migraties uit:
+
+```cmd
+cd <project_root>
+.venv\Scripts\activate
+python manage.py makemigrations bro tools gmw gld gmn frd gar
+python manage.py migrate
+```
+
+### 3. Maak een Superuser Aan
+
+Creëer een admin account:
+
+```cmd
+python manage.py createsuperuser
+```
+
+Volg de instructies om gebruikersnaam, email en wachtwoord in te stellen.
+
+### 4. Start de Development Server
+
+Start de applicatie:
+
+```cmd
+python manage.py runserver
+```
+
+De applicatie is toegankelijk via `http://localhost:8000`
+
+## Probleemoplossing
+
+Mocht je tijdens de installatie problemen tegenkomen:
+
+1. Zorg dat PostgreSQL en PostGIS correct geïnstalleerd zijn
+2. Verifieer de GDAL installatie via OSGeo4W
+3. Controleer of de Python versie compatibel is (3.12 aanbevolen)
+4. Bekijk foutmeldingen in de output van het installatiescript
+5. Verifieer dat alle paden in `localsecret.py` correct zijn
+
+Voor aanvullende hulp kun je contact opnemen met het ontwikkelteam.
+
+## Belangrijke Bestanden
+
+- `fernet_key.txt` - Encryptiesleutel (houd deze veilig!)
+- `salt.txt` - Salt string (houd deze veilig!)
+- `main/localsecret.py` - Hoofdconfiguratiebestand
+- `requirements.txt` - Python dependencies
+- `create_schemas.sql` - Database schema definities
 
 ## Screenshots
 <img src=bro_connector/static/img/bro_connector_home.png>
@@ -57,7 +182,7 @@ Voor de installatie van de BRO-connector zijn er twee opties. Voor een standaard
 Na de installatie kun je de applicatie initialiseren zodat je direct alle data uit de BRO beschikbaar hebt in je eigen lokale omgeving. Hiervoor kun je de volgende stappen uitvoeren:
  - Instellen bounding box voor je organisatie (optioneel)
  - Importeer data via Tools --> BRO Importer vanuit de uitgifte service voor een BRO-registratieobject
- -     gmw, frd, gld, gmn
+ -     gmw, frd, gld, gmn, gar
  - organisatie instellen
  - accounts instellen voor gebruikers
  - project aanmaken voor aanlevering
