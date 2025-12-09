@@ -334,7 +334,7 @@ def create_imbro_measurements(
                     field_value=mtvp.field_value,
                     field_value_unit=mtvp.field_value_unit,
                     calculated_value=mtvp.calculated_value,
-                    value_to_be_corrected=mtvp.value_to_be_corrected,
+                    value_to_be_corrected=mtvp.initial_calculated_value,
                     correction_time=mtvp.correction_time,
                     correction_reason=mtvp.correction_reason,
                     measurement_point_metadata=mm,

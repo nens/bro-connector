@@ -656,7 +656,7 @@ class MeasurementTvp(BaseModel):
         null=True,
         verbose_name="Berekende waarde",
     )
-    value_to_be_corrected = models.DecimalField(
+    initial_calculated_value = models.DecimalField(
         max_digits=25,
         decimal_places=5,
         blank=True,
@@ -718,8 +718,8 @@ class MeasurementPointMetadata(BaseModel):
         default=None,
         verbose_name="Censuurreden",
     )
-    censor_reason_datalens = models.CharField(
-        max_length=200, blank=True, null=True, verbose_name="Censuurreden Datalens"
+    status_quality_control_reason_datalens = models.CharField(
+        max_length=200, blank=True, null=True, verbose_name="Status kwaliteitscontrole reden Datalens"
     )
     value_limit = models.CharField(
         max_length=50, blank=True, null=True, default=None, verbose_name="Limietwaarde"
