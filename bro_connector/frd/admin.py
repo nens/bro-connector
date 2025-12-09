@@ -3,8 +3,8 @@ import csv
 from django.contrib import admin
 from django.db.models import Model, fields
 from django.http import HttpResponse
-from main.management.commands.frd_sync_to_bro import FRDSync
 from django.utils.translation import gettext_lazy as _
+from main.management.commands.frd_sync_to_bro import FRDSync
 from reversion_compare.helpers import patch_admin
 
 from .models import (
@@ -59,6 +59,7 @@ class BroIdNullFilter(admin.SimpleListFilter):
         if self.value() == "no":
             return queryset.filter(bro_id__isnull=False)
         return queryset
+
 
 def _register(model: Model, admin_class: admin.ModelAdmin):
     admin.site.register(model, admin_class)

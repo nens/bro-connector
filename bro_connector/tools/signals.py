@@ -1,5 +1,5 @@
-import zipfile
 import datetime
+import zipfile
 from logging import getLogger
 
 import polars as pl
@@ -25,6 +25,7 @@ logger = getLogger("general")
 
 # common separators to test
 SEPARATORS = [",", ";", "\t", "|"]
+
 
 @receiver(pre_save, sender=BroImport)
 def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
@@ -84,18 +85,13 @@ def normalize_sample(sample: bytes | str) -> str:
         return sample.decode("utf-8", errors="ignore")
     return sample
 
+
 def determine_separator(sample: bytes | str) -> str:
     """Guess the most likely separator based on frequency."""
     text = normalize_sample(sample)
     counts = {sep: text.count(sep) for sep in SEPARATORS}
     return max(counts, key=counts.get)
 
-def read_csv_sample(filelike, size: int = 1024) -> str:
-    """Read a small chunk from a file-like object for separator detection."""
-    pos = filelike.tell()
-    sample = filelike.read(size)
-    filelike.seek(pos)  # reset pointer
-    return 
 
 def read_csv_or_zip(file_field) -> pl.DataFrame:
     filename = file_field.name.lower()
@@ -123,6 +119,7 @@ def read_csv_or_zip(file_field) -> pl.DataFrame:
     else:
         raise ValueError("Unsupported file type. Must be CSV or ZIP.")
 
+
 def convert_str_to_datetime(
     string: str | datetime.datetime,
 ) -> datetime.datetime | None:
@@ -149,6 +146,7 @@ def convert_str_to_datetime(
 
     return None
 
+
 @receiver(pre_save, sender=GMNImport)
 def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
     if instance.executed:
@@ -159,7 +157,7 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
     if len(df.columns) < 4:
         instance.validated = False
         instance.report += "Missende kolommen. Gebruik: meetpuntcode, gmwBroId, buisNummer, datum, subgroep*. Subgroep is niet verplicht.\n"
-    
+
     columns = ["measuringPointCode", "gmwBroId", "tubeNumber", "date"]
     if len(df.columns) > 4:
         columns.append("subgroup")
@@ -177,10 +175,7 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
         for subgroup in subgroups:
             Subgroup.objects.update_or_create(
                 gmn=instance.monitoring_network,
-                defaults={
-                    "name": subgroup,
-                    "code": subgroup
-                }
+                defaults={"name": subgroup, "code": subgroup},
             )
 
     executed = True
@@ -201,7 +196,9 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
         if len(row) > 4:
             raw_subgroup = row[4]
             if raw_subgroup is not None and str(raw_subgroup).strip() != "":
-                subgroup = Subgroup.objects.get(gmn=instance.monitoring_network, code=raw_subgroup)
+                subgroup = Subgroup.objects.get(
+                    gmn=instance.monitoring_network, code=raw_subgroup
+                )
                 measuring_point.subgroup.add(subgroup)
 
     instance.executed = executed

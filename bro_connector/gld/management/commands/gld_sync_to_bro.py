@@ -316,7 +316,12 @@ class GldSyncHandler:
                     "monitoringPoints": monitoringpoints,
                 }
             else:
-                monitoring_nets = [{"broId": item} for item in dossier.groundwater_monitoring_net.all().values_list("gmn_bro_id")]
+                monitoring_nets = [
+                    {"broId": item}
+                    for item in dossier.groundwater_monitoring_net.all().values_list(
+                        "gmn_bro_id"
+                    )
+                ]
                 srcdocdata = {
                     "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
                     "groundwaterMonitoringNets": monitoring_nets,
@@ -327,7 +332,9 @@ class GldSyncHandler:
                 f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(tube_number)}"
             )
 
-            delivery_type = "register" if dossier.correction_reason is None else "replace"
+            delivery_type = (
+                "register" if dossier.correction_reason is None else "replace"
+            )
             if delivery_type == "register":
                 gld_startregistration_request = brx.gld_registration_request(
                     srcdoc="GLD_StartRegistration",
@@ -340,7 +347,7 @@ class GldSyncHandler:
                 gld_startregistration_request = brx.gld_replace_request(
                     srcdoc="GLD_StartRegistration",
                     broId=dossier.gld_bro_id,
-                    correctionReason=dossier.correction_reason, # Have to take this from GroundwaterLeveldossier somehow
+                    correctionReason=dossier.correction_reason,  # Have to take this from GroundwaterLeveldossier somehow
                     requestReference=request_reference,
                     deliveryAccountableParty=delivery_accountable_party,
                     qualityRegime=quality_regime,
@@ -551,7 +558,9 @@ class GldSyncHandler:
             if dossier.groundwater_monitoring_tube.deliver_gld_to_bro is False:
                 continue
 
-            delivery_type = "register" if dossier.correction_reason is None else "replace"
+            delivery_type = (
+                "register" if dossier.correction_reason is None else "replace"
+            )
             # Check if there is already a registration for this tube
             if not models.gld_registration_log.objects.filter(
                 gmw_bro_id=dossier.gmw_bro_id,
@@ -575,7 +584,7 @@ class GldSyncHandler:
                         ),
                     )
                     continue
-                
+
                 gld_registration_log = self.create_start_registration_sourcedocs(
                     dossier
                 )
@@ -625,7 +634,7 @@ class GldSyncHandler:
             registration.comments += f"\nCannot find groundwaterleveldossier with GMW-FilterNR-Quality: {registration.gmw_bro_id}-{registration.filter_number}-{registration.quality_regime}."
             registration.save(update_fields=["comments"])
             return
-        
+
         well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
         self._set_bro_info(well)
 

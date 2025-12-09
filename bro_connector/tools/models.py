@@ -15,14 +15,8 @@ from gld.choices import (
     STATUSCODE,
     UNIT_CHOICES,
 )
-from gmn.choices import (
-    BRO_DOMEINEN,
-    KADER_AANLEVERING_GMN,
-    MONITORINGDOEL,
-    PROVINCIE_NAMEN,
-)
-from gmw.models import GroundwaterMonitoringTubeStatic
 from gmn.models import GroundwaterMonitoringNet
+from gmw.models import GroundwaterMonitoringTubeStatic
 from main.models import BaseModel
 from tools.choices import BRO_HANDLERS, BRO_TYPES
 
@@ -289,7 +283,9 @@ class GMNImport(BaseModel):
         blank=True,
         verbose_name="Meetpunten bestand",
     )
-    monitoring_network = models.ForeignKey(GroundwaterMonitoringNet, on_delete=models.CASCADE, null=False, blank=False)
+    monitoring_network = models.ForeignKey(
+        GroundwaterMonitoringNet, on_delete=models.CASCADE, null=False, blank=False
+    )
     validated = models.BooleanField(
         null=True, blank=True, default=True, editable=False, verbose_name="Gevalideerd"
     )

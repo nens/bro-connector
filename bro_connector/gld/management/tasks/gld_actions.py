@@ -79,12 +79,12 @@ def handle_start_registrations(
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
         if deliver and not dossier.gld_bro_id or delivery_type == "replace":
-            gld._set_bro_info(dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static)
+            gld._set_bro_info(
+                dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
-            registration = gld.create_start_registration_sourcedocs(
-                dossier
-            )
+            registration = gld.create_start_registration_sourcedocs(dossier)
             logger.info(f"Registration created: {registration}")
             registration.validate_sourcedocument()
             registration.deliver_sourcedocument()

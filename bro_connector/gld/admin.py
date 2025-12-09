@@ -63,6 +63,7 @@ class BroIdNullFilter(admin.SimpleListFilter):
             return queryset.filter(bro_id__isnull=False)
         return queryset
 
+
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
@@ -477,7 +478,9 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 registration_log.comments += f"\nCannot find groundwaterleveldossier with GMW-FilterNR-Quality: {registration_log.gmw_bro_id}-{registration_log.filter_number}-{registration_log.quality_regime}."
                 registration_log.save(update_fields=["comments"])
                 continue
-            well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            well = (
+                dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
+            )
             gld._set_bro_info(well)
 
             if registration_log.delivery_id is not None:
@@ -488,9 +491,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                     )
                 )
             else:
-                gld.create_start_registration_sourcedocs(
-                    dossier
-                )
+                gld.create_start_registration_sourcedocs(dossier)
                 pending_messages.append(
                     (
                         "Attempted startregistration sourcedocument regeneration",

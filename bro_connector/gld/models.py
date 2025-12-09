@@ -134,10 +134,7 @@ class GroundwaterLevelDossier(BaseModel):
         verbose_name="Kwaliteitsregime",
     )
     correction_reason = models.CharField(
-        choices=CORRECTION_REASON,
-        null=True,
-        blank=True,
-        verbose_name="Correctie reden"
+        choices=CORRECTION_REASON, null=True, blank=True, verbose_name="Correctie reden"
     )
     research_start_date = models.DateField(
         blank=True, null=True, verbose_name="Onderzoeksstartdatum"
@@ -305,10 +302,7 @@ class Observation(BaseModel):
     )
 
     correction_reason = models.CharField(
-        choices=CORRECTION_REASON,
-        null=True,
-        blank=True,
-        verbose_name="Correctie reden"
+        choices=CORRECTION_REASON, null=True, blank=True, verbose_name="Correctie reden"
     )
 
     observation_id_bro = models.CharField(
@@ -829,7 +823,9 @@ class gld_registration_log(BaseModel):
 
     @property
     def groundwaterleveldossier(self) -> GroundwaterLevelDossier | None:
-        groundwater_monitoring_well = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
+        groundwater_monitoring_well = GroundwaterMonitoringWellStatic.objects.get(
+            bro_id=self.gmw_bro_id
+        )
         tube = groundwater_monitoring_well.tube.get(tube_number=self.filter_number)
         try:
             return GroundwaterLevelDossier.objects.get(
@@ -844,11 +840,14 @@ class gld_registration_log(BaseModel):
     def save(self, *args, **kwargs):
         if self.pk is not None:
             db = gld_registration_log.objects.get(id=self.id)
-            if self.delivery_status == "OPGENOMEN_LVBRO" and db.delivery_status != "OPGENOMEN_LVBRO":
+            if (
+                self.delivery_status == "OPGENOMEN_LVBRO"
+                and db.delivery_status != "OPGENOMEN_LVBRO"
+            ):
                 gld = self.groundwaterleveldossier
                 gld.correction_reason = None
                 gld.save(update_fields=["correction_reason"])
-        
+
         super().save(*args, **kwargs)
 
     def generate_sourcedocument(
@@ -865,7 +864,9 @@ class gld_registration_log(BaseModel):
         internal_id = dossier.groundwater_monitoring_tube.__str__()
         quality_regime = dossier.quality_regime
         delivery_accountable_party = (
-            "27376655" if DEMO else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party.company_number
+            "27376655"
+            if DEMO
+            else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party.company_number
         )
         monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": dossier.tube_number}]
 
@@ -875,16 +876,19 @@ class gld_registration_log(BaseModel):
                 "monitoringPoints": monitoringpoints,
             }
         else:
-            gmn_ids = [{"broId": item} for item in dossier.groundwater_monitoring_net.all().values_list("gmn_bro_id", flat=True)]
+            gmn_ids = [
+                {"broId": item}
+                for item in dossier.groundwater_monitoring_net.all().values_list(
+                    "gmn_bro_id", flat=True
+                )
+            ]
             srcdocdata = {
                 "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                 "groundwaterMonitoringNets": gmn_ids,
                 "monitoringPoints": monitoringpoints,
             }
 
-        request_reference = (
-            f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(dossier.tube_number)}{'-replace' if self.delivery_type == 'replace' else ''}"
-        )
+        request_reference = f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(dossier.tube_number)}{'-replace' if self.delivery_type == 'replace' else ''}"
         if self.delivery_type == "register":
             gld_startregistration_request = brx.gld_registration_request(
                 srcdoc="GLD_StartRegistration",
@@ -894,7 +898,7 @@ class gld_registration_log(BaseModel):
                 srcdocdata=srcdocdata,
             )
         else:
-            correction_reason = self.groundwaterleveldossier.correction_reason 
+            correction_reason = self.groundwaterleveldossier.correction_reason
             gld_startregistration_request = brx.gld_replace_request(
                 srcdoc="GLD_StartRegistration",
                 broId=self.gld_bro_id,
@@ -1048,7 +1052,10 @@ class gld_registration_log(BaseModel):
             self.last_changed = delivery_info.json()["lastChanged"]
             self.process_status = "delivery_status_checked"
 
-            if self.delivery_status == "OPGENOMEN_LVBRO" and self.delivery_type == "replace":
+            if (
+                self.delivery_status == "OPGENOMEN_LVBRO"
+                and self.delivery_type == "replace"
+            ):
                 gld = self.groundwaterleveldossier
                 gld.correction_reason = None
                 gld.save(update_fields=["correction_reason"])

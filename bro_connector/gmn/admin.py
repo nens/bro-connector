@@ -4,8 +4,8 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
-from gmn.management.tasks.gmn_sync import sync_gmn
 from django.utils.translation import gettext_lazy as _
+from gmn.management.tasks.gmn_sync import sync_gmn
 from main.utils.frd_fieldform import FieldFormGenerator as FRD_FieldFormGenerator
 from main.utils.gld_fieldform import FieldFormGenerator as GLD_FieldFormGenerator
 from reversion_compare.helpers import patch_admin
@@ -54,6 +54,7 @@ class BroIdNullFilter(admin.SimpleListFilter):
         if self.value() == "no":
             return queryset.filter(bro_id__isnull=False)
         return queryset
+
 
 def _register(model, admin_class):
     admin.site.register(model, admin_class)

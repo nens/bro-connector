@@ -204,7 +204,6 @@ class GMNImportAdmin(admin.ModelAdmin):
         "executed",
     )
 
-    
     def save_model(self, request, obj, form, change):
         # Save the object first
         super().save_model(request, obj, form, change)
