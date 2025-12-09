@@ -57,22 +57,19 @@ def handle_start_registrations(
     logger.info(
         f"Handling start registrations for dossier {dossier.groundwater_level_dossier_id}"
     )
-    well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
     # Handle start registrations
-    tube_number = dossier.groundwater_monitoring_tube.tube_number
-
     delivery_type = "register" if dossier.correction_reason is None else "replace"
 
     gld = gld_sync_to_bro.GldSyncHandler()
 
     gld_registration_logs = gld_registration_log.objects.filter(
-        gmw_bro_id=well.bro_id,
-        filter_number=tube_number,
-        quality_regime=well.quality_regime,
+        gmw_bro_id=dossier.gmw_bro_id,
+        filter_number=dossier.tube_number,
+        quality_regime=dossier.quality_regime,
         delivery_type=delivery_type,
     )
     logger.info(
-        f"Found {gld_registration_logs.count()} existing registration logs for well {well.bro_id} and tube {tube_number}"
+        f"Found {gld_registration_logs.count()} existing registration logs for: {dossier.gmw_bro_id}-{dossier.tube_number}- {dossier.quality_regime}-{delivery_type}"
     )
 
     # Check if there is already a registration for this tube
@@ -82,7 +79,7 @@ def handle_start_registrations(
         # By creating the sourcedocs (or failng to do so), a registration is made in the database
         # This registration is used to track the progress of the delivery in further steps
         if deliver and not dossier.gld_bro_id or delivery_type == "replace":
-            gld._set_bro_info(well)
+            gld._set_bro_info(dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static)
             # Only if the deliver function is used, a new start registration should be created
             # Otherwise, only existing registrations should be checked.
             registration = gld.create_start_registration_sourcedocs(

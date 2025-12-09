@@ -316,9 +316,10 @@ class GldSyncHandler:
                     "monitoringPoints": monitoringpoints,
                 }
             else:
+                monitoring_nets = [{"broId": item} for item in dossier.groundwater_monitoring_net.all().values_list("gmn_bro_id")]
                 srcdocdata = {
                     "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
-                    "groundwaterMonitoringNets": dossier.groundwater_monitoring_net.all().values_list("gmn_bro_id"),  #
+                    "groundwaterMonitoringNets": monitoring_nets,
                     "monitoringPoints": monitoringpoints,
                 }
 
@@ -338,6 +339,7 @@ class GldSyncHandler:
             else:
                 gld_startregistration_request = brx.gld_replace_request(
                     srcdoc="GLD_StartRegistration",
+                    broId=dossier.gld_bro_id,
                     correctionReason=dossier.correction_reason, # Have to take this from GroundwaterLeveldossier somehow
                     requestReference=request_reference,
                     deliveryAccountableParty=delivery_accountable_party,

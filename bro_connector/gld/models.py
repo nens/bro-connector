@@ -843,7 +843,7 @@ class gld_registration_log(BaseModel):
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
-            db = gld_registration_log.objects.get(self.pk)
+            db = gld_registration_log.objects.get(id=self.id)
             if self.delivery_status == "OPGENOMEN_LVBRO" and db.delivery_status != "OPGENOMEN_LVBRO":
                 gld = self.groundwaterleveldossier
                 gld.correction_reason = None
@@ -859,32 +859,31 @@ class gld_registration_log(BaseModel):
             self.save()
             return
 
-        gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
-        tube = gmw.tube.get(tube_number=self.filter_number)
-        filternumber = self.filter_number
+        dossier = self.groundwaterleveldossier
 
-        bro_id_gmw = gmw.bro_id
-        internal_id = gmw.internal_id
-        quality_regime = gmw.quality_regime
+        bro_id_gmw = dossier.gmw_bro_id
+        internal_id = dossier.groundwater_monitoring_tube.__str__()
+        quality_regime = dossier.quality_regime
         delivery_accountable_party = (
-            "27376655" if DEMO else gmw.delivery_accountable_party.company_number
+            "27376655" if DEMO else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party.company_number
         )
-        monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": filternumber}]
+        monitoringpoints = [{"broId": bro_id_gmw, "tubeNumber": dossier.tube_number}]
 
-        if len(tube.gmn_ids) == 0:
+        if dossier.groundwater_monitoring_net.count() == 0:
             srcdocdata = {
-                "objectIdAccountableParty": f"{internal_id}{str(filternumber)}",
+                "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                 "monitoringPoints": monitoringpoints,
             }
         else:
+            gmn_ids = [{"broId": item} for item in dossier.groundwater_monitoring_net.all().values_list("gmn_bro_id", flat=True)]
             srcdocdata = {
-                "objectIdAccountableParty": f"{internal_id}{str(filternumber)}",
-                "groundwaterMonitoringNets": tube.gmn_ids,
+                "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
+                "groundwaterMonitoringNets": gmn_ids,
                 "monitoringPoints": monitoringpoints,
             }
 
         request_reference = (
-            f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(filternumber)}"
+            f"GLD_StartRegistration_{bro_id_gmw}_tube_{str(dossier.tube_number)}{'-replace' if self.delivery_type == 'replace' else ''}"
         )
         if self.delivery_type == "register":
             gld_startregistration_request = brx.gld_registration_request(
@@ -898,6 +897,7 @@ class gld_registration_log(BaseModel):
             correction_reason = self.groundwaterleveldossier.correction_reason 
             gld_startregistration_request = brx.gld_replace_request(
                 srcdoc="GLD_StartRegistration",
+                broId=self.gld_bro_id,
                 correctionReason=correction_reason,
                 requestReference=request_reference,
                 deliveryAccountableParty=delivery_accountable_party,
@@ -940,6 +940,8 @@ class gld_registration_log(BaseModel):
                 payload, bro_info=gmw.get_bro_info(), demo=DEMO
             )
             validation_status = validation_info["status"]
+            if validation_status != "VALIDE":
+                logger.info(validation_info)
 
             if "errors" in validation_info:
                 comments = f"Validated sourcedocument, found errors: {validation_info['errors']}"
