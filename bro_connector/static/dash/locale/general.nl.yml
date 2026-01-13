@@ -6,13 +6,12 @@ nl:
   tab_model: Tijdreeksmodel
   tab_qc: Foutdetectie
   tab_qc_result: Handmatige Beoordeling
+  tab_corrections: Correcties
   monitoring_wells: "Peilbuizen"
   no_data: Geen data
   no_data_selection: Geen data in geselecteerde tijdreeks.
-  no_selection: Geen tijdreeks geselecteerd.
   no_plot: Geen tijdreeks om weer te geven
   no_model: Geen model
-  no_traval: Geen QC resultaat
   # tab-model
   select_location: Selecteer een locatie
   generate: Maak model
@@ -21,7 +20,6 @@ nl:
   # tab-qc
   show_parameters: Toon parameters
   hide_parameters: Verberg parameters
-  run_traval: Run TRAVAL
   select_series: Selecteer een tijdreeks ...
   select_series2: Selecteer extra tijdreeksen ...
   select_rule: Selecteer een regel om toe te voegen
@@ -38,20 +36,18 @@ nl:
   show_all_tooltip: "Klik hier om ALLE of ALLEEN VERDACHTE metingen weer te geven."
   export_csv: Exporteer CSV
   export_db: Exporteer naar DB
-  accept: Accepteer suggestie
-  reject: Afwijzen suggestie
   category: "Selecteer een passende code volgens het QC Protocol."
   tmin: Startdatum
   tmax: Einddatum
-  mark_reliable: "Meting(en) goedgekeurd"
-  mark_unreliable: "Meting(en) afgekeurd"
-  mark_undecided: "Meting(en) onbeslist"
-  mark_unknown: "Meting(en) onbekend"
-  clear_selection: "Deselecteer alles in tabel"
+  mark_reliable: "Goedgekeurd"
+  mark_unreliable: "Afgekeurd"
+  mark_undecided: "Onbeslist"
+  mark_unknown: "Onbekend"
+  clear_selection_table: "Deselecteer alles in tabel"
+  clear_selection_button: "Wis selectie"
   alert_failed_labeling: Kan labels niet updaten voor niet-zichtbare metingen in tabel. Gebruik 'Toon alle metingen' om alle metingen weer te geven.
   run_only_on_unvalidated: Alleen niet beoordeelde metingen
-  reset_status: "Meting(en) onbekend"
-  max_selection_warning: "Teveel meetpunten geselecteerd! Maximale aantal is 10!"
+  max_selection_warning: "Teveel meetpunten geselecteerd! Maximale aantal is {}!"
   model_use_only_validated: "Gebruik alleen gevalideerde metingen"
   select_qc_label: QC label toepassen
   clear_qc_label: Wis QC label
@@ -65,8 +61,50 @@ nl:
   manual_observations: "controle metingen"
   qc_export_status_flag_tooltip: "Kies of de beoordeling van alle metingen wordt geëxporteerd of alleen de beoordeling van de verdachte metingen."
   qc_export_status_flag_all: "Exporteer alle beoordelingen"
-  qc_export_status_flag_all_not_suspect: "Exporteer alle beoordelingen, maar niet al verdacht beoordeelde metingen"
+  qc_export_status_flag_all_tooltip: "Exporteer alle beoordelingen. Niet-verdachte metingen als goedgekeurd gemarkeerd. Overschrijft alle beoordelingen in database."
+  qc_export_status_flag_all_not_suspect: "Exporteer alle beoordelingen (behoud verdachte)"
+  qc_export_status_flag_all_not_suspect_tooltip: "Exporteer alle beoordelingen, maar behoud beoordeling voor al verdacht bevonden metingen."
   qc_export_status_flag_suspect: "Exporteer alleen verdachte beoordelingen"
+  qc_export_status_flag_suspect_tooltip: "Exporteer alleen beoordelingen voor verdachte metingen. Er worden geen metingen goedgekeurd."
   qc_export_status_flag_placeholder: "Selecteer export optie..."
-  alert_all_observations_checked: "Alle metingen zijn al beoordeeld!"
-  multiple_series_model_warning:  "Meerdere reeksen geselecteerd in Overzicht tabblad, gebruik dropdown om een tijdreeks te selecteren, of selecteer één reeks in Overzicht tabblad."
+  error_all_observations_checked: "Alle metingen zijn al beoordeeld!"
+  multiple_series_model_warning: "Meerdere reeksen geselecteerd in Overzicht tabblad, gebruik dropdown om een tijdreeks te selecteren, of selecteer één reeks in Overzicht tabblad."
+  no_well_data: "Geen putgegevens."
+  # tab-corrections
+  select_well_1: "Selecteer eerste observatieput"
+  select_well_2: "Selecteer tweede observatieput (optioneel)"
+  commit_corrections: "Correcties opslaan"
+  reset_changes: "Wijzigingen herstellen"
+  corrected_value_tooltip: "Vul hier gecorrigeerde waarden in (in m NAP)."
+  correction_reason_tooltip: "Optioneel: reden voor correctie invullen."
+  calculated_value_original: "Calculated Value (oorspronkelijk)"
+  calculated_value_original_tooltip: "Toont de originele berekende waarde. Bij een correctie toont dit de vorige waarde (uit value_to_be_corrected)."
+  bkb_label: "Bovenkant buis (m NAP)"
+  bkb_tooltip: "Bovenkant buis (BKB) in m NAP"
+  observation_cm_label: "- Meting (cm t.o.v. BKB)"
+  observation_cm_tooltip: "Meting in centimeter vanaf bovenkant buis"
+  observation_mnap_label: "= m NAP"
+  observation_mnap_tooltip: "Grondwaterstand in m NAP, berekend volgens BKB - meting in cm = m NAP"
+  example: "b.v."
+  # error messages
+  error_data_load_failed: "Geen data geladen."
+  error_no_wells_selected: "Selecteer een put om verder te gaan."
+  error_no_series_data: "Geen tijdreeksdata beschikbaar voor de geselecteerde put."
+  error_no_locations: "Geen meetlocaties gevonden."
+  error_qc_analysis_failed: "Kwaliteitscontrole mislukt."
+  error_no_model: "Geen model beschikbaar voor geselecteerde tijdreeks '%{name}'. Maak eerst een model aan."
+  error_export_failed: "Export naar database mislukt voor %{well}."
+  error_database_error: "Databaseverbinding mislukt. Probeer later opnieuw."
+  error_ruleset_load_error: "QC ruleset laden mislukt."
+  error_no_qc_result: "Geen QC-resultaat beschikbaar."
+  error_no_well_configuration_data: "Geen putconfiguratiedata beschikbaar voor %{well}."
+  error_no_plot_data: "Geen data voor visualisatie: %{names}."
+  error_corrections_commit_failed: "Fout bij opslaan van correcties: %{error}."
+  error_corrections_reset_failed: "Fout bij terugzetten van correcties: %{error}."
+  # success/info
+  success_loaded_ruleset: "Ruleset geladen."
+  success_traval_run: "QC run geslaagd."
+  success_export_db: "QC resultaten naar database geëxporteerd voor %{well}."
+  success_loaded_timeseries_pastastore: "Tijdreeksmodel '%{name}' opgehaald uit PastaStore."
+  success_corrections_committed: "%{count} correctie(s) opgeslagen."
+  success_corrections_reset: "%{count} correctie(s) teruggezet."

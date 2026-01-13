@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -18,8 +19,14 @@ WGS84 = "proj=longlat datum=WGS84 no_defs ellps=WGS84 towgs84=0,0,0"
 
 
 def get_model_sim_pi(
-    ml, raw, ci=0.99, tmin=None, tmax=None, smoothfreq=None, savedir=None
-):
+    ml: Any,
+    raw: pd.DataFrame,
+    ci: float = 0.99,
+    tmin: Optional[Any] = None,
+    tmax: Optional[Any] = None,
+    smoothfreq: Optional[str] = None,
+    savedir: Optional[Any] = None,
+) -> Tuple[pd.Series, pd.DataFrame]:
     """Compute time series model simulation and prediction interval.
 
     Parameters
@@ -52,7 +59,7 @@ def get_model_sim_pi(
     from a file. Otherwise, it is computed using the model.
     """
     if savedir is not None and ml is not None:
-        logger.debug(f"Load prediction interval from file: pi_{ml.name}.pkl")
+        logger.debug("Load prediction interval from file: pi_%s.pkl", ml.name)
         sim = ml.simulate(tmin=tmin, tmax=tmax)
         new_idx = raw.index.union(sim.index)
         df_pi = pd.read_pickle(savedir / f"pi_{ml.name}.pkl")
@@ -67,7 +74,7 @@ def get_model_sim_pi(
         sim_i.name = "sim"
 
     elif ml is not None:
-        logger.debug(f"Compute prediction interval with model: {ml.name}")
+        logger.debug("Compute prediction interval with model: %s", ml.name)
         alpha = 1 - float(ci)
 
         # get prediction interval

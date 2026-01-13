@@ -1,14 +1,18 @@
-import i18n
+from typing import Any, Dict, List, Optional
+
 import plotly.express as px
 import plotly.graph_objs as go
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
 from packaging.version import parse as parse_version
 
-from . import ids
+from gwdatalens.app.constants import UI, ColumnNames, PlotConstants
+from gwdatalens.app.messages import t_
+from gwdatalens.app.src.components import ids
+from gwdatalens.app.src.data.data_manager import DataManager
 
 
-def render(data, selected_data):
+def render(data: DataManager, selected_data: Optional[List[int]] = None) -> html.Div:
     kwargs = (
         {"delay_show": 500}
         if parse_version(DASH_VERSION) >= parse_version("2.17.0")
@@ -31,9 +35,7 @@ def render(data, selected_data):
                             "scrollZoom": True,
                         },
                         style={
-                            "height": "40vh",
-                            # "margin-bottom": "10px",
-                            # "margin-top": 5,
+                            "height": "40cqh",
                         },
                     ),
                 ],
@@ -43,19 +45,22 @@ def render(data, selected_data):
         style={
             "position": "relative",
             "justify-content": "center",
-            "margin-bottom": 10,
+            "margin-bottom": UI.MARGIN_BOTTOM,
         },
     )
 
 
-def plot_obs(names, data, plot_manual_obs=False):
+def plot_obs(
+    wids: Optional[List[int]],
+    data: DataManager,
+    plot_manual_obs: bool = False,
+) -> Dict[str, Any]:
     """Plots observation data for given monitoring wells and tube numbers.
 
     Parameters
     ----------
-    names : list of str
-        List of strings representing monitoring well and tube number in the format
-        "{gmw_id}-{tube_id}".
+    names : list of int
+        List of ids corresponding to monitoring wells and tube numbers.
     data : object
         Data object containing database access and configuration.
 
@@ -66,45 +71,34 @@ def plot_obs(names, data, plot_manual_obs=False):
 
     Notes
     -----
-    - If `names` is None, returns a layout with a title indicating no plot.
-    - If a name is not found in the database, it is skipped.
-    - For a single name, plots the timeseries data with different qualifiers and manual
+    - If `iids` is None, returns a layout with a title indicating no plot.
+    - If an iid is not found in the database, it is skipped.
+    - For a single iid, plots the timeseries data with different qualifiers and manual
       observations.
-    - For multiple names, plots the timeseries data with markers and lines.
+    - For multiple iids, plots the timeseries data with markers and lines.
     """
-    if names is None:
-        return {"layout": {"title": {"text": i18n.t("general.no_plot")}}}
+    if wids is None:
+        return {"layout": {"title": {"text": t_("general.no_plot")}}}
 
-    hasobs = list(data.db.list_observation_wells_with_data())
+    hasobs = list(data.db.list_observation_wells_with_data[ColumnNames.ID])
     no_data = []
 
     traces = []
     colors = px.colors.qualitative.Dark24
-    for i, name in enumerate(names):
-        # split into monitoringwell and tube_number
-        if "-" in name:
-            monitoring_well, tube_nr = name.split("-")
-        elif "_" in name:
-            monitoring_well, tube_nr = name.split("_")
-        else:
-            raise ValueError(
-                f"Error splitting name into monitoring well ID and tube number: {name}"
-            )
-        tube_nr = int(tube_nr)
-
+    for i, wid in enumerate(wids):
         # no obs
-        if name not in hasobs:
+        if wid not in hasobs:
             no_data.append(True)
             continue
 
-        df = data.db.get_timeseries(gmw_id=monitoring_well, tube_id=tube_nr)
+        df = data.db.get_timeseries(wid)
 
         if df is None:
             continue
 
         df[data.db.qualifier_column] = df.loc[:, data.db.qualifier_column].fillna("")
-        wellcode = data.db.get_wellcode(name)
-        if len(names) == 1:
+        display_name = df.index.name
+        if len(wids) == 1:
             no_data.append(False)
             ts = df[data.db.value_column]
             trace_i = go.Scattergl(
@@ -112,8 +106,8 @@ def plot_obs(names, data, plot_manual_obs=False):
                 y=ts.values,
                 mode="lines",
                 line={"width": 1, "color": "gray"},
-                name=wellcode,
-                legendgroup=wellcode,
+                name=display_name,
+                legendgroup=display_name,
                 showlegend=True,
             )
             traces.append(trace_i)
@@ -124,16 +118,16 @@ def plot_obs(names, data, plot_manual_obs=False):
                 ts = df.loc[mask, data.db.value_column]
                 legendrank = 1000
                 if qualifier in ["goedgekeurd"]:
-                    color = "green"
+                    color = PlotConstants.STATUS_RELIABLE
                 elif qualifier in ["onbeslist"]:
-                    color = "orange"
+                    color = PlotConstants.STATUS_UNDECIDED
                 elif qualifier in ["afgekeurd"]:
-                    color = "red"
+                    color = PlotConstants.STATUS_UNRELIABLE
                 elif qualifier == "":
-                    color = "#636EFA"
+                    color = PlotConstants.STATUS_NO_QUALIFIER
                     # legendrank = 999
                 else:
-                    color = "gray"
+                    color = PlotConstants.STATUS_UNKNOWN
                 trace_i = go.Scattergl(
                     x=ts.index,
                     y=ts.values,
@@ -147,16 +141,17 @@ def plot_obs(names, data, plot_manual_obs=False):
                 traces.append(trace_i)
 
             # add controle metingen
-            manual_obs = data.db.get_timeseries(
-                monitoring_well, tube_nr, observation_type="controlemeting"
-            )
+            manual_obs = data.db.get_timeseries(wid, observation_type="controlemeting")
             if not manual_obs.empty:
                 trace_mo = go.Scattergl(
                     x=manual_obs.index,
                     y=manual_obs[data.db.value_column],
                     mode="markers",
-                    marker={"color": "red", "size": 7},
-                    name=i18n.t("general.manual_observations"),
+                    marker={
+                        "color": PlotConstants.CONTROL_OBS_COLOR,
+                        "size": PlotConstants.CONTROL_OBS_SIZE,
+                    },
+                    name=t_("general.manual_observations"),
                     legendgroup="manual obs",
                     showlegend=True,
                     legendrank=1001,
@@ -171,8 +166,8 @@ def plot_obs(names, data, plot_manual_obs=False):
                 mode="markers+lines",
                 line={"width": 1, "color": colors[i % len(colors)]},
                 marker={"size": 3, "line_color": colors[i % len(colors)]},
-                name=wellcode,
-                legendgroup=wellcode,
+                name=display_name,
+                legendgroup=display_name,
                 # name=name,
                 # legendgroup=f"{name}-{tube_nr}",
                 showlegend=True,
@@ -182,7 +177,7 @@ def plot_obs(names, data, plot_manual_obs=False):
             if plot_manual_obs:
                 # add controle metingen
                 manual_obs = data.db.get_timeseries(
-                    monitoring_well, tube_nr, observation_type="controlemeting"
+                    wid, observation_type="controlemeting"
                 )
                 if not manual_obs.empty:
                     trace_mo_i = go.Scattergl(
@@ -195,8 +190,8 @@ def plot_obs(names, data, plot_manual_obs=False):
                             "line_width": 2,
                             "line_color": colors[i % len(colors)],
                         },
-                        name=i18n.t("general.manual_observations"),
-                        legendgroup=f"{name}-{tube_nr}",
+                        name=t_("general.manual_observations"),
+                        legendgroup=display_name,
                         legendrank=1000,
                         showlegend=True,
                     )
@@ -213,8 +208,7 @@ def plot_obs(names, data, plot_manual_obs=False):
             "y": 1.02,
         },
         "dragmode": "pan",
-        # "margin": dict(t=20, b=20, l=50, r=20),
-        "margin-top": 0,
+        "margin": {"t": 60, "b": 20, "l": 20, "r": 10},
     }
     if all(no_data):
         return None

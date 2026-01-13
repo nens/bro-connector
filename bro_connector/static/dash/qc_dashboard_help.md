@@ -8,21 +8,26 @@ The validation process consists of the following steps:
    2. Run a set of error-detection rules to identify potentially suspect measurements. ([Error Detection](#error-detection-tab))
    3. The time series is manually reviewed (accepting or rejecting) suggestions made by the  error detection algorithm. ([Manual Review](#error-detection-tab))
 
-Optionally, time series models can be inspected or created using the [Time Series Models](#time-series-models-tab) tab. These models can be used in the error detection step.
+Additionally, there are two extra tabs that might prove useful in support of this process:
+
+- Time series models can be inspected or created using the [Time Series
+  Models](#time-series-models-tab) tab. These models can be used in the error detection step.
+- Manual control observations can be reviewed and modified in the
+  [Corrections](#corrections-tab).
 
 ### Overview tab
 
 The overview tab consists of three elements:
 
-* Interactive map view showing measurement locations (top left)
-* Interactive table showing measurement location metadata (top right)
-* Interactive chart showing time series (bottom)
+- Interactive map view showing measurement locations (top left)
+- Interactive table showing measurement location metadata (top right)
+- Interactive chart showing time series (bottom)
 
 There are two ways of plotting head time series:
 
-* Select one or multiple (up to 10) measurement locations on the map using your
+- Select one or multiple (up to 10) measurement locations on the map using your
      mouse or the rectangle selection tool.
-* (Shift+)Click on row(s) in the table.
+- (Shift+)Click on row(s) in the table.
 
 ### Time Series Models tab
 
@@ -50,8 +55,16 @@ Steps:
 The Manual Review tab lets you review the results of the error detection scheme and
 commit your manual review to the database, or download the results as a CSV file.
 
+### Corrections tab
+
+The Corrections tab lets you inspect observation well locations in more detail.
+It shows a graph of well configuration (showing all tubes), and the time series
+for each observation well. It lets you select two time series for comparison, and
+edit manual observations with a helpful calculator tool at the bottom. Modifcations
+can be commited to the database.
+
 ### References
 
-* Documentation for [traval](https://traval.readthedocs.io/en/latest/).
-* Documentation for [pastas](https://pastas.dev/).
-* Documentation for [pastastore](https://pastastore.readthedocs.io/en/latest/).
+- Documentation for [traval](https://traval.readthedocs.io/en/latest/).
+- Documentation for [pastas](https://pastas.dev/).
+- Documentation for [pastastore](https://pastastore.readthedocs.io/en/latest/).

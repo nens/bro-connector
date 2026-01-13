@@ -1,10 +1,10 @@
 from dash import Dash, dcc, html
 
-from ..data import DataInterface
-from . import button_help_modal, ids, tabs
+from gwdatalens.app.src.components import button_help_modal, ids, tabs
+from gwdatalens.app.src.data import DataManager
 
 
-def create_layout(app: Dash, data: DataInterface) -> html.Div:
+def create_layout(app: Dash, data: DataManager) -> html.Div:
     """Create app layout.
 
     Parameters
@@ -29,7 +29,8 @@ def create_layout(app: Dash, data: DataInterface) -> html.Div:
             dcc.Store(id=ids.TRAVAL_RULESET_STORE),
             dcc.Store(id=ids.TRAVAL_RESULT_FIGURE_STORE),
             dcc.Store(id=ids.TRAVAL_RESULT_TABLE_STORE),
-            # alert containers
+            # alert containers (global scope only)
+            dcc.Store(id=ids.ALERT_TAB_RENDER),
             dcc.Store(id=ids.ALERT_TIME_SERIES_CHART),
             dcc.Store(id=ids.ALERT_DISPLAY_RULES_FOR_SERIES),
             dcc.Store(id=ids.ALERT_GENERATE_MODEL),
@@ -40,32 +41,7 @@ def create_layout(app: Dash, data: DataInterface) -> html.Div:
             dcc.Store(id=ids.ALERT_LABEL_OBS),
             dcc.Store(id=ids.ALERT_LOAD_RULESET),
             dcc.Store(id=ids.ALERT_RUN_TRAVAL),
-            dcc.Store(id=ids.ALERT_TAB_RENDER),
-            # duplicate containers
-            dcc.Store(id=ids.OVERVIEW_TABLE_SELECTION_1),
-            dcc.Store(id=ids.OVERVIEW_TABLE_SELECTION_2),
-            dcc.Store(id=ids.MODEL_RESULTS_CHART_1),
-            dcc.Store(id=ids.MODEL_RESULTS_CHART_2),
-            dcc.Store(id=ids.MODEL_DIAGNOSTICS_CHART_1),
-            dcc.Store(id=ids.MODEL_DIAGNOSTICS_CHART_2),
-            dcc.Store(id=ids.MODEL_SAVE_BUTTON_1),
-            dcc.Store(id=ids.MODEL_SAVE_BUTTON_2),
-            dcc.Store(id=ids.QC_DROPDOWN_ADDITIONAL_DISABLED_1),
-            dcc.Store(id=ids.QC_DROPDOWN_ADDITIONAL_DISABLED_2),
-            dcc.Store(id=ids.TRAVAL_RULES_FORM_STORE_1, data=[]),
-            dcc.Store(id=ids.TRAVAL_RULES_FORM_STORE_2, data=[]),
-            dcc.Store(id=ids.TRAVAL_RULES_FORM_STORE_3, data=[]),
-            dcc.Store(id=ids.TRAVAL_RULES_FORM_STORE_4, data=[]),
-            dcc.Store(id=ids.TRAVAL_RESET_RULESET_BUTTON_STORE_1),
-            dcc.Store(id=ids.TRAVAL_RESET_RULESET_BUTTON_STORE_2),
-            dcc.Store(id=ids.TRAVAL_RESET_RULESET_BUTTON_STORE_3),
-            dcc.Store(id=ids.QC_RESULT_TABLE_STORE_1),
-            dcc.Store(id=ids.QC_RESULT_TABLE_STORE_2),
-            dcc.Store(id=ids.QC_RESULT_TABLE_STORE_3),
-            dcc.Store(id=ids.LOADING_QC_CHART_STORE_1),
-            dcc.Store(id=ids.LOADING_QC_CHART_STORE_2),
-            dcc.Store(id=ids.QC_CHART_STORE_1),
-            dcc.Store(id=ids.QC_CHART_STORE_2),
+            dcc.Store(id=ids.ALERT_STATUS_CORRECTIONS),
             # header + tabs
             html.Div(
                 id="header",

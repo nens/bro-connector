@@ -1,15 +1,31 @@
+import logging
 from ast import literal_eval
+from typing import Any
 
-import i18n
 import numpy as np
 import pandas as pd
-from dash import ALL, Input, Output, Patch, State, ctx, dcc, no_update
+from dash import ALL, Input, Output, Patch, State, dcc, no_update
 from dash.exceptions import PreventUpdate
-from gwdatalens.app.settings import settings
+
+from gwdatalens.app.config import config
+from gwdatalens.app.constants import ColumnNames, ConfigDefaults, PlotConstants, QCFlags
+from gwdatalens.app.messages import ErrorMessages, SuccessMessages, t_
 from gwdatalens.app.src.components import ids
+from gwdatalens.app.src.services import TimeSeriesService, WellService
+from gwdatalens.app.src.utils import log_callback
+from gwdatalens.app.src.utils.callback_helpers import (
+    AlertBuilder,
+    CallbackResponse,
+    extract_selected_points_x,
+    get_callback_context,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def register_result_callbacks(app, data):
+    ts_service = TimeSeriesService(data.db)
+    well_service = WellService(data.db)
     # @app.callback(
     #     Output(ids.QC_RESULT_TABLE, "derived_virtual_data", allow_duplicate=True),
     #     Input(ids.QC_RESULT_TABLE, "derived_virtual_data"),
@@ -34,12 +50,12 @@ def register_result_callbacks(app, data):
     #     # return filtered_data
     #     for r in filtered_data:
     #         if r["id"] in selected_row_id:
-    #             mask = data.traval.traval_result["id"] == r["id"]
-    #             data.traval.traval_result.loc[
+    #             mask = data.qc.traval_result["id"] == r["id"]
+    #             data.qc.traval_result.loc[
     #                 mask, changed_cell["column_id"]
     #             ] = new_value
     #             r[changed_cell["column_id"]] = new_value
-    #     return data.traval.traval_result.reset_index(names="datetime").to_dict(
+    #     return data.qc.traval_result.reset_index(names="datetime").to_dict(
     #         "records"
     #     )
 
@@ -52,43 +68,59 @@ def register_result_callbacks(app, data):
         State(ids.QC_RESULT_CHART, "selectedData"),
         prevent_initial_call=True,
     )
-    def apply_qc_label(value, table_view, selected_points):
-        if value is not None:
-            df = data.traval.traval_result
-            table = pd.DataFrame(table_view)
-            # if table is empty (because of filtering or whatever) do not allow updating
-            # labels
-            if table.empty:
-                return (
-                    no_update,
-                    (True, "warning", i18n.t("general.alert_failed_labeling")),
-                    None,
-                )
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def apply_qc_label(
+        value: str | None, table_view: list[dict], selected_points: dict | None
+    ) -> tuple[list[dict] | Any, tuple, None]:
+        """Apply QC label category to selected observations.
 
-            selected_pts = pd.to_datetime(
-                pd.DataFrame(selected_points["points"])["x"]
-            ).tolist()
+        Updates the category field for selected chart points that are in the table view.
+        """
+        if value is None:
+            logger.debug("QC apply label: value is None, preventing update")
+            raise PreventUpdate
 
-            # if any observations are not listed in table do not allow update
-            if np.any(
-                ~np.isin(
-                    pd.to_datetime(selected_pts), pd.to_datetime(table["datetime"])
-                )
-            ):
-                return (
-                    no_update,
-                    (True, "warning", i18n.t("general.alert_failed_labeling")),
-                    None,
-                )
-            df.loc[selected_pts, "category"] = value
-            t = table["datetime"].tolist()
+        df = data.qc.traval_result
+        table = pd.DataFrame(table_view)
+
+        # Check if table is empty due to filtering
+        if table.empty:
             return (
-                df.loc[t].reset_index(names="datetime").to_dict("records"),
-                (False, "success", ""),
+                no_update,
+                AlertBuilder.warning(t_("general.alert_failed_labeling")),
                 None,
             )
-        else:
-            raise PreventUpdate
+
+        selected_pts = extract_selected_points_x(selected_points)
+        if selected_pts is None:
+            return (
+                no_update,
+                AlertBuilder.warning(t_("general.alert_failed_labeling")),
+                None,
+            )
+
+        # Check if all selected points are in filtered table
+        if np.any(
+            ~np.isin(pd.to_datetime(selected_pts), pd.to_datetime(table["datetime"]))
+        ):
+            return (
+                no_update,
+                AlertBuilder.warning(t_("general.alert_failed_labeling")),
+                None,
+            )
+
+        df.loc[selected_pts, "category"] = value
+        t = table["datetime"].tolist()
+        return (
+            df.loc[t].reset_index(names="datetime").to_dict("records"),
+            AlertBuilder.no_alert(),
+            None,
+        )
 
     @app.callback(
         Output(ids.DOWNLOAD_EXPORT_CSV, "data"),
@@ -96,11 +128,22 @@ def register_result_callbacks(app, data):
         State(ids.SELECTED_OSERIES_STORE, "data"),
         prevent_initial_call=True,
     )
-    def download_export_csv(n_clicks, name):
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def download_export_csv(n_clicks, wid):
+        if wid is None:
+            logger.debug("QC export CSV: wid is None, preventing update")
+            raise PreventUpdate
+
         timestr = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{timestr}_qc_result_{name[0]}.csv"
-        if data.traval.traval_result is not None:
-            return dcc.send_string(data.traval.traval_result.to_csv, filename=filename)
+        name = well_service.get_well_name(wid).squeeze()
+        filename = f"{timestr}_qc_result_{name}.csv"
+        if data.qc.traval_result is not None:
+            return dcc.send_string(data.qc.traval_result.to_csv, filename=filename)
 
     @app.callback(
         Output(ids.ALERT_EXPORT_TO_DB, "data"),
@@ -109,86 +152,99 @@ def register_result_callbacks(app, data):
         State(ids.QC_RESULT_EXPORT_QC_STATUS_FLAG, "value"),
         prevent_initial_call=True,
     )
-    def export_to_db(n_clicks, name, non_flagged_reliable):
-        if n_clicks:
-            if data.traval.traval_result is not None:
-                df = data.traval.traval_result.copy()
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def export_to_db(n_clicks, wid, non_flagged_reliable):
+        """Export QC results to database.
 
-                mask_incoming_not_suspect = ~df["incoming_status_quality_control"].isin(
-                    ["afgekeurd", "onbeslist"]
-                )
-                if settings["LOCALE"] == "en":
-                    bro_en_to_nl = {
-                        "": "",
-                        "unknown": "onbekend",
-                        "undecided": "onbeslist",
-                        "unreliable": "afgekeurd",
-                        "reliable": "goedgekeurd",
-                        "onbekend": "onbekend",
-                        "onbeslist": "onbeslist",
-                        "afgekeurd": "afgekeurd",
-                        "goedgekeurd": "goedgekeurd",
-                    }
-                    df["status_quality_control"] = df["status_quality_control"].apply(
-                        lambda v: bro_en_to_nl[v]
-                    )
-                    df["incoming_status_quality_control"] = df[
-                        "incoming_status_quality_control"
-                    ].apply(lambda v: bro_en_to_nl[v])
-
-                mask = df["status_quality_control"] == ""
-                if non_flagged_reliable == "all_not_suspect":
-                    # overwrite status to reliable for all except obs
-                    # already flagged as suspect
-                    df.loc[
-                        mask & mask_incoming_not_suspect, "status_quality_control"
-                    ] = "goedgekeurd"
-                    # set status for incoming suspects
-                    df.loc[~mask_incoming_not_suspect, "status_quality_control"] = (
-                        df.loc[
-                            ~mask_incoming_not_suspect,
-                            "incoming_status_quality_control",
-                        ]
-                    )
-                elif non_flagged_reliable == "suspect":
-                    # only overwrite status to suspect for erroneous obs
-                    df.loc[mask, "status_quality_control"] = df.loc[
-                        mask, "incoming_status_quality_control"
-                    ]
-                elif non_flagged_reliable == "all":
-                    df.loc[mask, "status_quality_control"] = "goedgekeurd"
-                else:
-                    raise ValueError(
-                        f"Invalid value {non_flagged_reliable} for non_flagged_reliable"
-                    )
-
-                try:
-                    data.db.save_qualifier(df)
-                    return (
-                        True,
-                        "success",
-                        f"Successfully exported to Database: {name}",
-                    )
-                except Exception as e:
-                    return (
-                        True,
-                        "danger",
-                        f"Database export failed: {name}. Error: {e}",
-                    )
-            else:
-                return (
-                    True,
-                    "warning",
-                    "No QC result to export.",
-                )
-        else:
+        Applies quality control status flags and saves to database.
+        """
+        if not n_clicks:
+            logger.debug("QC export DB: no click, preventing update")
             raise PreventUpdate
+
+        if wid is None:
+            return AlertBuilder.warning(t_(ErrorMessages.NO_WELLS_SELECTED))
+
+        if data.qc.traval_result is None:
+            return AlertBuilder.warning(t_(ErrorMessages.NO_QC_RESULT))
+
+        df = data.qc.traval_result.copy()
+        name = well_service.get_well_name(wid)
+
+        # Translate status flags if in English locale
+        if config.get("LOCALE") == "en":
+            bro_en_to_nl = QCFlags.BRO_STATUS_TRANSLATION_EN_TO_NL
+            df[ColumnNames.STATUS_QUALITY_CONTROL] = df[
+                ColumnNames.STATUS_QUALITY_CONTROL
+            ].apply(lambda v: bro_en_to_nl[v])
+            df[ColumnNames.INCOMING_STATUS_QUALITY_CONTROL] = df[
+                ColumnNames.INCOMING_STATUS_QUALITY_CONTROL
+            ].apply(lambda v: bro_en_to_nl[v])
+
+        # Apply QC status rules
+        mask = df[ColumnNames.STATUS_QUALITY_CONTROL] == ""
+        mask_incoming_not_suspect = ~df[
+            ColumnNames.INCOMING_STATUS_QUALITY_CONTROL
+        ].isin([QCFlags.AFGEKEURD, QCFlags.ONBESLIST])
+
+        if non_flagged_reliable == "all_not_suspect":
+            # mark all non-flagged observations as reliable except incoming suspects
+            df.loc[
+                mask & mask_incoming_not_suspect, ColumnNames.STATUS_QUALITY_CONTROL
+            ] = QCFlags.GOEDGEKEURD
+            # Maintain incoming status for suspects
+            df.loc[~mask_incoming_not_suspect, ColumnNames.STATUS_QUALITY_CONTROL] = (
+                df.loc[
+                    ~mask_incoming_not_suspect,
+                    ColumnNames.INCOMING_STATUS_QUALITY_CONTROL,
+                ]
+            )
+        elif non_flagged_reliable == "suspect":
+            # Only update suspect observations, the rest remains as is
+            df.loc[mask, ColumnNames.STATUS_QUALITY_CONTROL] = df.loc[
+                mask, ColumnNames.INCOMING_STATUS_QUALITY_CONTROL
+            ]
+        elif non_flagged_reliable == "all":
+            # mark all non-flagged observations as reliable
+            df.loc[mask, ColumnNames.STATUS_QUALITY_CONTROL] = QCFlags.GOEDGEKEURD
+        else:
+            raise ValueError(
+                f"Invalid value {non_flagged_reliable} for non_flagged_reliable"
+            )
+
+        if name is None:
+            well_display = str(wid)
+        else:
+            well_display = name.squeeze()
+        # Save to database
+        try:
+            ts_service.save_qualifier(df)
+            return AlertBuilder.success(
+                t_(SuccessMessages.EXPORT_SUCCESS, well=well_display)
+            )
+        except Exception as e:
+            logger.exception("Failed to export data to database: %s", e)
+
+            return AlertBuilder.danger(
+                t_(ErrorMessages.EXPORT_FAILED, well=well_display)
+            )
 
     @app.callback(
         Output(ids.QC_RESULT_TABLE, "filter_query"),
         Input(ids.QC_RESULTS_SHOW_ALL_OBS_SWITCH, "value"),
         State(ids.QC_RESULT_TABLE, "filter_query"),
         prevent_initial_call=True,
+    )
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
     def show_all_observations(value, query):
         if value and (query != ""):
@@ -228,6 +284,12 @@ def register_result_callbacks(app, data):
         State(ids.QC_RESULT_TABLE, "derived_virtual_data"),
         prevent_initial_call=True,
     )
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
     def synchronize_selected_observations(
         table_selection,
         chart_selection,
@@ -236,192 +298,226 @@ def register_result_callbacks(app, data):
         current_table,
         **kwargs,
     ):
-        if len(kwargs) > 0:
-            ctx_ = kwargs["callback_context"]
-            triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-        else:
-            triggered_id = ctx.triggered_id
+        """Synchronize selection between QC result chart and table.
 
+        Keeps chart selection and table selection in sync, updating one when the other
+        changes.
+        """
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+
+        # Get trace configuration from orchestrator
+        curveNumber = data.qc.last_plot_context["observations_trace_index"]
+
+        # Handle clear selection button
         if click_clear and triggered_id == ids.QC_RESULT_CLEAR_TABLE_SELECTION:
             update_figure = Patch()
             # TODO: if no pastas model, the original series is trace 0
-            update_figure["data"][2]["selectedpoints"] = []
+            update_figure["data"][curveNumber]["selectedpoints"] = []
 
-            update_figure_selection = None
-            update_table = data.traval.traval_result.reset_index(
-                names="datetime"
-            ).to_dict("records")
-            update_table_selection = []
-            disable_deselect = True
-            disable_select = False
-            disable_mark_buttons = True
-            disable_qc_label_dropdown = True
-            return (
-                update_figure,
-                update_figure_selection,
-                update_table,
-                update_table_selection,
-                None,
-                disable_deselect,
-                disable_select,
-                [disable_mark_buttons] * 4,
-                disable_qc_label_dropdown,
+            cleared_table = (
+                data.qc.traval_result.reset_index(names="datetime").to_dict("records")
+                if data.qc.traval_result is not None
+                else no_update
             )
+
+            logger.debug(
+                "QC sync: clear selection triggered_id=%s click_clear=%s table_size=%s",
+                triggered_id,
+                click_clear,
+                len(cleared_table) if cleared_table is not no_update else "no_update",
+            )
+
+            return (
+                CallbackResponse()
+                .add(update_figure)
+                .add(None)
+                .add_data(cleared_table)
+                .add([])
+                .add(None)
+                .add(True)  # disable deselect
+                .add(False)  # enable select all
+                .add([True] * 4)  # disable mark buttons
+                .add(True)  # disable label dropdown
+                .build()
+            )
+
+        # Handle select all button
         if click_select and triggered_id == ids.QC_RESULT_TABLE_SELECT_ALL:
-            selection = [row["id"] for row in current_table]
-            series = data.traval.traval_result
+            selection = [row[ColumnNames.ID] for row in current_table]
+            series = data.qc.traval_result
+
             update_figure_selection = {
                 "points": [
                     {
-                        # TODO: if no pastas model, the original series is trace 0
-                        "curveNumber": 2,
-                        "pointNumber": series["id"].iloc[i],
-                        "pointIndex": series["id"].iloc[i],
+                        "curveNumber": curveNumber,
+                        "pointNumber": series[ColumnNames.ID].iloc[i],
+                        "pointIndex": series[ColumnNames.ID].iloc[i],
                         "x": series.index[i],
-                        "y": series["values"].iloc[i],
+                        "y": series[data.db.value_column].iloc[i],
                     }
                     for i in selection
                 ]
             }
+
             update_figure = Patch()
-            # TODO: if no pastas model, the original series is trace 0
-            update_figure["data"][2]["selectedpoints"] = []
-            update_table = no_update
+            update_figure["data"][curveNumber]["selectedpoints"] = []
+
             new_table_selection = [
                 {"column": 0, "column_id": "datetime", "row": i, "row_id": rowid}
                 for i, rowid in enumerate(selection)
             ]
-            update_table_selection = new_table_selection
-            disable_deselect = False
-            disable_select = True
-            disable_mark_buttons = False
-            disable_qc_label_dropdown = False
-            return (
-                update_figure,
-                update_figure_selection,
-                update_table,
-                update_table_selection,
-                None,
-                disable_deselect,
-                disable_select,
-                [disable_mark_buttons] * 4,
-                disable_qc_label_dropdown,
+
+            logger.debug(
+                "QC sync: select all triggered_id=%s click_select=%s "
+                "selection_count=%s",
+                triggered_id,
+                click_select,
+                len(selection),
             )
 
-        # determine trigger and selection
-        if table_selection is None and chart_selection is None:
-            trigger = None
-            selection = None
-            disable_qc_label_dropdown = True
+            return (
+                CallbackResponse()
+                .add(update_figure)
+                .add(update_figure_selection)
+                .add(no_update)
+                .add(new_table_selection)
+                .add(None)
+                .add(False)  # enable deselect
+                .add(True)  # disable select all
+                .add([False] * 4)  # enable mark buttons
+                .add(False)  # enable label dropdown
+                .build()
+            )
 
-        # if table get selection from table
+        # Determine trigger and selection
+        if table_selection is None and chart_selection is None:
+            selection = None
+
+        # Get selection from table if table was trigger
         if triggered_id == ids.QC_RESULT_TABLE:
-            # if current_selection_state["trigger"] == ids.QC_RESULT_CHART:
-            #     raise PreventUpdate
-            trigger = ids.QC_RESULT_TABLE
             if table_selection is None or len(table_selection) == 0:
                 selection = None
             else:
                 selection = [c["row_id"] for c in table_selection]
 
-        # if chart get selected pts from chart
+        # Get selection from chart if chart was trigger
         elif triggered_id == ids.QC_RESULT_CHART:
-            trigger = ids.QC_RESULT_CHART
-            # if current_selection_state["trigger"] == ids.QC_RESULT_TABLE:
-            #     raise PreventUpdate
             if chart_selection is None or len(chart_selection) == 0:
+                logger.debug("QC sync: chart selection is None or empty")
                 selection = None
             else:
                 pts = pd.DataFrame(chart_selection["points"])
+
                 if pts.empty:
+                    logger.debug(
+                        "QC sync: chart selection empty points triggered_id=%s",
+                        triggered_id,
+                    )
                     raise PreventUpdate
-                # TODO: if no pastas model, the original series is trace 0
-                selection = pts.loc[pts.curveNumber == 2, "pointIndex"].tolist()
+                selection = pts.loc[
+                    pts.curveNumber == curveNumber, "pointIndex"
+                ].tolist()
+        else:
+            logger.debug(
+                "QC sync: unknown triggered_id=%s, preventing update",
+                triggered_id,
+            )
+            raise PreventUpdate
 
-        # determine what to update and how
-
-        # selection is empty
-        if selection is None or (len(selection) == 0):
-            update_figure = no_update
-            update_figure_selection = no_update
-            if data.traval.traval_result is not None:
-                update_table = data.traval.traval_result.reset_index(
+        # Selection is empty
+        if selection is None or len(selection) == 0:
+            if data.qc.traval_result is not None:
+                update_table = data.qc.traval_result.reset_index(
                     names="datetime"
                 ).to_dict("records")
-                update_table_selection = []
             else:
                 update_table = no_update
-                update_table_selection = no_update
-            disable_deselect = True
-            disable_select = False
-            disable_mark_buttons = True
-            disable_qc_label_dropdown = True
+
+            logger.debug(
+                "QC sync: empty selection triggered_id=%s table_return=%s",
+                triggered_id,
+                "no_update" if update_table is no_update else len(update_table),
+            )
             return (
-                update_figure,
-                update_figure_selection,
-                update_table,
-                update_table_selection,
-                None,
-                disable_deselect,
-                disable_select,
-                [disable_mark_buttons] * 4,
-                disable_qc_label_dropdown,
+                CallbackResponse()
+                .add(no_update)
+                .add(no_update)
+                .add(update_table)
+                .add([])
+                .add(None)
+                .add(True)  # disable deselect
+                .add(False)  # enable select all
+                .add([True] * 4)  # disable mark buttons
+                .add(True)  # disable label dropdown
+                .build()
             )
 
-        # if trigger was chart, update table
-        if trigger == ids.QC_RESULT_CHART:
-            update_figure = no_update
-            update_figure_selection = no_update
-
+        # Update table based on chart selection
+        if triggered_id == ids.QC_RESULT_CHART:
             update_table = (
-                data.traval.traval_result.iloc[np.sort(selection)]
+                data.qc.traval_result.iloc[np.sort(selection)]
                 .reset_index(names="datetime")
                 .to_dict("records")
             )
-            update_table_selection = []  # np.sort(selection).tolist()
+            update_figure = no_update
+            update_figure_selection = no_update
+            update_table_selection = []
+            logger.debug(
+                "QC sync: chart triggered selection_count=%s",
+                len(selection) if selection is not None else 0,
+            )
 
-        # if trigger was table update chart
-        elif trigger == ids.QC_RESULT_TABLE:
-            update_table = no_update
-            update_table_selection = no_update
-            series = data.traval.traval_result
-
+        # Update chart based on table selection
+        elif triggered_id == ids.QC_RESULT_TABLE:
+            series = data.qc.traval_result
             update_figure_selection = {
                 "points": [
                     {
                         # TODO: if no pastas model, the original series is trace 0
-                        "curveNumber": 2,
-                        "pointNumber": series["id"].iloc[i],
-                        "pointIndex": series["id"].iloc[i],
+                        "curveNumber": curveNumber,
+                        "pointNumber": int(series[ColumnNames.ID].iloc[i]),
+                        "pointIndex": int(series[ColumnNames.ID].iloc[i]),
                         "x": series.index[i],
-                        "y": series["values"].iloc[i],
+                        "y": float(series[data.db.value_column].iloc[i]),
                     }
                     for i in selection
                 ]
             }
             update_figure = Patch()
             # TODO: if no pastas model, the original series is trace 0
-            update_figure["data"][2]["selectedpoints"] = selection
-
-        # otherwise do nothing
+            update_figure["data"][curveNumber]["selectedpoints"] = selection
+            update_table = no_update
+            update_table_selection = no_update
+            logger.debug(
+                "QC sync: table triggered selection_count=%s",
+                len(selection) if selection is not None else 0,
+            )
         else:
+            logger.debug(
+                "QC sync: unexpected triggered_id=%s after selection, prevent update",
+                triggered_id,
+            )
             raise PreventUpdate
 
-        disable_select = False
-        disable_deselect = table_selection is None
-        disable_mark_buttons = table_selection is None
-        disable_qc_label_dropdown = table_selection is None
+        logger.debug(
+            "QC sync: final return triggered_id=%s selection_count=%s",
+            triggered_id,
+            len(selection) if selection is not None else 0,
+        )
 
         return (
-            update_figure,
-            update_figure_selection,
-            update_table,
-            update_table_selection,
-            no_update,
-            disable_deselect,
-            disable_select,
-            [disable_mark_buttons] * 4,
-            disable_qc_label_dropdown,
+            CallbackResponse()
+            .add(update_figure)
+            .add(update_figure_selection)
+            .add(update_table)
+            .add(update_table_selection)
+            .add(no_update)
+            .add(False)  # enable deselect
+            .add(False)  # enable select all
+            .add([False] * 4)  # enable mark buttons
+            .add(False)  # enable label dropdown
+            .build()
         )
 
     @app.callback(
@@ -432,57 +528,127 @@ def register_result_callbacks(app, data):
         State(ids.QC_RESULT_CHART, "selectedData"),
         prevent_initial_call=True,
     )
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
     def mark_obs(n, table_view, selected_points, **kwargs):
-        if len(kwargs) > 0:
-            ctx_ = kwargs["callback_context"]
-            triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-            triggered_id_index = literal_eval(triggered_id)["index"]
-        else:
-            triggered_id_index = ctx.triggered_id["index"]
+        """Mark observations with QC status.
 
-        if any(v is not None for v in n):
-            if triggered_id_index == "reliable":
-                value = i18n.t("general.reliable")
-            elif triggered_id_index == "unreliable":
-                value = i18n.t("general.unreliable")
-            elif triggered_id_index == "unknown":
-                value = i18n.t("general.unknown")
-            elif triggered_id_index == "undecided":
-                value = i18n.t("general.undecided")
-            else:
-                raise PreventUpdate
-            df = data.traval.traval_result
-            table = pd.DataFrame(table_view)
-            # if table is empty (because of filtering or whatever) do not allow updating
-            # labels
-            if table.empty:
-                return (
-                    no_update,
-                    (True, "warning", i18n.t("general.alert_failed_labeling")),
-                )
-
-            selected_pts = pd.to_datetime(
-                pd.DataFrame(selected_points["points"])["x"]
-            ).tolist()
-
-            # if any observations are not listed in table do not allow update
-            if np.any(
-                ~np.isin(
-                    pd.to_datetime(selected_pts), pd.to_datetime(table["datetime"])
-                )
-            ):
-                return (
-                    no_update,
-                    (True, "warning", i18n.t("general.alert_failed_labeling")),
-                )
-            df.loc[selected_pts, "status_quality_control"] = value
-            t = table["datetime"].tolist()
-            return (
-                df.loc[t].reset_index(names="datetime").to_dict("records"),
-                (False, "success", ""),
-            )
-        else:
+        Updates the status_quality_control field based on the selected button.
+        """
+        if not any(v is not None for v in n):
+            logger.debug("QC mark obs: no button clicks, preventing update")
             raise PreventUpdate
+
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+
+        # Extract index from pattern-matched callback ID
+        if isinstance(triggered_id, dict):
+            triggered_id_index = triggered_id["index"]
+        else:
+            triggered_id_index = literal_eval(triggered_id)["index"]
+
+        # Map button index to status value
+        status_map = {
+            QCFlags.RELIABLE: t_("general.reliable"),
+            QCFlags.UNRELIABLE: t_("general.unreliable"),
+            QCFlags.UNKNOWN: t_("general.unknown"),
+            QCFlags.UNDECIDED: t_("general.undecided"),
+        }
+
+        if triggered_id_index not in status_map:
+            logger.debug(
+                "QC mark obs: unknown trigger index=%s, preventing update",
+                triggered_id_index,
+            )
+            raise PreventUpdate
+
+        value = status_map[triggered_id_index]
+        df = data.qc.traval_result
+        table = pd.DataFrame(table_view)
+
+        # Check if table is empty due to filtering
+        if table.empty:
+            return (
+                no_update,
+                AlertBuilder.warning(t_("general.alert_failed_labeling")),
+            )
+
+        selected_pts = extract_selected_points_x(selected_points)
+        if selected_pts is None:
+            return (
+                no_update,
+                AlertBuilder.warning(t_("general.alert_failed_labeling")),
+            )
+
+        # Check if all selected points are in filtered table
+        if np.any(
+            ~np.isin(pd.to_datetime(selected_pts), pd.to_datetime(table["datetime"]))
+        ):
+            return (
+                no_update,
+                AlertBuilder.warning(t_("general.alert_failed_labeling")),
+            )
+
+        df.loc[selected_pts, ColumnNames.STATUS_QUALITY_CONTROL] = value
+        t = table["datetime"].tolist()
+        return (
+            df.loc[t].reset_index(names="datetime").to_dict("records"),
+            AlertBuilder.no_alert(),
+        )
+
+    @app.callback(
+        Output(ids.QC_RESULT_TABLE, "style_data_conditional"),
+        Input(ids.QC_RESULT_TABLE, "data"),
+    )
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def style_qc_status_cells(table_data):
+        """Apply conditional styling to QC status cells based on their values.
+
+        Colors:
+        - Reliable: translucent green (#d4edda)
+        - Unreliable: translucent red (#f8d7da)
+        - Undecided: translucent orange/yellow (#fff3cd)
+        - Unknown: translucent light grey (#e2e3e5)
+        """
+        if not table_data:
+            return []
+
+        styles = []
+
+        # Define status-to-color mapping
+        status_colors = {
+            t_("general.reliable"): PlotConstants.STATUS_RELIABLE_BG,
+            t_("general.unreliable"): PlotConstants.STATUS_UNRELIABLE_BG,
+            t_("general.undecided"): PlotConstants.STATUS_UNDECIDED_BG,
+            t_("general.unknown"): PlotConstants.STATUS_UNKNOWN_BG,
+        }
+
+        # Create conditional styles for each status
+        for status_value, color in status_colors.items():
+            styles.append(
+                {
+                    "if": {
+                        "filter_query": (
+                            f"{{{ColumnNames.STATUS_QUALITY_CONTROL}}}"
+                            f' = "{status_value}"'
+                        ),
+                        "column_id": ColumnNames.STATUS_QUALITY_CONTROL,
+                    },
+                    "backgroundColor": color,
+                }
+            )
+
+        return styles
 
     @app.callback(
         Output(ids.QC_RESULT_TABLE, "data"),
@@ -491,32 +657,45 @@ def register_result_callbacks(app, data):
         Input(ids.QC_RESULT_TABLE_STORE_3, "data"),
         prevent_initial_call=True,
     )
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
     def update_results_table_data(*tables, **kwargs):
-        if len(kwargs) > 0:
-            ctx_ = kwargs["callback_context"]
-            triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-            inputs_list = ctx_.inputs_list
-        else:
-            triggered_id = ctx.triggered_id
-            inputs_list = ctx.inputs_list
+        """Update results table data from triggered store.
 
-        if any(tables):
-            for i in range(len(inputs_list)):
-                if inputs_list[i]["id"] == triggered_id:
-                    break
-            return tables[i]
-        else:
+        Switches between multiple table update sources (from different callbacks).
+        """
+        if not any(tables):
+            logger.debug("QC update table data: no tables present, preventing update")
             raise PreventUpdate
 
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+        inputs_list = ctx_obj.inputs_list
+
+        # Find which input was triggered
+        for i, input_item in enumerate(inputs_list):
+            if input_item["id"] == triggered_id:
+                return tables[i]
+
+        logger.debug(
+            "QC update table data: no matching triggered_id=%s, preventing update",
+            triggered_id,
+        )
+        raise PreventUpdate
+
     # NOTE: this callback does not work in DEBUG mode
-    if not settings["DEBUG"]:
+    if not config.get("DEBUG"):
         app.clientside_callback(
             """
             function() {
                 //console.log(dash_clientside.callback_context);
                 const triggered_id = dash_clientside.callback_context.triggered_id;
                 //use this to set the focus on last active component
-                document.lastActiveElement.focus();
+                document.lastActiveElement.focus(); 
                 return;
             }
             """,

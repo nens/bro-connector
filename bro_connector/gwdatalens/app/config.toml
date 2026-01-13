@@ -1,15 +1,16 @@
 [settings]
-DEBUG = false
-LOCALE = "nl"
-DJANGO_APP = true            # set to True to run under Django application
+DEBUG = false                 # enable debug mode, only for standalone mode
+LOCALE = "nl"                # application language, options: "nl", "en"
+DJANGO_APP = true           # set to True to run under Django application
 CACHING = false              # set to True to enable caching, does not work when DJANGO_APP is true
-SERIES_LOAD_LIMIT = 10       # number of observations to load and plot simultaneously
+SERIES_LOAD_LIMIT = 50       # number of observations to load and plot simultaneously
 PORT = 8050                  # default port for the Dash app
 BACKGROUND_CALLBACKS = false # false is recommended at this moment
 USE_MAPBOX = false           # set to True to use Mapbox for plotting, requires access token
+LOG_LEVEL = "DEBUG"          # set logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 [pastastore]
 name = "zeeland_bro"            # name of the pastas database
 path = "./gwdatalens/pastasdb/" # path to pastas model database
 connector = "pas"               # database connector
-update_knmi = true              # update knmi data in pastas database on startup
+update_knmi = false             # update knmi data in pastas database on startup

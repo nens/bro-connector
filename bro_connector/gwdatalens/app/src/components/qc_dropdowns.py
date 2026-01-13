@@ -1,12 +1,18 @@
-import i18n
+from typing import List, Optional
+
 from dash import dcc, html
 from traval import rulelib
 
-from ..data.interface import DataInterface
-from . import ids
+from gwdatalens.app.constants import ColumnNames
+from gwdatalens.app.messages import t_
+from gwdatalens.app.src.components import ids
+from gwdatalens.app.src.data.data_manager import DataManager
+from gwdatalens.app.src.data.qc_custom_rules import CUSTOM_RULE_NAMES
 
 
-def render_selection_series_dropdown(data: DataInterface, selected_data: list | None):
+def render_selection_series_dropdown(
+    data: DataManager, selected_data: Optional[List[int]]
+) -> html.Div:
     """Renders a dropdown component for selecting a time series.
 
     Parameters
@@ -14,31 +20,34 @@ def render_selection_series_dropdown(data: DataInterface, selected_data: list | 
     data : DataInterface
         An interface to the data source containing the series information.
     selected_data : Optional[List]
-        A list of selected data items. If a single item is selected, it will be set
-        as the default value in the dropdown.
+        A list of ids of selected data items. If a single item is selected,
+        it will be set as the default value in the dropdown.
 
     Returns
     -------
     html.Div
         A Dash HTML Div component containing the dropdown.
     """
-    locs = data.db.list_observation_wells_with_data()
-    locs = sorted(locs, key=lambda n: data.db.gmw_gdf.loc[n, "wellcode_name"])
-    options = [{"label": f"{data.db.get_wellcode(i)}", "value": i} for i in locs]
+    locs = data.db.list_observation_wells_with_data
+    locs.sort_values(ColumnNames.DISPLAY_NAME, inplace=True)
+    options = [
+        {"label": row[ColumnNames.DISPLAY_NAME], "value": row[ColumnNames.ID]}
+        for _, row in locs.iterrows()
+    ]
 
     if selected_data is not None and len(selected_data) == 1:
-        value = selected_data[0]
+        wid = selected_data[0]
     else:
-        value = None
+        wid = None
 
     return html.Div(
         children=[
             dcc.Dropdown(
                 options=options,
-                value=value,
+                value=wid,
                 clearable=True,
                 searchable=True,
-                placeholder=i18n.t("general.select_series"),
+                placeholder=t_("general.select_series"),
                 id=ids.QC_DROPDOWN_SELECTION,
                 disabled=False,
             )
@@ -46,7 +55,9 @@ def render_selection_series_dropdown(data: DataInterface, selected_data: list | 
     )
 
 
-def render_additional_series_dropdown(data: DataInterface, selected_data):
+def render_additional_series_dropdown(
+    data: DataManager, selected_data: Optional[List[int]]
+) -> html.Div:
     """Render a dropdown component for selecting additional series.
 
     Locations are sorted based on distance from selected location in main dropdown.
@@ -70,10 +81,11 @@ def render_additional_series_dropdown(data: DataInterface, selected_data):
         )
         options = [
             {
-                "label": data.db.get_wellcode(i) + f" ({row.distance / 1e3:.1f} km)",
-                "value": i,
+                "label": row[ColumnNames.DISPLAY_NAME]
+                + f" ({row.distance / 1e3:.1f} km)",
+                "value": row[ColumnNames.ID],
             }
-            for i, row in locs.iterrows()
+            for _, row in locs.iterrows()
         ]
     else:
         options = []
@@ -83,7 +95,7 @@ def render_additional_series_dropdown(data: DataInterface, selected_data):
                 options=options,
                 clearable=True,
                 searchable=True,
-                placeholder=i18n.t("general.select_series2"),
+                placeholder=t_("general.select_series2"),
                 id=ids.QC_DROPDOWN_ADDITIONAL,
                 disabled=selected_data is None,
                 multi=True,
@@ -112,6 +124,7 @@ def render_add_rule_dropdown():
     options = [
         {"value": i, "label": i}
         for i in [rule for rule in dir(rulelib) if rule.startswith("rule_")]
+        + CUSTOM_RULE_NAMES
     ]
 
     return html.Div(
@@ -119,7 +132,7 @@ def render_add_rule_dropdown():
             dcc.Dropdown(
                 id=ids.TRAVAL_ADD_RULE_DROPDOWN,
                 clearable=True,
-                placeholder=i18n.t("general.select_rule"),
+                placeholder=t_("general.select_rule"),
                 value=None,
                 multi=False,
                 searchable=True,

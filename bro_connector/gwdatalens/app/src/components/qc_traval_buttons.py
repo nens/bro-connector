@@ -1,31 +1,32 @@
-import i18n
 from dash import dcc, html
 from dash_bootstrap_components import Button
 
-from . import ids
+from gwdatalens.app.constants import UI
+from gwdatalens.app.messages import t_
+from gwdatalens.app.src.components import ids
 
 
-def render_run_traval_button():
-    """Renders the "Run TRAVAL" button component.
+def render_run_traval_button() -> html.Div:
+    """Renders the "Run QC" button component.
 
     Returns
     -------
     html.Div
-        A Dash HTML component containing the "Run TRAVAL" button.
+        A Dash HTML component containing the "Run QC" button.
     """
     return html.Div(
         Button(
             html.Span(
                 [
                     html.I(className="fa-solid fa-gear"),
-                    " Run TRAVAL",
+                    " Run QC",
                 ],
                 id="span-recalculate",
                 n_clicks=0,
             ),
             style={
-                "margin-top": 10,
-                "margin-bottom": 10,
+                "margin-top": UI.MARGIN_TOP,
+                "margin-bottom": UI.MARGIN_BOTTOM,
             },
             disabled=False,
             id=ids.QC_RUN_TRAVAL_BUTTON,
@@ -33,7 +34,7 @@ def render_run_traval_button():
     )
 
 
-def render_qc_cancel_button():
+def render_qc_cancel_button() -> html.Div:
     """Renders the QC cancel button component.
 
     Currently not in use.
@@ -49,14 +50,14 @@ def render_qc_cancel_button():
                 html.Span(
                     [
                         html.I(className="fa-regular fa-circle-stop"),
-                        " " + i18n.t("general.cancel"),
+                        " " + t_("general.cancel"),
                     ],
                     id="span-cancel-button",
                     n_clicks=0,
                 ),
                 style={
-                    "margin-top": 10,
-                    "margin-bottom": 10,
+                    "margin-top": UI.MARGIN_TOP,
+                    "margin-bottom": UI.MARGIN_BOTTOM,
                 },
                 disabled=True,
                 id=ids.QC_CANCEL_BUTTON,
@@ -79,14 +80,14 @@ def render_add_rule_button():
             html.Span(
                 [
                     html.I(className="fa-solid fa-plus"),
-                    i18n.t("general.add_rule_button"),
+                    t_("general.add_rule_button"),
                 ],
                 id="span-add-rule",
                 n_clicks=0,
             ),
             style={
-                "margin-top": 10,
-                "margin-bottom": 10,
+                "margin-top": UI.MARGIN_TOP,
+                "margin-bottom": UI.MARGIN_BOTTOM,
             },
             disabled=True,
             id=ids.TRAVAL_ADD_RULE_BUTTON,
@@ -113,8 +114,8 @@ def render_reset_rules_button():
                 n_clicks=0,
             ),
             style={
-                "margin-top": 10,
-                "margin-bottom": 10,
+                "margin-top": UI.MARGIN_TOP,
+                "margin-bottom": UI.MARGIN_BOTTOM,
             },
             disabled=True,
             id=ids.TRAVAL_RESET_RULESET_BUTTON,
@@ -137,14 +138,14 @@ def render_export_ruleset_button():
                 html.Span(
                     [
                         html.I(className="fa-solid fa-file-export"),
-                        " " + i18n.t("general.export"),
+                        " " + t_("general.export"),
                     ],
                     id="span-ruleset-export",
                     n_clicks=0,
                 ),
                 style={
-                    "margin-top": 10,
-                    "margin-bottom": 10,
+                    "margin-top": UI.MARGIN_TOP,
+                    "margin-bottom": UI.MARGIN_BOTTOM,
                 },
                 disabled=False,
                 id=ids.TRAVAL_EXPORT_RULESET_BUTTON,
@@ -168,14 +169,14 @@ def render_export_parameter_csv_button():
                 html.Span(
                     [
                         html.I(className="fa-solid fa-file-csv"),
-                        " " + i18n.t("general.export_params"),
+                        " " + t_("general.export_params"),
                     ],
                     id="span-parameters-export",
                     n_clicks=0,
                 ),
                 style={
-                    "margin-top": 10,
-                    "margin-bottom": 10,
+                    "margin-top": UI.MARGIN_TOP,
+                    "margin-bottom": UI.MARGIN_BOTTOM,
                 },
                 disabled=False,
                 id=ids.TRAVAL_EXPORT_PARAMETERS_CSV_BUTTON,
@@ -212,7 +213,7 @@ def render_load_ruleset_button():
                         html.Span(
                             [
                                 html.I(className="fa-solid fa-file-import"),
-                                f" {i18n.t('general.load')} RuleSet",
+                                f" {t_('general.load')} RuleSet",
                             ],
                             style={
                                 "color": "white",
@@ -228,14 +229,14 @@ def render_load_ruleset_button():
                     "borderStyle": "solid",
                     "borderRadius": "5px",
                     "backgroundClip": "border-box",
-                    "backgroundColor": "#006f92",  # "#006f92",
+                    "backgroundColor": UI.DEFAULT_BUTTON_COLOR,
                     "textAlign": "center",
                 },
             )
         ],
         style={
             "display": "inline-block",
-            "margin-top": 10,
+            "margin-top": UI.MARGIN_TOP,
             "margin-bottom": 5,
             "margin-right": 5,
             "verticalAlign": "middle",

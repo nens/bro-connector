@@ -6,14 +6,12 @@ en:
   tab_model: Time Series Model
   tab_qc: Error Detection
   tab_qc_result: Manual Review
+  tab_corrections: Corrections
   monitoring_wells: "Observation wells"
   no_data: No data
   no_data_selection: No data in selected time series.
-  no_selection: No series selected.
   no_plot: No series to plot.
   no_model: No model
-  no_model_alert:
-  no_traval: No QC result
   # tab-model
   select_location: Select a location
   generate: Generate model
@@ -22,7 +20,6 @@ en:
   # tab-qc
   show_parameters: Show parameters
   hide_parameters: Hide parameters
-  run_traval: Run TRAVAL
   select_series: Select time series ...
   select_series2: Select additional time series ...
   select_rule: Select a rule to add
@@ -46,10 +43,10 @@ en:
   mark_unreliable: "Mark unreliable"
   mark_undecided: "Mark undecided"
   mark_unknown: "Mark unknown"
-  clear_selection: "Deselect all in table"
+  clear_selection_table: "Deselect all in table"
+  clear_selection_button: "Clear selection"
   alert_failed_labeling: Cannot update labels for observations not visisble in table. Toggle 'Show all measurements'.
   run_only_on_unvalidated: Run only for unvalidated observations
-  reset_status: Mark unknown
   max_selection_warning: "Too many selected points! Maximum no. of selected points is {}!"
   model_use_only_validated: "Use only validated observations"
   select_qc_label: Apply QC label
@@ -63,9 +60,51 @@ en:
   incoming_qc_status: "Current status of of observation in database: ['unknown', 'undecided', 'unreliable', 'reliable']."
   manual_observations: "manual observations"
   qc_export_status_flag_tooltip: "Select whether all status flags should be exported or only those for suspect observations."
-  qc_export_status_flag_all: "Export all status flags"
-  qc_export_status_flag_all_not_suspect: "Export all status flags, but not previously identified suspect observations"
-  qc_export_status_flag_suspect: "Export only suspect status flags"
+  qc_export_status_flag_all: "Export all"
+  qc_export_status_flag_all_tooltip: "Export all status flags. All non-suspect observations are marked as reliable. Overwrites all current status flags in database."
+  qc_export_status_flag_all_not_suspect: "Export all (preserve suspects)"
+  qc_export_status_flag_all_not_suspect_tooltip: "Export all status flags, but preserve status for observations already marked as suspect."
+  qc_export_status_flag_suspect: "Export only suspects"
+  qc_export_status_flag_suspect_tooltip: "Export only status flags for observations marked as suspect. No observations are marked reliable."
   qc_export_status_flag_placeholder: "Select export option..."
-  alert_all_observations_checked: "No unvalidated observations to check!"
+  error_all_observations_checked: "No unvalidated observations to check!"
   multiple_series_model_warning: "Multiple time series selected in overview tab, use dropdown to select time series, or select a single time series in Overview tab."
+  no_well_data: "No well screen data."
+  # tab-corrections
+  select_well_1: "Select first observation well"
+  select_well_2: "Select second observation well (optional)"
+  commit_corrections: "Commit corrections"
+  reset_changes: "Reset changes"
+  corrected_value_tooltip: "Enter corrected observation(s) here (in m NAP)."
+  correction_reason_tooltip: "Provide a reason for the correction (optional)."
+  calculated_value_original: "Calculated value (original)"
+  calculated_value_original_tooltip: "Shows the original calculated value. When a correction was applied, this shows the previous value (from value_to_be_corrected)."
+  bkb_label: "Tube top elevation (m NAP)"
+  bkb_tooltip: "Elevation top of tube in meters relative to NAP"
+  observation_cm_label: "- Observation (cm below tube top)"
+  observation_cm_tooltip: "Observation in centimeters below top of tube"
+  observation_mnap_label: "= m NAP"
+  observation_mnap_tooltip: "Groundwater level in meters relative to NAP, calculated as tube top - observation in cm = m NAP"
+  example: "e.g."
+  # error messages
+  error_data_load_failed: "Unable to load data."
+  error_no_wells_selected: "Please select a well to continue."
+  error_no_series_data: "No time series data available for the selected well."
+  error_no_locations: "No monitoring locations found."
+  error_qc_analysis_failed: "Quality control analysis failed."
+  error_no_model: "No model available for the selected time series '%{name}'. Please generate a model first."
+  error_export_failed: "Failed to export data for %{well}."
+  error_database_error: "Database connection error. Please try again later."
+  error_ruleset_load_error: "Failed to load quality control ruleset."
+  error_no_qc_result: "No QC result available."
+  error_no_well_configuration_data: "No well configuration data available for %{well}."
+  error_no_plot_data: "No data to plot for: %{names}."
+  error_corrections_commit_failed: "Error committing corrections: %{error}."
+  error_corrections_reset_failed: "Error resetting corrections: %{error}."
+  # success/info
+  success_loaded_ruleset: "Ruleset loaded."
+  success_traval_run: "QC run successful."
+  success_export_db: "Exported QC results to database for %{well}."
+  success_loaded_timeseries_pastastore: "Loaded time series model '%{name}' from PastaStore."
+  success_corrections_committed: "Successfully committed %{count} correction(s)."
+  success_corrections_reset: "Successfully reset %{count} correction(s)."

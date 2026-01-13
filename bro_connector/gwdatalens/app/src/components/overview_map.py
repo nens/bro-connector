@@ -1,32 +1,41 @@
-import i18n
+import logging
+from typing import Any, Dict, List, Optional
+
 import numpy as np
+import pandas as pd
 import plotly.graph_objs as go
 from dash import dcc
-from gwdatalens.app.settings import MAPBOX_ACCESS_TOKEN, settings
-from gwdatalens.app.src.cache import TIMEOUT, cache
+
+from gwdatalens.app.config import config
+from gwdatalens.app.constants import UI, ConfigDefaults, PlotConstants
+from gwdatalens.app.messages import t_
+from gwdatalens.app.paths import MAPBOX_ACCESS_TOKEN
+from gwdatalens.app.src.cache import cache
 from gwdatalens.app.src.components import ids
-from gwdatalens.app.src.data import DataInterface
+from gwdatalens.app.src.data import DataManager
 from gwdatalens.app.src.utils import conditional_cache
 
+logger = logging.getLogger(__name__)
+
 try:
-    with open(MAPBOX_ACCESS_TOKEN, encoding="utf-8") as f:
+    with open(MAPBOX_ACCESS_TOKEN, "r", encoding="utf-8") as f:
         mapbox_access_token = f.read()
 except FileNotFoundError:
-    if settings["USE_MAPBOX"]:
-        print(f"Mapbox access token not found: {MAPBOX_ACCESS_TOKEN}")
+    if config.get("USE_MAPBOX"):
+        logger.error("Mapbox access token not found: %s", MAPBOX_ACCESS_TOKEN)
     mapbox_access_token = None
 
 
 @conditional_cache(
     cache.memoize,
-    (not settings["DJANGO_APP"] and settings["CACHING"]),
-    timeout=TIMEOUT,
+    (not config.get("DJANGO_APP") and config.get("CACHING")),
+    timeout=ConfigDefaults.CACHE_TIMEOUT,
 )
 def render(
-    data: DataInterface,
-    selected_data=None,
-):
-    df = data.db.gmw_gdf.reset_index()
+    data: DataManager,
+    selected_data: Optional[List[int]] = None,
+) -> dcc.Graph:
+    df = data.db.gmw_gdf.copy()
     return dcc.Graph(
         id=ids.OVERVIEW_MAP,
         figure=draw_map_mapbox(
@@ -34,11 +43,11 @@ def render(
             mapbox_access_token=MAPBOX_ACCESS_TOKEN,
             selected_data=selected_data,
         )
-        if settings["USE_MAPBOX"]
+        if config.get("USE_MAPBOX")
         else draw_map(df, selected_data=selected_data),
         style={
-            "margin-top": "15",
-            "height": "45vh",
+            "margin-top": UI.MARGIN_TOP_LARGE,
+            "height": "45cqh",
         },
         config={
             "displayModeBar": True,
@@ -50,15 +59,17 @@ def render(
 
 
 def draw_map(
-    df,
-    selected_data=None,
-):
+    df: pd.DataFrame,
+    selected_data: Optional[List[int]] = None,
+) -> Dict[str, Any]:
     """Draw ScatterMap.
 
     Parameters
     ----------
     df : pandas.DataFrame
         data to plot
+    selected_data : list, optional
+        list of internal ids of selected data points
 
     Returns
     -------
@@ -66,86 +77,71 @@ def draw_map(
         dictionary containing plotly maplayout and mapdata
     """
     mask = df["metingen"] > 0
-
     if selected_data is not None:
-        pts_data = np.nonzero(df.loc[mask, "name"].isin(selected_data))[0].tolist()
-        pts_nodata = np.nonzero(df.loc[~mask, "name"].isin(selected_data))[0].tolist()
+        pts_data = selected_data
+        pts_nodata = np.nonzero(df.loc[~mask].index.isin(selected_data))[0].tolist()
     else:
         pts_data = None
         pts_nodata = None
 
     # NOTE: this does not work as map and table have to be similarly ordered for
     # synchronized selection to work.
-    # df = df.sort_values(["nitg_code", "tube_number"], ascending=[False, False])
+    # df = df.sort_values([ColumnNames.WELL_NITG_CODE, "tube_number"],
+    # ascending=[False, False])
 
     # oseries data for map
     pb_data = {
         "lat": df.loc[:, "lat"],
         "lon": df.loc[:, "lon"],
-        "name": i18n.t("general.monitoring_wells"),
-        # customdata=df.loc[:, "z"],
+        "name": t_("general.monitoring_wells"),
+        "customdata": df.loc[:, "well_static_id"].astype(str)
+        + "."
+        + df.loc[:, "tube_static_id"].astype(str),
         "type": "scattermap",
-        "text": df.loc[:, "wellcode_name"].tolist(),
+        "text": df.loc[:, "display_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
         "marker": go.scattermap.Marker(
-            size=6,
-            # sizeref=0.5,
-            # sizemin=2,
-            # sizemode="area",
-            opacity=0.7,
-            color="black",
-            # colorscale=px.colors.sequential.Reds,
-            # reversescale=False,
-            # showscale=True,
-            # colorbar={
-            #     "title": "depth<br>(m NAP)",
-            #     "x": -0.1,
-            #     "y": 0.95,
-            #     "len": 0.95,
-            #     "yanchor": "top",
-            # },
+            size=PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
+            opacity=PlotConstants.OVERVIEW_MAP_MARKER_OPACITY,
+            color=PlotConstants.OVERVIEW_MAP_MARKER_COLOR,
+            symbol=PlotConstants.OVERVIEW_MAP_MARKER_SYMBOL,
         ),
-        "hovertemplate": (
-            "<b>%{text}</b><br>"
-            # + "<b>z:</b> NAP%{marker.color:.2f} m"
-            # + "<extra></extra> "
-        ),
+        "hovertemplate": ("<b>%{text}</b><br>"),
         "showlegend": True,
         "legendgroup": "DATA",
         "selectedpoints": pts_data,
-        "unselected": {"marker": {"opacity": 0.5, "color": "black", "size": 6}},
-        "selected": {"marker": {"opacity": 1.0, "color": "red", "size": 9}},
+        "unselected": {
+            "marker": {
+                "opacity": PlotConstants.OVERVIEW_MAP_UNSELECTED_MARKER_OPACITY,
+                "color": PlotConstants.OVERVIEW_MAP_MARKER_COLOR,
+                "size": PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
+            }
+        },
+        "selected": {
+            "marker": {
+                "opacity": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_OPACITY,
+                "color": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_COLOR,
+                "size": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_SIZE,
+            }
+        },
     }
 
     pb_nodata = {
         "lat": df.loc[~mask, "lat"],
         "lon": df.loc[~mask, "lon"],
-        "name": i18n.t("general.no_data"),
+        "name": t_("general.no_data"),
         # customdata=df.loc[~mask, "z"],
         "type": "scattermap",
-        "text": df.loc[~mask, "wellcode_name"].tolist(),
+        "text": df.loc[~mask, "display_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
         "marker": go.scattermap.Marker(
-            size=7,
-            opacity=0.8,
-            # sizeref=0.5,
-            # sizemin=2,
-            # sizemode="area",
-            color="grey",
-            # colorscale=px.colors.sequential.Reds,
-            # reversescale=False,
-            # showscale=True,
-            # colorbar={
-            #     "title": "depth<br>(m NAP)",
-            #     "x": -0.1,
-            #     "y": 0.95,
-            #     "len": 0.95,
-            #     "yanchor": "top",
-            # },
+            size=PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_SIZE,
+            opacity=PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_OPACITY,
+            color=PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_COLOR,
         ),
         "hovertemplate": (
             "<b>%{text}</b><br>"
@@ -155,11 +151,26 @@ def draw_map(
         "showlegend": True,
         "legendgroup": "NODATA",
         "selectedpoints": pts_nodata,
-        "unselected": {"marker": {"opacity": 0.5, "color": "gray", "size": 7}},
-        "selected": {"marker": {"opacity": 1.0, "color": "red", "size": 9}},
+        "unselected": {
+            "marker": {
+                "opacity": PlotConstants.OVERVIEW_MAP_UNSELECTED_MARKER_OPACITY,
+                "color": PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_COLOR,
+                "size": PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_SIZE,
+            }
+        },
+        "selected": {
+            "marker": {
+                "opacity": PlotConstants.OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_OPACITY,
+                "color": PlotConstants.OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_COLOR,
+                "size": PlotConstants.OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_SIZE,
+            }
+        },
     }
 
-    mapdata = [pb_nodata, pb_data]
+    mapdata = [
+        pb_nodata,
+        pb_data,
+    ]
 
     # if selected_rows is None:
     zoom, center = get_plotting_zoom_level_and_center_coordinates(
@@ -180,21 +191,13 @@ def draw_map(
             # default level of zoom
             "zoom": zoom,
             # default map style (some options listed, not all support labels)
-            "style": "outdoors",
-            # public styles
-            # style="carto-positron",
-            # style="open-street-map",
-            # style="stamen-terrain",
-            # style="basic",
-            # style="streets",
-            # style="light",
-            # style="dark",
-            # style="satellite",
-            # style="satellite-streets"
+            "style": ConfigDefaults.DEFAULT_MAP_STYLE,
         },
         # relayoutData=map_cfg,
         "legend": {"x": 0.01, "y": 0.99, "xanchor": "left", "yanchor": "top"},
         "uirevision": False,
+        "dragmode": "pan",
+        "selectdirection": "d",
         "modebar": {
             "bgcolor": "rgba(255,255,255,0.9)",
         },
@@ -224,27 +227,26 @@ def draw_map_mapbox(
     dict
         dictionary containing plotly maplayout and mapdata
     """
-    mask = df["metingen"] > 0
-
     if selected_data is not None:
-        pts_data = np.nonzero(df.loc[mask, "name"].isin(selected_data))[0].tolist()
-        pts_nodata = np.nonzero(df.loc[~mask, "name"].isin(selected_data))[0].tolist()
+        pts_data = selected_data
+        pts_nodata = df.index.difference(selected_data).tolist()
     else:
         pts_data = None
         pts_nodata = None
 
     # NOTE: this does not work as map and table have to be similarly ordered for
     # synchronized selection to work.
-    # df = df.sort_values(["nitg_code", "tube_number"], ascending=[False, False])
+    # df = df.sort_values([ColumnNames.WELL_NITG_CODE, "tube_number"],
+    # ascending=[False, False])
 
     # oseries data for map
     pb_data = {
         "lat": df.loc[:, "lat"],
         "lon": df.loc[:, "lon"],
-        "name": i18n.t("general.monitoring_wells"),
+        "name": t_("general.monitoring_wells"),
         # customdata=df.loc[:, "z"],
         "type": "scattermapbox",
-        "text": df.loc[:, "wellcode_name"].tolist(),
+        "text": df.loc[:, "display_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
@@ -278,13 +280,14 @@ def draw_map_mapbox(
         "selected": {"marker": {"opacity": 1.0, "color": "red", "size": 9}},
     }
 
+    mask = df["metingen"] > 0
     pb_nodata = {
         "lat": df.loc[~mask, "lat"],
         "lon": df.loc[~mask, "lon"],
-        "name": i18n.t("general.no_data"),
+        "name": t_("general.no_data"),
         # customdata=df.loc[~mask, "z"],
         "type": "scattermapbox",
-        "text": df.loc[~mask, "wellcode_name"].tolist(),
+        "text": df.loc[~mask, "display_name"].tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
         "mode": "markers",
@@ -340,21 +343,13 @@ def draw_map_mapbox(
             # default level of zoom
             "zoom": zoom,
             # default map style (some options listed, not all support labels)
-            "style": "outdoors",
-            # public styles
-            # style="carto-positron",
-            # style="open-street-map",
-            # style="stamen-terrain",
-            # style="basic",
-            # style="streets",
-            # style="light",
-            # style="dark",
-            # style="satellite",
-            # style="satellite-streets"
+            "style": ConfigDefaults.DEFAULT_MAP_STYLE,
         },
         # relayoutData=map_cfg,
         "legend": {"x": 0.01, "y": 0.99, "xanchor": "left", "yanchor": "top"},
         "uirevision": False,
+        "dragmode": "select",
+        "selectdirection": "d",
         "modebar": {
             "bgcolor": "rgba(255,255,255,0.9)",
         },

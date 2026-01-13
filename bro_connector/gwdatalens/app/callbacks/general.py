@@ -1,15 +1,28 @@
+import logging
+from typing import Any
+
 import dash_bootstrap_components as dbc
-import i18n
-from dash import Input, Output, State, ctx, html
+from dash import Input, Output, State, html
 from dash.exceptions import PreventUpdate
-from gwdatalens.app.settings import settings
+
+from gwdatalens.app.constants import ConfigDefaults
+from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import (
     ids,
+    tab_corrections,
     tab_model,
     tab_overview,
     tab_qc,
     tab_qc_result,
 )
+from gwdatalens.app.src.utils import log_callback
+from gwdatalens.app.src.utils.callback_helpers import (
+    AlertBuilder,
+    get_callback_context,
+)
+from gwdatalens.app.validators import validate_selection_limit
+
+logger = logging.getLogger(__name__)
 
 
 def register_general_callbacks(app, data):
@@ -19,7 +32,13 @@ def register_general_callbacks(app, data):
         Input(ids.HELP_BUTTON_CLOSE, "n_clicks"),
         State(ids.HELP_MODAL, "is_open"),
     )
-    def toggle_modal(n1, n2, is_open):
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def toggle_modal(n1: int | None, n2: int | None, is_open: bool) -> bool:
         """Toggle help modal window.
 
         Parameters
@@ -47,78 +66,63 @@ def register_general_callbacks(app, data):
         State(ids.SELECTED_OSERIES_STORE, "data"),
         State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
     )
-    def render_tab_content(tab, selected_data, figure):
-        """Render tab content.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def render_tab_content(
+        tab: str, selected_data: list[int] | None, figure: tuple | None
+    ) -> tuple[Any, tuple]:
+        """Render tab content with appropriate alerts for selection limits.
 
         Parameters
         ----------
         tab : str
-            selected tab
-        selected_data : str or list of str, or None
-            selected data points in overview tab
+            Tab identifier (e.g., "overview", "model", "qc")
+        selected_data : list or None
+            List of selected observation series IDs
         figure : tuple or None
-            tuple containing name and plotly figure dictionary
+            Stored Traval result figure data
 
         Returns
         -------
         tuple
-            tuple containing tab content and alert data
+            (tab_content, alert_data)
         """
-        if tab == ids.TAB_OVERVIEW:
-            if (
-                selected_data is not None
-                and len(selected_data) > settings["SERIES_LOAD_LIMIT"]
-            ):
-                selected_data = None
-            return (
-                tab_overview.render_content(data, selected_data),
-                (
-                    False,  # show alert
-                    "success",  # alert color
-                    "",  # empty alert message
-                ),
-            )
-        elif tab == ids.TAB_MODEL:
-            if (
-                selected_data is not None
-                and len(selected_data) > settings["SERIES_LOAD_LIMIT"]
-            ):
-                alert = (
-                    True,  # show alert
-                    "warning",  # alert color
-                    i18n.t("general.multiple_series_model_warning"),  # alert message
+        # Check selection limit and handle oversized selections
+        if selected_data is not None and validate_selection_limit(
+            selected_data, ConfigDefaults.MAX_WELLS_SELECTION
+        ):
+            # For model tab, show warning but keep selection
+            if tab == ids.TAB_MODEL:
+                alert = AlertBuilder.warning(
+                    t_("general.multiple_series_model_warning")
                 )
-            else:
-                alert = (
-                    False,  # show alert
-                    "success",  # alert color
-                    "",  # empty alert message
+                return tab_model.render_content(data, selected_data), alert
+            # For overview tab, clear selection to avoid performance issues
+            elif tab == ids.TAB_OVERVIEW:
+                alert = AlertBuilder.warning(
+                    f"Selection limited to {ConfigDefaults.MAX_WELLS_SELECTION} "
+                    "wells for performance"
                 )
+                return tab_overview.render_content(data, None), alert
 
-            return (
-                tab_model.render_content(data, selected_data),
-                alert,
-            )
+        # No alert for most tabs
+        no_alert = AlertBuilder.no_alert()
+
+        if tab == ids.TAB_OVERVIEW:
+            return tab_overview.render_content(data, selected_data), no_alert
+        elif tab == ids.TAB_MODEL:
+            return tab_model.render_content(data, selected_data), no_alert
         elif tab == ids.TAB_QC:
-            return (
-                tab_qc.render_content(data, selected_data),
-                (
-                    False,  # show alert
-                    "success",  # alert color
-                    "",  # empty alert message
-                ),
-            )
+            return tab_qc.render_content(data, selected_data), no_alert
         elif tab == ids.TAB_QC_RESULT:
-            return (
-                tab_qc_result.render_content(
-                    data, figure[1] if figure is not None else None
-                ),
-                (
-                    False,  # show alert
-                    "success",  # alert color
-                    "",  # empty alert message
-                ),
-            )
+            figure_data = figure[1] if figure is not None else None
+            return tab_qc_result.render_content(data, figure_data), no_alert
+        elif tab == ids.TAB_CORRECTIONS:
+            return tab_corrections.render_content(data, selected_data), no_alert
         else:
             raise PreventUpdate
 
@@ -135,39 +139,46 @@ def register_general_callbacks(app, data):
         Input(ids.ALERT_LABEL_OBS, "data"),
         Input(ids.ALERT_RUN_TRAVAL, "data"),
         Input(ids.ALERT_TAB_RENDER, "data"),
+        Input(ids.ALERT_STATUS_CORRECTIONS, "data"),
         prevent_initial_call=True,
     )
-    def show_alert(*args, **kwargs):
-        """Show alert message.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def show_alert(*args: tuple, **kwargs: Any) -> list[dbc.Alert]:
+        """Display alert message from any alert input.
 
-        Parameters
-        ----------
-        *args
-            alert data
-        **kwargs
-            callback context
+        Uses context helper to work in both standalone and Django modes.
         """
-        if len(kwargs) > 0:
-            ctx_ = kwargs["callback_context"]
-            triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-            inputs_list = ctx_.inputs_list
-        else:
-            triggered_id = ctx.triggered_id
-            inputs_list = ctx.inputs_list
+        # Get callback context (works for both Dash and Django)
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+        inputs_list = ctx_obj.inputs_list
 
-        if any(args):
-            for i in range(len(inputs_list)):
-                if inputs_list[i]["id"] == triggered_id:
-                    break
-            alert_data = args[i]
-            is_open, color, message = alert_data
+        if not any(args):
+            raise PreventUpdate
+
+        # Find which input triggered this callback
+        for i, input_item in enumerate(inputs_list):
+            if input_item["id"] == triggered_id:
+                alert_data = args[i]
+                break
         else:
             raise PreventUpdate
+
+        # Unpack alert data
+        is_open, color, message = alert_data
+
+        # Log warnings and errors
+        if is_open and color in ["danger", "warning"]:
+            logger.warning("Alert triggered by %s: %s", triggered_id, message)
+
         return [
             dbc.Alert(
-                children=[
-                    html.P(message, id=ids.ALERT_BODY),
-                ],
+                children=[html.P(message, id=ids.ALERT_BODY)],
                 id=ids.ALERT,
                 color=color,
                 dismissable=True,
