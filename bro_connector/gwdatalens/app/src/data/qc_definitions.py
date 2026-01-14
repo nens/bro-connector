@@ -59,6 +59,10 @@ rule_explanation_en = {
     "rule_pastas_outside_pi": (
         "Detection rule, flag values based on pastas model prediction interval"
     ),
+    "pastas_obswell": (
+        "Detection rule, flag values based on prediction interval of pastas model "
+        "based on another time series."
+    ),
     "rule_pastas_percentile_pi": (""),
     "rule_keep_comments": (
         "Filter rule, modify timeseries to keep data with certain comments"
@@ -110,6 +114,10 @@ rule_explanation_nl = {
     "rule_pastas_outside_pi": (
         "Detectie-regel, signaleer op basis van het voorspellingsinterval "
         "van een pastas model"
+    ),
+    "pastas_obswell": (
+        "Detectie-regel, signaleer op basis van voorspellingsinterval van pastas model "
+        "o.b.v. een andere tijdreeks."
     ),
     "rule_pastas_percentile_pi": (""),
     "rule_keep_comments": (

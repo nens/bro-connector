@@ -1,12 +1,22 @@
+import logging
+from typing import List, Optional
+
 import dash_bootstrap_components as dbc
-import i18n
 from dash import dcc, html
 
-from ..data.interface import DataInterface
-from . import ids, model_buttons, model_dropdown, model_plots
+from gwdatalens.app.messages import t_
+from gwdatalens.app.src.components import (
+    ids,
+    model_buttons,
+    model_dropdown,
+    model_plots,
+)
+from gwdatalens.app.src.data.data_manager import DataManager
+
+logger = logging.getLogger(__name__)
 
 
-def render():
+def render() -> dcc.Tab:
     """Renders the Model Tab.
 
     Returns
@@ -15,14 +25,16 @@ def render():
         The model tab
     """
     return dcc.Tab(
-        label=i18n.t("general.tab_model"),
+        label=t_("general.tab_model"),
         value=ids.TAB_MODEL,
         className="custom-tab",
         selected_className="custom-tab--selected",
     )
 
 
-def render_datepicker_tmin(data, selected_data):
+def render_datepicker_tmin(
+    data: DataManager, selected_data: Optional[List[int]]
+) -> dcc.DatePickerSingle:
     """Renders a DatePickerSingle component for selecting the minimum date (tmin).
 
     Parameters
@@ -31,10 +43,10 @@ def render_datepicker_tmin(data, selected_data):
         The data object containing the `pstore` attribute, which provides
         access to the `get_tmin_tmax` method.
     selected_data : list or None
-        A list containing the selected data. If the list contains exactly one
-        item, the function will attempt to retrieve the tmin date for that
-        item. If None or the list length is not 1, the date picker will be
-        disabled.
+        A list containing the internal ids of selected data.
+        If the list contains exactly one item, the function will attempt
+        to retrieve the tmin date for that item. If None or the list length
+        is not 1, the date picker will be disabled.
 
     Returns
     -------
@@ -42,11 +54,16 @@ def render_datepicker_tmin(data, selected_data):
         A Dash DatePickerSingle component for selecting a start time.
     """
     if selected_data is not None and len(selected_data) == 1:
-        name = selected_data
+        wid = selected_data[0]
+        name = data.db.gmw_gdf.loc[wid, "display_name"]
         try:
-            tmintmax = data.pstore.get_tmin_tmax(libname="oseries", names=name)
-            start_date = tmintmax.loc[name[0], "tmin"].to_pydatetime()
+            tmintmax = data.pastastore.get_tmin_tmax(libname="oseries", names=[name])
+            start_date = tmintmax.loc[name, "tmin"].to_pydatetime()
             disabled = False
+        except KeyError:
+            logger.exception("No time series for well id %s", wid)
+            raise
+        # if other error converting to datetime, do not set date
         except Exception:
             start_date = None
             disabled = True
@@ -56,7 +73,7 @@ def render_datepicker_tmin(data, selected_data):
 
     return dcc.DatePickerSingle(
         date=start_date,
-        placeholder=i18n.t("general.tmin"),
+        placeholder=t_("general.tmin"),
         display_format="YYYY-MM-DD",
         show_outside_days=True,
         number_of_months_shown=1,
@@ -67,7 +84,9 @@ def render_datepicker_tmin(data, selected_data):
     )
 
 
-def render_datepicker_tmax(data, selected_data):
+def render_datepicker_tmax(
+    data: DataManager, selected_data: Optional[List[int]]
+) -> dcc.DatePickerSingle:
     """Renders a DatePickerSingle component for selecting the maximum date (tmax).
 
     Parameters
@@ -87,11 +106,16 @@ def render_datepicker_tmax(data, selected_data):
         A Dash DatePickerSingle component for selecting a end time.
     """
     if selected_data is not None and len(selected_data) == 1:
-        name = selected_data
+        wid = selected_data[0]
+        name = data.db.gmw_gdf.loc[wid, "display_name"]
         try:
-            tmintmax = data.pstore.get_tmin_tmax(libname="oseries", names=name)
-            end_date = tmintmax.loc[name[0], "tmax"].to_pydatetime()
+            tmintmax = data.pastastore.get_tmin_tmax(libname="oseries", names=[name])
+            end_date = tmintmax.loc[name, "tmax"].to_pydatetime()
             disabled = False
+        except KeyError:
+            logger.exception("No time series for well id %s", wid)
+            raise
+        # if other error converting to datetime, do not set date
         except Exception:
             end_date = None
             disabled = True
@@ -101,7 +125,7 @@ def render_datepicker_tmax(data, selected_data):
 
     return dcc.DatePickerSingle(
         date=end_date,
-        placeholder=i18n.t("general.tmax"),
+        placeholder=t_("general.tmax"),
         display_format="YYYY-MM-DD",
         show_outside_days=True,
         number_of_months_shown=1,
@@ -112,7 +136,7 @@ def render_datepicker_tmax(data, selected_data):
     )
 
 
-def render_checkbox():
+def render_checkbox() -> dbc.Checkbox:
     """Renders a checkbox component for running error detection on subset of obs.
 
     Returns
@@ -123,12 +147,12 @@ def render_checkbox():
     """
     return dbc.Checkbox(
         id=ids.MODEL_USE_ONLY_VALIDATED,
-        label=i18n.t("general.model_use_only_validated"),
+        label=t_("general.model_use_only_validated"),
         value=False,
     )
 
 
-def render_content(data: DataInterface, selected_data: list):
+def render_content(data: DataManager, selected_data: List):
     """Renders the content for the model tab.
 
     Parameters
@@ -161,7 +185,7 @@ def render_content(data: DataInterface, selected_data: list):
                         [
                             html.P(
                                 [
-                                    i18n.t("general.powered_by") + " ",
+                                    t_("general.powered_by") + " ",
                                     html.A(
                                         "Pastas",
                                         href="https://pastas.dev",
@@ -171,8 +195,10 @@ def render_content(data: DataInterface, selected_data: list):
                             )
                         ],
                         width="auto",
+                        className="ms-auto",
                     ),
                 ],
+                className="align-items-center",
             ),
             dbc.Row(
                 [
@@ -192,6 +218,13 @@ def render_content(data: DataInterface, selected_data: list):
                     ),
                 ]
             ),
+            # duplicate callback outputs stores
+            dcc.Store(id=ids.MODEL_RESULTS_CHART_1),
+            dcc.Store(id=ids.MODEL_RESULTS_CHART_2),
+            dcc.Store(id=ids.MODEL_DIAGNOSTICS_CHART_1),
+            dcc.Store(id=ids.MODEL_DIAGNOSTICS_CHART_2),
+            dcc.Store(id=ids.MODEL_SAVE_BUTTON_1),
+            dcc.Store(id=ids.MODEL_SAVE_BUTTON_2),
         ],
         fluid=True,
     )

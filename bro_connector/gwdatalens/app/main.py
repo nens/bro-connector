@@ -1,15 +1,27 @@
-from gwdatalens.app.settings import settings
+from gwdatalens.app.config import config
 
 
 def get_app():
-    try:
-        from gwdatalens.app.app import app
-    except ImportError:
-        from app.app import app
+    from gwdatalens.app.app import app
+
     return app
 
 
-def run(debug=settings["DEBUG"], port=settings["PORT"]):
+def run(debug=None, port=None):
+    """Run the GWDataLens application.
+
+    Parameters
+    ----------
+    debug : bool, optional
+        Enable debug mode. Defaults to config DEBUG setting.
+    port : int, optional
+        Port to run on. Defaults to config PORT setting.
+    """
+    if debug is None:
+        debug = config.get("DEBUG")
+    if port is None:
+        port = config.get("PORT")
+
     app = get_app()
     if debug:
         app.run(debug=debug, port=port)
@@ -29,8 +41,8 @@ run_dashboard = run
 # %% Run app
 
 if __name__ == "__main__":
-    if settings["DEBUG"]:
+    if config.get("DEBUG"):
         app = get_app()
-        app.run(debug=settings["DEBUG"])
+        app.run(debug=config.get("DEBUG"))
     else:
         run()

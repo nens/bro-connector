@@ -1,17 +1,30 @@
 import json
+import logging
 import os
+from typing import Any
 
-import i18n
 import pandas as pd
 import pastas as ps
-from dash import Input, Output, State, ctx, no_update
+from dash import Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
-from gwdatalens.app.src.components import ids
 from packaging.version import parse
 from pastas.extensions import register_plotly
 from pastas.io.pas import PastasEncoder
 from pastastore.version import __version__ as PASTASTORE_VERSION
 
+from gwdatalens.app.constants import ConfigDefaults
+from gwdatalens.app.messages import ErrorMessages, SuccessMessages, t_
+from gwdatalens.app.src.components import ids
+from gwdatalens.app.src.services import TimeSeriesService, WellService
+from gwdatalens.app.src.utils import log_callback
+from gwdatalens.app.src.utils.callback_helpers import (
+    AlertBuilder,
+    CallbackResponse,
+    EmptyFigure,
+    get_callback_context,
+)
+
+logger = logging.getLogger(__name__)
 register_plotly()
 
 PASTASTORE_GT_1_7_1 = parse(PASTASTORE_VERSION) > parse("1.7.1")
@@ -20,6 +33,9 @@ PASTASTORE_GT_1_7_1 = parse(PASTASTORE_VERSION) > parse("1.7.1")
 
 
 def register_model_callbacks(app, data):
+    ts_service = TimeSeriesService(data.db)
+    well_service = WellService(data.db)
+
     @app.callback(
         Output(ids.MODEL_RESULTS_CHART_1, "data"),
         Output(ids.MODEL_DIAGNOSTICS_CHART_1, "data"),
@@ -31,125 +47,98 @@ def register_model_callbacks(app, data):
         State(ids.MODEL_DATEPICKER_TMIN, "date"),
         State(ids.MODEL_DATEPICKER_TMAX, "date"),
         State(ids.MODEL_USE_ONLY_VALIDATED, "value"),
+        running=[
+            (Output(ids.LOADING_MODEL_RESULTS_CHART, "display"), "show", "auto"),
+            (Output(ids.LOADING_MODEL_DIAGNOSTICS_CHART, "display"), "show", "auto"),
+        ],
         prevent_initial_call=True,
     )
-    def generate_model(n_clicks, value, tmin, tmax, use_only_validated):
-        """Generate a time series model based on user input and update the stored copy.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def generate_model(
+        n_clicks: int | None,
+        wid: int | None,
+        tmin: str | None,
+        tmax: str | None,
+        use_only_validated: bool,
+    ) -> tuple[dict, dict, str, dict, tuple]:
+        """Generate a time series model based on user input.
 
-        Parameters
-        ----------
-        n_clicks : int
-            Number of clicks on the button that triggers the model generation.
-        value : str
-            Identifier for the time series in the format "gmw_id-tube_id".
-        tmin : str
-            Minimum timestamp for the model in a format recognized by `pd.Timestamp`.
-        tmax : str
-            Maximum timestamp for the model in a format recognized by `pd.Timestamp`.
-        use_only_validated : bool
-            Flag indicating whether to use only validated data points.
-
-        Returns
-        -------
-        tuple
-            A tuple containing:
-            - plotly.graph_objs._figure.Figure: Plotly figure of the model results.
-            - plotly.graph_objs._figure.Figure: Plotly figure of the model diagnostics.
-            - str: JSON representation of the generated model.
-            - bool: Flag to enable or disable the save button.
-            - tuple: Alert information containing:
-                - bool: Flag to show or hide the alert.
-                - str: Alert color ("success" or "danger").
-                - str: Alert message.
-
-        Raises
-        ------
-        PreventUpdate
-            If `n_clicks` is None or `value` is None.
+        Creates a Pastas model, solves it, and stores it for saving.
         """
-        if n_clicks is not None:
-            if value is not None:
-                try:
-                    tmin = pd.Timestamp(tmin)
-                    tmax = pd.Timestamp(tmax)
-                    # get time series
-                    if "-" in value:
-                        gmw_id, tube_id = value.split("-")
-                    elif "_" in value:
-                        gmw_id, tube_id = value.split("_")
-                    else:
-                        raise ValueError(
-                            "Error splitting name into monitoring well ID "
-                            f"and tube number: {value}"
-                        )
-                    ts = data.db.get_timeseries(gmw_id, tube_id)
-                    if use_only_validated:
-                        mask = ts.loc[:, data.db.qualifier_column] == "goedgekeurd"
-                        ts = ts.loc[mask, data.db.value_column].dropna()
-                    else:
-                        ts = ts.loc[:, data.db.value_column].dropna()
-
-                    if value in data.pstore.oseries_names:
-                        # update stored copy
-                        data.pstore.update_oseries(ts, value, force=True)
-                    else:
-                        # add series to database
-                        metadata = data.db.gmw_gdf.loc[value].to_dict()
-                        data.pstore.add_oseries(ts, value, metadata)
-                        print(
-                            f"Head time series '{value}' added to pastastore database."
-                        )
-
-                    if pd.isna(tmin):
-                        tmin = ts.index[0]
-                    if pd.isna(tmax):
-                        tmax = ts.index[-1]
-
-                    # get meteorological info, if need be, and pastastore is up-to-date
-                    if PASTASTORE_GT_1_7_1:
-                        data.get_knmi_data(value)
-
-                    # create model
-                    ml = ps.Model(ts)
-                    data.pstore.add_recharge(ml)
-                    ml.solve(freq="D", tmin=tmin, tmax=tmax, report=False)
-                    ml.add_noisemodel(ps.ArNoiseModel())
-                    ml.solve(
-                        freq="D",
-                        tmin=tmin,
-                        tmax=tmax,
-                        report=False,
-                        initial=False,
-                    )
-                    # store generated model
-                    mljson = json.dumps(ml.to_dict(), cls=PastasEncoder)
-                    return (
-                        ml.plotly.results(tmin=tmin, tmax=tmax),
-                        ml.plotly.diagnostics(),
-                        mljson,
-                        False,  # enable save button
-                        (
-                            True,  # show alert
-                            "success",  # alert color
-                            f"Created time series model for {value}.",
-                        ),  # empty alert message
-                    )
-                except Exception as e:
-                    return (
-                        no_update,
-                        no_update,
-                        None,
-                        True,  # disable save button
-                        (
-                            True,  # show alert
-                            "danger",  # alert color
-                            f"Error {e}",  # alert message
-                        ),
-                    )
-            else:
-                raise PreventUpdate
-        else:
+        if n_clicks is None or wid is None:
             raise PreventUpdate
+
+        try:
+            tmin = pd.Timestamp(tmin)
+            tmax = pd.Timestamp(tmax)
+
+            # Get time series via service
+            if use_only_validated:
+                ts = ts_service.get_validated_timeseries(wid)
+            else:
+                ts = ts_service.get_timeseries_values(wid)
+
+            # Get well name for model
+            name = well_service.get_well_name(wid)
+
+            # Add or update series in pastastore
+            if name in data.pastastore.oseries_names:
+                data.pastastore.update_oseries(ts, name, force=True)
+                logger.info(
+                    "Head time series '%s' updated in pastastore database.", name
+                )
+            else:
+                metadata = well_service.get_well_metadata(wid)
+                data.pastastore.add_oseries(ts, name, metadata)
+                logger.info("Head time series '%s' added to pastastore database.", name)
+
+            # Set time range from data if not specified
+            if pd.isna(tmin):
+                tmin = ts.index[0]
+            if pd.isna(tmax):
+                tmax = ts.index[-1]
+
+            # Get meteorological data if available
+            if PASTASTORE_GT_1_7_1:
+                data.get_knmi_data(name)
+
+            # Create and solve model
+            ml = ps.Model(ts)
+            data.pastastore.add_recharge(ml)
+            ml.solve(freq="D", tmin=tmin, tmax=tmax, report=False)
+            ml.add_noisemodel(ps.ArNoiseModel())
+            ml.solve(freq="D", tmin=tmin, tmax=tmax, report=False, initial=False)
+
+            # Serialize model
+            mljson = json.dumps(ml.to_dict(), cls=PastasEncoder)
+
+            return (
+                CallbackResponse()
+                .add_figure(ml.plotly.results(tmin=tmin, tmax=tmax))
+                .add_figure(ml.plotly.diagnostics())
+                .add_data(mljson)
+                .add(False)  # enable save button
+                .add(AlertBuilder.success(f"Created time series model for {name}."))
+                .build()
+            )
+
+        # generic exception to catch all errors related to creating a model
+        except Exception as e:
+            logger.exception("Error generating model for %s: %s", wid, e)
+            return (
+                CallbackResponse()
+                .add(no_update)
+                .add(no_update)
+                .add(None)
+                .add(True)  # disable save button
+                .add(AlertBuilder.danger(f"Error: {e}"))
+                .build()
+            )
 
     @app.callback(
         Output(ids.ALERT_SAVE_MODEL, "data"),
@@ -157,49 +146,36 @@ def register_model_callbacks(app, data):
         State(ids.PASTAS_MODEL_STORE, "data"),
         prevent_initial_call=True,
     )
-    def save_model(n_clicks, mljson):
-        """Save a model from a JSON string when a button is clicked.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def save_model(n_clicks: int | None, mljson: str | None) -> tuple:
+        """Save a model to Pastastore.
 
-        Parameters
-        ----------
-        n_clicks : int
-            The number of times the save button has been clicked.
-        mljson : str
-            The JSON string representation of the model to be saved.
-
-        Returns
-        -------
-        tuple
-            A tuple containing a boolean indicating success, a string for the alert
-            type, and a message string.
-
-        Raises
-        ------
-        PreventUpdate
-            If `n_clicks` is None or `mljson` is None.
+        Deserializes model from JSON and stores it in Pastastore.
         """
-        if n_clicks is None:
+        if n_clicks is None or mljson is None:
             raise PreventUpdate
-        if mljson is not None:
-            with open("temp.pas", "w") as f:
-                f.write(mljson)
-            ml = ps.io.load("temp.pas")
-            os.remove("temp.pas")
-            try:
-                data.pstore.add_model(ml, overwrite=True)
-                return (
-                    True,
-                    "success",
-                    f"Success! Saved model for {ml.oseries.name} in Pastastore!",
-                )
-            except Exception as e:
-                return (
-                    True,
-                    "danger",
-                    f"Error! Model for {ml.oseries.name} not saved: {e}!",
-                )
-        else:
-            raise PreventUpdate
+
+        # Deserialize model from JSON (via temp file - Pastas API limitation)
+        with open("temp.pas", "w") as f:
+            f.write(mljson)
+        ml = ps.io.load("temp.pas")
+        os.remove("temp.pas")
+
+        try:
+            data.pastastore.add_model(ml, overwrite=True)
+            return AlertBuilder.success(
+                f"Success! Saved model for {ml.oseries.name} in Pastastore!"
+            )
+        except Exception as e:
+            logger.exception("Error saving model for %s: %s", ml.oseries.name, e)
+            return AlertBuilder.danger(
+                f"Error! Model for {ml.oseries.name} not saved: {e}!"
+            )
 
     @app.callback(
         Output(ids.MODEL_RESULTS_CHART_2, "data"),
@@ -211,78 +187,61 @@ def register_model_callbacks(app, data):
         Input(ids.MODEL_DROPDOWN_SELECTION, "value"),
         prevent_initial_call=True,
     )
-    def plot_model_results(value):
-        """Plot the results and diagnostics of a time series model.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def plot_model_results(wid: int | None) -> tuple[dict, dict, bool, tuple, Any, Any]:
+        """Plot results and diagnostics for a stored model.
 
-        Parameters
-        ----------
-        value : str or None
-            The identifier of the model to be plotted. If None, no model is selected.
-
-        Returns
-        -------
-        tuple
-            A tuple containing:
-            - plotly.graph_objs.Figure: The plotly figure of the model results.
-            - plotly.graph_objs.Figure: The plotly figure of the model diagnostics.
-            - bool: A flag indicating whether to activate model save button.
-            - tuple: A tuple containing:
-                - bool: A flag indicating if an alert should be shown.
-                - str: The color of the alert ('success' or 'warning').
-                - str: The alert message.
-            - datetime.datetime or None: The minimum time of the model settings,
-              or None if not available.
-            - datetime.datetime or None: The maximum time of the model settings,
-              or None if not available.
-
-        Raises
-        ------
-        Exception
-            If there is an error in retrieving or plotting the model.
+        Loads model from Pastastore and displays results.
         """
-        if value is not None:
-            try:
-                ml = data.pstore.get_models(value)
-                return (
-                    ml.plotly.results(),
-                    ml.plotly.diagnostics(),
-                    True,
-                    (
-                        True,  # show alert
-                        "success",  # alert color
-                        f"Loaded time series model '{value}' from PastaStore.",
-                    ),
-                    ml.settings["tmin"].to_pydatetime(),
-                    ml.settings["tmax"].to_pydatetime(),
-                )
-            except Exception as e:
-                return (
-                    {"layout": {"title": {"text": i18n.t("general.no_model")}}},
-                    {"layout": {"title": {"text": i18n.t("general.no_model")}}},
-                    True,
-                    (
-                        True,  # show alert
-                        "warning",  # alert color
-                        (
-                            f"No model available for {value}. "
-                            f"Click 'Generate Model' to create one. Error: {e}"
-                        ),
-                    ),
-                    None,
-                    None,
-                )
-        elif value is None:
+        if wid is None:
+            empty_fig = EmptyFigure.with_message(t_("general.no_model"))
             return (
-                {"layout": {"title": {"text": i18n.t("general.no_model")}}},
-                {"layout": {"title": {"text": i18n.t("general.no_model")}}},
-                True,
-                (
-                    False,  # show alert
-                    "success",  # alert color
-                    "",  # empty message
-                ),
-                None,
-                None,
+                CallbackResponse()
+                .add_figure(empty_fig)
+                .add_figure(empty_fig)
+                .add(True)  # disable save button
+                .add(AlertBuilder.no_alert())
+                .add(None)  # tmin
+                .add(None)  # tmax
+                .build()
+            )
+
+        try:
+            name = well_service.get_well_name(wid)
+            ml = data.pastastore.get_models(name)
+
+            return (
+                CallbackResponse()
+                .add_figure(ml.plotly.results())
+                .add_figure(ml.plotly.diagnostics())
+                .add(True)  # disable save button (model already saved)
+                .add(
+                    AlertBuilder.success(
+                        t_(SuccessMessages.TIMESERIES_LOADED_FROM_PASTASTORE, name=name)
+                    )
+                )
+                .add(ml.settings["tmin"].to_pydatetime())
+                .add(ml.settings["tmax"].to_pydatetime())
+                .build()
+            )
+
+        except Exception as e:
+            logger.warning("No model available for %s: %s", name, e)
+            empty_fig = EmptyFigure.with_message(t_("general.no_model"))
+            return (
+                CallbackResponse()
+                .add_figure(empty_fig)
+                .add_figure(empty_fig)
+                .add(True)  # disable save button
+                .add(AlertBuilder.warning(t_(ErrorMessages.NO_MODEL_ERROR, name=name)))
+                .add(None)  # tmin
+                .add(None)  # tmax
+                .build()
             )
 
     @app.callback(
@@ -291,41 +250,30 @@ def register_model_callbacks(app, data):
         Input(ids.MODEL_RESULTS_CHART_2, "data"),
         prevent_initial_call=True,
     )
-    def update_model_results_chart(*figs, **kwargs):
-        """Updates the model result plot.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def update_model_results_chart(*figs: dict, **kwargs: Any) -> dict:
+        """Update model results chart from triggered input.
 
-        Parameters
-        ----------
-        *figs : tuple
-            tuple(s) of name and figure dictionary.
-        **kwargs : dict
-            callback_context
-
-        Returns
-        -------
-        figure: dict
-            The figure corresponding to the triggered input.
-
-        Raises
-        ------
-        PreventUpdate
-            If no figures are provided.
+        Switches between generated model (chart_1) and loaded model (chart_2).
         """
-        if len(kwargs) > 0:
-            ctx_ = kwargs["callback_context"]
-            triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-            inputs_list = ctx_.inputs_list
-        else:
-            triggered_id = ctx.triggered_id
-            inputs_list = ctx.inputs_list
-        if any(figs):
-            for i in range(len(inputs_list)):
-                if inputs_list[i]["id"] == triggered_id:
-                    break
-            figure = figs[i]
-            return figure
-        else:
+        if not any(figs):
             raise PreventUpdate
+
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+        inputs_list = ctx_obj.inputs_list
+
+        # Find which input was triggered
+        for i, input_item in enumerate(inputs_list):
+            if input_item["id"] == triggered_id:
+                return figs[i]
+
+        raise PreventUpdate
 
     @app.callback(
         Output(ids.MODEL_DIAGNOSTICS_CHART, "figure"),
@@ -333,42 +281,30 @@ def register_model_callbacks(app, data):
         Input(ids.MODEL_DIAGNOSTICS_CHART_2, "data"),
         prevent_initial_call=True,
     )
-    def update_model_diagnostics_chart(*figs, **kwargs):
-        """Updates the model diagnostics chart based on the triggered input.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def update_model_diagnostics_chart(*figs: dict, **kwargs: Any) -> dict:
+        """Update model diagnostics chart from triggered input.
 
-        Parameters
-        ----------
-        *figs : tuple
-            A variable length tuple of figures to be potentially updated.
-        **kwargs : dict
-            callback_context
-
-        Returns
-        -------
-        figure : dict
-            The updated figure corresponding to the triggered input.
-
-        Raises
-        ------
-        PreventUpdate
-            If no figures are provided in the `figs` argument.
+        Switches between generated model (chart_1) and loaded model (chart_2).
         """
-        if len(kwargs) > 0:
-            ctx_ = kwargs["callback_context"]
-            triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-            inputs_list = ctx_.inputs_list
-        else:
-            triggered_id = ctx.triggered_id
-            inputs_list = ctx.inputs_list
-
-        if any(figs):
-            for i in range(len(inputs_list)):
-                if inputs_list[i]["id"] == triggered_id:
-                    break
-            figure = figs[i]
-            return figure
-        else:
+        if not any(figs):
             raise PreventUpdate
+
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+        inputs_list = ctx_obj.inputs_list
+
+        # Find which input was triggered
+        for i, input_item in enumerate(inputs_list):
+            if input_item["id"] == triggered_id:
+                return figs[i]
+
+        raise PreventUpdate
 
     @app.callback(
         Output(ids.MODEL_SAVE_BUTTON, "disabled"),
@@ -376,38 +312,27 @@ def register_model_callbacks(app, data):
         Input(ids.MODEL_SAVE_BUTTON_2, "data"),
         prevent_initial_call=True,
     )
-    def toggle_model_save_button(*b, **kwargs):
-        """Toggles the model save button based on the provided inputs.
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def toggle_model_save_button(*b: bool | None, **kwargs: Any) -> bool:
+        """Toggle model save button enabled/disabled state.
 
-        Parameters
-        ----------
-        *b : tuple
-            tuple of booleans indicating triggered state of button.
-        **kwargs : dict
-            callback_context
-
-        Returns
-        -------
-        bool
-            whether button is enabled or disabled.
-
-        Raises
-        ------
-        PreventUpdate
-            If none of the inputs are triggered.
+        Disabled when model is loaded from store, enabled after generation.
         """
-        if len(kwargs) > 0:
-            ctx_ = kwargs["callback_context"]
-            triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-            inputs_list = ctx_.inputs_list
-        else:
-            triggered_id = ctx.triggered_id
-            inputs_list = ctx.inputs_list
-
-        if any(boolean is not None for boolean in b):
-            for i in range(len(inputs_list)):
-                if inputs_list[i]["id"] == triggered_id:
-                    break
-            return b[i]
-        else:
+        if not any(boolean is not None for boolean in b):
             raise PreventUpdate
+
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+        inputs_list = ctx_obj.inputs_list
+
+        # Find which input was triggered
+        for i, input_item in enumerate(inputs_list):
+            if input_item["id"] == triggered_id:
+                return b[i]
+
+        raise PreventUpdate

@@ -1,11 +1,12 @@
-import i18n
 from dash import html
 from dash_bootstrap_components import Button
 
-from . import ids
+from gwdatalens.app.constants import UI
+from gwdatalens.app.messages import t_
+from gwdatalens.app.src.components import ids
 
 
-def render_generate_button():
+def render_generate_button() -> html.Div:
     """Renders a button for generating time series models.
 
     Returns
@@ -18,14 +19,14 @@ def render_generate_button():
             html.Span(
                 [
                     html.I(className="fa-solid fa-gear"),
-                    " " + i18n.t("general.generate"),
+                    " " + t_("general.generate"),
                 ],
                 id="span-recalculate",
                 n_clicks=0,
             ),
             style={
-                "margin-top": 10,
-                "margin-bottom": 10,
+                "margin-top": UI.MARGIN_TOP,
+                "margin-bottom": UI.MARGIN_BOTTOM,
             },
             disabled=False,
             id=ids.MODEL_GENERATE_BUTTON,
@@ -33,7 +34,7 @@ def render_generate_button():
     )
 
 
-def render_save_button():
+def render_save_button() -> html.Div:
     """Renders a save model button component.
 
     Returns
@@ -46,14 +47,14 @@ def render_save_button():
             html.Span(
                 [
                     html.I(className="fa-solid fa-floppy-disk"),
-                    " " + i18n.t("general.save"),
+                    " " + t_("general.save"),
                 ],
                 id="span-recalculate",
                 n_clicks=0,
             ),
             style={
-                "margin-top": 10,
-                "margin-bottom": 10,
+                "margin-top": UI.MARGIN_TOP,
+                "margin-bottom": UI.MARGIN_BOTTOM,
             },
             disabled=True,
             id=ids.MODEL_SAVE_BUTTON,

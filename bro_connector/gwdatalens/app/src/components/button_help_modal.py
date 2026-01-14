@@ -1,15 +1,15 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from gwdatalens.app.settings import ASSETS_PATH
 
-from . import ids
+from gwdatalens.app.paths import ASSETS_PATH
+from gwdatalens.app.src.components import ids
 
 # load Modal helper text from MarkDown
-with open(ASSETS_PATH / "qc_dashboard_help.md") as f:
+with open(ASSETS_PATH / "qc_dashboard_help.md", "r") as f:
     help_md = dcc.Markdown("".join(f.readlines()), mathjax=True)
 
 
-def render():
+def render() -> html.Div:
     """Renders a help button and modal for the GW DataLens application.
 
     This function creates a button that, when clicked, opens a modal containing
@@ -47,7 +47,7 @@ def render():
                         [
                             html.I(
                                 "Developed by D.A. Brakenhoff "
-                                "and R.C. Caljé, Artesia, 2024"
+                                "and R.C. Caljé, Artesia, 2026"
                             ),
                             dbc.Button(
                                 "Close",
