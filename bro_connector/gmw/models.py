@@ -473,63 +473,6 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         default="kokerDeelsMetaal",
         verbose_name="Beschermconstructie",
     )
-    # CUSTOMIZATION FIELDS
-    well_head_protector_subtype = models.CharField(
-        max_length=254,
-        choices=WELLHEADPROTECTOR_SUBTYPES,
-        null=True,
-        blank=True,
-        default="DN200",
-        verbose_name="Beschermconstructie subtype",
-    )
-    foundation = models.CharField(
-        max_length=254,
-        choices=FOUNDATIONS,
-        null=True,
-        blank=True,
-        default="geen",
-        verbose_name="Fundering",
-    )
-    collision_protection = models.CharField(
-        max_length=254,
-        choices=COLLISION_PROTECTION_TYPES,
-        null=True,
-        blank=True,
-        default="geen",
-        verbose_name="Aanrijbescherming",
-    )
-    lock = models.CharField(
-        max_length=254,
-        choices=LOCKS,
-        null=True,
-        blank=True,
-        verbose_name="Slot",
-        default="sleutel",
-    )
-    key = models.CharField(
-        max_length=254,
-        blank=True,
-        null=True,
-        verbose_name="Sleutel",
-        default="ABUS Titalium sleutel te vinden bij Provincie Zeeland Meetnetbeheerder",
-    )
-    place = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Plaats"
-    )
-    street = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Straat"
-    )
-    location_description = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Toegankelijkheid"
-    )
-    label = models.CharField(
-        max_length=254,
-        choices=LABELS,
-        null=True,
-        blank=True,
-        verbose_name="Label",
-        default="aluplaatje",
-    )
 
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
     comment_processed = models.BooleanField(
@@ -668,21 +611,6 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
-    krw_body = models.CharField(
-        choices=KRW_CHOICES,
-        max_length=200,
-        blank=True,
-        null=True,
-        verbose_name="Grondwaterlichaam",
-    )
-    gwl_depth = models.CharField(
-        max_length=30,
-        choices=DEPTH_CHOICES,
-        blank=True,
-        null=True,
-        verbose_name="Diepte grondwaterlichaam",
-    )
-    # bro_complete
 
     state: Manager["GroundwaterMonitoringTubeDynamic"]
     geo_ohm_cable: Manager["GeoOhmCable"]
@@ -837,6 +765,7 @@ class GroundwaterMonitoringTubeDynamic(BaseModel):
     inserted_part_material = models.CharField(
         max_length=200, blank=True, null=True, verbose_name="Materiaal ingeplaatst deel"
     )
+
     comment = models.TextField(blank=True, null=True, verbose_name="Commentaar")
     comment_processed = models.BooleanField(
         blank=True, default=True, verbose_name="Commentaar verwerkt"
@@ -1273,106 +1202,3 @@ class Picture(BaseModel):
         db_table = 'gmw"."picture'
         verbose_name = "Foto"
         verbose_name_plural = "Fotos"
-
-
-class MaintenanceParty(BaseModel):
-    maintenance_party_id = models.AutoField(primary_key=True, verbose_name="DB ID")
-    surname = models.CharField(
-        max_length=100, null=True, blank=True, verbose_name="Achternaam"
-    )
-    first_name = models.CharField(
-        max_length=100, null=True, blank=True, verbose_name="Voornaam"
-    )
-    function = models.CharField(
-        max_length=100, null=True, blank=True, verbose_name="Functie"
-    )
-    organisation = models.CharField(
-        max_length=100, null=True, blank=True, verbose_name="Organisatie"
-    )
-    adress = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Adres"
-    )
-    postal_code = models.CharField(
-        max_length=50, null=True, blank=True, verbose_name="Postcode"
-    )
-    place = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Woonplaats"
-    )
-    phone = models.IntegerField(blank=True, null=True, verbose_name="Telefoon")
-    mobilephone = models.IntegerField(null=True, blank=True, verbose_name="Mobiel")
-    email = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Email"
-    )
-
-    def __str__(self):
-        return f"{self.first_name} {self.surname}"
-
-    class Meta:
-        db_table = 'gmw"."maintenance_party'
-        verbose_name = "Onderhoudsteam"
-        verbose_name_plural = "Onderhoudsteams"
-
-
-class Maintenance(BaseModel):
-    maintenance_id = models.AutoField(primary_key=True, verbose_name="DB ID")
-    groundwater_monitoring_well_static = models.ForeignKey(
-        GroundwaterMonitoringWellStatic,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        verbose_name="Put",
-        related_name="maintenance",
-    )
-    groundwater_monitoring_tube_static = models.ForeignKey(
-        GroundwaterMonitoringTubeStatic,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        verbose_name="Filter",
-    )
-    notification_date = models.DateField(
-        blank=True, null=True, verbose_name="Meldingsdatum"
-    )
-    kind_of_maintenance = models.CharField(
-        max_length=254, verbose_name="Type onderhoud"
-    )
-    description = models.CharField(
-        max_length=254, null=True, blank=True, verbose_name="Beschrijving"
-    )
-    picture = models.ForeignKey(
-        Picture, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Foto"
-    )
-    reporter = models.ForeignKey(
-        MaintenanceParty,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="reporter",
-        verbose_name="Melder",
-    )  # Maintenance_party_id
-    execution_date = models.DateField(
-        blank=True, null=True, verbose_name="Uitvoeringsdatum"
-    )
-    execution_by = models.ForeignKey(
-        MaintenanceParty,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="executioner",
-        verbose_name="Uitvoerder",
-    )  # Maintenance_party_id
-
-    class Meta:
-        managed = True
-        db_table = 'gmw"."maintenance'
-        verbose_name = "Onderhoudsmoment"
-        verbose_name_plural = "Onderhoudsmomenten"
-
-
-def format_integer(num):
-    if num < 10:
-        return f"00{num}"
-    elif num < 100:
-        return f"0{num}"
-    else:
-        return str(num)

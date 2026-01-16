@@ -561,12 +561,6 @@ def get_monitoring_tube(
 ) -> GroundwaterMonitoringTubeStatic | None:
     try:
         well = GroundwaterMonitoringWellStatic.objects.get(bro_id=bro_id)
-    except GroundwaterMonitoringWellStatic.DoesNotExist:
-        return None
-
-    try:
-        return GroundwaterMonitoringTubeStatic.objects.get(
-            groundwater_monitoring_well_static=well, tube_number=buis_nummer
-        )
-    except GroundwaterMonitoringTubeStatic.DoesNotExist:
+        return well.tube.get(tube_number=buis_nummer)
+    except GroundwaterMonitoringWellStatic.DoesNotExist | GroundwaterMonitoringTubeStatic.DoesNotExist:
         return None
