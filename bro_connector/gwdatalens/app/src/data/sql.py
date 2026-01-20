@@ -2,6 +2,7 @@
 
 # %%
 import logging
+from typing import Optional, Sequence, Union
 from urllib.parse import quote
 
 import pandas as pd
@@ -418,7 +419,11 @@ def sql_measurements_for_observation(observation_id: int):
     return stmt
 
 
-def sql_get_timeseries(well_static_id: int, tube_static_id: int, observation_type: str):
+def sql_get_timeseries(
+    well_static_id: int,
+    tube_static_id: int,
+    observation_type: Optional[Union[str, Sequence[str]]],
+):
     stmt = (
         select(
             datamodel.MeasurementTvp.measurement_time,
@@ -431,9 +436,11 @@ def sql_get_timeseries(well_static_id: int, tube_static_id: int, observation_typ
             datamodel.MeasurementTvp.field_value_unit,
             datamodel.MeasurementTvp.measurement_tvp_id,
             datamodel.MeasurementTvp.measurement_point_metadata_id,
+            # datamodel.MeasurementTvp.value_to_be_corrected,
             datamodel.MeasurementTvp.initial_calculated_value,
             datamodel.MeasurementTvp.correction_reason,
             datamodel.MeasurementTvp.correction_time,
+            datamodel.ObservationMetadata.observation_type,
         )
         .join(datamodel.MeasurementPointMetadata)
         .join(datamodel.Observation)
@@ -448,10 +455,23 @@ def sql_get_timeseries(well_static_id: int, tube_static_id: int, observation_typ
             ),
             datamodel.TubeStatic.groundwater_monitoring_tube_static_id
             == _to_int(tube_static_id),
-            datamodel.ObservationMetadata.observation_type == observation_type,
         )
         .order_by(datamodel.MeasurementTvp.measurement_time)
     )
+
+    # Apply observation_type filter only when provided; allow lists/tuples
+    if observation_type is not None:
+        if isinstance(observation_type, str):
+            stmt = stmt.filter(
+                datamodel.ObservationMetadata.observation_type == observation_type
+            )
+        else:
+            stmt = stmt.filter(
+                datamodel.ObservationMetadata.observation_type.in_(
+                    list(observation_type)
+                )
+            )
+
     return stmt
 
 
@@ -789,11 +809,12 @@ def sql_duplicate_tube_numbers_per_well():
 
 
 def run_sql(stmt, print_sql: bool = False):
-    user = config.get("user")
-    password = config.get("password")
-    host = config.get("host")
-    port = config.get("port")
-    database = config.get("database")
+    dbconfig = config.get_database_config()
+    user = dbconfig.get("user")
+    password = dbconfig.get("password")
+    host = dbconfig.get("host")
+    port = dbconfig.get("port")
+    database = dbconfig.get("database")
 
     # URL-encode the password
     encoded_password = quote(password, safe="")

@@ -151,3 +151,6 @@ CORRECTIONS_OBSERVATION_MNAP_INPUT = "corrections-observation-mnap-input"
 # Intermediate stores to avoid duplicate outputs
 CORRECTIONS_COMMIT_TRIGGER_STORE = "corrections-commit-trigger-store"
 CORRECTIONS_RESET_TRIGGER_STORE = "corrections-reset-trigger-store"
+# Date range filtering
+CORRECTIONS_DATE_RANGE_STORE = "corrections-date-range-store"
+CORRECTIONS_DATE_RANGE_INFO = "corrections-date-range-info"

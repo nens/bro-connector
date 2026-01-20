@@ -23,6 +23,7 @@ class ConfigDefaults:
 
     # Series constraints
     MAX_WELLS_SELECTION = 50
+    MAX_SCATTER_POINTS_HOVERINFO = 100_000
 
     # Display defaults
     DEFAULT_MAP_STYLE = "outdoors"
@@ -45,13 +46,15 @@ class DatabaseFields:
     FIELD_STATUS_QUALITY_CONTROL = "status_quality_control"
     FIELD_MEASUREMENT_POINT_METADATA_ID = "measurement_point_metadata_id"
     FIELD_MEASUREMENT_TVP_ID = "measurement_tvp_id"
-    FIELD_CENSOR_REASON_DATALENS = "status_quality_control_reason_datalens"
+    FIELD_CENSOR_REASON_DATALENS = "censor_reason_datalens"
     FIELD_CENSOR_REASON = "censor_reason"
     FIELD_VALUE_LIMIT = "value_limit"
     FIELD_INITIAL_CALCULATED_VALUE = "initial_calculated_value"
+    # FIELD_INITIAL_CALCULATED_VALUE = "value_to_be_corrected"
     FIELD_CORRECTION_REASON = "correction_reason"
     FIELD_CORRECTION_TIME = "correction_time"
     FIELD_VALUE_LIMIT = "value_limit"
+    FIELD_OBSERVATION_TYPE = "observation_type"
 
 
 class ColumnNames:
@@ -103,6 +106,7 @@ class ColumnNames:
     STATUS_QUALITY_CONTROL = DatabaseFields.FIELD_STATUS_QUALITY_CONTROL
     CORRECTION_REASON = DatabaseFields.FIELD_CORRECTION_REASON
     CORRECTION_TIME = DatabaseFields.FIELD_CORRECTION_TIME
+    OBSERVATION_TYPE = DatabaseFields.FIELD_OBSERVATION_TYPE
     FLAGGED = "flagged"
     VALUE = "value"
     COMMENT = "comment"

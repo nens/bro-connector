@@ -15,7 +15,7 @@ import pickle
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import geopandas as gpd
 import numpy as np
@@ -471,7 +471,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         self,
         wid: Optional[int] = None,
         query: Optional[dict[str:Any]] = None,
-        observation_type="reguliereMeting",
+        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
         column: Optional[Union[List[str], str]] = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series for the measurements for given bro-id and tube-id.
@@ -484,9 +484,10 @@ class PostgreSQLDataSource(DataSourceTemplate):
             id of the observation well
         query : dict, optional
             query to select observation well, by default None
-        observation_type : str, optional
-            type of observation, by default "reguliereMeting". Options are
-            "reguliereMeting", "controlemeting".
+        observation_type : str, sequence or None, optional
+            Type(s) of observation to filter for. Provide a string for a single
+            type, a list/tuple of types for multiple, or None to return all
+            observations regardless of type. Defaults to "reguliereMeting".
         column : str, optional
             column to return, by default None
 
@@ -545,9 +546,9 @@ class PostgreSQLDataSource(DataSourceTemplate):
                 df.loc[mask, "field_value_unit"] = "m"
 
             # convert all other measurements to NaN
-            mask = ~(df["field_value_unit"].isna() | (df["field_value_unit"] == "m"))
-            if mask.any():
-                df.loc[mask, self.value_column] = np.nan
+            # mask = ~(df["field_value_unit"].isna() | (df["field_value_unit"] == "m"))
+            # if mask.any():
+            #     df.loc[mask, self.value_column] = np.nan
             # msg = "Other units than m or cm not supported yet"
             # assert (df["field_value_unit"] == "m").all(), msg
 
@@ -558,7 +559,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         df.index.name = display_name
 
         # drop dupes
-        df = df.loc[~df.index.duplicated(keep="first")]
+        # df = df.loc[~df.index.duplicated(keep="first")]
 
         if column is not None:
             return df.loc[:, column]
@@ -702,9 +703,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
                 DatabaseFields.FIELD_MEASUREMENT_POINT_METADATA_ID
             ),
             "b_status_quality_control": DatabaseFields.FIELD_STATUS_QUALITY_CONTROL,
-            "b_status_quality_control_reason_datalens": (
-                DatabaseFields.FIELD_CENSOR_REASON_DATALENS
-            ),
+            "b_censor_reason_datalens": (DatabaseFields.FIELD_CENSOR_REASON_DATALENS),
             "b_censor_reason": DatabaseFields.FIELD_CENSOR_REASON,
             "b_value_limit": DatabaseFields.FIELD_VALUE_LIMIT,
         }
@@ -729,7 +728,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
                         "b_status_quality_control"
                     ),
                     datamodel.MeasurementPointMetadata.status_quality_control_reason_datalens: bindparam(  # noqa
-                        "b_status_quality_control_reason_datalens"
+                        "b_censor_reason_datalens"
                     ),
                     datamodel.MeasurementPointMetadata.censor_reason: bindparam(
                         "b_censor_reason"
@@ -761,7 +760,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         Notes
         -----
         This method:
-        - Saves the original calculated_value to value_to_be_corrected
+        - Saves the original calculated_value to initial_calculated_value
         - Updates calculated_value with the corrected_value
         - Saves the comment to correction_reason
         - Records the current timestamp to correction_time
@@ -828,21 +827,23 @@ class PostgreSQLDataSource(DataSourceTemplate):
         Notes
         -----
         This method:
-        - Restores calculated_value from value_to_be_corrected
-        - Clears correction_reason, value_to_be_corrected, and correction_time
+        - Restores calculated_value from initial_calculated_value
+        - Clears correction_reason, initial_calculated_value, and correction_time
         """
         # Prepare the reset updates
         params = []
         for _, row in df.iterrows():
             # Convert numpy types to Python native types
             measurement_tvp_id = int(row["measurement_tvp_id"])
-            value_to_be_corrected = row.get(ColumnNames.INITIAL_CALCULATED_VALUE)
-            if value_to_be_corrected is not None and pd.notna(value_to_be_corrected):
-                value_to_be_corrected = float(value_to_be_corrected)
+            initial_calculated_value = row.get(ColumnNames.INITIAL_CALCULATED_VALUE)
+            if initial_calculated_value is not None and pd.notna(
+                initial_calculated_value
+            ):
+                initial_calculated_value = float(initial_calculated_value)
 
             param = {
                 "b_measurement_tvp_id": measurement_tvp_id,
-                ColumnNames.CALCULATED_VALUE: value_to_be_corrected,
+                ColumnNames.CALCULATED_VALUE: initial_calculated_value,
                 ColumnNames.INITIAL_CALCULATED_VALUE: None,
                 ColumnNames.CORRECTION_REASON: None,
                 ColumnNames.CORRECTION_TIME: None,
@@ -1078,7 +1079,7 @@ class HydropandasDataSource(DataSourceTemplate):
         self,
         wid: Optional[int] = None,
         query: Optional[dict] = None,
-        observation_type="reguliereMeting",
+        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
         column: Optional[Union[List[str], str]] = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series/DataFrame for the measurements.
@@ -1091,8 +1092,9 @@ class HydropandasDataSource(DataSourceTemplate):
             id of the observation well (index from gmw_gdf)
         query : dict, optional
             query dict to select observation well
-        observation_type : str, optional
-            type of observation, by default "reguliereMeting"
+        observation_type : str, sequence or None, optional
+            Type(s) of observation. Hydropandas backend only stores reguliereMeting;
+            other types will return an empty Series/DataFrame.
         column : str or list, optional
             specific column(s) to return
 
@@ -1101,9 +1103,15 @@ class HydropandasDataSource(DataSourceTemplate):
         pd.Series or pd.DataFrame
             time series of head observations.
         """
-        # empty return for controlemeting
-        if observation_type == "controlemeting":
-            return pd.Series()
+        # Hydropandas backend only contains reguliereMeting; return empty when
+        # a different type is explicitly requested
+        if observation_type is not None:
+            if isinstance(observation_type, str):
+                if observation_type != "reguliereMeting":
+                    return pd.Series()
+            else:
+                if "reguliereMeting" not in observation_type:
+                    return pd.Series()
 
         # Get the well/tube info
         if wid is not None:

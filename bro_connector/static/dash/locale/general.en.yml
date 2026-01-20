@@ -78,7 +78,7 @@ en:
   corrected_value_tooltip: "Enter corrected observation(s) here (in m NAP)."
   correction_reason_tooltip: "Provide a reason for the correction (optional)."
   calculated_value_original: "Calculated value (original)"
-  calculated_value_original_tooltip: "Shows the original calculated value. When a correction was applied, this shows the previous value (from value_to_be_corrected)."
+  calculated_value_original_tooltip: "Shows the original calculated value. When a correction was applied, this shows the previous value (from initial_calculated_value)."
   bkb_label: "Tube top elevation (m NAP)"
   bkb_tooltip: "Elevation top of tube in meters relative to NAP"
   observation_cm_label: "- Observation (cm below tube top)"
@@ -86,6 +86,11 @@ en:
   observation_mnap_label: "= m NAP"
   observation_mnap_tooltip: "Groundwater level in meters relative to NAP, calculated as tube top - observation in cm = m NAP"
   example: "e.g."
+  # date range filtering
+  select_wells_to_filter: "Select observation wells to filter measurements"
+  showing_filtered_range: "Showing %{count} of %{total} observations from %{start} to %{end}"
+  no_data_available: "No data available"
+  error_loading_data: "Error loading data"
   # error messages
   error_data_load_failed: "Unable to load data."
   error_no_wells_selected: "Please select a well to continue."
