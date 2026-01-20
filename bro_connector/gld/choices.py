@@ -17,14 +17,14 @@ REGISTRATIONSTATUS = (
 )
 
 UNIT_CHOICES = (
-    ("m", "m"),
-    ("cm", "cm"),
-    ("mm", "mm"),
+    ("m", "m t.o.v. NAP"),
+    ("cm", "cm t.o.v. NAP"),
+    ("mm", "mm t.o.v. NAP"),
     ("m t.o.v. bkb", "m t.o.v. bkb"),
     ("cm t.o.v. bkb", "cm t.o.v. bkb"),
     ("mm t.o.v. bkb", "mm t.o.v. bkb"),
-    ("bar", "bar"),
-    ("mbar", "mbar"),
+    ("bar", "bar t.o.v sensor"),
+    ("mbar", "mbar t.o.v sensor"),
 )
 
 PROCESSREFERENCE = (

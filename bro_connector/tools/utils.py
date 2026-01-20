@@ -422,6 +422,7 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                 measurement_time=time,
                 field_value=value,
                 field_value_unit=instance.field_value_unit,
+                # FIXME functie: fieldvalue unit gebruiken om calculated value te in te vullen # wie weet is t dat de signal niet afgevuurt wordt door bulk.
                 measurement_point_metadata=mp_meta,
             )
 
@@ -434,7 +435,7 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                     update_conflicts=False,
                     batch_size=5000,
                 )
-                MeasurementTvp.objects.bulk_create(
+                mtvps_created = MeasurementTvp.objects.bulk_create(
                     mtvps,
                     update_conflicts=False,
                     ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
@@ -451,6 +452,9 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                     # ],
                     batch_size=5000,
                 )
+                for mtvp_c in mtvps_created:
+                    mtvp_c.save()
+
             except Exception as e:
                 instance.report += (
                     f"Bulk updating/creating failed for observation: {Obs}"
@@ -458,7 +462,7 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                 logger.info(f"Bulk updating/creating failed for observation: {Obs}")
                 logger.exception(e)
                 instance.executed = False
-                return
+                return            
 
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(
