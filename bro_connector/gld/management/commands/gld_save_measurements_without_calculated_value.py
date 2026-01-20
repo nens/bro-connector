@@ -12,8 +12,9 @@ def on_save_measurement(instance: MeasurementTvp):
             )
         else:
             # Access the related groundwater_monitoring_tube_static instance
-            tube_static: GroundwaterMonitoringTubeStatic = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube_static
-
+            tube_static = GroundwaterMonitoringTubeStatic.objects.get(
+                groundwater_monitoring_tube_static_id = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube_id
+            )
             # Retrieve the latest state
             latest_state = tube_static.state.order_by("-date_from").first()
 
@@ -24,12 +25,13 @@ def on_save_measurement(instance: MeasurementTvp):
                 tube_top_position = None
 
             instance.calculated_value = _calculate_value_tube(
-                instance.field_value, instance.field_value_unit, tube_top_position
+                float(instance.field_value), instance.field_value_unit, tube_top_position
             )
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        print("Saving Measurements:")
         start = time.time()
         measurements_for_update = []
         measurements = MeasurementTvp.objects.filter(calculated_value__isnull=True, field_value__isnull=False)
