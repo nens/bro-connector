@@ -164,6 +164,7 @@ else:
         external_stylesheets=external_stylesheets + [CUSTOM_CSS_PATH],
         suppress_callback_exceptions=True,
         background_callback_manager=background_callback_manager,
+        compress=True,
     )
     app.title = t_("general.app_title")
     app.layout = create_layout(app, data)
