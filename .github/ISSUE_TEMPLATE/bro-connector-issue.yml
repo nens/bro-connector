@@ -1,0 +1,41 @@
+name: BRO-Connector Issue
+description: Report a bug or problem with the BRO-Connector
+title: "[BRO-Connector][Bug]: "
+labels:
+  - bro-connector
+  - bug
+assignees:
+  - bro-connector-owner
+body:
+  - type: input
+    id: bro_type
+    attributes:
+      label: BRO Domain
+      description: Specify the BRO domain (e.g., GMW, GLD, GAR, GMN, FRD).
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is the issue?
+      description: Describe the problem you are experiencing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What did you expect to happen?
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the issue?
+    validations:
+      required: false
+

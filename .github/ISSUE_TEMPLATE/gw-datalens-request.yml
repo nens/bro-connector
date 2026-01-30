@@ -1,0 +1,32 @@
+name: GWDataLens Request
+description: Request a new feature or enhancement for GWDataLens
+title: "[GWDataLens][Request]: "
+labels:
+  - gwdatalens
+  - enhancement
+assignees:
+  - dbrakenhoff
+body:
+  - type: textarea
+    id: request
+    attributes:
+      label: Feature request
+      description: Clearly describe the requested functionality.
+    validations:
+      required: true
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use case
+      description: How would this be used?
+    validations:
+      required: false
+
+  - type: input
+    id: impact
+    attributes:
+      label: Expected impact
+      description: Who benefits and how?
+    validations:
+      required: false
