@@ -27,6 +27,15 @@ UNIT_CHOICES = (
     ("mbar", "mbar t.o.v sensor"),
 )
 
+IMPORT_UNIT_CHOICES = (
+    ("m", "m t.o.v. NAP"),
+    ("cm", "cm t.o.v. NAP"),
+    ("mm", "mm t.o.v. NAP"),
+    ("m t.o.v. bkb", "m t.o.v. bkb"),
+    ("cm t.o.v. bkb", "cm t.o.v. bkb"),
+    ("mm t.o.v. bkb", "mm t.o.v. bkb"),
+)
+
 PROCESSREFERENCE = (
     ("NEN5120v1991", "NEN5120v1991"),
     ("NEN_EN_ISO22475v2006_C11v2010", "NEN_EN_ISO22475v2006_C11v2010"),

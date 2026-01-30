@@ -8,6 +8,7 @@ from django.db import models
 from gld.choices import (
     AIRPRESSURECOMPENSATIONTYPE,
     EVALUATIONPROCEDURE,
+    IMPORT_UNIT_CHOICES,
     MEASUREMENTINSTRUMENTTYPE,
     OBSERVATIONTYPE,
     PROCESSREFERENCE,
@@ -193,7 +194,7 @@ class GLDImport(BaseModel):
         verbose_name="Observatie type",
     )
     field_value_unit = models.CharField(
-        choices=UNIT_CHOICES,
+        choices=IMPORT_UNIT_CHOICES,
         max_length=255,
         blank=False,
         null=False,

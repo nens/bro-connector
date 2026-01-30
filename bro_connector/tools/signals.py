@@ -16,6 +16,7 @@ from tools.utils import (
     process_csv_file,
     process_zip_bro_file,
     process_zip_file,
+    import_from_bro,
 )
 
 from .models import BroImport, GLDImport, GMNImport
@@ -35,10 +36,10 @@ def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
     instance.executed = False
 
     if not instance.file:
-        instance.validated = False
         instance.report += (
-            "Geen bestand geupload. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
+            "Geen bestand geupload, daarom is er geen shape of de default shape gebruikt - wanneer in de settings aanwezig.\n"
         )
+        import_from_bro(instance)
     elif instance.file.name.endswith(".zip"):
         process_zip_bro_file(
             instance

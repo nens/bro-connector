@@ -38,7 +38,7 @@ def _calculate_value(field_value: float, unit: str) -> float | None:
 
 
 def _calculate_value_tube(
-    field_value: float, unit: str, tube_top_position: float | None
+    field_value: float, unit: str, tube_top_position: float | None, cable_length: float | None = None
 ) -> float | None:
     """
     For now only supports m tov bkb / cm tov bkb / mm tov bkb.
@@ -47,14 +47,21 @@ def _calculate_value_tube(
     if tube_top_position is None:
         return None
 
+    # Make sure the field value is always positive
+    field_value = abs(field_value)
+
     if unit == "m t.o.v. bkb":
-        return field_value + tube_top_position
+        return tube_top_position - field_value
     elif unit == "cm t.o.v. bkb":
-        return (field_value / 100) + tube_top_position
+        return (tube_top_position - (field_value / 100))
     elif unit == "mm t.o.v. bkb":
-        return (field_value / 1000) + tube_top_position
-    elif unit == "bar":
-        return (field_value * 10.1974) + tube_top_position
+        return (tube_top_position - (field_value / 1000))
+    elif unit == "bar" and cable_length is not None:
+        # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
+        return (field_value * 10.1974) + ( tube_top_position - cable_length )
+    elif unit == "mbar" and cable_length is not None:
+        # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
+        return (field_value * 0.0101974) + ( tube_top_position - cable_length )
     else:
         return None
 
@@ -190,14 +197,16 @@ def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
             tube_static: GroundwaterMonitoringTubeStatic = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube_static
 
             # Retrieve the latest state
-            latest_state = tube_static.state.order_by("-date_from").first()
+            latest_state = tube_static.state.filter(date_from__lte=instance.measurement_time).order_by("-date_from").first()
 
             # Get the tube_top_position
             if latest_state:
                 tube_top_position = latest_state.tube_top_position
+                cable_length = latest_state.sensor_depth
             else:
                 tube_top_position = None
+                cable_length = None
 
             instance.calculated_value = _calculate_value_tube(
-                instance.field_value, instance.field_value_unit, tube_top_position
+                instance.field_value, instance.field_value_unit, tube_top_position, cable_length
             )

@@ -109,11 +109,6 @@ def run(  # noqa C901
         gld.root_data_to_dictionary()
         gld_dict = gld.dict
 
-        # print(list(gld_dict.keys())[:100])
-        # print(gld_dict.get("0_broId"))
-        # print("HELP: ",get_bro_id_by_type(gld_dict.get("0_broId"), "gld"))
-        # stop
-
         # For now don't handle deregistered GMWs
         if gld_dict.get("0_deregistered", None) == "ja":
             continue

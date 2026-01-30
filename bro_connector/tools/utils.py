@@ -81,7 +81,7 @@ def detect_csv_separator(file):
 
 
 def format_message(  # noqa C901
-    handler: str, type: str, kvk: int, shp: str, count: int, imported: int
+    handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int
 ) -> dict:
     if type in ["gar", "gmn", "frd"]:
         return {
@@ -178,6 +178,33 @@ def has_necessary_helper_files(filenames):
     return all_present, counts
 
 
+def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
+    if instance.bro_type.lower() == "gmw":
+        import_info = retrieve_historic_gmw.run(
+            kvk_number=instance.kvk_number,
+            handler=instance.handler,
+            shp_file=shapefile_path,
+            delete=instance.delete_outside,
+        )
+    if instance.bro_type.lower() == "gld":
+        import_info = retrieve_historic_gld.run(
+            kvk_number=instance.kvk_number,
+            handler=instance.handler,
+            shp_file=shapefile_path,
+            delete=instance.delete_outside,
+        )
+
+    report = format_message(
+        handler=instance.handler,
+        type=instance.bro_type,
+        kvk=instance.kvk_number,
+        shp=shapefile_path.name,
+        count=import_info.get("ids_found"),
+        imported=import_info.get("imported"),
+    )
+    instance.report += report.get("message") + "\n"
+    instance.executed = True
+
 def process_zip_bro_file(instance: BroImport):
     # Read ZIP file
     zip_buffer = BytesIO(instance.file.read())
@@ -226,35 +253,10 @@ def process_zip_bro_file(instance: BroImport):
                     logger.exception(e)
 
             ## start a new loop and validate the shp file and then process it
-            POLYGON_SHAPEFILE = output_folder / Path(shp_filename).name
-            gdf = validate_shp(POLYGON_SHAPEFILE, instance)
+            polygon_shapefile_path = output_folder / Path(shp_filename).name
+            gdf = validate_shp(polygon_shapefile_path, instance)
             if gdf is not None:
-                import_info = {}
-                if instance.bro_type.lower() == "gmw":
-                    import_info = retrieve_historic_gmw.run(
-                        kvk_number=instance.kvk_number,
-                        handler=instance.handler,
-                        shp_file=POLYGON_SHAPEFILE,
-                        delete=instance.delete_outside,
-                    )
-                if instance.bro_type.lower() == "gld":
-                    import_info = retrieve_historic_gld.run(
-                        kvk_number=instance.kvk_number,
-                        handler=instance.handler,
-                        shp_file=POLYGON_SHAPEFILE,
-                        delete=instance.delete_outside,
-                    )
-
-                report = format_message(
-                    handler=instance.handler,
-                    type=instance.bro_type,
-                    kvk=instance.kvk_number,
-                    shp=shp_filename,
-                    count=import_info.get("ids_found"),
-                    imported=import_info.get("imported"),
-                )
-                instance.report += report.get("message") + "\n"
-                instance.executed = True
+                import_from_bro(instance, polygon_shapefile_path)
 
     except zipfile.BadZipFile:
         instance.report += "Ongeldig ZIP-bestand.\n"
