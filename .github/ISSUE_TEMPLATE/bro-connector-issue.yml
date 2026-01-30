@@ -5,7 +5,7 @@ labels:
   - bro-connector
   - bug
 assignees:
-  - bro-connector-owner
+  - jzitman
 body:
   - type: input
     id: bro_type

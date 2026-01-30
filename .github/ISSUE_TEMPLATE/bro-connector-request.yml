@@ -5,7 +5,7 @@ labels:
   - bro-connector
   - enhancement
 assignees:
-  - StevenHosper
+  - jzitman
 body:
   - type: input
     id: bro_type
