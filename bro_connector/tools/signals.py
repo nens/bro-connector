@@ -137,6 +137,7 @@ def convert_str_to_datetime(
         "%Y-%m-%d %H:%M:%S.%f",  # Date + time with microseconds
         "%Y-%m-%dT%H:%M:%S.%f",  # ISO with microseconds
         "%d/%m/%Y",  # European format (day/month/year)
+        "%d-%m-%Y", # European format (day-month-year)
     ]
 
     for fmt in formats:
@@ -176,7 +177,8 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
         for subgroup in subgroups:
             Subgroup.objects.update_or_create(
                 gmn=instance.monitoring_network,
-                defaults={"name": subgroup, "code": subgroup},
+                name=subgroup,
+                defaults={"code": subgroup},
             )
 
     executed = True
@@ -187,12 +189,13 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
             executed = False
             continue
 
-        measuring_point = MeasuringPoint.objects.create(
+        measuring_point = MeasuringPoint.objects.update_or_create(
             gmn=instance.monitoring_network,
             groundwater_monitoring_tube=monitoring_tube,
             code=row[0],
-            added_to_gmn_date=convert_str_to_datetime(row[3]).date(),
-        )
+            defaults={"added_to_gmn_date": convert_str_to_datetime(row[3]).date()}
+            ## Does this have to be the oldest date if a the measuring_point already exists? Or should it be overwritten?
+        )[0]
 
         if len(row) > 4:
             raw_subgroup = row[4]

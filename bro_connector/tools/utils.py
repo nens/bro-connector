@@ -374,60 +374,48 @@ def process_csv_file(instance: GLDImport):  # noqa C901
         last_datetime = reader[time_col].max()
 
         # Create Observation
-        Obs = Observation.objects.update_or_create(
+        obs, _ = Observation.objects.update_or_create(
             groundwater_level_dossier=gld,
             observation_metadata=Obs_Meta,
             observation_process=Obs_Pro,
-            observation_starttime=first_datetime,
-            observation_endtime=last_datetime,
-        )[0]
-
-        # itter over file
-        times = []
+            observation_starttime = first_datetime,
+            observation_endtime = last_datetime
+        )
+        # Detect duplicates
+        duplicate_mask = reader.duplicated(subset=[time_col], keep="first")
+        if duplicate_mask.any():
+            instance.report += (
+                "Duplicaten gevonden in de tijd waardes. "
+                "Alleen de eerste voorgekomen waardes gebruikt.\n\n"
+            )
+        # Keep only the first occurrence per timestamp
+        reader_clean = reader.drop_duplicates(subset=[time_col], keep="first")  
+            
         mms = []
         mtvps = []
-        duplicates = False
-        for index, row in reader.iterrows():
+        for _, row in reader_clean.iterrows():
             value = row[value_col]
             time = row[time_col]
-            if time in times:
-                if not duplicates:
-                    instance.report += "Duplicaten gevonden in de tijd waardes. Alleen de eerste voorgekomen waardes gebruikt.\n\n"
-                duplicates = True
-                continue
-            else:
-                times.append(time)
 
-            # create basic MeasurementPointMetadata
             mp_meta = MeasurementPointMetadata(value_limit=None)
-
-            # Add the present fields to the metadata if they are given in the CSV
-            st_quality_control_tvp = row.get("status_quality_control", None)
-            if st_quality_control_tvp:
-                mp_meta.status_quality_control = st_quality_control_tvp
-
-            censor_reason_tvp = row.get("censor_reason", None)
-            if censor_reason_tvp:
-                mp_meta.censor_reason = censor_reason_tvp
-
-            censor_limit_tvp = row.get("censor_limit", None)
-            if censor_limit_tvp:
-                if not pd.isna(censor_limit_tvp):
-                    mp_meta.value_limit = censor_limit_tvp
-
-            # Save the metadata after all fields are set
+            quality = row.get("status_quality_control")
+            if pd.notna(quality):
+                mp_meta.status_quality_control = quality
+            censor_reason = row.get("censor_reason")
+            if pd.notna(censor_reason):
+                mp_meta.censor_reason = censor_reason
+            censor_limit = row.get("censor_limit")
+            if pd.notna(censor_limit):
+                mp_meta.value_limit = censor_limit
             mms.append(mp_meta)
 
-            # create time-value pair
             mtvp = MeasurementTvp(
-                observation=Obs,
+                observation=obs,
                 measurement_time=time,
                 field_value=value,
                 field_value_unit=instance.field_value_unit,
-                # FIXME functie: fieldvalue unit gebruiken om calculated value te in te vullen # wie weet is t dat de signal niet afgevuurt wordt door bulk.
                 measurement_point_metadata=mp_meta,
             )
-
             mtvps.append(mtvp)
 
         with transaction.atomic():
@@ -459,9 +447,9 @@ def process_csv_file(instance: GLDImport):  # noqa C901
 
             except Exception as e:
                 instance.report += (
-                    f"Bulk updating/creating failed for observation: {Obs}"
+                    f"Bulk updating/creating failed for observation: {obs}"
                 )
-                logger.info(f"Bulk updating/creating failed for observation: {Obs}")
+                logger.info(f"Bulk updating/creating failed for observation: {obs}")
                 logger.exception(e)
                 instance.executed = False
                 return            
