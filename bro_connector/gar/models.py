@@ -3,7 +3,6 @@
 #   * Rearrange models' order
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.contrib.gis.db import models
 
@@ -24,7 +23,7 @@ class Analyses(models.Model):
         verbose_name="Parameter-ID",
     )
     analysis_measurement_value = models.DecimalField(
-        max_digits=65535,
+        max_digits=100,
         decimal_places=3,
         blank=True,
         null=True,
@@ -37,7 +36,7 @@ class Analyses(models.Model):
         verbose_name="Grenssymbool",
     )
     reporting_limit = models.DecimalField(
-        max_digits=65535,
+        max_digits=100,
         decimal_places=3,
         blank=True,
         null=True,
@@ -50,7 +49,7 @@ class Analyses(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."analyses'
 
         verbose_name = "Analyse"
@@ -75,7 +74,7 @@ class AnalysisProcesses(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."analysis_processes'
 
         verbose_name = "Analyseproces"
@@ -127,7 +126,7 @@ class Combi(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."analysis_combiprocesses'
 
         verbose_name = "Combinatie"
@@ -145,7 +144,7 @@ class FieldMeasurements(models.Model):
         blank=True, null=True, verbose_name="Parameter ID"
     )
     field_measurement_value = models.DecimalField(
-        max_digits=65535,
+        max_digits=100,
         decimal_places=3,
         blank=True,
         null=True,
@@ -156,7 +155,7 @@ class FieldMeasurements(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."field_measurements'
 
         verbose_name = "Veldmeting"
@@ -208,7 +207,7 @@ class FieldObservations(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."field_observations'
 
         verbose_name = "Veldobservatie"
@@ -238,7 +237,7 @@ class FieldSamples(models.Model):
     pump_type = models.IntegerField(blank=True, null=True, verbose_name="Pompsoort")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."field_samples'
         verbose_name = "Veldmonster"
         verbose_name_plural = "Veldmonsters"
@@ -265,7 +264,7 @@ class GroundwaterCompositionResearches(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."groundwater_composition_researches'
         verbose_name = "Onderzoek samenstelling grondwater"
         verbose_name_plural = "Onderzoeken samenstelling grondwater"
@@ -283,7 +282,7 @@ class LaboratoryAnalyses(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."laboratory_analyses'
         verbose_name = "Laboratoriumanalyse"
         verbose_name_plural = "Laboratoriumanalyses"
@@ -309,7 +308,7 @@ class StoffenGroepen(models.Model):
     toetswaarde = models.FloatField(blank=True, null=True, verbose_name="Toetswaarde")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."stoffen_groepen'
         verbose_name = "Stofgroep"
         verbose_name_plural = "Stofgroepen"
@@ -325,7 +324,7 @@ class TypeColourStrengths(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."type_colour_strengths'
         verbose_name = "Type kleursterkte"
         verbose_name_plural = "Type kleursterktes"
@@ -347,7 +346,7 @@ class TypeColours(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."type_colours'
         verbose_name = "Type kleur"
         verbose_name_plural = "Type kleuren"
@@ -363,7 +362,7 @@ class TypeParameterlijsten(models.Model):
     hoedanigheid = models.CharField(blank=True, null=True, verbose_name="Hoedanigheid")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."type_parameterlijsten'
         verbose_name = "Type parameterlijst"
         verbose_name_plural = "Type parameterlijsten"
@@ -383,7 +382,7 @@ class TypeWaardebepalingsmethodes(models.Model):
     titel = models.CharField(blank=True, null=True, verbose_name="Titel")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."type_waardebepalingsmethodes'
         verbose_name = "Type waardebepalingsmethode"
         verbose_name_plural = "Type waardebepalingsmethodes"
@@ -399,7 +398,7 @@ class TypeWaardebepalingstechnieken(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gar"."type_waardebepalingstechnieken'
 
         verbose_name = "Type waardebepalingstechniek"
