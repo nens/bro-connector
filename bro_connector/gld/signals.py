@@ -76,6 +76,48 @@ def clear_map_cache(sender, **kwargs):
     cache.clear()
 
 
+@receiver(post_save, sender=GroundwaterLevelDossier)
+def on_save_groundwater_level_dossier(sender, instance: GroundwaterLevelDossier, created, **kwargs):
+    if not instance.observation.exists():
+        # Create an initial observation for the newly created GroundwaterLevelDossier
+        observation_metadata = ObservationMetadata.objects.get_or_create(
+            observation_type = "reguliereMeting",
+            status = "voorlopig",
+            responsible_party = instance.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party if instance.groundwater_monitoring_tube else None,
+        )[0]
+        has_sensor = instance.groundwater_monitoring_tube and (instance.groundwater_monitoring_tube.state.last().sensor_id is not None or instance.groundwater_monitoring_tube.state.last().sensor_id is not None)
+        measurement_type = "druksensor" if has_sensor else "analoogPeilklokje"
+        observation_process = ObservationProcess.objects.get_or_create(
+            evaluation_procedure = "oordeelDeskundige",
+            measurement_instrument_type = measurement_type,
+            process_reference = "STOWAgwst",
+        )[0]
+        Observation.objects.create(
+            groundwater_level_dossier=instance,
+            observation_metadata=observation_metadata,
+            observation_process=observation_process,
+        )
+
+        if has_sensor:
+            # also create controlemeting
+            observation_metadata = ObservationMetadata.objects.get_or_create(
+                observation_type = "controlemeting",
+                status = None,
+                responsible_party = instance.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party if instance.groundwater_monitoring_tube else None,
+            )[0]
+            observation_process = ObservationProcess.objects.get_or_create(
+                evaluation_procedure = "oordeelDeskundige",
+                measurement_instrument_type = "analoogPeilklokje",
+                process_reference = "STOWAgwst",
+            )[0]
+            Observation.objects.create(
+                groundwater_level_dossier=instance,
+                observation_metadata=observation_metadata,
+                observation_process=observation_process,
+            )
+
+    # 
+
 @receiver(post_save, sender=gld_registration_log)
 def on_save_gld_registration_log(
     sender, instance: gld_registration_log, created, **kwargs

@@ -103,7 +103,8 @@ class ObservationInline(admin.TabularInline):
     search_fields = get_searchable_fields(models.Observation)
     fields = (
         "observation_type",
-        "all_measurements_validated",
+        "measurement_type",
+        "status",
         "nr_measurements",
         "up_to_date_in_bro",
         "observation_starttime",
@@ -114,7 +115,8 @@ class ObservationInline(admin.TabularInline):
 
     readonly_fields = [
         "observation_type",
-        "all_measurements_validated",
+        "measurement_type",
+        "status",
         "nr_measurements",
         "up_to_date_in_bro",
         "observation_id_bro",
@@ -297,7 +299,6 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_type",
         "measurement_type",
         "status",
-        "all_measurements_validated",
         "nr_measurements",
         "up_to_date_in_bro",
         "observation_id_bro",
@@ -343,11 +344,20 @@ class ObservationAdmin(admin.ModelAdmin):
     # max_num = 0
 
     def observation_type(self, obj: models.Observation):
-        if obj.observation_metadata is not None:
-            if obj.observation_metadata.observation_type is not None:
-                return obj.observation_metadata.observation_type
+        if obj.observation_type is not None:
+            return obj.observation_type
         return "-"
-
+    
+    def measurement_type(self, obj: models.Observation):
+        if obj.measurement_type is not None:
+            return obj.measurement_type
+        return "-"
+    
+    def status(self, obj: models.Observation):
+        if obj.status is not None:
+            return obj.status
+        return "-"
+    
     @admin.action(description="Sluit Observatie")
     def close_observation(self, request, queryset):
         for item in queryset.filter(observation_endtime__isnull=True):

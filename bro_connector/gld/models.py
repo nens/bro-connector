@@ -52,7 +52,7 @@ ADDITION_DIR = os.path.join(app_config.path, "additions")
 # %% GLD Models
 def s2d(string: str):
     if len(string) > 9:
-        return f"{string[0:3]}...{string[-3:]}"
+        return f"{string[0:3]}.{string[-3:]}"
     return string
 
 
@@ -288,15 +288,18 @@ class Observation(BaseModel):
         blank=True,
         verbose_name="Observatie Proces",
     )
+
+    # Considerations / TO-DO:
     observation_starttime = models.DateTimeField(
         blank=True, null=True, verbose_name="Starttijd"
-    )
+    ) # Should we just remove this field and determine based on first measurement?
     result_time = models.DateTimeField(
         blank=True, null=True, verbose_name="Resultaat tijd"
-    )
+    ) # Should we auto-determine this based on metadata + last measurement, but allow the option to set for volledigBeoordeeld?
     observation_endtime = models.DateTimeField(
         blank=True, null=True, verbose_name="Eindtijd"
-    )
+    ) # Should we just remove this field and determine based on last measurement?
+
     up_to_date_in_bro = models.BooleanField(
         default=False, editable=False, verbose_name="Up to date in BRO"
     )
@@ -349,7 +352,7 @@ class Observation(BaseModel):
             return self.observation_process.measurement_instrument_type
         return "-"
 
-    measurement_type.fget.short_description = "Meting type"
+    measurement_type.fget.short_description = "Meetinstrument"
 
     @property
     def observation_type(self):
@@ -357,7 +360,7 @@ class Observation(BaseModel):
             return self.observation_metadata.observation_type
         return "-"
 
-    observation_type.fget.short_description = "Observatie type"
+    observation_type.fget.short_description = "Reekstype"
 
     @property
     def status(self):
@@ -365,7 +368,7 @@ class Observation(BaseModel):
             return self.observation_metadata.status
         return "-"
 
-    status.fget.short_description = "Status Metadata"
+    status.fget.short_description = "Status"
 
     @property
     def observationperiod(self):
@@ -383,6 +386,7 @@ class Observation(BaseModel):
 
     date_stamp.fget.short_description = "Datum resultaattijd"
 
+    # Should this be our task, or should this be done by the validation service?
     @property
     def all_measurements_validated(self):
         nr_of_unvalidated = len(
@@ -515,9 +519,9 @@ class ObservationMetadata(BaseModel):
 
     def __str__(self):
         if self.responsible_party:
-            return f"{self.responsible_party.name} {str(self.status)}"
+            return f"{self.responsible_party.name}-{'reg' if self.observation_type == 'reguliereMeting' else 'con'}-{self.status if self.observation_type != 'controlemeting' else ''}"
         else:
-            return f"{str(self.status)}"
+            return f"{'reg' if self.observation_type == 'reguliereMeting' else 'con'}-{self.status if self.observation_type != 'controlemeting' else ''}"
 
     class Meta:
         managed = True
@@ -558,8 +562,7 @@ class ObservationProcess(BaseModel):
     process_type = models.CharField(
         choices=PROCESSTYPE,
         max_length=200,
-        blank=True,
-        null=True,
+        default="algoritme",
         verbose_name="Proces type",
     )
     evaluation_procedure = models.CharField(
@@ -573,8 +576,8 @@ class ObservationProcess(BaseModel):
     def __str__(self):
         try:
             if not self.air_pressure_compensation_type:
-                return f"{self.evaluation_procedure} {self.measurement_instrument_type}"
-            return f"{s2d(self.evaluation_procedure)} {s2d(self.measurement_instrument_type)} {s2d(self.process_reference)}"
+                return f"{self.measurement_instrument_type}-{self.air_pressure_compensation_type}"
+            return f"{self.measurement_instrument_type}-{s2d(self.evaluation_procedure)}-{s2d(self.process_reference)}"
         except Exception as e:
             logger.exception(e)
             return str(self.observation_process_id)
