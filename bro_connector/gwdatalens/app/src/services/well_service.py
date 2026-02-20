@@ -67,6 +67,7 @@ class WellService:
                 ColumnNames.DISPLAY_NAME,
             ]
             df = self.db.gmw_gdf.loc[wids, usecols].set_index(ColumnNames.DISPLAY_NAME)
+            df.sort_index(inplace=True)
             return df
         except KeyError as e:
             msg = "Failed to get well configuration for %s"

@@ -349,7 +349,8 @@ def register_qc_callbacks(app, data):
             irule_orig = qc_service.traval.ruleset.get_rule(istep=i)
             orig_kwargs = irule_orig.get("kwargs", {}) or {}
             for k, v in irule["kwargs"].items():
-                # savedir is not rendered as an input; skip to keep output lengths aligned
+                # savedir is not rendered as an input; skip to keep output
+                # lengths aligned
                 if irule["name"] == "pastas" and k == "savedir":
                     continue
                 vorig = orig_kwargs.get(k)

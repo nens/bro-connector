@@ -9,79 +9,122 @@
 
 }())
 
-// Synchronize scrolling between the two corrections DataTables
+// Synchronize scrolling between the two corrections DataTables (supports virtualization)
 (function syncCorrectionsTables() {
-    const TABLE1_ID = "corrections-observations-table-1";
-    const TABLE2_ID = "corrections-observations-table-2";
+    const TABLE_IDS = [
+        "corrections-observations-table-1",
+        "corrections-observations-table-2",
+    ];
 
-    function findScrollContainer(el) {
+    // Minimal debug surface for console checks
+    window.gwdlCorrectionsSync = {
+        attached: false,
+        lastCheck: null,
+        lastAttached: null,
+    };
+
+    function findScrollable(el) {
         if (!el) return null;
-        // Dash DataTable renders a nested structure; the spreadsheet container is scrollable
-        // Fallback to the element itself if we cannot find the inner container
-        return el.querySelector('.dash-spreadsheet-container') || el;
+        const selectors = [
+            ".dash-spreadsheet-container",
+            ".dash-virtualized",
+            ".dash-spreadsheet-inner",
+        ];
+        for (const sel of selectors) {
+            const cand = el.querySelector(sel);
+            if (cand && cand.scrollHeight > cand.clientHeight) return cand;
+        }
+        // Fallback: breadth-first search for any scrollable child
+        const queue = Array.from(el.children);
+        while (queue.length) {
+            const node = queue.shift();
+            const style = window.getComputedStyle(node);
+            const overflowY = style.getPropertyValue("overflow-y");
+            if (
+                (overflowY === "auto" || overflowY === "scroll") &&
+                node.scrollHeight > node.clientHeight
+            ) {
+                return node;
+            }
+            queue.push(...Array.from(node.children));
+        }
+        return null;
     }
 
-    let bound = false;
-    let handlersBound = false;
+    function getScroller(id) {
+        const table = document.getElementById(id);
+        if (!table) return null;
+        return findScrollable(table);
+    }
 
-    function bindIfReady() {
-        const t1 = document.getElementById(TABLE1_ID);
-        const t2 = document.getElementById(TABLE2_ID);
-        if (!t1 || !t2) return; // tables not yet in DOM
+    function attachIfReady() {
+        window.gwdlCorrectionsSync.lastCheck = Date.now();
+        const scrollerA = getScroller(TABLE_IDS[0]);
+        const scrollerB = getScroller(TABLE_IDS[1]);
 
-        const s1 = findScrollContainer(t1);
-        const s2 = findScrollContainer(t2);
-        if (!s1 || !s2) return; // scroll containers not found yet
+        if (!scrollerA || !scrollerB) return;
 
-        if (s1.dataset.scrollSyncBound === 'true' && s2.dataset.scrollSyncBound === 'true') {
-            bound = true;
+        if (scrollerA.dataset.scrollSyncBound === "true") {
+            window.gwdlCorrectionsSync.attached = true;
             return;
         }
 
         let syncing = false;
+        let scrollEndTimeoutId = null;
+        const SCROLL_END_DELAY = 150; // Wait for scroll to finish
 
-        function mirrorScroll(src, dst) {
-            src.addEventListener('scroll', function () {
-                if (syncing) return;
-                syncing = true;
-                try {
-                    dst.scrollTop = src.scrollTop;
-                    dst.scrollLeft = src.scrollLeft;
-                } finally {
-                    // Allow next scroll in next frame to avoid feedback loops
-                    window.requestAnimationFrame(function () { syncing = false; });
-                }
-            }, { passive: true });
-        }
+        const sync = (from, to) => {
+            from.addEventListener(
+                "scroll",
+                () => {
+                    if (syncing) return;
 
-        mirrorScroll(s1, s2);
-        mirrorScroll(s2, s1);
-        s1.dataset.scrollSyncBound = 'true';
-        s2.dataset.scrollSyncBound = 'true';
+                    // Clear any pending sync - wait for scrolling to stop
+                    if (scrollEndTimeoutId !== null) {
+                        clearTimeout(scrollEndTimeoutId);
+                    }
 
-        bound = true;
-        handlersBound = true;
+                    // Only sync after user has stopped scrolling
+                    scrollEndTimeoutId = setTimeout(() => {
+                        syncing = true;
+                        requestAnimationFrame(() => {
+                            to.scrollTop = from.scrollTop;
+                            to.scrollLeft = from.scrollLeft;
+
+                            // Allow next sync after a brief moment
+                            setTimeout(() => {
+                                syncing = false;
+                                scrollEndTimeoutId = null;
+                            }, 100);
+                        });
+                    }, SCROLL_END_DELAY);
+                },
+                { passive: true }
+            );
+        };
+
+        sync(scrollerA, scrollerB);
+        sync(scrollerB, scrollerA);
+        scrollerA.dataset.scrollSyncBound = "true";
+        scrollerB.dataset.scrollSyncBound = "true";
+        window.gwdlCorrectionsSync.attached = true;
+        window.gwdlCorrectionsSync.lastAttached = Date.now();
     }
 
-    // Attempt to bind after initial load and when Dash updates the DOM
-    document.addEventListener('DOMContentLoaded', bindIfReady);
-    window.addEventListener('load', bindIfReady);
+    // Bind on load and keep retrying for dynamic renders
+    document.addEventListener("DOMContentLoaded", attachIfReady);
+    window.addEventListener("load", attachIfReady);
+    setInterval(attachIfReady, 400);
 
-    // Periodically attempt binding until successful (covers async component renders)
-    const intervalId = setInterval(function () {
-        if (bound) return;
-        bindIfReady();
-    }, 500);
-
-    // React to DOM mutations to re-bind if tables are re-rendered
-    const observer = new MutationObserver(function () {
-        // Reset and try again on significant DOM changes
-        bound = false;
-        bindIfReady();
-        if (handlersBound && bound) {
-            // Once bound again, we can keep observing for further changes
-            return;
-        }
+    // Re-attach on DOM changes (Dash re-renders)
+    const observer = new MutationObserver(() => {
+        // If tables were recreated, drop the bound flag so we can rebind
+        const scrollerA = getScroller(TABLE_IDS[0]);
+        const scrollerB = getScroller(TABLE_IDS[1]);
+        if (scrollerA) delete scrollerA.dataset.scrollSyncBound;
+        if (scrollerB) delete scrollerB.dataset.scrollSyncBound;
+        window.gwdlCorrectionsSync.attached = false;
+        attachIfReady();
     });
     observer.observe(document.body, { childList: true, subtree: true });
 }());
