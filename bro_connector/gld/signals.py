@@ -236,7 +236,7 @@ def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
             )
         else:
             # Access the related groundwater_monitoring_tube_static instance
-            tube_static: GroundwaterMonitoringTubeStatic = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube_static
+            tube_static: GroundwaterMonitoringTubeStatic = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube
 
             # Retrieve the latest state
             latest_state = tube_static.state.filter(date_from__lte=instance.measurement_time).order_by("-date_from").first()
