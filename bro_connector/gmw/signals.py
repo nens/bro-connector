@@ -61,12 +61,19 @@ def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=GroundwaterMonitoringTubeStatic)
-def on_save_groundwater_monitoring_tube_static(sender, instance, created, **kwargs):
+def on_save_groundwater_monitoring_tube_static(sender, instance: GroundwaterMonitoringTubeStatic, created, **kwargs):
     if created and not instance.state.exists():
         GroundwaterMonitoringTubeDynamic.objects.create(
             groundwater_monitoring_tube_static=instance,
             date_from=datetime.datetime.now(),
         )
+
+    if instance.groundwater_monitoring_well_static.in_management is True and instance.groundwaterleveldossier.count() == 0:
+        instance.groundwaterleveldossier.create(
+            groundwater_monitoring_tube=instance,
+            quality_regime="IMBRO",
+        )
+
 
 
 @receiver(post_delete, sender=GroundwaterMonitoringTubeStatic)
