@@ -68,7 +68,12 @@ def on_save_groundwater_monitoring_tube_static(sender, instance: GroundwaterMoni
             date_from=datetime.datetime.now(),
         )
 
-    if instance.groundwater_monitoring_well_static.in_management is True and instance.groundwaterleveldossier.count() == 0:
+    
+    if (
+        instance.groundwater_monitoring_well_static.in_management is True
+        and instance.groundwaterleveldossier.count() == 0
+        and instance.groundwater_monitoring_well_static.initial_function != "kwaliteit"
+    ):
         instance.groundwaterleveldossier.create(
             groundwater_monitoring_tube=instance,
             quality_regime="IMBRO",
