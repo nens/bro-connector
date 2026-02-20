@@ -374,7 +374,7 @@ def process_csv_file(instance: GLDImport):  # noqa C901
         last_datetime = reader[time_col].max()
 
         # Create Observation
-        Obs, created = Observation.objects.update_or_create(
+        obs, _ = Observation.objects.update_or_create(
             groundwater_level_dossier=gld,
             observation_metadata=Obs_Meta,
             observation_process=Obs_Pro,
@@ -398,19 +398,19 @@ def process_csv_file(instance: GLDImport):  # noqa C901
             time = row[time_col]
 
             mp_meta = MeasurementPointMetadata(value_limit=None)
-            val = row.get("status_quality_control")
-            if pd.notna(val):
-                mp_meta.status_quality_control = val
-            val = row.get("censor_reason")
-            if pd.notna(val):
-                mp_meta.censor_reason = val
-            val = row.get("censor_limit")
-            if pd.notna(val):
-                mp_meta.value_limit = val
+            quality = row.get("status_quality_control")
+            if pd.notna(quality):
+                mp_meta.status_quality_control = quality
+            censor_reason = row.get("censor_reason")
+            if pd.notna(censor_reason):
+                mp_meta.censor_reason = censor_reason
+            censor_limit = row.get("censor_limit")
+            if pd.notna(censor_limit):
+                mp_meta.value_limit = censor_limit
             mms.append(mp_meta)
 
             mtvp = MeasurementTvp(
-                observation=Obs,
+                observation=obs,
                 measurement_time=time,
                 field_value=value,
                 field_value_unit=instance.field_value_unit,
@@ -447,9 +447,9 @@ def process_csv_file(instance: GLDImport):  # noqa C901
 
             except Exception as e:
                 instance.report += (
-                    f"Bulk updating/creating failed for observation: {Obs}"
+                    f"Bulk updating/creating failed for observation: {obs}"
                 )
-                logger.info(f"Bulk updating/creating failed for observation: {Obs}")
+                logger.info(f"Bulk updating/creating failed for observation: {obs}")
                 logger.exception(e)
                 instance.executed = False
                 return            
