@@ -11,6 +11,7 @@ from gmn.models import (
     MeasuringPoint,
     Subgroup,
 )
+from main.management.tasks.retrieve_historic_gmw import handle_individual_bro_id
 from tools.utils import (
     get_monitoring_tube,
     process_csv_file,

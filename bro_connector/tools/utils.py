@@ -180,25 +180,33 @@ def has_necessary_helper_files(filenames):
 
 def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
     if instance.bro_type.lower() == "gmw":
-        import_info = retrieve_historic_gmw.run(
-            kvk_number=instance.kvk_number,
-            handler=instance.handler,
-            shp_file=shapefile_path,
-            delete=instance.delete_outside,
-        )
+        if instance.bro_id is not None:
+            gmw = retrieve_historic_gmw.GMWHandler()
+            import_info = retrieve_historic_gmw.handle_individual_bro_id(instance.bro_id, gmw)
+        else:
+            import_info = retrieve_historic_gmw.run(
+                kvk_number=instance.kvk_number,
+                handler=instance.handler,
+                shp_file=shapefile_path,
+                delete=instance.delete_outside,
+            )
     if instance.bro_type.lower() == "gld":
-        import_info = retrieve_historic_gld.run(
-            kvk_number=instance.kvk_number,
-            handler=instance.handler,
-            shp_file=shapefile_path,
-            delete=instance.delete_outside,
-        )
+        if instance.bro_id is not None:
+            gld = retrieve_historic_gld.GLDHandler()
+            import_info = retrieve_historic_gld.handle_individual_bro_id(instance.bro_id, gld)
+        else:
+            import_info = retrieve_historic_gld.run(
+                kvk_number=instance.kvk_number,
+                handler=instance.handler,
+                shp_file=shapefile_path,
+                delete=instance.delete_outside,
+            )
 
     report = format_message(
         handler=instance.handler,
         type=instance.bro_type,
         kvk=instance.kvk_number,
-        shp=shapefile_path.name,
+        shp=shapefile_path.name if shapefile_path else None,
         count=import_info.get("ids_found"),
         imported=import_info.get("imported"),
     )

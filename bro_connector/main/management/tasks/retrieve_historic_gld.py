@@ -55,6 +55,102 @@ def within_bbox(coordinates) -> bool:
         return True
     return False
 
+def handle_individual_bro_id(bro_id: str, gld: GLDHandler) -> dict:
+    print("BRO id: ", bro_id)
+
+    gld.get_data(bro_id, False)
+    if gld.root is None:
+        return
+    gld.root_data_to_dictionary()
+    gld_dict = gld.dict
+
+    # For now don't handle deregistered GMWs
+    if gld_dict.get("0_deregistered", None) == "ja":
+        return
+
+    # Start at observation 1
+    ini = InitializeData(gld_dict)
+    ini.well_static()
+    ini.tube_static()
+    ini.groundwater_level_dossier()
+
+    if ini.gld is None:
+        return
+
+    try:
+        post_save.disconnect(on_save_observation, sender=Observation)
+        with transaction.atomic():
+            step = max(1, gld.total_measurements // 4)
+            for observation_number in range(gld.number_of_observations):
+                ini.increment_observation_number()
+                ini.observation_metadata()
+                ini.observation_process()
+                ini.observation()
+
+                for measurement_number in range(
+                    gld.number_of_measurements[ini.observation_number]
+                ):
+
+                    if (
+                        ini.measurement_count % step == 0
+                        or ini.measurement_count == gld.total_measurements
+                    ):
+                        print(
+                            f"{(ini.measurement_count / gld.total_measurements) * 100:.0f}% done ({ini.measurement_count}/{gld.total_measurements})"
+                        )
+                    # if measurement_number == 0:
+                    #     print(ini.measurement_number)
+                    ini.measurement_metadata()
+                    ini.measurement_tvp()
+                    ini.increment_measurement_number()
+
+                try:
+                    MeasurementPointMetadata.objects.bulk_create(
+                        ini.metadatas,
+                        update_conflicts=False,
+                        batch_size=5000,
+                    )
+
+                    MeasurementTvp.objects.bulk_create(
+                        ini.measurements,
+                        update_conflicts=False,
+                        ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
+                        # update_conflicts=True,
+                        # update_fields=[
+                        #     "field_value",
+                        #     "field_value_unit",
+                        #     "calculated_value",
+                        #     "measurement_point_metadata"
+                        # ],
+                        # unique_fields=[
+                        #     "observation",
+                        #     "measurement_time"
+                        # ],
+                        batch_size=5000,
+                    )
+                    ini.reset_measurement_number()
+                except Exception as e:
+                    logger.info(
+                        f"Bulk updating/creating failed for observation: {ini.obs}"
+                    )
+                    logger.exception(e)
+                    ini.reset_measurement_number()
+
+    finally:
+        post_save.connect(on_save_observation, sender=Observation)
+
+        with reversion.create_revision():
+            print(len(ini.observations))
+            for obs in Observation.objects.filter(
+                pk__in=[o.pk for o in ini.observations]
+            ):
+                obs.save()
+
+    return {
+        "ids_found": 1,
+        "imported": 1,
+    }
+
 
 def run(  # noqa C901
     kvk_number: str = None,
@@ -101,142 +197,17 @@ def run(  # noqa C901
     # Import the well dat
     for id in range(gld_ids_count):
         start = time.time()
-        print("BRO id: ", gld_ids[id])
+        
+        handle_individual_bro_id(gld_ids[id], gld)
+        
+        imported += 1
+        progressor.next()
+        progressor.progress()
 
-        gld.get_data(gld_ids[id], False)
-        if gld.root is None:
-            continue
-        gld.root_data_to_dictionary()
-        gld_dict = gld.dict
+        end = time.time()
+        print(f"Time for one GLD: {end - start}s")
 
-        # For now don't handle deregistered GMWs
-        if gld_dict.get("0_deregistered", None) == "ja":
-            continue
-
-        # Start at observation 1
-        ini = InitializeData(gld_dict)
-        ini.well_static()
-        ini.tube_static()
-        ini.groundwater_level_dossier()
-
-        if ini.gld is None:
-            continue
-
-        # print("measurments list before? : ", len(ini.measurements))
-
-        # print(gld.number_of_measurements)
-        # print("sum of mesurements", sum(gld.number_of_measurements.values()))
-        # print(gld.number_of_measurements[1])
-        # print("total points: ", gld.total_measurements)
-
-        # obs_time_dict = {}
-        # meas_time_dict = {}
-        # for observation_number in range(gld.number_of_observations):
-        #     prefix = f"{observation_number+1}_"
-        #     start_time = gld_dict.get(prefix + "beginPosition", None)
-        #     end_time = gld_dict.get(prefix + "endPosition", None)
-        #     result_time = gld_dict.get(prefix + "timePosition", None)
-        #     measurement_time_start=gld_dict.get(prefix + "point_time", [None])[0]
-        #     measurement_time_end=gld_dict.get(prefix + "point_time", [None])[-1]
-
-        #     obs_time_dict[prefix] = {}
-        #     obs_time_dict[prefix]["obs_start"] = start_time
-        #     obs_time_dict[prefix]["obs_end"] = end_time
-        #     obs_time_dict[prefix]["obs_result"] = result_time
-        #     obs_time_dict[prefix]["mtvp_start"] = measurement_time_start
-        #     obs_time_dict[prefix]["mtvp_end"] = measurement_time_end
-        #     obs_time_dict[prefix]["n_mtvp"] = len(gld_dict.get(prefix + "point_time", [None]))
-
-        # print(obs_time_dict)
-        # print(gld.number_of_measurements)
-        # print(gld.total_measurements)
-        try:
-            post_save.disconnect(on_save_observation, sender=Observation)
-            with transaction.atomic():
-                step = max(1, gld.total_measurements // 4)
-                for observation_number in range(gld.number_of_observations):
-                    ini.increment_observation_number()
-                    # if int(observation_number) < gld.number_of_observations -3:
-                    #     continue
-                    # print(observation_number)
-                    # if int(observation_number) > 2:
-                    #     continue
-                    ini.observation_metadata()
-                    ini.observation_process()
-                    ## use revisions for gld obs mtvp
-                    ini.observation()
-
-                    # print(f"Total number of measurements for observation {observation_number}: {gld.count_dictionary[observation_number]}")
-                    for measurement_number in range(
-                        gld.number_of_measurements[ini.observation_number]
-                    ):
-                        # if int(measurement_number) < gld.number_of_measurements[ini.observation_number] -2:
-                        #     ini.increment_measurement_number()
-                        #     continue
-
-                        if (
-                            ini.measurement_count % step == 0
-                            or ini.measurement_count == gld.total_measurements
-                        ):
-                            print(
-                                f"{(ini.measurement_count / gld.total_measurements) * 100:.0f}% done ({ini.measurement_count}/{gld.total_measurements})"
-                            )
-                        # if measurement_number == 0:
-                        #     print(ini.measurement_number)
-                        ini.measurement_metadata()
-                        ini.measurement_tvp()
-                        ini.increment_measurement_number()
-
-                    try:
-                        MeasurementPointMetadata.objects.bulk_create(
-                            ini.metadatas,
-                            update_conflicts=False,
-                            batch_size=5000,
-                        )
-
-                        MeasurementTvp.objects.bulk_create(
-                            ini.measurements,
-                            update_conflicts=False,
-                            ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
-                            # update_conflicts=True,
-                            # update_fields=[
-                            #     "field_value",
-                            #     "field_value_unit",
-                            #     "calculated_value",
-                            #     "measurement_point_metadata"
-                            # ],
-                            # unique_fields=[
-                            #     "observation",
-                            #     "measurement_time"
-                            # ],
-                            batch_size=5000,
-                        )
-                        ini.reset_measurement_number()
-                    except Exception as e:
-                        logger.info(
-                            f"Bulk updating/creating failed for observation: {ini.obs}"
-                        )
-                        logger.exception(e)
-                        ini.reset_measurement_number()
-
-                imported += 1
-                ini.reset_values()
-                progressor.next()
-                progressor.progress()
-
-                end = time.time()
-                print(f"Time for one GLD: {end - start}s")
-        finally:
-            post_save.connect(on_save_observation, sender=Observation)
-
-            with reversion.create_revision():
-                print(len(ini.observations))
-                for obs in Observation.objects.filter(
-                    pk__in=[o.pk for o in ini.observations]
-                ):
-                    obs.save()
-
-            ## delete measuring point metadata that is not in use?
+        ## delete measuring point metadata that is not in use?
 
     info = {
         "ids_found": gld_ids_count,

@@ -29,6 +29,74 @@ from .bbox_handler import DataRetrieverBBOX
 logger = logging.getLogger(__name__)
 
 
+def handle_individual_bro_id(gmw_id: str, gmw: GMWHandler):
+    print("BRO id: ", gmw_id)
+
+    gmw.get_data(gmw_id, True)
+    if gmw.root is None:
+        return
+    gmw.root_data_to_dictionary()
+    gmw_dict = gmw.dict
+
+    # For now don't handle deregistered GMWs
+    if gmw_dict.get("deregistered", None) == "ja":
+        return
+
+    # Invullen initiële waarden.
+    try:
+        post_save.disconnect(
+            on_save_groundwater_monitoring_well_static,
+            sender=GroundwaterMonitoringWellStatic,
+        )
+        post_save.disconnect(
+            on_save_groundwater_monitoring_tube_static,
+            sender=GroundwaterMonitoringTubeStatic,
+        )
+
+        with transaction.atomic():
+            ini = InitializeData(gmw_dict)
+            ini.well_static()
+            gmws = ini.gmws
+            ini.well_dynamic()
+
+            for tube_number in range(gmw.number_of_tubes):
+                ini.increment_tube_number()
+                ini.tube_static()
+                ini.tube_dynamic()
+
+                for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
+                    ini.increment_geo_ohm_number()
+                    ini.geo_ohm()
+
+                    for electrode in range(int(gmw.number_of_electrodes)):
+                        ini.increment_electrode_number()
+                        ini.electrode()
+
+                    ini.reset_electrode_number()
+                ini.reset_geo_ohm_number()
+    finally:
+        post_save.connect(
+            on_save_groundwater_monitoring_well_static,
+            sender=GroundwaterMonitoringWellStatic,
+        )
+        post_save.connect(
+            on_save_groundwater_monitoring_tube_static,
+            sender=GroundwaterMonitoringTubeStatic,
+        )
+
+    events_handler.create_construction_event(gmw_dict, gmws)
+    # Update based on the events
+    updater = events_handler.Updater(gmw.dict, gmws)
+    for nr in range(int(gmw.number_of_events)):
+        updater.intermediate_events()
+
+    ini.reset_tube_number()
+    return {
+        "ids_found": 1,
+        "imported": 1,
+    }
+
+
 def run(  # noqa C901
     kvk_number: str = None,
     bro_type: str = "gmw",
@@ -70,69 +138,11 @@ def run(  # noqa C901
 
     # Import the well data
     for id in range(gmw_ids_count):
-        print("BRO id: ", gmw_ids[id])
+        gmw_id = gmw_ids[id]
 
-        gmw.get_data(gmw_ids[id], True)
-        if gmw.root is None:
-            continue
-        gmw.root_data_to_dictionary()
-        gmw_dict = gmw.dict
-
-        # For now don't handle deregistered GMWs
-        if gmw_dict.get("deregistered", None) == "ja":
-            continue
-
-        # Invullen initiële waarden.
-        try:
-            post_save.disconnect(
-                on_save_groundwater_monitoring_well_static,
-                sender=GroundwaterMonitoringWellStatic,
-            )
-            post_save.disconnect(
-                on_save_groundwater_monitoring_tube_static,
-                sender=GroundwaterMonitoringTubeStatic,
-            )
-
-            with transaction.atomic():
-                ini = InitializeData(gmw_dict)
-                ini.well_static()
-                gmws = ini.gmws
-                ini.well_dynamic()
-
-                for tube_number in range(gmw.number_of_tubes):
-                    ini.increment_tube_number()
-                    ini.tube_static()
-                    ini.tube_dynamic()
-
-                    for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
-                        ini.increment_geo_ohm_number()
-                        ini.geo_ohm()
-
-                        for electrode in range(int(gmw.number_of_electrodes)):
-                            ini.increment_electrode_number()
-                            ini.electrode()
-
-                        ini.reset_electrode_number()
-                    ini.reset_geo_ohm_number()
-        finally:
-            post_save.connect(
-                on_save_groundwater_monitoring_well_static,
-                sender=GroundwaterMonitoringWellStatic,
-            )
-            post_save.connect(
-                on_save_groundwater_monitoring_tube_static,
-                sender=GroundwaterMonitoringTubeStatic,
-            )
-
-        events_handler.create_construction_event(gmw_dict, gmws)
+        handle_individual_bro_id(gmw_id, gmw)
         imported += 1
-        # Update based on the events
-        updater = events_handler.Updater(gmw.dict, gmws)
-        for nr in range(int(gmw.number_of_events)):
-            updater.intermediate_events()
-
         gmw.reset_values()
-        ini.reset_tube_number()
         progressor.next()
         progressor.progress()
 

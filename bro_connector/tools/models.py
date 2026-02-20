@@ -44,6 +44,13 @@ class BroImport(BaseModel):
         verbose_name="KvK nummer",
         help_text="Is optioneel als je de importeert op basis van SHP bestand.",
     )
+    bro_id = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        verbose_name="BRO ID",
+        help_text="Is optioneel als, kan als alternatief voor KvK nummer gebruikt worden.",
+    )
 
     file = models.FileField(
         upload_to="bulk",

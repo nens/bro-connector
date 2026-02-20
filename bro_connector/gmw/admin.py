@@ -429,7 +429,6 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         BroIdNullFilter,
     )
     readonly_fields = (
-        "well_code",
         "lat",
         "lon",
         "report",
