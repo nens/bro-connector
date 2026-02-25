@@ -358,20 +358,23 @@ class TableUpdater(Updater):
         else:
             new_gmwds = GroundwaterMonitoringWellDynamic.objects.filter(
                 groundwater_monitoring_well_static=well_static
-            )
+            ).order_by("date_from")
             if len(new_gmwds) == 1:
                 new_gmwd = new_gmwds.first()
-                new_gmwd.groundwater_monitoring_well_dynamic_id = None
 
             elif len(new_gmwds) > 1:
                 new_gmwd = new_gmwds.last()
-                new_gmwd.groundwater_monitoring_well_dynamic_id = None
 
             else:
                 raise Exception(
                     "No Groundwater Monitoring Well Dynamic Tables found for this GMW: ",
                     well_static,
                 )
+            
+            if new_gmwd.date_from.date() != event.event_date:
+                new_gmwd.groundwater_monitoring_well_dynamic_id = None
+
+        
 
         # Check what has to be changed
         new_gmwd = well_dynamic(new_gmwd, updates)
