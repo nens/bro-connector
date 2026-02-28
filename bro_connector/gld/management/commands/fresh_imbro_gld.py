@@ -26,6 +26,7 @@ def setup_observation_metadata(type: Literal["volledigBeoordeeld", "voorlopig", 
         case "controle":
             return ObservationMetadata.objects.get_or_create(
                 observation_type = "controlemeting",
+                status = None,
                 responsible_party = user_org,
             )
 
