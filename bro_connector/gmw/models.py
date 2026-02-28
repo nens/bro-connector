@@ -1,6 +1,5 @@
 import datetime
 
-import django.contrib.gis.db.models as geo_models
 import main.utils.validators_models as validators_models
 from bro.models import BROProject, Organisation
 from django.db import models
@@ -46,6 +45,9 @@ from gmw.utils import generate_put_code
 from main.models import BaseModel
 from PIL import Image
 from PIL.ExifTags import TAGS
+from pyproj import Transformer
+
+from main.settings.base import EPSG_28992, WGS84
 
 
 def _get_token(owner: Organisation):
@@ -53,6 +55,46 @@ def _get_token(owner: Organisation):
         "user": owner.bro_user,
         "pass": owner.bro_token,
     }
+
+class SpatialTransformer:
+    """Handles coordinate transformations and spatial operations.
+
+    Responsible for:
+    - Coordinate system transformations
+    - Distance calculations
+    - Spatial metadata enrichment
+
+    Parameters
+    ----------
+    from_crs : str
+        Source coordinate reference system (EPSG code)
+    to_crs : str
+        Target coordinate reference system (EPSG code)
+    """
+
+    def __init__(self, from_crs=EPSG_28992, to_crs=WGS84):
+        """Initialize spatial transformer."""
+        self.transformer = Transformer.from_proj(from_crs, to_crs, always_xy=True)
+
+    def transform_to_wgs84(
+        self, x: float, y: float
+    ) -> tuple[float, float]:
+        """Transform coordinates from RD to WGS84.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            X coordinates in RD
+        y : np.ndarray
+            Y coordinates in RD
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Tuple of (lon, lat) arrays in WGS84
+            lon = x in WGS84, lat = y in WGS84
+        """
+        return self.transformer.transform(x, y)
 
 
 class GroundwaterMonitoringWellStatic(BaseModel):
@@ -135,17 +177,8 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         verbose_name="Putcode",
     )
     monitoring_pdok_id = models.IntegerField(blank=True, null=True)
-    coordinates = geo_models.PointField(
-        srid=28992, blank=True, null=True, editable=False, verbose_name="RD Coordinaten"
-    )  # This field type is a guess.
-    coordinates_4326 = geo_models.PointField(
-        srid=4326,
-        blank=True,
-        null=True,
-        editable=False,
-        help_text="Passief veld. Vul deze niet in. Wordt automatisch berekend op basis van de RD coordinaten in het coordinates field.",
-        verbose_name="Standaard coordinaten",
-    )
+    x_coordinate = models.FloatField(blank=True, null=True, verbose_name="X-coördinaat")
+    y_coordinate = models.FloatField(blank=True, null=True, verbose_name="Y-coördinaat")
     reference_system = models.CharField(
         max_length=256,
         blank=True,
@@ -227,9 +260,6 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     last_horizontal_positioning_date = models.DateField(
         blank=True, null=True, verbose_name="Laatste horizontale positioneringsdatum"
     )
-    construction_coordinates = geo_models.PointField(
-        srid=28992, blank=True, null=True, editable=False
-    )  # This field type is a guess.
 
     state: Manager["GroundwaterMonitoringWellDynamic"]
     tube: Manager["GroundwaterMonitoringTubeStatic"]
@@ -237,6 +267,22 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     event: Manager["Event"]
     maintenance: Manager["Maintenance"]
     delivery_accountable_party: Manager["Organisation"]
+
+    @property
+    def coordinates_4326(self):
+        if self.x_coordinate and self.y_coordinate:
+            transformer = SpatialTransformer()
+            lon, lat = transformer.transform_to_wgs84(self.x_coordinate, self.y_coordinate)
+            return lat, lon
+        return None, None
+
+    @property
+    def lon(self):
+        return self.coordinates_4326[1]
+    
+    @property
+    def lat(self):
+        return self.coordinates_4326[0]
 
     @property
     def is_surface(self):
@@ -257,26 +303,17 @@ class GroundwaterMonitoringWellStatic(BaseModel):
 
     @property
     def x(self):
-        return self.coordinates.x
+        return self.x_coordinate
 
     @property
     def y(self):
-        return self.coordinates.y
-
-    @property
-    def lat(self):
-        return self.coordinates_4326.y
-
-    @property
-    def lon(self):
-        return self.coordinates_4326.x
+        return self.y_coordinate
 
     @property
     def project_number(self):
         if self.project:
             return self.project.project_number
-        else:
-            None
+        return None
 
     def get_bro_info(self):
         return {
@@ -285,12 +322,6 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         }
 
     project_number.fget.short_description = "Projectnummer"
-
-    def cx(self):
-        return self.construction_coordinates.x
-
-    def cy(self):
-        return self.construction_coordinates.y
 
     @property
     def bro_loket_link(self):
@@ -398,12 +429,6 @@ class GroundwaterMonitoringWellStatic(BaseModel):
             print("Generate wellcode.")
             self.well_code = generate_put_code(self.nitg_code)
             super().save(update_fields=["well_code"])
-
-        # If coordinates are available, convert and save them to coordinates_4236
-        if self.coordinates:
-            self.coordinates_4326 = self.coordinates.transform(4326, clone=True)
-            # Save the updated instance
-            super().save(update_fields=["coordinates_4326"])
 
     class Meta:
         managed = True

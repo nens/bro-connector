@@ -4,8 +4,7 @@
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 # Feel free to rename the models, but don't rename db_table values or field names.
-from django.contrib.gis.db import models
-
+from django.db import models
 
 class Analyses(models.Model):
     analysis_id = models.AutoField(

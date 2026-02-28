@@ -1,7 +1,6 @@
 import os
 
 import pandas as pd
-from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
 from gmn.models import (
     GroundwaterMonitoringNet,
@@ -71,11 +70,6 @@ class Command(BaseCommand):
                 "peilbuis toegevoegd aan database": [],
             }
         )
-
-        # stap 1 is overbodig door de find_well en find_tube functies
-        # 1 maak een lijst van putten die in de database staan
-        # wells = GroundwaterMonitoringWellStatic.objects.all()
-        # well_list = [{'internal_id': well.internal_id, 'put':well.nitg_code, 'x':well.coordinates.x, 'y':well.coordinates.y} for well in wells]
 
         # 2 open excel met DINO putten en filter op basis van coordinaten
         DINO = pd.read_csv(
@@ -166,11 +160,11 @@ class Command(BaseCommand):
                 x = DINO_5["X-Coordinaat (RD)"].iloc[0]
                 y = DINO_5["Y-Coordinaat (RD)"].iloc[0]
                 longitude, latitude = x, y
-                point = Point(longitude, latitude)
 
                 well = GroundwaterMonitoringWellStatic.objects.update_or_create(
                     nitg_code=well_nitg,
-                    coordinates=point,
+                    x_coordinate=x,
+                    y_coordinate=y,
                     in_management=False,
                 )[0]
                 well.internal_id = str(well)

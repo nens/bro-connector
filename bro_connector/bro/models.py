@@ -83,7 +83,7 @@ class SecureCharField(CharField):
 
 class Organisation(BaseModel):
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Naam")
-    company_number = models.IntegerField(blank=True, verbose_name="KvK")
+    company_number = models.CharField(max_length=8, blank=True, verbose_name="KvK")
     color = models.CharField(
         max_length=50, null=True, blank=True, verbose_name="Kleurcode"
     )

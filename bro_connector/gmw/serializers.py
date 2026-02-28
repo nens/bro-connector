@@ -91,28 +91,6 @@ class GMWSerializer(serializers.ModelSerializer):
                 ],
             )
         return "..."
-        # main_pictures = obj.picture.order_by("-recording_datetime", "-picture_id").filter(is_main=True).all()
-        # if main_pictures:
-        #     picture = main_pictures.first()
-        # else:
-        #     picture = obj.picture.order_by("-recording_datetime", "-picture_id").first()
-
-        # if picture and picture.picture:
-        #     # return picture.image_tag
-        #     return format_html_join(
-        #         "",
-        #         '<div style="margin-bottom: 0.5em;"><img src="{}" style="max-width:100px; max-height:100px;"><br><small>{}</small></div>',
-        #         [
-        #             (
-        #                 picture.picture.url,
-        #                 picture.recording_datetime.strftime("%Y-%m-%d %H:%M")
-        #                 if picture.recording_datetime
-        #                 else "No timestamp",
-        #             )
-        #         ],
-        #     )
-        # else:
-        #     return "..."
 
     def get_nitg_code(self, obj):
         return obj.nitg_code

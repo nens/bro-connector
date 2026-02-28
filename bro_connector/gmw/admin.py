@@ -7,7 +7,6 @@ import gmw.management.tasks.gmw_actions as gmw_actions
 import main.utils.validators_admin as validators_admin
 import reversion
 from django.contrib import admin, messages
-from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import fields
 from django.http import HttpResponse
 from django.urls import reverse
@@ -317,6 +316,7 @@ class TubeDynamicInline(admin.TabularInline):
         "tube_top_diameter",
         "tube_top_position",
         "tube_top_positioning_method",
+        "plain_tube_part_length",
         "tube_status",
         "comment",
         "comment_processed",
@@ -465,32 +465,21 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "initial_function",
                     "monitoring_pdok_id",
                     "horizontal_positioning_method",
-                    "local_vertical_reference_point",
                     "well_offset",
-                    "vertical_datum",
                     "last_horizontal_positioning_date",
                     "well_link",
                     "nr_of_monitoring_tubes",
                     "tube_link",
                     "report",
                     "bro_actions",
-                    "x",
-                    "y",
+                    "x_coordinate",
+                    "y_coordinate",
                     "lat",
                     "lon",
                     "map_preview",
                 ],
             },
-        ),
-        (
-            "Initiële coordinaten",
-            {
-                "fields": [
-                    "cx",
-                    "cy",
-                ],
-            },
-        ),
+        )
     ]
 
     inlines = (
@@ -501,6 +490,11 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     )
 
     actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
+
+    def coordinates(self, obj):
+        if obj.x_coordinate is not None and obj.y_coordinate is not None:
+            return f"({obj.x_coordinate}, {obj.y_coordinate})"
+        return "Onbekend"
 
     def well_link(self, obj):
         filter_ids = obj.open_comments_well_ids
@@ -549,32 +543,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     def save_model(
         self, request, obj: gmw_models.GroundwaterMonitoringWellStatic, form, change
     ):
-        # Haal de waarden van de afgeleide attributen op uit het formulier
-
-        x = form.cleaned_data["x"]
-        y = form.cleaned_data["y"]
-
-        cx = form.cleaned_data["cx"]
-        cy = form.cleaned_data["cy"]
-
         nr_of_monitoring_tubes = form.cleaned_data["nr_of_monitoring_tubes"]
-
-        # Werk de waarden van de afgeleide attributen bij in het model
-        obj.coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
-        logger.info(
-            f"X: {x}, Y: {y}, CX: '{cx}', CY: '{cy}', construction_coordinates: {obj.construction_coordinates}"
-        )
-        logger.info(x == "" and y == "" and obj.construction_coordinates is None)
-        logger.info(x is not None and y is not None)
-        if (x is not None and y is not None) and (
-            cx == "" and cy == "" and obj.construction_coordinates is None
-        ):
-            obj.construction_coordinates = GEOSGeometry(f"POINT ({x} {y})", srid=28992)
-
-        if cx != "" and cy != "":
-            obj.construction_coordinates = GEOSGeometry(
-                f"POINT ({cx} {cy})", srid=28992
-            )
 
         # Als er een put is met het obj id
         originele_put = gmw_models.GroundwaterMonitoringWellStatic.objects.filter(
@@ -582,7 +551,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         ).first()
         if originele_put is not None:
             if (
-                (originele_put.coordinates.x != x or originele_put.coordinates.y != y)
+                (originele_put.x_coordinate != obj.x_coordinate or originele_put.y_coordinate != obj.y_coordinate)
                 and originele_put.last_horizontal_positioning_date
                 == obj.last_horizontal_positioning_date
             ):
@@ -594,31 +563,22 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         (valid, message) = validators_admin.x_within_netherlands(obj)
         if valid is False:
             self.message_user(request, message, level="WARNING")
-            if originele_put is not None:
-                obj.coordinates[0] = originele_put.coordinates[0]
-            else:
-                obj.coordinates[0] = -999
 
         (valid, message) = validators_admin.y_within_netherlands(obj)
         if valid is False:
             self.message_user(request, message, level="WARNING")
-            if originele_put is not None:
-                obj.coordinates[1] = originele_put.coordinates[1]
-            else:
-                obj.coordinates[1] = -999
 
         # test if new coordinate is within distance from previous coordinates
         if originele_put is not None:
-            # .coordinates consist of x [0] and y [1]
             (valid, message) = validators_admin.validate_x_coordinaat(obj)
             if valid is False:
                 self.message_user(request, message, level="ERROR")
-                obj.coordinates[0] = originele_put.coordinates[0]
+                obj.x_coordinate = originele_put.x_coordinate
 
             (valid, message) = validators_admin.validate_y_coordinaat(obj)
             if valid is False:
                 self.message_user(request, message, level="ERROR")
-                obj.coordinates[1] = originele_put.coordinates[1]
+                obj.y_coordinate = originele_put.y_coordinate
 
         well_checker = WellValidation()
         if obj.groundwater_monitoring_well_static_id:

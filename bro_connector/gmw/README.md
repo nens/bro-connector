@@ -19,8 +19,9 @@ classDiagram
         str olga_code
         str well_code
         int monitoring_pdok_id
-        coordinates coordinates
-        coordinates coordinates_4326
+        float x_coordinate
+        float y_coordinate
+        tuple coordinates_4326
         str reference_system
         str horizontal_positioning_method
         str local_vertical_reference_point

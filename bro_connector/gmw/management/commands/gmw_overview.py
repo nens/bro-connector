@@ -56,12 +56,12 @@ class Command(BaseCommand):
         df.to_csv(save_path, index=False)
         self.stdout.write(f"File saved at {save_path}")
 
-    def get_well_data(self, well):
+    def get_well_data(self, well: GroundwaterMonitoringWellStatic):
         # Extract well-specific details
         well_code = well.well_code
         bro_id = well.bro_id
         nitg_code = well.nitg_code
-        coordinates = well.coordinates
+        coordinates = well.x_coordinate, well.y_coordinate
         RD_X, RD_Y = str(coordinates[0]), str(coordinates[1])
         delivery_accountable_party = well.delivery_accountable_party
         deliver_gmw_to_bro = well.deliver_gmw_to_bro

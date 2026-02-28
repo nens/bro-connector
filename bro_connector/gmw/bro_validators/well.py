@@ -101,11 +101,15 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
                 tuple_to_list(INITIALFUNCTION_IMBRO),
             )
 
-        # coordinates
-        if well.coordinates is None:
+        if well.x_coordinate is None:
             valid = False
             report += report_missing_IMBRO(
-                well._meta.get_field("coordinates").verbose_name
+                well._meta.get_field("x_coordinate").verbose_name
+            )
+        if well.y_coordinate is None:
+            valid = False
+            report += report_missing_IMBRO(
+                well._meta.get_field("y_coordinate").verbose_name
             )
 
         # horizontal_positioning_method
@@ -212,11 +216,15 @@ def validate_well_static(well: GroundwaterMonitoringWellStatic) -> tuple[bool, s
                 tuple_to_list(INITIALFUNCTION),
             )
 
-        # coordinates
-        if well.coordinates is None:
+        if well.x_coordinate is None:
             valid = False
             report += report_missing_IMBRO_A(
-                well._meta.get_field("coordinates").verbose_name
+                well._meta.get_field("x_coordinate").verbose_name
+            )
+        if well.y_coordinate is None:
+            valid = False
+            report += report_missing_IMBRO_A(
+                well._meta.get_field("y_coordinate").verbose_name
             )
 
         # horizontal_positioning_method

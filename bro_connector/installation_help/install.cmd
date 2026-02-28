@@ -15,7 +15,9 @@ set "CUR_DIR=%~dp0"
 set "ROOT_DIR=%CUR_DIR%\..\..\"
 set "VENV_DIR=%ROOT_DIR%.venv"
 set "REQUIREMENTS_FILE=%ROOT_DIR%requirements.txt"
-set "GDAL_WHEEL=%CUR_DIR%gdal-3.10.2-cp312-cp312-win_amd64.whl"
+set "GDAL_WHEEL=%CUR_DIR%gdal-3.10.2-cp312-cp312-win_amd6.whl"
+
+setlocal EnableDelayedExpansion
 
 REM ============================================
 REM Step 1: Python Setup
@@ -343,20 +345,19 @@ set /p FTP_PASSWORD="Enter FTP password (optional): "
 set /p VALIDATION_KEY="Enter Lizard validation key (optional): "
 
 (
-    echo # Security Keys - IMPORTANT: Fill these in from generated files
     if defined FERNET_KEY (
         echo FERNET_ENCRYPTION_KEY = "!FERNET_KEY!"
     ) else (
-        echo FERNET_ENCRYPTION_KEY = ""  # TODO: Copy from fernet_key.txt
+        echo FERNET_ENCRYPTION_KEY = ""
     )
     if defined SALT_STRING (
         echo SALT_STRING = "!SALT_STRING!"
     ) else (
-        echo SALT_STRING = ""  # TODO: Copy from salt.txt
+        echo SALT_STRING = ""
     )
     echo.
     echo # Environment: development, staging, or production
-    echo GDAL_DLL_VERSION = "" # TODO: Set GDAL_DLL_VERSION (e.g., "309" or "310") depending on installed GDAL
+    echo GDAL_DLL_VERSION = ""
     echo ENV = "development"
     echo DEMO = ENV != "production"
     echo.
@@ -394,7 +395,6 @@ set /p VALIDATION_KEY="Enter Lizard validation key (optional): "
         echo     port = "5432"
     )
     echo elif ENV == "staging":
-    echo     # Staging database settings
     if defined PGUSER (
         echo     user = "!PGUSER!"
         echo     password = "!PGPASSWORD!"
@@ -407,7 +407,6 @@ set /p VALIDATION_KEY="Enter Lizard validation key (optional): "
         echo     port = "5432"
     )
     echo else:
-    echo     # Development database settings
     if defined PGUSER (
         echo     user = "!PGUSER!"
         echo     password = "!PGPASSWORD!"
@@ -420,7 +419,6 @@ set /p VALIDATION_KEY="Enter Lizard validation key (optional): "
         echo     port = "5432"
     )
     echo.
-    echo # Lizard API Keys
     echo validation_key = "!VALIDATION_KEY!"
 ) > "%LOCALSECRET_FILE%"
 

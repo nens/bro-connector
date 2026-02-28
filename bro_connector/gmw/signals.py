@@ -4,7 +4,7 @@ import reversion
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-
+from gld.models import GroundwaterLevelDossier, Observation
 from .models import (
     Event,
     GroundwaterMonitoringTubeDynamic,
@@ -45,6 +45,7 @@ def on_save_groundwater_monitoring_well_static(
             event_name="constructie",
             defaults={
                 "event_date": instance.construction_date,
+                "groundwater_monitoring_well_dynamic": instance.state.first(),
             },
         )
 
@@ -91,6 +92,25 @@ def on_delete_groundwater_monitoring_tube_static(sender, instance, **kwargs):
         groundwater_monitoring_tube_static=instance
     ).delete()
 
+
+@receiver(post_save, sender=GroundwaterMonitoringTubeDynamic)
+def on_save_groundwater_monitoring_tube_dynamic(sender, instance: GroundwaterMonitoringTubeDynamic, created, **kwargs):
+    if instance.sensor_depth is not None or instance.sensor_id is not None:
+        gld = GroundwaterLevelDossier.objects.filter(
+            groundwater_monitoring_tube=instance.groundwater_monitoring_tube_static,
+            quality_regime="IMBRO",
+        ).first()
+        if gld is not None:
+            sensor_options = ["druksensor", "akoestischeSensor", "stereoSensor"]
+            if gld.observations.filter(observation_procedure__measurement_type__in=sensor_options).count() == 0:
+                # Create Observation regulier, sensor. Close current handpeiling reeks if exists
+                # Then create controle handreeks.
+                pass
+
+                # gld.observations.create(
+                #     observation_metadata=gld.observation_metadata.filter(status="regu").first(),
+                #     observation_process=gld.observation_process.filter(measurement_instrument_type__in=sensor_options).first(),
+                # )
 
 @receiver(post_save, sender=gmw_registration_log)
 def on_save_gmw_synchronisatie_log(

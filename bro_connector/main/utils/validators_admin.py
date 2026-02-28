@@ -30,7 +30,7 @@ def get_ahn_from_lizard(obj) -> float:
 
     url = "https://demo.lizard.net/api/v4/rasters/81ecd7d4-cff2-4704-9704-c5d6433b2824/point/"
 
-    geom = f"SRID=28992;POINT({meetpunt.coordinates[0]} {meetpunt.coordinates[1]})"
+    geom = f"SRID=28992;POINT({meetpunt.x_coordinate} {meetpunt.y_coordinate})"
 
     try:
         res = requests.get(
@@ -225,7 +225,7 @@ def x_within_netherlands(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tup
     max_x = 270000
     message = "x-coordinaat ligt niet binnen de grenzen van Nederland voor EPSG:28892"
 
-    if obj.coordinates[0] < min_x or obj.coordinates[0] > max_x:
+    if obj.x_coordinate < min_x or obj.x_coordinate > max_x:
         valid = False
 
     return (valid, message)
@@ -237,7 +237,7 @@ def y_within_netherlands(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tup
     max_y = 620000
     message = "y-coordinaat ligt niet binnen de grenzen van Nederland voor EPSG:28892"
 
-    if obj.coordinates[1] < min_y or obj.coordinates[1] > max_y:
+    if obj.y_coordinate < min_y or obj.y_coordinate > max_y:
         valid = False
 
     return (valid, message)
@@ -252,7 +252,7 @@ def validate_x_coordinaat(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tu
         groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
     ).first()
 
-    verschil = abs(obj.coordinates[0] - originele_put.coordinates[0])
+    verschil = abs(obj.x_coordinate - originele_put.x_coordinate)
 
     if verschil > max_afwijking:
         valid = False
@@ -269,7 +269,7 @@ def validate_y_coordinaat(obj: gmw_models.GroundwaterMonitoringWellStatic) -> tu
         groundwater_monitoring_well_static_id=obj.groundwater_monitoring_well_static_id
     ).first()
 
-    verschil = abs(obj.coordinates[1] - originele_put.coordinates[1])
+    verschil = abs(obj.y_coordinate - originele_put.y_coordinate)
 
     if verschil > max_afwijking:
         valid = False

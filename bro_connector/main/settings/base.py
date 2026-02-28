@@ -15,7 +15,7 @@ import platform
 from pathlib import Path
 
 import django.db.models.options as options
-from main.localsecret import ENV, GDAL_DLL_VERSION
+from main.localsecret import ENV
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
@@ -31,6 +31,16 @@ POLYGON_SHAPEFILE = (
 )
 
 KVK_USER = "20168636"
+
+# CRS definitions
+EPSG_28992 = (
+    "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 "
+    "+x_0=155000 +y_0=463000 +ellps=bessel "
+    "+towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m "
+    "+no_defs"
+)
+
+WGS84 = "proj=longlat datum=WGS84 no_defs ellps=WGS84 towgs84=0,0,0"
 
 USE_WELLS_AS_MAP_CENTER = True
 MAP_CENTER = [3.945697, 51.522601]
@@ -68,7 +78,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.gis",
     "django_admin_generator",
     "image_uploader_widget",
     "django_extensions",
@@ -147,7 +156,7 @@ WSGI_APPLICATION = "main.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "",
         "USER": "",
         "PASSWORD": "",
@@ -562,7 +571,3 @@ GRAPH_MODELS = {
 }
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10_485_760  # (10MB) needed for DASH APP
-
-if platform.system() == "Windows":
-    GDAL_LIBRARY_PATH = rf"C:\OSGeo4W\bin\gdal{GDAL_DLL_VERSION}.dll"
-    GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"

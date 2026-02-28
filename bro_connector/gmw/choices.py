@@ -189,7 +189,7 @@ DELIVERYCONTEXT_IMBRO = (
     ("NBW", "NBW"),
     ("NR", "NR"),
     ("OGW", "OGW"),
-    ("OG", "OW"),
+    ("OW", "OW"),
     ("publiekeTaak", "publiekeTaak"),
     ("WW", "WW"),
 )

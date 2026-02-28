@@ -416,4 +416,4 @@ def get_plotting_zoom_level_and_center_coordinates(longitudes=None, latitudes=No
 
     # NOTE: manual correction to view all of obs for Zeeland ...
     # (because of non-square window/extent?).
-    return zoom - 1.25, b_box["center"]
+    return zoom - 1.5, b_box["center"]

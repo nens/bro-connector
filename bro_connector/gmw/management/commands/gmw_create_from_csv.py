@@ -1,7 +1,6 @@
 import os
 
 import polars as pl
-from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
 from gmn.models import (
     GroundwaterMonitoringNet,
@@ -11,7 +10,7 @@ from gmn.models import (
 from gmw.models import GroundwaterMonitoringWellStatic
 
 
-def find_well(well_coordinates: Point, nitg: str) -> GroundwaterMonitoringWellStatic:
+def find_well(x: float, y: float, nitg: str) -> GroundwaterMonitoringWellStatic:
     if (nitg is not None) and (nitg != "[onbekend]"):
         well = (
             GroundwaterMonitoringWellStatic.objects.filter(nitg_code=nitg)
@@ -20,7 +19,7 @@ def find_well(well_coordinates: Point, nitg: str) -> GroundwaterMonitoringWellSt
         )
     else:
         well = (
-            GroundwaterMonitoringWellStatic.objects.filter(coordinates=well_coordinates)
+            GroundwaterMonitoringWellStatic.objects.filter(x_coordinate=x, y_coordinate=y)
             .order_by("groundwater_monitoring_well_static_id")
             .first()
         )
@@ -85,10 +84,8 @@ def create_monitoring_well(df: pl.DataFrame):
                 tube_nr = 1
             x = row["Xcoord RD"]
             y = row["Ycoord RD"]
-            longitude, latitude = x, y
-            point = Point(longitude, latitude)
 
-            well = find_well(point, nitg_code)
+            well = find_well(x, y, nitg_code)
 
             if well and row["NITG-Nr"] is not None:
                 print(f"{x:.2f}\t{y:.2f}\t exists, NITG is:\t {row['NITG-Nr']}")
@@ -107,7 +104,8 @@ def create_monitoring_well(df: pl.DataFrame):
                 # voeg measuring point toe aan dino gmn
 
                 well = GroundwaterMonitoringWellStatic.objects.update_or_create(
-                    coordinates=point,
+                    x_coordinate=x,
+                    y_coordinate=y,
                     in_management=False,
                 )[0]
                 well.internal_id = str(well)
@@ -134,7 +132,8 @@ def create_monitoring_well(df: pl.DataFrame):
                 # voeg measuring point toe aan unknown gmn
 
                 well = GroundwaterMonitoringWellStatic.objects.update_or_create(
-                    coordinates=point,
+                    x_coordinate=x,
+                    y_coordinate=y,
                     in_management=False,
                 )[0]
                 well.internal_id = str(well)
@@ -164,7 +163,8 @@ def create_monitoring_well(df: pl.DataFrame):
 
                 well = GroundwaterMonitoringWellStatic.objects.update_or_create(
                     nitg_code=nitg_code,
-                    coordinates=point,
+                    x_coordinate=x,
+                    y_coordinate=y,
                     in_management=False,
                 )[0]
                 well.internal_id = str(well)
@@ -190,7 +190,8 @@ def create_monitoring_well(df: pl.DataFrame):
 
                 well = GroundwaterMonitoringWellStatic.objects.update_or_create(
                     nitg_code=nitg_code,
-                    coordinates=point,
+                    x_coordinate=x,
+                    y_coordinate=y,
                 )[0]
                 well.internal_id = str(well)
 

@@ -6,7 +6,6 @@ from string import punctuation, whitespace
 import bro.models as bro_models
 import gmw.models as gmw_models
 from django.conf import settings
-from django.contrib.gis.geos import Point
 from django.db.models.signals import post_save
 from gmw.signals import (
     on_save_groundwater_monitoring_tube_static,
@@ -213,14 +212,14 @@ class InitializeData:
             organisation.save()
             return organisation
 
-    def get_coordinates(self) -> Point:
+    def get_coordinates(self) -> tuple:
         position = self.gmw_dict.get("pos_1", None)
         if position is not None:
             positions = position.split(" ")
-            coords_field = Point(float(positions[0]), float(positions[1]))
+            coords_field = (float(positions[0]), float(positions[1]))
 
         else:
-            coords_field = Point()
+            coords_field = (0.0, 0.0)
 
         return coords_field
 
@@ -232,7 +231,8 @@ class InitializeData:
             construction_date = datetime.datetime.strptime(
                 construction_date, "%Y-%m-%d"
             )
-
+        
+        coordinates = self.get_coordinates()
         self.meetpunt_instance = (
             gmw_models.GroundwaterMonitoringWellStatic.objects.create(
                 bro_id=self.gmw_dict.get("broId", None),
@@ -241,7 +241,8 @@ class InitializeData:
                 construction_standard=self.gmw_dict.get(
                     "constructionStandard", "onbekend"
                 ),
-                coordinates=self.get_coordinates(),
+                x_coordinate=coordinates[0],
+                y_coordinate=coordinates[1],
                 delivery_context=self.gmw_dict.get("deliveryContext", "onbekend"),
                 horizontal_positioning_method=self.gmw_dict.get(
                     "horizontalPositioningMethod", "onbekend"
@@ -258,7 +259,6 @@ class InitializeData:
                 well_code=self.gmw_dict.get("wellCode", None),
                 vertical_datum=self.gmw_dict.get("verticalDatum", "NAP"),
                 last_horizontal_positioning_date=construction_date,
-                construction_coordinates=self.get_coordinates(),
                 deliver_gmw_to_bro=True,
                 complete_bro=True,
                 in_management=True

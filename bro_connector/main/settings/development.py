@@ -23,7 +23,7 @@ if not STATIC_ROOT.exists():
 DATABASES = {
     "default": {
         "NAME": database,
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "django.db.backends.postgresql",
         "USER": user,
         "PASSWORD": password,
         "HOST": host,

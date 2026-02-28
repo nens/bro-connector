@@ -5,7 +5,6 @@ import re
 from datetime import datetime
 
 import pandas as pd
-from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 
@@ -71,7 +70,7 @@ def find_pattern_in_string(input_string):
 
 
 def find_monitoring_tube(
-    nitg_code: str, filter_number: int, loc: Point
+    nitg_code: str, filter_number: int, loc: tuple
 ) -> GroundwaterMonitoringTubeStatic:
     # if nitg_code is given and not None
     tubes = None
@@ -89,7 +88,7 @@ def find_monitoring_tube(
     if loc and not tubes:
         well = (
             GroundwaterMonitoringWellStatic.objects.filter(
-                coordinates=loc,
+                x_coordinate=loc[0], y_coordinate=loc[1]
             )
             .order_by("groundwater_monitoring_well_static_id")
             .first()
@@ -196,9 +195,9 @@ class Command(BaseCommand):
 
                             # check if x and y are given
                             if len(x) > 0 and len(y) > 0:
-                                location = Point(float(x), float(y))
+                                location = (float(x), float(y))
                             else:
-                                location = None
+                                location = (None, None)
 
                             # find the tube using the found nitg_code, filter number or location
                             tube = find_monitoring_tube(

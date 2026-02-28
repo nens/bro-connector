@@ -34,10 +34,6 @@ class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
         min_value=0,
         help_text="Aantal meetbuizen dat moet worden aangemaakt.",
     )
-    x = forms.CharField(label="X-coördinaat", required=True)
-    y = forms.CharField(label="Y-coördinaat", required=True)
-    cx = forms.CharField(label="Constructie X-coördinaat", required=False)
-    cy = forms.CharField(label="Constructie Y-coördinaat", required=False)
 
     class Meta:
         model = models.GroundwaterMonitoringWellStatic
@@ -59,13 +55,6 @@ class GroundwaterMonitoringWellStaticForm(forms.ModelForm):
                 "nr_of_monitoring_tubes"
             ].initial = self.instance.tube.all().count()
 
-        if self.instance.coordinates:
-            self.fields["x"].initial = self.instance.x
-            self.fields["y"].initial = self.instance.y
-
-        if self.instance.construction_coordinates:
-            self.fields["cx"].initial = self.instance.cx
-            self.fields["cy"].initial = self.instance.cy
 
 
 class GroundwaterMonitoringWellDynamicForm(forms.ModelForm):

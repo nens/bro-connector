@@ -145,7 +145,10 @@ class GetSourceDocData:
             Y: ycoordinate
             horizontalPositioningMethod: horizontalPositioningMethod
         """
-        delivered_location_info = unpack_point_geometry(well_static.coordinates)
+        delivered_location_info = {
+            "X": well_static.x_coordinate,
+            "Y": well_static.y_coordinate,
+        }
 
         delivered_location_info.update(
             {"horizontalPositioningMethod": well_static.horizontal_positioning_method}
