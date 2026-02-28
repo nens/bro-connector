@@ -9,6 +9,20 @@ class GLDFilter(AutocompleteFilter):
     field_name = "groundwater_level_dossier"
     is_placeholder_title = True
 
+class QualityRegimeFilter(SimpleListFilter):
+    title = "Kwaliteitsregime"
+    parameter_name = "quality_regime"
+    
+    def lookups(self, request, model_admin):
+        # Autocomplete-like filtering is trickier; for now, just do simple lookups
+        return [("IMBRO/A", "IMBRO/A"), ("IMBRO", "IMBRO")]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(
+                groundwater_level_dossier__quality_regime=self.value()
+            )
+        return queryset
 
 class ObservationFilter(AutocompleteFilter):
     title = "Observatie"

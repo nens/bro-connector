@@ -24,6 +24,7 @@ from .custom_filters import (
     HasOpenObservationFilter,
     ObservationFilter,
     OrganisationFilter,
+    QualityRegimeFilter,
     TubeFilter,
 )
 
@@ -306,6 +307,7 @@ class ObservationAdmin(admin.ModelAdmin):
     list_filter = (
         GLDFilter,
         OrganisationFilter,
+        QualityRegimeFilter,
         "observation_starttime",
         "observation_endtime",
         "result_time",
