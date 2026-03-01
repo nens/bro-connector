@@ -194,8 +194,8 @@ def create_sublocation_dict(tube: gmw_models.GroundwaterMonitoringTubeStatic) ->
     filter_name = tube.__str__()
 
     lon, lat = convert_epsg28992_to_epsg4326(
-        x=tube.groundwater_monitoring_well_static.coordinates.x,
-        y=tube.groundwater_monitoring_well_static.coordinates.y,
+        x=tube.groundwater_monitoring_well_static.x_coordinate,
+        y=tube.groundwater_monitoring_well_static.y_coordinate,
     )
 
     return {

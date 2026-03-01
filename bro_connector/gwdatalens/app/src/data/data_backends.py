@@ -343,7 +343,10 @@ class PostgreSQLDataSource(DataSourceTemplate):
         gdf = gdf.loc[gdf["metingen"] > 0]
 
         try:
-            p = gdf.loc[wid, "coordinates"]
+            x = gdf.loc[wid, "x_coordinate"]
+            y = gdf.loc[wid, "y_coordinate"]
+            # Format a geoseries of points
+            p = gpd.points_from_xy([x], [y], crs=WGS84)
         except KeyError as e:
             raise KeyError(
                 f"Location id '{wid}' is not in database or has no data."

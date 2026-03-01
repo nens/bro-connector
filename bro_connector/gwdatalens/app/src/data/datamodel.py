@@ -16,7 +16,8 @@ class WellStatic(Base):
     bro_id: Mapped[str]
     well_code: Mapped[str]
     nitg_code: Mapped[str]
-    coordinates: Mapped[str]
+    x_coordinate: Mapped[float]
+    y_coordinate: Mapped[float]
     reference_system: Mapped[str]
     construction_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True

@@ -12,11 +12,11 @@ class Command(BaseCommand):
             gdb: gpd.GeoDataFrame = gpd.read_file(settings.POLYGON_SHAPEFILE)
 
             wells = GroundwaterMonitoringWellStatic.objects.filter(
-                coordinates__isnull=False
+                x_coordinate__isnull=False, y_coordinate__isnull=False
             ).all()
             for well in wells:
                 print(well)
-                point = Point(well.coordinates.x, well.coordinates.y)
+                point = Point(well.x_coordinate, well.y_coordinate)
                 is_within = gdb.contains(point).item()
 
                 if not is_within:

@@ -229,14 +229,15 @@ class InitializeData:
             construction_date = None
 
         with reversion.create_revision():
-            self.gmws, created = (
+            self.gmws, _ = (
                 GroundwaterMonitoringWellStatic.objects.update_or_create(
                     bro_id=self.gmw_dict.get("broId", None),
                     defaults={
                         "construction_standard": self.gmw_dict.get(
                             "constructionStandard", None
                         ),
-                        "coordinates": f"POINT({self.gmw_dict.get('pos_1', None)})",
+                        "x_coordinate": self.gmw_dict.get("pos_1", None).split(" ")[0],
+                        "y_coordinate": self.gmw_dict.get("pos_1", None).split(" ")[1],
                         "delivery_accountable_party": get_or_create_instantie(
                             self.gmw_dict.get("deliveryAccountableParty", None)
                         ),
@@ -270,17 +271,7 @@ class InitializeData:
                         else False,
                     },
                 )
-            )  # -> Is soms ook niet gedaan, dus nvt? Maar moet datum opgeven...)
-
-            # if (
-            #     str(self.gmws.delivery_accountable_party.company_number)
-            #     == settings.KVK_USER
-            # ):
-            #     self.gmws.in_management = True
-            # else:
-            #     self.gmws.in_management = False
-
-            # self.gmws.save()
+            )
 
             reversion.set_comment(
                 f"Updated from BRO-database({datetime.datetime.now().astimezone()})"

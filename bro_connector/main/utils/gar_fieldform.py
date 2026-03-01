@@ -538,7 +538,7 @@ class FieldFormGenerator:
             )
 
             lon, lat = convert_epsg28992_to_epsg4326(
-                x=well.coordinates.x, y=well.coordinates.y
+                x=well.x, y=well.y
             )
 
             well_org_name = well.delivery_accountable_party.name

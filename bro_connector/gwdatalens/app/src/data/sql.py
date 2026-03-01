@@ -83,7 +83,8 @@ def sql_get_gmws():
             datamodel.TubeDynamic.tube_top_position,
             datamodel.TubeDynamic.plain_tube_part_length,
             datamodel.TubeStatic.screen_length,
-            datamodel.WellStatic.coordinates,
+            datamodel.WellStatic.x_coordinate,
+            datamodel.WellStatic.y_coordinate,
             datamodel.WellStatic.reference_system,
             datamodel.TubeDynamic.date_created,
             func.row_number()
@@ -130,7 +131,8 @@ def sql_get_gmws():
             tube_ranked.c.tube_top_position,
             tube_ranked.c.plain_tube_part_length,
             tube_ranked.c.screen_length,
-            tube_ranked.c.coordinates,
+            tube_ranked.c.x_coordinate,
+            tube_ranked.c.y_coordinate,
             tube_ranked.c.reference_system,
             tube_ranked.c.date_created,
         )
@@ -818,18 +820,6 @@ def run_sql(stmt, print_sql: bool = False):
 
 # %%
 if __name__ == "__main__":
-    # # Minimal test: print the compiled SQL and optionally run when DATABASE_URL is set
-    # stmt = sql_get_gmws()
-    # compiled = stmt.compile(
-    #     dialect=postgresql.dialect(), compile_kwargs={"literal_binds": False}
-    # )
-    # print("\nCompiled SQL (PostgreSQL dialect):\n")
-    # print(compiled)
-
-    # with engine.connect() as conn:
-    #     df = gpd.read_postgis(stmt, con=conn, geom_col="coordinates")
-    #     print("\nSample result (head):\n", df.head())
-
     # Test count
     df = run_sql(sql_count_measurements(), print_sql=True)
     print("\nSample result (head):\n", df.head())

@@ -342,7 +342,7 @@ class FieldFormGenerator:
             )
 
             lon, lat = convert_epsg28992_to_epsg4326(
-                x=well.coordinates.x, y=well.coordinates.y
+                x=well.x_coordinate, y=well.y_coordinate
             )
 
             well_name = well.__str__()

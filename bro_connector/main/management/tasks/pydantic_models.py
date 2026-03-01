@@ -51,7 +51,8 @@ class WellStaticModel(BaseModel):
     olgaCoda: str
     wellCode: str
     monitoringPdokId: str
-    coordinates: str
+    x_coordinate: float
+    y_coordinate: float
     referenceSystem: str
     horizontalPositioningMethod: str
     localVerticalReferencePoint: str

@@ -133,24 +133,54 @@ class DatabaseConnector:
             return pd.read_sql(stmt, con=con, **kwargs)
 
     def execute_geodataframe_query(
-        self, stmt: Any, geom_col: str = "coordinates"
+        self,
+        stmt: Any,
+        x_col: str = "x_coordinate",
+        y_col: str = "y_coordinate",
+        crs: str = "EPSG:4326",
     ) -> gpd.GeoDataFrame:
-        """Execute a spatial query and return results as GeoDataFrame.
+        """Execute a query and return results as GeoDataFrame with Point geometries.
+
+        Creates Point geometries from separate x and y coordinate columns.
 
         Parameters
         ----------
         stmt : sqlalchemy.sql.expression.Selectable
             SQLAlchemy select statement
-        geom_col : str, optional
-            Name of geometry column, by default "coordinates"
+        x_col : str, optional
+            Name of x-coordinate column, by default "x_coordinate"
+        y_col : str, optional
+            Name of y-coordinate column, by default "y_coordinate"
+        crs : str, optional
+            Coordinate reference system, by default "EPSG:4326"
 
         Returns
         -------
         gpd.GeoDataFrame
-            Query results as GeoDataFrame
+            Query results as GeoDataFrame with Point geometries
+
+        Raises
+        ------
+        ValueError
+            If specified coordinate columns are not found in query results
         """
-        with self.engine.connect() as con:
-            return gpd.GeoDataFrame.from_postgis(stmt, con=con, geom_col=geom_col)
+        # First execute the query as a regular DataFrame
+        df = self.execute_query(stmt)
+
+        # Verify coordinate columns exist
+        if x_col not in df.columns or y_col not in df.columns:
+            raise ValueError(
+                f"Coordinate columns '{x_col}' and/or '{y_col}' not found in query results. "
+                f"Available columns: {list(df.columns)}"
+            )
+
+        # Create Point geometries from x and y coordinates
+        geometry = gpd.points_from_xy(df[x_col], df[y_col])
+
+        # Convert to GeoDataFrame
+        gdf = gpd.GeoDataFrame(df, geometry=geometry, crs=crs)
+
+        return gdf
 
     @property
     def is_connected(self) -> bool:

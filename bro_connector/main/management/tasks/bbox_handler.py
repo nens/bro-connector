@@ -65,10 +65,10 @@ class DataRetrieverBBOX:
 
         if delete:
             wells = GroundwaterMonitoringWellStatic.objects.filter(
-                coordinates__isnull=False
-            ).all()
+                x_coordinate__isnull=False, y_coordinate__isnull=False
+            )
             for well in wells:
-                point = Point(well.coordinates.x, well.coordinates.y)
+                point = Point(well.x_coordinate, well.y_coordinate)
                 crs_shp = gdf.crs.to_string()
                 if crs_shp != "EPSG:28992":
                     gdf = gdf.to_crs("EPSG:28992")
