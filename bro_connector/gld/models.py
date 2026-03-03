@@ -1048,7 +1048,15 @@ class gld_registration_log(BaseModel):
                 demo=DEMO,
                 project_id=bro_info["projectnummer"],
             )
-            delivery_status = delivery_info.json()["status"]
+            # We are interested in the brondocument, not the delivery itself
+            # Although they overlap for our use, as we only ever sent one document per delivery
+            delivery_status = delivery_info.json()["brondocuments"][0][
+                "status"
+            ]
+            bro_id = delivery_info.json()["brondocuments"][0][
+                "broId"
+            ]
+            self.gld_bro_id = bro_id
             self.date_modified = datetime.datetime.now()
             self.comments = f"Delivery status: {delivery_status}"
             self.delivery_status = delivery_status
@@ -1070,6 +1078,10 @@ class gld_registration_log(BaseModel):
             self.date_modified = datetime.datetime.now()
             self.comments = comments
             self.process_status = "failed_to_check_delivery_status"
+
+        # Remove the sourcedocument file if delivery is approved
+        # source_doc_file = os.path.join(REGISTRATIONS_DIR, self.file)
+        # os.remove(source_doc_file)
 
         self.save()
         return delivery_status

@@ -241,6 +241,10 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
 
     logger.info(f"Check and deliver; Log created: {gld_start_registration}")
 
+    if gld_start_registration.delivery_id is not None and gld_start_registration.delivery_status != "FAILED":
+        gld_start_registration.check_delivery_status()
+        return
+    
     gld_start_registration.generate_sourcedocument()
     logger.info(f"Check and deliver; File generated: {gld_start_registration.file}")
 
@@ -256,6 +260,9 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
 
     # Sleep for 0.3 seconds to avoid overwhelming the server
     time.sleep(0.3)
+
+    gld_start_registration.check_delivery_status()
+    time.sleep(0.1)
 
 
 def check_and_deliver_start_registrations(dossier: GroundwaterLevelDossier) -> None:
