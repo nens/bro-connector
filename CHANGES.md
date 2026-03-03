@@ -8,8 +8,10 @@
   - GLD Management and delivery
   - GMN Management and delivery
   - FRD Management and delivery
+  - GAR Database connection
   - BRO-Import functionality (GMW, GLD)
   - XML-Import functionality (GMW)
   - Data validation (GMW)
+  - Integration of GW DataLens
 
 - Initial development and integration of GWDataLens

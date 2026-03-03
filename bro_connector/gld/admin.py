@@ -16,7 +16,7 @@ from gld.models import GroundwaterLevelDossier
 from gmw.models import GroundwaterMonitoringWellStatic
 from main.settings.base import gld_SETTINGS
 from reversion_compare.helpers import patch_admin
-
+import logging
 from . import models
 from .custom_filters import (
     CompletelyDeliveredFilter,
@@ -27,6 +27,8 @@ from .custom_filters import (
     QualityRegimeFilter,
     TubeFilter,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def Export_selected_items_to_csv(self, request, queryset):
@@ -227,18 +229,6 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         # First create all registration logs and deliver them to the BRO
         for dossier in queryset:
             gld_actions.check_and_deliver_start(dossier)
-
-        # Then check the status of each individual registration log
-        for dossier in queryset.exclude(gld_bro_id__isnull=False):
-            start_log = models.gld_registration_log.objects.get(
-                gmw_bro_id=dossier.gmw_bro_id,
-                gld_bro_id=dossier.gld_bro_id,
-                filter_number=dossier.tube_number,
-                quality_regime=dossier.quality_regime
-                if dossier.quality_regime
-                else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
-            )
-            start_log.check_delivery_status()
 
         for dossier in queryset:
             gld_actions.check_and_deliver_additions(dossier)
