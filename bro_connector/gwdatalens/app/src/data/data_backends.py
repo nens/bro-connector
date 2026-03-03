@@ -23,6 +23,7 @@ import pandas as pd
 from pyproj import Transformer
 from sqlalchemy import bindparam, func, select, update
 from sqlalchemy.orm import Session
+from shapely.geometry import Point
 
 from gwdatalens.app.constants import ColumnNames, DatabaseFields, UnitConversion
 from gwdatalens.app.messages import t_
@@ -345,18 +346,27 @@ class PostgreSQLDataSource(DataSourceTemplate):
         try:
             x = gdf.loc[wid, "x_coordinate"]
             y = gdf.loc[wid, "y_coordinate"]
-            # Format a geoseries of points
-            p = gpd.points_from_xy([x], [y], crs=WGS84)
+            p = Point(x, y)  # <-- FIX: use shapely Point
         except KeyError as e:
             raise KeyError(
                 f"Location id '{wid}' is not in database or has no data."
             ) from e
 
-        gdf.drop(wid, inplace=True)
-        dist = gdf.distance(p)
-        dist.name = "distance"
-        distsorted = gdf.join(dist, how="right").sort_values("distance", ascending=True)
-        return distsorted
+        # Remove the reference well itself
+        gdf = gdf.drop(index=wid)
+
+        # ⚠ Ensure projected CRS for correct distance calculation
+        if gdf.crs.is_geographic:
+            gdf = gdf.to_crs(28992)  # Dutch RD New (meters)
+            p = gpd.GeoSeries([p], crs=self.gmw_gdf.crs).to_crs(28992).iloc[0]
+
+        # Compute distance
+        gdf["distance"] = gdf.geometry.distance(p)
+
+        # Sort by distance
+        gdf = gdf.sort_values("distance", ascending=True)
+
+        return gdf
 
     def get_wellcode(self, wid=None, query=None):
         if wid is not None:

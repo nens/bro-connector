@@ -137,8 +137,7 @@ class MeasurementTvpInline(admin.TabularInline):
     search_fields = get_searchable_fields(models.MeasurementTvp)
     fields = (
         "measurement_time",
-        "field_value",
-        "field_value_unit",
+        "calculated_value",
         "comment",
     )
 
