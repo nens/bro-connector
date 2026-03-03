@@ -303,8 +303,8 @@ class GldSyncHandler:
         well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
         tube_number = dossier.groundwater_monitoring_tube.tube_number
 
-        bro_id_gmw = well.bro_id
-        internal_id = well.internal_id
+        bro_id_gmw = dossier.gmw_bro_id
+        internal_id = dossier.groundwater_monitoring_tube.__str__()
         quality_regime = dossier.quality_regime
         delivery_accountable_party = set_delivery_accountable_party(well, self.is_demo)
         try:
@@ -312,7 +312,7 @@ class GldSyncHandler:
 
             if dossier.groundwater_monitoring_net.count() == 0:
                 srcdocdata = {
-                    "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
+                    "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                     "monitoringPoints": monitoringpoints,
                 }
             else:
@@ -323,7 +323,7 @@ class GldSyncHandler:
                     )
                 ]
                 srcdocdata = {
-                    "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
+                    "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                     "groundwaterMonitoringNets": monitoring_nets,
                     "monitoringPoints": monitoringpoints,
                 }
