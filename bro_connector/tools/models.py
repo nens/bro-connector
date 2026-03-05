@@ -8,6 +8,7 @@ from django.db import models
 from gld.choices import (
     AIRPRESSURECOMPENSATIONTYPE,
     EVALUATIONPROCEDURE,
+    IMPORT_UNIT_CHOICES,
     MEASUREMENTINSTRUMENTTYPE,
     OBSERVATIONTYPE,
     PROCESSREFERENCE,
@@ -42,6 +43,13 @@ class BroImport(BaseModel):
         blank=True,
         verbose_name="KvK nummer",
         help_text="Is optioneel als je de importeert op basis van SHP bestand.",
+    )
+    bro_id = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        verbose_name="BRO ID",
+        help_text="Is optioneel als, kan als alternatief voor KvK nummer gebruikt worden.",
     )
 
     file = models.FileField(
@@ -193,7 +201,7 @@ class GLDImport(BaseModel):
         verbose_name="Observatie type",
     )
     field_value_unit = models.CharField(
-        choices=UNIT_CHOICES,
+        choices=IMPORT_UNIT_CHOICES,
         max_length=255,
         blank=False,
         null=False,

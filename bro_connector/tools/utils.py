@@ -81,7 +81,7 @@ def detect_csv_separator(file):
 
 
 def format_message(  # noqa C901
-    handler: str, type: str, kvk: int, shp: str, count: int, imported: int
+    handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int
 ) -> dict:
     if type in ["gar", "gmn", "frd"]:
         return {
@@ -178,6 +178,41 @@ def has_necessary_helper_files(filenames):
     return all_present, counts
 
 
+def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
+    if instance.bro_type.lower() == "gmw":
+        if instance.bro_id is not None:
+            gmw = retrieve_historic_gmw.GMWHandler()
+            import_info = retrieve_historic_gmw.handle_individual_bro_id(instance.bro_id, gmw)
+        else:
+            import_info = retrieve_historic_gmw.run(
+                kvk_number=instance.kvk_number,
+                handler=instance.handler,
+                shp_file=shapefile_path,
+                delete=instance.delete_outside,
+            )
+    if instance.bro_type.lower() == "gld":
+        if instance.bro_id is not None:
+            gld = retrieve_historic_gld.GLDHandler()
+            import_info = retrieve_historic_gld.handle_individual_bro_id(instance.bro_id, gld)
+        else:
+            import_info = retrieve_historic_gld.run(
+                kvk_number=instance.kvk_number,
+                handler=instance.handler,
+                shp_file=shapefile_path,
+                delete=instance.delete_outside,
+            )
+
+    report = format_message(
+        handler=instance.handler,
+        type=instance.bro_type,
+        kvk=instance.kvk_number,
+        shp=shapefile_path.name if shapefile_path else None,
+        count=import_info.get("ids_found"),
+        imported=import_info.get("imported"),
+    )
+    instance.report += report.get("message") + "\n"
+    instance.executed = True
+
 def process_zip_bro_file(instance: BroImport):
     # Read ZIP file
     zip_buffer = BytesIO(instance.file.read())
@@ -226,35 +261,10 @@ def process_zip_bro_file(instance: BroImport):
                     logger.exception(e)
 
             ## start a new loop and validate the shp file and then process it
-            POLYGON_SHAPEFILE = output_folder / Path(shp_filename).name
-            gdf = validate_shp(POLYGON_SHAPEFILE, instance)
+            polygon_shapefile_path = output_folder / Path(shp_filename).name
+            gdf = validate_shp(polygon_shapefile_path, instance)
             if gdf is not None:
-                import_info = {}
-                if instance.bro_type.lower() == "gmw":
-                    import_info = retrieve_historic_gmw.run(
-                        kvk_number=instance.kvk_number,
-                        handler=instance.handler,
-                        shp_file=POLYGON_SHAPEFILE,
-                        delete=instance.delete_outside,
-                    )
-                if instance.bro_type.lower() == "gld":
-                    import_info = retrieve_historic_gld.run(
-                        kvk_number=instance.kvk_number,
-                        handler=instance.handler,
-                        shp_file=POLYGON_SHAPEFILE,
-                        delete=instance.delete_outside,
-                    )
-
-                report = format_message(
-                    handler=instance.handler,
-                    type=instance.bro_type,
-                    kvk=instance.kvk_number,
-                    shp=shp_filename,
-                    count=import_info.get("ids_found"),
-                    imported=import_info.get("imported"),
-                )
-                instance.report += report.get("message") + "\n"
-                instance.executed = True
+                import_from_bro(instance, polygon_shapefile_path)
 
     except zipfile.BadZipFile:
         instance.report += "Ongeldig ZIP-bestand.\n"
@@ -372,59 +382,48 @@ def process_csv_file(instance: GLDImport):  # noqa C901
         last_datetime = reader[time_col].max()
 
         # Create Observation
-        Obs = Observation.objects.update_or_create(
+        obs, _ = Observation.objects.update_or_create(
             groundwater_level_dossier=gld,
             observation_metadata=Obs_Meta,
             observation_process=Obs_Pro,
-            observation_starttime=first_datetime,
-            observation_endtime=last_datetime,
-        )[0]
-
-        # itter over file
-        times = []
+            observation_starttime = first_datetime,
+            observation_endtime = last_datetime
+        )
+        # Detect duplicates
+        duplicate_mask = reader.duplicated(subset=[time_col], keep="first")
+        if duplicate_mask.any():
+            instance.report += (
+                "Duplicaten gevonden in de tijd waardes. "
+                "Alleen de eerste voorgekomen waardes gebruikt.\n\n"
+            )
+        # Keep only the first occurrence per timestamp
+        reader_clean = reader.drop_duplicates(subset=[time_col], keep="first")  
+            
         mms = []
         mtvps = []
-        duplicates = False
-        for index, row in reader.iterrows():
+        for _, row in reader_clean.iterrows():
             value = row[value_col]
             time = row[time_col]
-            if time in times:
-                if not duplicates:
-                    instance.report += "Duplicaten gevonden in de tijd waardes. Alleen de eerste voorgekomen waardes gebruikt.\n\n"
-                duplicates = True
-                continue
-            else:
-                times.append(time)
 
-            # create basic MeasurementPointMetadata
             mp_meta = MeasurementPointMetadata(value_limit=None)
-
-            # Add the present fields to the metadata if they are given in the CSV
-            st_quality_control_tvp = row.get("status_quality_control", None)
-            if st_quality_control_tvp:
-                mp_meta.status_quality_control = st_quality_control_tvp
-
-            censor_reason_tvp = row.get("censor_reason", None)
-            if censor_reason_tvp:
-                mp_meta.censor_reason = censor_reason_tvp
-
-            censor_limit_tvp = row.get("censor_limit", None)
-            if censor_limit_tvp:
-                if not pd.isna(censor_limit_tvp):
-                    mp_meta.value_limit = censor_limit_tvp
-
-            # Save the metadata after all fields are set
+            quality = row.get("status_quality_control")
+            if pd.notna(quality):
+                mp_meta.status_quality_control = quality
+            censor_reason = row.get("censor_reason")
+            if pd.notna(censor_reason):
+                mp_meta.censor_reason = censor_reason
+            censor_limit = row.get("censor_limit")
+            if pd.notna(censor_limit):
+                mp_meta.value_limit = censor_limit
             mms.append(mp_meta)
 
-            # create time-value pair
             mtvp = MeasurementTvp(
-                observation=Obs,
+                observation=obs,
                 measurement_time=time,
                 field_value=value,
                 field_value_unit=instance.field_value_unit,
                 measurement_point_metadata=mp_meta,
             )
-
             mtvps.append(mtvp)
 
         with transaction.atomic():
@@ -434,7 +433,7 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                     update_conflicts=False,
                     batch_size=5000,
                 )
-                MeasurementTvp.objects.bulk_create(
+                mtvps_created = MeasurementTvp.objects.bulk_create(
                     mtvps,
                     update_conflicts=False,
                     ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
@@ -451,14 +450,17 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                     # ],
                     batch_size=5000,
                 )
+                for mtvp_c in mtvps_created:
+                    mtvp_c.save()
+
             except Exception as e:
                 instance.report += (
-                    f"Bulk updating/creating failed for observation: {Obs}"
+                    f"Bulk updating/creating failed for observation: {obs}"
                 )
-                logger.info(f"Bulk updating/creating failed for observation: {Obs}")
+                logger.info(f"Bulk updating/creating failed for observation: {obs}")
                 logger.exception(e)
                 instance.executed = False
-                return
+                return            
 
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(

@@ -317,6 +317,7 @@ class TubeDynamicInline(admin.TabularInline):
         "tube_top_diameter",
         "tube_top_position",
         "tube_top_positioning_method",
+        "plain_tube_part_length",
         "tube_status",
         "comment",
         "comment_processed",
@@ -429,7 +430,6 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         BroIdNullFilter,
     )
     readonly_fields = (
-        "well_code",
         "lat",
         "lon",
         "report",
@@ -466,9 +466,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
                     "initial_function",
                     "monitoring_pdok_id",
                     "horizontal_positioning_method",
-                    "local_vertical_reference_point",
                     "well_offset",
-                    "vertical_datum",
                     "last_horizontal_positioning_date",
                     "well_link",
                     "nr_of_monitoring_tubes",

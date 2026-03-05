@@ -38,7 +38,7 @@ def _calculate_value(field_value: float, unit: str) -> float | None:
 
 
 def _calculate_value_tube(
-    field_value: float, unit: str, tube_top_position: float | None
+    field_value: float, unit: str, tube_top_position: float | None, cable_length: float | None = None
 ) -> float | None:
     """
     For now only supports m tov bkb / cm tov bkb / mm tov bkb.
@@ -47,14 +47,21 @@ def _calculate_value_tube(
     if tube_top_position is None:
         return None
 
+    # Make sure the field value is always positive
+    field_value = abs(field_value)
+
     if unit == "m t.o.v. bkb":
-        return field_value + tube_top_position
+        return tube_top_position - field_value
     elif unit == "cm t.o.v. bkb":
-        return (field_value / 100) + tube_top_position
+        return (tube_top_position - (field_value / 100))
     elif unit == "mm t.o.v. bkb":
-        return (field_value / 1000) + tube_top_position
-    elif unit == "bar":
-        return (field_value * 10.1974) + tube_top_position
+        return (tube_top_position - (field_value / 1000))
+    elif unit == "bar" and cable_length is not None:
+        # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
+        return (field_value * 10.1974) + ( tube_top_position - cable_length )
+    elif unit == "mbar" and cable_length is not None:
+        # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
+        return (field_value * 0.0101974) + ( tube_top_position - cable_length )
     else:
         return None
 
@@ -68,6 +75,48 @@ def _calculate_value_tube(
 def clear_map_cache(sender, **kwargs):
     cache.clear()
 
+
+@receiver(post_save, sender=GroundwaterLevelDossier)
+def on_save_groundwater_level_dossier(sender, instance: GroundwaterLevelDossier, created, **kwargs):
+    if not instance.observation.exists():
+        # Create an initial observation for the newly created GroundwaterLevelDossier
+        observation_metadata = ObservationMetadata.objects.get_or_create(
+            observation_type = "reguliereMeting",
+            status = "voorlopig",
+            responsible_party = instance.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party if instance.groundwater_monitoring_tube else None,
+        )[0]
+        has_sensor = instance.groundwater_monitoring_tube and (instance.groundwater_monitoring_tube.state.last().sensor_id is not None or instance.groundwater_monitoring_tube.state.last().sensor_id is not None)
+        measurement_type = "druksensor" if has_sensor else "analoogPeilklokje"
+        observation_process = ObservationProcess.objects.get_or_create(
+            evaluation_procedure = "oordeelDeskundige",
+            measurement_instrument_type = measurement_type,
+            process_reference = "STOWAgwst",
+        )[0]
+        Observation.objects.create(
+            groundwater_level_dossier=instance,
+            observation_metadata=observation_metadata,
+            observation_process=observation_process,
+        )
+
+        if has_sensor:
+            # also create controlemeting
+            observation_metadata = ObservationMetadata.objects.get_or_create(
+                observation_type = "controlemeting",
+                status = None,
+                responsible_party = instance.groundwater_monitoring_tube.groundwater_monitoring_well_static.delivery_accountable_party if instance.groundwater_monitoring_tube else None,
+            )[0]
+            observation_process = ObservationProcess.objects.get_or_create(
+                evaluation_procedure = "oordeelDeskundige",
+                measurement_instrument_type = "analoogPeilklokje",
+                process_reference = "STOWAgwst",
+            )[0]
+            Observation.objects.create(
+                groundwater_level_dossier=instance,
+                observation_metadata=observation_metadata,
+                observation_process=observation_process,
+            )
+
+    # 
 
 @receiver(post_save, sender=gld_registration_log)
 def on_save_gld_registration_log(
@@ -187,17 +236,19 @@ def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
             )
         else:
             # Access the related groundwater_monitoring_tube_static instance
-            tube_static: GroundwaterMonitoringTubeStatic = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube_static
+            tube_static: GroundwaterMonitoringTubeStatic = instance.observation.groundwater_level_dossier.groundwater_monitoring_tube
 
             # Retrieve the latest state
-            latest_state = tube_static.state.order_by("-date_from").first()
+            latest_state = tube_static.state.filter(date_from__lte=instance.measurement_time).order_by("-date_from").first()
 
             # Get the tube_top_position
             if latest_state:
                 tube_top_position = latest_state.tube_top_position
+                cable_length = latest_state.sensor_depth
             else:
                 tube_top_position = None
+                cable_length = None
 
             instance.calculated_value = _calculate_value_tube(
-                instance.field_value, instance.field_value_unit, tube_top_position
+                instance.field_value, instance.field_value_unit, tube_top_position, cable_length
             )

@@ -215,7 +215,7 @@ class Subgroup(models.Model):
     name = models.CharField(
         max_length=100, null=False, blank=False, verbose_name="Naam"
     )
-    code = models.CharField(max_length=25, null=True, blank=True, verbose_name="Code")
+    code = models.CharField(max_length=100, null=True, blank=True, verbose_name="Code")
     description = models.TextField(null=True, blank=True, verbose_name="Beschrijving")
     color = models.CharField(
         max_length=50, null=True, blank=True, verbose_name="Kleurcode"

@@ -16,7 +16,7 @@ from gld.models import GroundwaterLevelDossier
 from gmw.models import GroundwaterMonitoringWellStatic
 from main.settings.base import gld_SETTINGS
 from reversion_compare.helpers import patch_admin
-
+import logging
 from . import models
 from .custom_filters import (
     CompletelyDeliveredFilter,
@@ -24,8 +24,11 @@ from .custom_filters import (
     HasOpenObservationFilter,
     ObservationFilter,
     OrganisationFilter,
+    QualityRegimeFilter,
     TubeFilter,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def Export_selected_items_to_csv(self, request, queryset):
@@ -103,7 +106,8 @@ class ObservationInline(admin.TabularInline):
     search_fields = get_searchable_fields(models.Observation)
     fields = (
         "observation_type",
-        "all_measurements_validated",
+        "measurement_type",
+        "status",
         "nr_measurements",
         "up_to_date_in_bro",
         "observation_starttime",
@@ -114,7 +118,8 @@ class ObservationInline(admin.TabularInline):
 
     readonly_fields = [
         "observation_type",
-        "all_measurements_validated",
+        "measurement_type",
+        "status",
         "nr_measurements",
         "up_to_date_in_bro",
         "observation_id_bro",
@@ -225,29 +230,14 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         for dossier in queryset:
             gld_actions.check_and_deliver_start(dossier)
 
-        # Then check the status of each individual registration log
-        for dossier in queryset.exclude(gld_bro_id__isnull=False):
-            start_log = models.gld_registration_log.objects.get(
-                gmw_bro_id=dossier.gmw_bro_id,
-                gld_bro_id=dossier.gld_bro_id,
-                filter_number=dossier.tube_number,
-                quality_regime=dossier.quality_regime
-                if dossier.quality_regime
-                else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
-            )
-            start_log.check_delivery_status()
-
-        for dossier in queryset:
+        for dossier in queryset.filter(gld_bro_id__isnull=False):
             gld_actions.check_and_deliver_additions(dossier)
 
         # Then check the status of each individual registration log
-        for dossier in queryset:
+        for dossier in queryset.filter(gld_bro_id__isnull=False):
             for observation in dossier.observation.filter(up_to_date_in_bro=False):
-                obs = models.Observation.objects.get(
-                    observation_id=observation.observation_id
-                )
                 addition_log = models.gld_addition_log.objects.filter(
-                    observation=obs, addition_type=obs.addition_type
+                    observation=observation, addition_type=observation.addition_type
                 ).first()
                 if addition_log:
                     addition_log.check_delivery_status()
@@ -297,7 +287,6 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_type",
         "measurement_type",
         "status",
-        "all_measurements_validated",
         "nr_measurements",
         "up_to_date_in_bro",
         "observation_id_bro",
@@ -305,6 +294,7 @@ class ObservationAdmin(admin.ModelAdmin):
     list_filter = (
         GLDFilter,
         OrganisationFilter,
+        QualityRegimeFilter,
         "observation_starttime",
         "observation_endtime",
         "result_time",
@@ -343,11 +333,20 @@ class ObservationAdmin(admin.ModelAdmin):
     # max_num = 0
 
     def observation_type(self, obj: models.Observation):
-        if obj.observation_metadata is not None:
-            if obj.observation_metadata.observation_type is not None:
-                return obj.observation_metadata.observation_type
+        if obj.observation_type is not None:
+            return obj.observation_type
         return "-"
-
+    
+    def measurement_type(self, obj: models.Observation):
+        if obj.measurement_type is not None:
+            return obj.measurement_type
+        return "-"
+    
+    def status(self, obj: models.Observation):
+        if obj.status is not None:
+            return obj.status
+        return "-"
+    
     @admin.action(description="Sluit Observatie")
     def close_observation(self, request, queryset):
         for item in queryset.filter(observation_endtime__isnull=True):

@@ -470,8 +470,8 @@ class PostgreSQLDataSource(DataSourceTemplate):
     def get_timeseries(
         self,
         wid: Optional[int] = None,
-        query: Optional[dict[str:Any]] = None,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
+        query: Optional[dict[str, Any]] = None,
+        observation_type="reguliereMeting",
         column: Optional[Union[List[str], str]] = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series for the measurements for given bro-id and tube-id.

@@ -303,8 +303,8 @@ class GldSyncHandler:
         well = dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
         tube_number = dossier.groundwater_monitoring_tube.tube_number
 
-        bro_id_gmw = well.bro_id
-        internal_id = well.internal_id
+        bro_id_gmw = dossier.gmw_bro_id
+        internal_id = dossier.groundwater_monitoring_tube.__str__()
         quality_regime = dossier.quality_regime
         delivery_accountable_party = set_delivery_accountable_party(well, self.is_demo)
         try:
@@ -312,7 +312,7 @@ class GldSyncHandler:
 
             if dossier.groundwater_monitoring_net.count() == 0:
                 srcdocdata = {
-                    "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
+                    "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                     "monitoringPoints": monitoringpoints,
                 }
             else:
@@ -323,7 +323,7 @@ class GldSyncHandler:
                     )
                 ]
                 srcdocdata = {
-                    "objectIdAccountableParty": f"{internal_id}{str(tube_number)}",
+                    "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                     "groundwaterMonitoringNets": monitoring_nets,
                     "monitoringPoints": monitoringpoints,
                 }
@@ -499,7 +499,7 @@ class GldSyncHandler:
             upload_info = brx.check_delivery_status(
                 delivery_id,
                 token=self.bro_info["token"],
-                demo=True,
+                demo=self.is_demo,
                 project_id=self.bro_info["projectnummer"],
             )
 
@@ -702,15 +702,25 @@ class GldSyncHandler:
                 self.check_delivery_status_levering(registration)
                 return
 
+            if (
+                registration.process_status == "delivery_status_checked"
+                and registration.delivery_status != "OPGENOMEN_LVBRO"
+                and registration.delivery_id is not None
+            ):
+                print("7th if statement")
+                # The registration has been delivered, but not yet approved
+                self.check_delivery_status_levering(registration)
+                return
+
             # If the delivery failed previously, we can retry
             if registration.process_status == "failed_to_deliver_sourcedocuments":
                 # This will not be the case on the first try
                 if registration.delivery_status == "failed_thrice":
                     # TODO report with mail?
-                    print("7th if statement")
+                    print("8th if statement")
                     return
                 else:
-                    print("8th if statement")
+                    print("9th if statement")
                     self.deliver_startregistration_sourcedocuments(registration)
                     return
 

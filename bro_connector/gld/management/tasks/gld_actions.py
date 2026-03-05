@@ -226,35 +226,43 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
                 comments="Imported into BRO-Connector.",
             ),
         )[0]
-    else:
-        delivery_type = "register" if dossier.correction_reason is None else "replace"
-        gld_start_registration = gld_registration_log.objects.update_or_create(
-            gmw_bro_id=dossier.gmw_bro_id,
-            gld_bro_id=dossier.gld_bro_id,
-            filter_number=dossier.tube_number,
-            delivery_type=delivery_type,
-            quality_regime=dossier.quality_regime
-            if dossier.quality_regime
-            else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
-        )[0]
+        return
+    
+    delivery_type = "register" if dossier.correction_reason is None else "replace"
+    gld_start_registration = gld_registration_log.objects.update_or_create(
+        gmw_bro_id=dossier.gmw_bro_id,
+        gld_bro_id=dossier.gld_bro_id,
+        filter_number=dossier.tube_number,
+        delivery_type=delivery_type,
+        quality_regime=dossier.quality_regime
+        if dossier.quality_regime
+        else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+    )[0]
 
-        logger.info(f"Check and deliver; Log created: {gld_start_registration}")
+    logger.info(f"Check and deliver; Log created: {gld_start_registration}")
 
-        gld_start_registration.generate_sourcedocument()
-        logger.info(f"Check and deliver; File generated: {gld_start_registration.file}")
+    if gld_start_registration.delivery_id is not None and gld_start_registration.delivery_status != "FAILED":
+        gld_start_registration.check_delivery_status()
+        return
+    
+    gld_start_registration.generate_sourcedocument()
+    logger.info(f"Check and deliver; File generated: {gld_start_registration.file}")
 
-        gld_start_registration.validate_sourcedocument()
-        logger.info(
-            f"Check and deliver; File validated: {gld_start_registration.validation_status}"
-        )
+    gld_start_registration.validate_sourcedocument()
+    logger.info(
+        f"Check and deliver; File validated: {gld_start_registration.validation_status}"
+    )
 
-        gld_start_registration.deliver_sourcedocument()
-        logger.info(
-            f"Check and deliver; File delivered: {gld_start_registration.delivery_id} {gld_start_registration.delivery_status}"
-        )
+    gld_start_registration.deliver_sourcedocument()
+    logger.info(
+        f"Check and deliver; File delivered: {gld_start_registration.delivery_id} {gld_start_registration.delivery_status}"
+    )
 
     # Sleep for 0.3 seconds to avoid overwhelming the server
     time.sleep(0.3)
+
+    gld_start_registration.check_delivery_status()
+    time.sleep(0.1)
 
 
 def check_and_deliver_start_registrations(dossier: GroundwaterLevelDossier) -> None:
