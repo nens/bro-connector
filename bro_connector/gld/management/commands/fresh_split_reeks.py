@@ -37,12 +37,12 @@ def setup_observation_proces(type: Literal["sensor", "manual"]):
             process_reference = "STOWAgwst",
             measurement_instrument_type = "druksensor",
             air_pressure_compensation_type = "capillair",
-            evaluation_procedure = "oordeelDeskundig",
+            evaluation_procedure = "oordeelDeskundige",
         )[0]
     return ObservationProcess.objects.get_or_create(
         process_reference = "STOWAgwst",
         measurement_instrument_type = "analoogPeilklokje",
-        evaluation_procedure = "oordeelDeskundig",
+        evaluation_procedure = "oordeelDeskundige",
     )[0]
 
 
