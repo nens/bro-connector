@@ -230,17 +230,14 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         for dossier in queryset:
             gld_actions.check_and_deliver_start(dossier)
 
-        for dossier in queryset:
+        for dossier in queryset.filter(gld_bro_id__isnull=False):
             gld_actions.check_and_deliver_additions(dossier)
 
         # Then check the status of each individual registration log
-        for dossier in queryset:
+        for dossier in queryset.filter(gld_bro_id__isnull=False):
             for observation in dossier.observation.filter(up_to_date_in_bro=False):
-                obs = models.Observation.objects.get(
-                    observation_id=observation.observation_id
-                )
                 addition_log = models.gld_addition_log.objects.filter(
-                    observation=obs, addition_type=obs.addition_type
+                    observation=observation, addition_type=observation.addition_type
                 ).first()
                 if addition_log:
                     addition_log.check_delivery_status()
