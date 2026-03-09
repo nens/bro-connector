@@ -86,7 +86,7 @@ def derive_form_parameters(v):
     disabled = False
     ndecimals = None
     step = None
-
+    logger.debug("Deriving form parameters for value: %s (type: %s)", v, type(v))
     if isinstance(v, tuple) and callable(v[0]):
         input_type = "text"
         disabled = True
@@ -103,7 +103,7 @@ def derive_form_parameters(v):
         step = 10 ** (-ndecimals) / 2
     elif isinstance(v, (int, np.integer)):
         input_type = "number"
-        step = int(np.min([10 ** np.floor(np.log10(v)), 10]))
+        step = int(np.min([10 ** np.floor(np.log10(np.abs(v))), 10]))
         if isinstance(v, bool):
             v = int(v)
     elif isinstance(v, str):

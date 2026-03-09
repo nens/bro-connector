@@ -62,6 +62,7 @@ dependencies = [
     "paramiko==3.4.0",
     "pastas",
     "pastastore",
+    "cachetools==6.2.4",
     "plotly==6.0.1",
     "polars",
     "psycopg2==2.9.9",

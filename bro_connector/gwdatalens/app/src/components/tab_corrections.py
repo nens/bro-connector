@@ -61,12 +61,17 @@ def render_content(data: DataManager, selected_data: List):
                     dbc.Col([render_tube_table(data, selected_data)], width=3),
                     dbc.Col([render_chart(data, selected_data)], width=7),
                 ],
-                style={"height": "35cqh"},
+                style={"height": "30cqh"},
             ),
-            html.Hr(style={"margin": "20px 0"}),
+            html.Hr(style={"margin": "10px 0"}),
             dbc.Row(
                 [
                     dbc.Col([render_well_selection(data, selected_data)], width=12),
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col([render_date_range_filter()], width=12),
                 ]
             ),
             dbc.Row(
@@ -84,6 +89,7 @@ def render_content(data: DataManager, selected_data: List):
             dcc.Store(id=ids.CORRECTIONS_EDIT_HISTORY_STORE),
             dcc.Store(id=ids.CORRECTIONS_COMMIT_TRIGGER_STORE),
             dcc.Store(id=ids.CORRECTIONS_RESET_TRIGGER_STORE),
+            dcc.Store(id=ids.CORRECTIONS_DATE_RANGE_STORE),
         ],
         fluid=True,
     )
@@ -159,7 +165,7 @@ def render_tube_table(data, selected_data):
                 fixed_rows={"headers": True},
                 page_action="none",
                 sort_action="native",
-                style_table={"margin-top": 30},
+                style_table={"margin-top": 50},
                 style_cell={"whiteSpace": "pre-line", "fontSize": 12},
                 style_cell_conditional=[
                     {
@@ -363,7 +369,7 @@ def render_well_configuration(data, selected_data):
                         figure=plot_well_cross_section(df),
                         id=ids.WELL_CONFIGURATION_PLOT,
                         config={
-                            "displayModeBar": True,
+                            "displayModeBar": False,
                             "scrollZoom": True,
                         },
                         style={
@@ -404,7 +410,7 @@ def plot_well_cross_section(df, tube_width=0.15):
     fig = go.Figure()
 
     # Sort by ground level position for better visualization
-    df_sorted = df.sort_values(ColumnNames.GROUND_LEVEL_POSITION, ascending=False)
+    df_sorted = df.sort_values(ColumnNames.SCREEN_BOT, ascending=False)
 
     # Create x-positions for each well
     x_positions = list(range(len(df_sorted)))
@@ -659,13 +665,6 @@ def render_well_selection(data, selected_data):
                 [
                     dbc.Col(
                         [
-                            html.Label(
-                                t_("general.select_well_1"),
-                                style={
-                                    "font-weight": "bold",
-                                    "margin-bottom": UI.MARGIN_BOTTOM_COMPACT,
-                                },
-                            ),
                             dcc.Dropdown(
                                 id=ids.CORRECTIONS_WELL1_DROPDOWN,
                                 options=options,
@@ -678,13 +677,6 @@ def render_well_selection(data, selected_data):
                     ),
                     dbc.Col(
                         [
-                            html.Label(
-                                t_("general.select_well_2"),
-                                style={
-                                    "font-weight": "bold",
-                                    "margin-bottom": UI.MARGIN_BOTTOM_COMPACT,
-                                },
-                            ),
                             dcc.Dropdown(
                                 id=ids.CORRECTIONS_WELL2_DROPDOWN,
                                 options=options,
@@ -693,26 +685,102 @@ def render_well_selection(data, selected_data):
                                 searchable=True,
                             ),
                         ],
-                        width=5,
                     ),
                     dbc.Col(
                         [
-                            html.Label(
-                                "\u00a0",  # Non-breaking space for alignment
-                                style={"margin-bottom": UI.MARGIN_BOTTOM_COMPACT},
-                            ),
                             dbc.Button(
-                                t_("general.clear_selection_button"),
+                                html.Span(
+                                    [
+                                        html.I(className="fa-solid fa-xmark"),
+                                        " " + t_("general.clear_selection_button"),
+                                    ],
+                                    id="span-clear-selection",
+                                    n_clicks=0,
+                                ),
                                 id=ids.CORRECTIONS_CLEAR_SELECTION_BUTTON,
-                                color="secondary",
+                                color="primary",
                                 size="sm",
-                                style={"width": "100%"},
+                                style={"width": "100%", "whiteSpace": "nowrap"},
                             ),
                         ],
-                        width=1,
+                        width="auto",
                     ),
                 ],
                 style={"margin-bottom": UI.MARGIN_BOTTOM_LARGE},
+            ),
+        ]
+    )
+
+
+def render_date_range_filter():
+    """Renders date range filter info display with loading spinner.
+
+    Returns
+    -------
+    html.Div
+        A Dash HTML Div component containing the date range info with loading state.
+    """
+    return html.Div(
+        [
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            dcc.Loading(
+                                id="loading-corrections-date-range-info",
+                                type="dot",
+                                delay_show=500,
+                                style={
+                                    "position": "relative",
+                                    "display": "inline-block",
+                                    "width": "100%",
+                                },
+                                children=[
+                                    html.Div(
+                                        id=ids.CORRECTIONS_DATE_RANGE_INFO,
+                                        style={
+                                            "padding": "8px 12px",
+                                            "background-color": "#f8f9fa",
+                                            "border-radius": "4px",
+                                            "font-size": "0.9rem",
+                                            "color": "#6c757d",
+                                            "text-align": "center",
+                                            "min-height": "1.5rem",
+                                            "display": "flex",
+                                            "align-items": "center",
+                                            "justify-content": "center",
+                                        },
+                                        children=t_("general.select_wells_to_filter"),
+                                    ),
+                                ],
+                            ),
+                        ],
+                        width=9,
+                    ),
+                    dbc.Col(
+                        [
+                            dbc.Switch(
+                                id=ids.CORRECTIONS_SHOW_QC_ONLY_SWITCH,
+                                label=t_("general.corrections_show_qc_only"),
+                                value=False,
+                                style={"margin-top": "6px", "margin-left": "10px"},
+                            ),
+                            dbc.Tooltip(
+                                html.P(
+                                    t_("general.corrections_show_qc_only_tooltip"),
+                                    style={
+                                        "margin-top": UI.MARGIN_ZERO,
+                                        "margin-bottom": UI.MARGIN_ZERO,
+                                    },
+                                ),
+                                target=ids.CORRECTIONS_SHOW_QC_ONLY_SWITCH,
+                                placement="top",
+                            ),
+                        ],
+                        width=3,
+                    ),
+                ],
+                style={"margin-bottom": UI.MARGIN_BOTTOM_COMPACT},
             ),
         ]
     )
@@ -739,284 +807,162 @@ def render_observations_table(_data, _selected_data):
         else {}
     )
 
+    base_columns = [
+        {
+            "id": ColumnNames.DATETIME,
+            "name": "Date/Time",
+            "type": "datetime",
+            "editable": False,
+        },
+        {
+            "id": ColumnNames.OBSERVATION_TYPE,
+            "name": "Type",
+            "type": "text",
+            "editable": False,
+        },
+        {
+            "id": ColumnNames.FIELD_VALUE,
+            "name": "Field value",
+            "type": "numeric",
+            "editable": False,
+            "format": {"specifier": ".3f"},
+        },
+        {
+            "id": ColumnNames.CALCULATED_VALUE,
+            "name": t_("general.calculated_value_original"),
+            "type": "numeric",
+            "editable": False,
+            "format": {"specifier": ".3f"},
+        },
+        {
+            "id": ColumnNames.CORRECTED_VALUE,
+            "name": "Corrected value",
+            "type": "numeric",
+            "editable": True,
+            "format": {"specifier": ".3f"},
+        },
+        {
+            "id": ColumnNames.SET_MISSING,
+            "name": "NaN",
+            "type": "text",
+            "presentation": "dropdown",
+            "editable": True,
+        },
+        {
+            "id": ColumnNames.COMMENT,
+            "name": "Comment",
+            "type": "text",
+            "editable": True,
+        },
+    ]
+
+    base_dropdown = {
+        ColumnNames.SET_MISSING: {
+            "options": [
+                {"label": "-", "value": False},
+                {"label": "NaN", "value": True},
+            ],
+            "clearable": False,
+        }
+    }
+
+    base_style_cell_conditional = [
+        {"if": {"column_id": ColumnNames.DATETIME}, "width": "18%"},
+        {"if": {"column_id": ColumnNames.OBSERVATION_TYPE}, "width": "12%"},
+        {"if": {"column_id": ColumnNames.FIELD_VALUE}, "width": "15%"},
+        {"if": {"column_id": ColumnNames.CALCULATED_VALUE}, "width": "15%"},
+        {"if": {"column_id": ColumnNames.CORRECTED_VALUE}, "width": "14%"},
+        {"if": {"column_id": ColumnNames.SET_MISSING}, "width": "10%"},
+        {"if": {"column_id": ColumnNames.COMMENT}, "width": "16%"},
+    ]
+
+    base_tooltip_header = {
+        ColumnNames.CALCULATED_VALUE: {
+            "type": "markdown",
+            "value": t_("general.calculated_value_original_tooltip"),
+        },
+        ColumnNames.CORRECTED_VALUE: {
+            "type": "markdown",
+            "value": t_("general.corrected_value_tooltip"),
+        },
+        ColumnNames.SET_MISSING: {
+            "type": "markdown",
+            "value": "Set to **Set NaN** when the measurement should be missing.",
+        },
+        ColumnNames.COMMENT: {
+            "type": "markdown",
+            "value": t_("general.correction_reason_tooltip"),
+        },
+    }
+
+    def _render_table(table_id: str):
+        return dash_table.DataTable(
+            id=table_id,
+            columns=base_columns,
+            data=[],
+            editable=True,
+            dropdown=base_dropdown,
+            row_deletable=False,
+            page_action="none",
+            virtualization=True,
+            fixed_rows={"headers": True},
+            style_table={
+                "height": "28cqh",
+                "overflowY": "auto",
+                "margin-top": UI.MARGIN_TOP_COMPACT,
+            },
+            style_cell={
+                "textAlign": "left",
+                "padding": "4px 8px",
+                "fontSize": 11,
+                "whiteSpace": "pre-line",
+            },
+            style_cell_conditional=base_style_cell_conditional,
+            style_data_conditional=[
+                {
+                    "if": {"state": "selected"},
+                    "border": "1px solid #006f92",
+                },
+            ],
+            style_header={
+                "backgroundColor": DATA_TABLE_HEADER_BGCOLOR,
+                "fontWeight": "bold",
+                "padding": "4px 8px",
+                "fontSize": 11,
+                "position": "sticky",
+                "top": 0,
+                "zIndex": 1,
+            },
+            tooltip_header=base_tooltip_header,
+        )
+
     return html.Div(
         [
-            dbc.Row(
-                [
-                    dbc.Col(
+            dcc.Loading(
+                id=ids.LOADING_CORRECTIONS_TABLE,
+                type="dot",
+                style={"position": "relative", "display": "block"},
+                parent_className="loading-wrapper",
+                children=[
+                    dbc.Row(
                         [
-                            dcc.Loading(
-                                id=ids.LOADING_CORRECTIONS_TABLE,
-                                type="dot",
-                                style={"position": "absolute", "align-self": "center"},
-                                parent_className="loading-wrapper",
-                                children=[
-                                    dash_table.DataTable(
-                                        id=ids.CORRECTIONS_OBSERVATIONS_TABLE_1,
-                                        columns=[
-                                            {
-                                                "id": ColumnNames.DATETIME,
-                                                "name": "Date/Time",
-                                                "type": "datetime",
-                                                "editable": False,
-                                            },
-                                            {
-                                                "id": ColumnNames.FIELD_VALUE,
-                                                "name": "Field value",
-                                                "type": "numeric",
-                                                "editable": False,
-                                                "format": {"specifier": ".3f"},
-                                            },
-                                            {
-                                                "id": ColumnNames.CALCULATED_VALUE,
-                                                "name": t_(
-                                                    "general.calculated_value_original"
-                                                ),
-                                                "type": "numeric",
-                                                "editable": False,
-                                                "format": {"specifier": ".3f"},
-                                            },
-                                            {
-                                                "id": ColumnNames.CORRECTED_VALUE,
-                                                "name": "Corrected value",
-                                                "type": "numeric",
-                                                "editable": True,
-                                                "format": {"specifier": ".3f"},
-                                            },
-                                            {
-                                                "id": ColumnNames.COMMENT,
-                                                "name": "Comment",
-                                                "type": "text",
-                                                "editable": True,
-                                            },
-                                        ],
-                                        data=[],
-                                        editable=True,
-                                        row_deletable=False,
-                                        page_action="none",
-                                        style_table={
-                                            "height": "27.5cqh",
-                                            "overflowY": "auto",
-                                            "margin-top": UI.MARGIN_TOP_COMPACT,
-                                        },
-                                        style_cell={
-                                            "textAlign": "left",
-                                            "padding": "4px 8px",
-                                            "fontSize": 11,
-                                            "whiteSpace": "pre-line",
-                                        },
-                                        style_cell_conditional=[
-                                            {
-                                                "if": {"column_id": "datetime"},
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {
-                                                    "column_id": ColumnNames.FIELD_VALUE
-                                                },
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {
-                                                    "column_id": (
-                                                        ColumnNames.CALCULATED_VALUE
-                                                    )
-                                                },
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {"column_id": "corrected_value"},
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {"column_id": "comment"},
-                                                "width": "20%",
-                                            },
-                                        ],
-                                        style_data_conditional=[
-                                            {
-                                                "if": {"state": "selected"},
-                                                "border": "1px solid #006f92",
-                                            },
-                                        ],
-                                        style_header={
-                                            "backgroundColor": (
-                                                DATA_TABLE_HEADER_BGCOLOR
-                                            ),
-                                            "fontWeight": "bold",
-                                            "padding": "4px 8px",
-                                            "fontSize": 11,
-                                        },
-                                        tooltip_header={
-                                            ColumnNames.CALCULATED_VALUE: {
-                                                "type": "markdown",
-                                                "value": t_(
-                                                    "general.calculated_value_original_tooltip"
-                                                ),
-                                            },
-                                            "corrected_value": {
-                                                # "use_with": "both",
-                                                "type": "markdown",
-                                                "value": t_(
-                                                    "general.corrected_value_tooltip"
-                                                ),
-                                            },
-                                            "comment": {
-                                                # "use_with": "both",
-                                                "type": "markdown",
-                                                "value": t_(
-                                                    "general.correction_reason_tooltip"
-                                                ),
-                                            },
-                                        },
-                                    ),
-                                ],
-                                **kwargs,
+                            dbc.Col(
+                                [_render_table(ids.CORRECTIONS_OBSERVATIONS_TABLE_1)],
+                                width=6,
+                            ),
+                            dbc.Col(
+                                [_render_table(ids.CORRECTIONS_OBSERVATIONS_TABLE_2)],
+                                width=6,
                             ),
                         ],
-                        width=6,
-                    ),
-                    dbc.Col(
-                        [
-                            dcc.Loading(
-                                id=ids.LOADING_CORRECTIONS_TABLE_2,
-                                type="dot",
-                                style={"position": "absolute", "align-self": "center"},
-                                parent_className="loading-wrapper",
-                                children=[
-                                    dash_table.DataTable(
-                                        id=ids.CORRECTIONS_OBSERVATIONS_TABLE_2,
-                                        columns=[
-                                            {
-                                                "id": ColumnNames.DATETIME,
-                                                "name": "Date/Time",
-                                                "type": "datetime",
-                                                "editable": False,
-                                            },
-                                            {
-                                                "id": ColumnNames.FIELD_VALUE,
-                                                "name": "Field value",
-                                                "type": "numeric",
-                                                "editable": False,
-                                                "format": {"specifier": ".3f"},
-                                            },
-                                            {
-                                                "id": ColumnNames.CALCULATED_VALUE,
-                                                "name": t_(
-                                                    "general.calculated_value_original"
-                                                ),
-                                                "type": "numeric",
-                                                "editable": False,
-                                                "format": {"specifier": ".3f"},
-                                            },
-                                            {
-                                                "id": ColumnNames.CORRECTED_VALUE,
-                                                "name": "Corrected value",
-                                                "type": "numeric",
-                                                "editable": True,
-                                                "format": {"specifier": ".3f"},
-                                            },
-                                            {
-                                                "id": ColumnNames.COMMENT,
-                                                "name": "Comment",
-                                                "type": "text",
-                                                "editable": True,
-                                            },
-                                        ],
-                                        data=[],
-                                        editable=True,
-                                        row_deletable=False,
-                                        page_action="none",
-                                        style_table={
-                                            "height": "27.5cqh",
-                                            "overflowY": "auto",
-                                            "margin-top": UI.MARGIN_TOP_COMPACT,
-                                        },
-                                        style_cell={
-                                            "textAlign": "left",
-                                            "padding": "4px 8px",
-                                            "fontSize": 11,
-                                            "whiteSpace": "pre-line",
-                                        },
-                                        style_cell_conditional=[
-                                            {
-                                                "if": {"column_id": "datetime"},
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {
-                                                    "column_id": ColumnNames.FIELD_VALUE
-                                                },
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {
-                                                    "column_id": ColumnNames.CALCULATED_VALUE  # noqa
-                                                },
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {
-                                                    "column_id": ColumnNames.CORRECTED_VALUE  # noqa
-                                                },
-                                                "width": "20%",
-                                            },
-                                            {
-                                                "if": {
-                                                    "column_id": ColumnNames.COMMENT
-                                                },
-                                                "width": "20%",
-                                            },
-                                        ],
-                                        style_data_conditional=[
-                                            {
-                                                "if": {"state": "selected"},
-                                                "border": "1px solid #006f92",
-                                            },
-                                        ],
-                                        style_header={
-                                            "backgroundColor": (
-                                                DATA_TABLE_HEADER_BGCOLOR
-                                            ),
-                                            "fontWeight": "bold",
-                                            "padding": "4px 8px",
-                                            "fontSize": 11,
-                                        },
-                                        tooltip_header={
-                                            ColumnNames.CALCULATED_VALUE: {
-                                                "type": "markdown",
-                                                "value": t_(
-                                                    "general.calculated_value_original_tooltip"
-                                                ),
-                                            },
-                                            "corrected_value": {
-                                                # "use_with": "both",
-                                                "type": "markdown",
-                                                "value": t_(
-                                                    "general.corrected_value_tooltip"
-                                                ),
-                                            },
-                                            "comment": {
-                                                # "use_with": "both",
-                                                "type": "markdown",
-                                                "value": t_(
-                                                    "general.correction_reason_tooltip"
-                                                ),
-                                            },
-                                        },
-                                    ),
-                                ],
-                                **kwargs,
-                            ),
-                        ],
-                        width=6,
-                    ),
+                        style={
+                            "position": "relative",
+                            "justify-content": "center",
+                            "margin-bottom": UI.MARGIN_BOTTOM_COMPACT,
+                        },
+                    )
                 ],
-                style={
-                    "position": "relative",
-                    "justify-content": "center",
-                    "margin-bottom": UI.MARGIN_BOTTOM_LARGE,
-                },
+                **kwargs,
             ),
         ]
     )
@@ -1037,14 +983,33 @@ def render_correction_controls():
                     dbc.Col(
                         [
                             dbc.Button(
-                                t_("general.commit_corrections"),
+                                html.Span(
+                                    [
+                                        html.I(className="fa-solid fa-database"),
+                                        html.Span(
+                                            " " + t_("general.commit_corrections"),
+                                            id=ids.CORRECTIONS_COMMIT_BUTTON_LABEL,
+                                        ),
+                                    ],
+                                    id="span-commit-corrections",
+                                    n_clicks=0,
+                                ),
                                 id=ids.CORRECTIONS_COMMIT_BUTTON,
                                 color="primary",
                                 disabled=True,
                                 style={"margin-right": "10px"},
                             ),
                             dbc.Button(
-                                t_("general.reset_changes"),
+                                html.Span(
+                                    [
+                                        html.I(
+                                            className="fa-solid fa-arrow-rotate-left"
+                                        ),
+                                        " " + t_("general.reset_changes"),
+                                    ],
+                                    id="span-reset-corrections",
+                                    n_clicks=0,
+                                ),
                                 id=ids.CORRECTIONS_RESET_BUTTON,
                                 color="primary",
                                 disabled=True,
@@ -1054,6 +1019,28 @@ def render_correction_controls():
                     ),
                     dbc.Col(
                         [
+                            html.Span(
+                                [
+                                    html.I(
+                                        className="fa-solid fa-calculator",
+                                        id=ids.CORRECTIONS_CONVERSION_TOOLTIP_ICON,
+                                        style={
+                                            "margin-right": "10px",
+                                            "color": "#6c757d",
+                                            "cursor": "pointer",
+                                        },
+                                    ),
+                                    dbc.Tooltip(
+                                        t_("general.corrections_conversion_tooltip"),
+                                        target=ids.CORRECTIONS_CONVERSION_TOOLTIP_ICON,
+                                        placement="top",
+                                    ),
+                                ],
+                                style={
+                                    "display": "inline-block",
+                                    "vertical-align": "middle",
+                                },
+                            ),
                             html.Div(
                                 [
                                     dbc.Label(

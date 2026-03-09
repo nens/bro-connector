@@ -486,7 +486,7 @@ def render_content(data: DataManager, figure: dict):
         A Dash Bootstrap Container with the rendered content.
     """
     disabled_csv = figure is None
-    disabled_db = figure is None or data.db.backend == "hydropandas"
+    disabled_db = figure is None or data.db.backend in {"pastastore"}
     return dbc.Container(
         [
             dbc.Row([render_qc_chart(figure)]),

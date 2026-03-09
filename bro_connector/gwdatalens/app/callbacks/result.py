@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from dash import ALL, Input, Output, Patch, State, dcc, no_update
+from dash import ALL, Input, Output, Patch, State, dcc, html, no_update
 from dash.exceptions import PreventUpdate
 
 from gwdatalens.app.config import config
@@ -139,9 +139,9 @@ def register_result_callbacks(app, data):
             logger.debug("QC export CSV: wid is None, preventing update")
             raise PreventUpdate
 
-        timestr = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+        _ = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
         name = well_service.get_well_name(wid).squeeze()
-        filename = f"{timestr}_qc_result_{name}.csv"
+        filename = f"qc_result_{name}.csv"
         if data.qc.traval_result is not None:
             return dcc.send_string(data.qc.traval_result.to_csv, filename=filename)
 
@@ -150,6 +150,24 @@ def register_result_callbacks(app, data):
         Input(ids.QC_RESULT_EXPORT_DB, "n_clicks"),
         State(ids.SELECTED_OSERIES_STORE, "data"),
         State(ids.QC_RESULT_EXPORT_QC_STATUS_FLAG, "value"),
+        running=[
+            (
+                Output(ids.QC_RESULT_EXPORT_DB, "disabled"),
+                True,
+                data.db.backend == "pastastore",
+            ),
+            (
+                Output("span-export-db", "children"),
+                [
+                    html.I(className="fa-solid fa-spinner fa-spin"),
+                    " " + t_("general.export_db"),
+                ],
+                [
+                    html.I(className="fa-solid fa-database"),
+                    " " + t_("general.export_db"),
+                ],
+            ),
+        ],
         prevent_initial_call=True,
     )
     @log_callback(
@@ -163,6 +181,11 @@ def register_result_callbacks(app, data):
 
         Applies quality control status flags and saves to database.
         """
+        if data.db.backend == "pastastore":
+            return AlertBuilder.warning(
+                t_(ErrorMessages.EXPORT_FAILED, well="current backend")
+            )
+
         if not n_clicks:
             logger.debug("QC export DB: no click, preventing update")
             raise PreventUpdate
@@ -186,44 +209,67 @@ def register_result_callbacks(app, data):
                 ColumnNames.INCOMING_STATUS_QUALITY_CONTROL
             ].apply(lambda v: bro_en_to_nl[v])
 
-        # Apply QC status rules
-        mask = df[ColumnNames.STATUS_QUALITY_CONTROL] == ""
-        mask_incoming_not_suspect = ~df[
-            ColumnNames.INCOMING_STATUS_QUALITY_CONTROL
-        ].isin([QCFlags.AFGEKEURD, QCFlags.ONBESLIST])
+        incoming_status = df[ColumnNames.INCOMING_STATUS_QUALITY_CONTROL].fillna("")
+        status = df[ColumnNames.STATUS_QUALITY_CONTROL].fillna("")
 
+        # Apply QC status rules
+        mask_blank = status == ""
         if non_flagged_reliable == "all_not_suspect":
-            # mark all non-flagged observations as reliable except incoming suspects
-            df.loc[
-                mask & mask_incoming_not_suspect, ColumnNames.STATUS_QUALITY_CONTROL
-            ] = QCFlags.GOEDGEKEURD
-            # Maintain incoming status for suspects
-            df.loc[~mask_incoming_not_suspect, ColumnNames.STATUS_QUALITY_CONTROL] = (
-                df.loc[
-                    ~mask_incoming_not_suspect,
-                    ColumnNames.INCOMING_STATUS_QUALITY_CONTROL,
-                ]
+            mask_incoming_not_suspect = ~incoming_status.isin(
+                [QCFlags.AFGEKEURD, QCFlags.ONBESLIST]
             )
-        elif non_flagged_reliable == "suspect":
-            # Only update suspect observations, the rest remains as is
-            df.loc[mask, ColumnNames.STATUS_QUALITY_CONTROL] = df.loc[
-                mask, ColumnNames.INCOMING_STATUS_QUALITY_CONTROL
+            status = status.copy()
+            status.loc[mask_blank & mask_incoming_not_suspect] = QCFlags.GOEDGEKEURD
+            status.loc[mask_blank & ~mask_incoming_not_suspect] = incoming_status.loc[
+                mask_blank & ~mask_incoming_not_suspect
             ]
+        elif non_flagged_reliable == "suspect":
+            status = status.copy()
+            status.loc[mask_blank] = incoming_status.loc[mask_blank]
         elif non_flagged_reliable == "all":
-            # mark all non-flagged observations as reliable
-            df.loc[mask, ColumnNames.STATUS_QUALITY_CONTROL] = QCFlags.GOEDGEKEURD
+            status = status.copy()
+            status.loc[mask_blank] = QCFlags.GOEDGEKEURD
         else:
             raise ValueError(
                 f"Invalid value {non_flagged_reliable} for non_flagged_reliable"
             )
 
+        df[ColumnNames.STATUS_QUALITY_CONTROL] = status
+
+        # Calculate changed mask based on export mode
+        if non_flagged_reliable == "suspect":
+            # In suspect mode, export only observations marked as suspect
+            # (afgekeurd/onbeslist) and only when status actually changes.
+            suspect_mask = status.isin([QCFlags.AFGEKEURD, QCFlags.ONBESLIST])
+            changed_mask = suspect_mask & (status != incoming_status)
+        else:
+            # In other modes, export all observations where status differs from incoming
+            changed_mask = status != incoming_status
+
+        unchanged_count = int((~changed_mask).sum())
+        status_counts = status.value_counts(dropna=False).to_dict()
+        changed_counts = status.loc[changed_mask].value_counts(dropna=False).to_dict()
+        logger.debug(
+            "QC export summary for %s: total=%s unchanged=%s changed=%s "
+            "status_counts=%s changed_status_counts=%s",
+            wid[0],
+            len(df),
+            unchanged_count,
+            int(changed_mask.sum()),
+            status_counts,
+            changed_counts,
+        )
+
+        df = df.loc[changed_mask].copy()
+
         if name is None:
-            well_display = str(wid)
+            well_display = str(wid[0])
         else:
             well_display = name.squeeze()
         # Save to database
         try:
-            ts_service.save_qualifier(df)
+            ts_service.save_qualifier(wid[0], df)
+
             return AlertBuilder.success(
                 t_(SuccessMessages.EXPORT_SUCCESS, well=well_display)
             )
@@ -695,7 +741,7 @@ def register_result_callbacks(app, data):
                 //console.log(dash_clientside.callback_context);
                 const triggered_id = dash_clientside.callback_context.triggered_id;
                 //use this to set the focus on last active component
-                document.lastActiveElement.focus(); 
+                document.lastActiveElement.focus();
                 return;
             }
             """,
