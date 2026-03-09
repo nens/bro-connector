@@ -86,12 +86,11 @@ class QCCoordinator:
     def __init__(
         self,
         data_source,
-        pastastore=None,
         formatter: QCResultFormatter | None = None,
         plotter: QCPlotter | None = None,
     ):
         self.db = data_source
-        self.pastastore = pastastore
+        self.pastastore = None
         self.formatter = formatter or QCResultFormatter()
         self.plotter = plotter or QCPlotter()
 
@@ -107,6 +106,19 @@ class QCCoordinator:
 
         # store traval result
         self.traval_result: DataFrame | None = None
+
+    def set_pastastore(self, pastastore) -> None:
+        """Set active pastastore and rebuild QC rulesets.
+
+        Parameters
+        ----------
+        pastastore : object
+            New pastastore instance.
+        """
+        self.pastastore = pastastore
+        self.ruleset = build_default_ruleset(self.db, self.pastastore)
+        self._ruleset = deepcopy(self.ruleset)
+        logger.info("QC coordinator pastastore updated and rulesets rebuilt.")
 
     def run_traval(
         self,
@@ -249,10 +261,11 @@ class QCCoordinator:
             Manual observations series or None if empty
         """
         try:
-            manual_obs = self.db.get_timeseries(wid, observation_type="controlemeting")[
-                self.db.value_column
-            ]
-            manual_obs.name = "controlemeting"
+            manual_obs = self.db.get_timeseries(wid, observation_type="controlemeting")
+
+            if self.db.value_column in manual_obs.columns:
+                manual_obs = manual_obs[self.db.value_column]
+                manual_obs.name = "controlemeting"
             if not manual_obs.empty:
                 return [manual_obs]
         # broad exception to attempt loading control observations but continue

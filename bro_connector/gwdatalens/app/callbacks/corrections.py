@@ -5,7 +5,7 @@ import pandas as pd
 from dash import Dash, Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
 
-from gwdatalens.app.constants import ColumnNames, ConfigDefaults, UnitConversion
+from gwdatalens.app.constants import UI, ColumnNames, ConfigDefaults, UnitConversion
 from gwdatalens.app.exceptions import (
     EmptyResultError,
     QueryError,
@@ -41,8 +41,10 @@ def register_correction_callbacks(app: Dash, data: DataManager):
     @app.callback(
         Output(ids.CORRECTION_SERIES_CHART, "figure"),
         Input(ids.CORRECTIONS_DROPDOWN_SELECTOR, "value"),
+        Input(ids.TIME_RANGE_STORE, "data"),
+        Input(ids.CORRECTIONS_COMMIT_TRIGGER_STORE, "data"),
+        Input(ids.CORRECTIONS_RESET_TRIGGER_STORE, "data"),
         State(ids.CORRECTIONS_DROPDOWN_SELECTOR, "value"),
-        prevent_initial_call=True,
     )
     @log_callback(
         log_time=ConfigDefaults.CALLBACK_LOG_TIME,
@@ -51,7 +53,11 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
     def plot_corrections_time_series(
-        value: int | None, value_state: int | None
+        value: int | None,
+        time_range: dict | None,
+        _commit_trigger: dict | None,
+        _reset_trigger: dict | None,
+        value_state: int | None,
     ) -> dict:
         """Plot time series for selected well.
 
@@ -60,6 +66,8 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         value : str or None
             The internal ID of a monitoring location. If None, returns
             empty figure indicating no selection.
+        time_range : dict or None
+            Global time-range store value with keys ``tmin`` and ``tmax``.
 
         Returns
         -------
@@ -71,6 +79,10 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         if value is None and value_state is not None:
             value = value_state
 
+        tmin = time_range.get("tmin") if time_range else None
+        tmax = time_range.get("tmax") if time_range else None
+        preset = time_range.get("preset") if time_range else None
+
         try:
             names = well_service.get_tubes_for_location(value)
             validate_not_empty(names, context="tubes for location")
@@ -79,7 +91,14 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             if not wids or not ts_service.check_if_wells_have_data(wids):
                 return EmptyFigure.no_data()
 
-            return plot_obs(wids, data, plot_manual_obs=True)
+            return plot_obs(
+                wids,
+                data,
+                plot_manual_obs=True,
+                tmin=tmin,
+                tmax=tmax,
+                time_range_preset=preset,
+            )
         except EmptyResultError:
             logger.warning("No tubes found for location %s", value)
             return EmptyFigure.with_message(t_(ErrorMessages.NO_LOCATIONS))
@@ -239,6 +258,42 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         options = well_service.get_tubes_as_dropdown_options(wid)
         return CallbackResponse().add(options).add(options).add(None).add(None).build()
 
+    @app.callback(
+        Output(ids.CORRECTIONS_SHOW_QC_ONLY_SWITCH, "disabled"),
+        Output(ids.CORRECTIONS_SHOW_QC_ONLY_SWITCH, "value"),
+        Input(ids.CORRECTIONS_WELL1_DROPDOWN, "value"),
+        Input(ids.CORRECTIONS_WELL2_DROPDOWN, "value"),
+        Input(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
+    )
+    @log_callback(
+        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
+        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
+        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
+        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
+    )
+    def toggle_qc_only_switch_state(well1_id, well2_id, traval_result_figure_store):
+        """Enable QC-only switch only when QC result exists for selected well(s)."""
+        qc_result_wid = _extract_qc_result_wid(traval_result_figure_store)
+        traval_result_df = (
+            data.qc.traval_result
+            if data is not None
+            and getattr(data, "qc", None) is not None
+            and getattr(data.qc, "traval_result", None) is not None
+            else None
+        )
+
+        if traval_result_df is None or traval_result_df.empty or qc_result_wid is None:
+            return True, False
+
+        selected_wells = {wid for wid in [well1_id, well2_id] if wid is not None}
+        if not selected_wells:
+            return True, False
+
+        if qc_result_wid in selected_wells:
+            return False, no_update
+
+        return True, False
+
     # Callback 2: Fetch and merge observations when wells are selected
     # OPTIMIZED: Only re-query DB when wells change; use cached data for date filtering
     @app.callback(
@@ -250,10 +305,13 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         Input(ids.CORRECTIONS_RESET_TRIGGER_STORE, "data"),
         Input(ids.CORRECTIONS_COMMIT_TRIGGER_STORE, "data"),
         Input(ids.CORRECTIONS_DATE_RANGE_STORE, "data"),
+        Input(ids.CORRECTIONS_SHOW_QC_ONLY_SWITCH, "value"),
+        Input(ids.TIME_RANGE_STORE, "data"),
         State(ids.CORRECTIONS_WELL1_DROPDOWN, "value"),
         State(ids.CORRECTIONS_WELL2_DROPDOWN, "value"),
         State(ids.CORRECTIONS_ORIGINAL_DATA_STORE, "data"),
         State(ids.CORRECTIONS_EDIT_HISTORY_STORE, "data"),
+        State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
         prevent_initial_call=True,
     )
     @log_callback(
@@ -268,10 +326,13 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         reset_trigger,
         commit_trigger,
         date_range,
+        show_qc_only,
+        time_range,
         state_well1_id,
         state_well2_id,
         cached_original_data,
         edit_history,
+        traval_result_figure_store,
         **kwargs,
     ):
         """Load observations from selected well(s) into separate aligned tables.
@@ -297,6 +358,8 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             Trigger from commit button.
         date_range : dict or None
             Date range filter with 'start' and 'end' keys.
+        show_qc_only : bool or None
+            Whether to show only rows with QC detection comments.
         state_well1_id : str or None
             Current state of first well dropdown (for reload context).
         state_well2_id : str or None
@@ -305,6 +368,8 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             Previously cached full unfiltered data.
         edit_history : dict or None
             Persisted edits keyed by "table{N}:{datetime}".
+        traval_result_figure_store : tuple | list | None
+            Store payload containing QC result context with selected well id.
 
         Returns
         -------
@@ -316,8 +381,9 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             return CallbackResponse().add([]).add([]).add(None).build()
 
         trigger_id = extract_trigger_id(ctx_obj, parse_json=False)
+        show_qc_only = bool(show_qc_only)
 
-        def _reapply_edits(table_data, table_num, edit_history):
+        def _reapply_edits(table_data, table_num, edit_history, well_key):
             """Re-apply persisted edits to table data by datetime key."""
             if not edit_history or not table_data:
                 return table_data
@@ -329,7 +395,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                     result.append(row)
                     continue
 
-                row_key = f"table{table_num}:{datetime_val}"
+                row_key = f"{well_key}:table{table_num}:{datetime_val}"
                 row_edits = edit_history.get(row_key, {})
 
                 if row_edits:
@@ -341,12 +407,32 @@ def register_correction_callbacks(app: Dash, data: DataManager):
 
             return result
 
-        # --- OPTIMIZATION: Check if this is a date-range-only change ---
-        # If triggered by date range and we have cached data, skip DB query
-        if trigger_id == ids.CORRECTIONS_DATE_RANGE_STORE and cached_original_data:
+        # --- OPTIMIZATION: Cache-only filtering path ---
+        # If triggered by date-range/filter toggles and we have cached full data,
+        # skip DB query.
+        cache_only_triggers = {
+            ids.CORRECTIONS_DATE_RANGE_STORE,
+            ids.CORRECTIONS_SHOW_QC_ONLY_SWITCH,
+        }
+        if trigger_id in cache_only_triggers and cached_original_data:
+            # If global time range changed, force DB reload instead of cache-only path
+            current_global_tmin = time_range.get("tmin") if time_range else None
+            current_global_tmax = time_range.get("tmax") if time_range else None
+            cached_global_tmin = cached_original_data.get("global_tmin")
+            cached_global_tmax = cached_original_data.get("global_tmax")
+            if (
+                current_global_tmin != cached_global_tmin
+                or current_global_tmax != cached_global_tmax
+            ):
+                trigger_id = ids.TIME_RANGE_STORE
+
+        if trigger_id in cache_only_triggers and cached_original_data:
             # Use cached full data and apply date filtering (no DB hit)
             table1_full = cached_original_data.get("table1_full", [])
             table2_full = cached_original_data.get("table2_full", [])
+            well1_id = cached_original_data.get("well1_id")
+            well2_id = cached_original_data.get("well2_id")
+            well_key = f"{well1_id}:{well2_id}"
 
             table1_data = table1_full
             table2_data = table2_full
@@ -357,14 +443,28 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                 table1_data = _filter_by_date_range(table1_full, start_date, end_date)
                 table2_data = _filter_by_date_range(table2_full, start_date, end_date)
 
-            # Re-apply persisted edits to filtered data
-            table1_data = _reapply_edits(table1_data, 1, edit_history)
-            table2_data = _reapply_edits(table2_data, 2, edit_history)
+            if show_qc_only:
+                table1_data = _filter_to_effective_non_empty_comments(
+                    table1_data,
+                    table_num=1,
+                    edit_history=edit_history,
+                    well_key=well_key,
+                )
+                table2_data = _filter_to_effective_non_empty_comments(
+                    table2_data,
+                    table_num=2,
+                    edit_history=edit_history,
+                    well_key=well_key,
+                )
 
-            # Update store with current displayed version for edit tracking
+            # Store UNEDITED filtered data as baseline for comparison
             updated_cache = dict(cached_original_data)
             updated_cache["table1_displayed"] = table1_data
             updated_cache["table2_displayed"] = table2_data
+
+            # Re-apply persisted edits to filtered data for display
+            table1_data = _reapply_edits(table1_data, 1, edit_history, well_key)
+            table2_data = _reapply_edits(table2_data, 2, edit_history, well_key)
 
             return (
                 CallbackResponse()
@@ -381,9 +481,12 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         ):
             well1_id = state_well1_id
             well2_id = state_well2_id
-            # On reset, clear the edit history (user is reloading fresh)
-            if trigger_id == ids.CORRECTIONS_RESET_TRIGGER_STORE:
-                edit_history = {}
+            # On reset/commit, clear edit history to avoid reapplying stale edits
+            # after fresh data has been loaded from the backend.
+            edit_history = {}
+        else:
+            # Well selection changed - clear edit history for new time series
+            edit_history = {}
 
         # If neither well is selected, clear tables
         if well1_id is None and well2_id is None:
@@ -393,18 +496,60 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         if well1_id == well2_id and well1_id is not None:
             well2_id = None
 
+        well_key = f"{well1_id}:{well2_id}"
+
         try:
             obs_dict = {}
+            global_tmin = time_range.get("tmin") if time_range else None
+            global_tmax = time_range.get("tmax") if time_range else None
+            qc_result_wid = _extract_qc_result_wid(traval_result_figure_store)
+            traval_result_df = (
+                data.qc.traval_result
+                if data is not None
+                and getattr(data, "qc", None) is not None
+                and getattr(data.qc, "traval_result", None) is not None
+                else None
+            )
 
             for wid, key in [(well1_id, "table1"), (well2_id, "table2")]:
                 if wid is None:
                     continue
-                obs = ts_service.get_series_for_observation_well(
-                    wid, observation_type=None
+                obs = ts_service.get_timeseries_for_observation_well(
+                    wid,
+                    observation_type=None,
+                    tmin=global_tmin,
+                    tmax=global_tmax,
                 )
                 if obs is not None and not obs.empty:
+                    required_cols = [
+                        ColumnNames.FIELD_VALUE,
+                        ColumnNames.CALCULATED_VALUE,
+                        ColumnNames.INITIAL_CALCULATED_VALUE,
+                        ColumnNames.OBSERVATION_TYPE,
+                        ColumnNames.CORRECTION_REASON,
+                        ColumnNames.MEASUREMENT_TVP_ID,
+                    ]
+
+                    if data.db.value_column in obs.columns:
+                        series_values = obs[data.db.value_column]
+                    else:
+                        series_values = pd.Series(np.nan, index=obs.index)
+
+                    if ColumnNames.FIELD_VALUE not in obs.columns:
+                        obs[ColumnNames.FIELD_VALUE] = series_values
+                    if ColumnNames.CALCULATED_VALUE not in obs.columns:
+                        obs[ColumnNames.CALCULATED_VALUE] = series_values
+                    if ColumnNames.INITIAL_CALCULATED_VALUE not in obs.columns:
+                        obs[ColumnNames.INITIAL_CALCULATED_VALUE] = np.nan
                     if ColumnNames.OBSERVATION_TYPE not in obs.columns:
-                        obs = obs.assign(**{ColumnNames.OBSERVATION_TYPE: None})
+                        obs[ColumnNames.OBSERVATION_TYPE] = None
+                    if ColumnNames.CORRECTION_REASON not in obs.columns:
+                        obs[ColumnNames.CORRECTION_REASON] = ""
+                    if ColumnNames.MEASUREMENT_TVP_ID not in obs.columns:
+                        obs[ColumnNames.MEASUREMENT_TVP_ID] = np.arange(
+                            len(obs), dtype=int
+                        )
+
                     if obs.index.has_duplicates:
                         dup_count = obs.index.duplicated().sum()
                         logger.warning(
@@ -415,17 +560,20 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                         obs = obs[~obs.index.duplicated(keep="first")]
                     obs = obs.loc[
                         :,
-                        [
+                        required_cols,
+                    ].dropna(
+                        how="all",
+                        subset=[
                             ColumnNames.FIELD_VALUE,
                             ColumnNames.CALCULATED_VALUE,
                             ColumnNames.INITIAL_CALCULATED_VALUE,
-                            ColumnNames.OBSERVATION_TYPE,
-                            ColumnNames.CORRECTION_REASON,
-                            ColumnNames.MEASUREMENT_TVP_ID,
                         ],
-                    ].dropna(
-                        how="all",
-                        subset=[ColumnNames.FIELD_VALUE, ColumnNames.CALCULATED_VALUE],
+                    )
+                    obs = _merge_traval_comments_into_observations(
+                        obs,
+                        wid=wid,
+                        qc_result_wid=qc_result_wid,
+                        traval_result_df=traval_result_df,
                     )
                     obs.index.name = "datetime"
                     obs_dict[key] = obs
@@ -463,6 +611,20 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                     table2_data, start_date, end_date
                 )
 
+            if show_qc_only:
+                table1_filtered = _filter_to_effective_non_empty_comments(
+                    table1_filtered,
+                    table_num=1,
+                    edit_history=edit_history,
+                    well_key=well_key,
+                )
+                table2_filtered = _filter_to_effective_non_empty_comments(
+                    table2_filtered,
+                    table_num=2,
+                    edit_history=edit_history,
+                    well_key=well_key,
+                )
+
             # Precompute date range for efficient info text generation
             data_dates = []
             for row in table1_data + table2_data:
@@ -480,23 +642,30 @@ def register_correction_callbacks(app: Dash, data: DataManager):
 
             # Store both full and filtered versions:
             # - "table1_full" / "table2_full": unfiltered for info text
-            # - "table1_displayed" / "table2_displayed": current display view for edit
-            #   tracking
+            # - "table1_displayed" / "table2_displayed": UNEDITED baseline for
+            #   comparison
             # - "data_tmin" / "data_tmax": precomputed date range to avoid
             #   recalculating on edits
+            # - "well1_id" / "well2_id": track which time series this data belongs to
             original_data = {
                 "table1_full": table1_data,
                 "table2_full": table2_data,
-                "table1_displayed": table1_filtered,
-                "table2_displayed": table2_filtered,
+                "table1_displayed": table1_filtered,  # UNEDITED baseline
+                "table2_displayed": table2_filtered,  # UNEDITED baseline
                 "data_tmin": data_tmin,
                 "data_tmax": data_tmax,
+                "global_tmin": global_tmin,
+                "global_tmax": global_tmax,
+                "well1_id": well1_id,
+                "well2_id": well2_id,
                 "timestamp": pd.Timestamp.now().isoformat(),
             }
 
-            # Re-apply persisted edits to the display version
-            table1_filtered = _reapply_edits(table1_filtered, 1, edit_history)
-            table2_filtered = _reapply_edits(table2_filtered, 2, edit_history)
+            # Re-apply persisted edits to create the display version (edited)
+            # The tables get the edited version, but original_data stores unedited
+            # baseline
+            table1_filtered = _reapply_edits(table1_filtered, 1, edit_history, well_key)
+            table2_filtered = _reapply_edits(table2_filtered, 2, edit_history, well_key)
 
             return (
                 CallbackResponse()
@@ -613,6 +782,20 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             else:
                 info_text = t_("general.no_data_available")
 
+        unsaved_count = _count_unsaved_corrections(
+            table1_data,
+            original_data.get("table1_displayed", []),
+        ) + _count_unsaved_corrections(
+            table2_data,
+            original_data.get("table2_displayed", []),
+        )
+
+        if unsaved_count > 0:
+            info_text = (
+                f"{info_text} • "
+                f"{t_('general.unsaved_corrections', count=unsaved_count)}"
+            )
+
         return info_text
 
     # Callback 2b: Capture and persist user edits to history store
@@ -634,7 +817,8 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         """Capture and persist user edits by datetime key.
 
         Compares current table data with displayed version to extract actual edits,
-        then stores them keyed by datetime for re-application after filtering.
+        then stores them keyed by well IDs and datetime for re-application after
+        filtering. This ensures corrections are tied to specific time series.
 
         Parameters
         ----------
@@ -643,20 +827,26 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         table2_data : list[dict]
             Current data from table 2.
         original_data : dict or None
-            Original store with displayed versions.
+            Original store with displayed versions and well IDs.
         edit_history : dict or None
             Previous edit history.
 
         Returns
         -------
         dict
-            Updated edit history keyed by datetime.
+            Updated edit history keyed by well IDs and datetime.
         """
         if not original_data:
-            return edit_history or {}
+            return {}
 
-        if edit_history is None:
-            edit_history = {}
+        # Get current well IDs to namespace the edits
+        current_well1_id = original_data.get("well1_id")
+        current_well2_id = original_data.get("well2_id")
+        well_key = f"{current_well1_id}:{current_well2_id}"
+
+        # Rebuild edit history from scratch on each invocation.
+        # This prevents stale row keys from surviving reset/commit/re-filter cycles.
+        new_edit_history = {"_well_key": well_key}
 
         def _normalize_value(val, col):
             """Normalize values for comparison (same as track_edits)."""
@@ -664,6 +854,8 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                 return None
             if isinstance(val, str) and val.strip() == "":
                 return None
+            if col == ColumnNames.SET_MISSING:
+                return _as_bool_set_missing(val)
             if col in {
                 ColumnNames.CALCULATED_VALUE,
                 ColumnNames.FIELD_VALUE,
@@ -695,6 +887,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             ColumnNames.CALCULATED_VALUE,
             ColumnNames.FIELD_VALUE,
             "corrected_value",
+            ColumnNames.SET_MISSING,
             "comment",
         ]
 
@@ -717,7 +910,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                     continue
 
                 # Check for edits in this row
-                row_key = f"table1:{datetime_val}"
+                row_key = f"{well_key}:table1:{datetime_val}"
                 row_edits = {}
                 for col in editable_cols:
                     current_val = current_row.get(col)
@@ -726,7 +919,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                         row_edits[col] = current_val
 
                 if row_edits:
-                    edit_history[row_key] = row_edits
+                    new_edit_history[row_key] = row_edits
 
         # Extract edits from table 2
         table2_displayed = original_data.get("table2_displayed", [])
@@ -747,7 +940,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                     continue
 
                 # Check for edits in this row
-                row_key = f"table2:{datetime_val}"
+                row_key = f"{well_key}:table2:{datetime_val}"
                 row_edits = {}
                 for col in editable_cols:
                     current_val = current_row.get(col)
@@ -756,18 +949,21 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                         row_edits[col] = current_val
 
                 if row_edits:
-                    edit_history[row_key] = row_edits
+                    new_edit_history[row_key] = row_edits
 
-        return edit_history
+        return new_edit_history
 
     # Callback 2c: Enable/disable commit and reset buttons based on dropdown selections
     @app.callback(
         Output(ids.CORRECTIONS_COMMIT_BUTTON, "disabled"),
         Output(ids.CORRECTIONS_RESET_BUTTON, "disabled"),
+        Output(ids.CORRECTIONS_COMMIT_BUTTON_LABEL, "children"),
+        Output(ids.CORRECTIONS_COMMIT_BUTTON, "style"),
         Input(ids.CORRECTIONS_WELL1_DROPDOWN, "value"),
         Input(ids.CORRECTIONS_WELL2_DROPDOWN, "value"),
         Input(ids.CORRECTIONS_OBSERVATIONS_TABLE_1, "data"),
         Input(ids.CORRECTIONS_OBSERVATIONS_TABLE_2, "data"),
+        State(ids.CORRECTIONS_ORIGINAL_DATA_STORE, "data"),
         prevent_initial_call=True,
     )
     @log_callback(
@@ -776,7 +972,13 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
-    def enable_correction_buttons(well1_id, well2_id, table1_data, table2_data):
+    def enable_correction_buttons(
+        well1_id,
+        well2_id,
+        table1_data,
+        table2_data,
+        original_data,
+    ):
         """Enable commit and reset buttons when wells selected and data is available.
 
         Parameters
@@ -801,10 +1003,51 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             table2_data and len(table2_data) > 0
         )
 
-        # Both commit and reset buttons enabled if well selected and data available
-        buttons_disabled = not (has_well_selected and has_data)
+        # Commit enabled when a well is selected and data is available.
+        commit_disabled = not (has_well_selected and has_data)
 
-        return CallbackResponse().add(buttons_disabled).add(buttons_disabled).build()
+        # Reset is not supported for pastastore backend.
+        reset_disabled = commit_disabled or data.db.backend == "pastastore"
+
+        unsaved_count = 0
+        if original_data:
+            unsaved_count = _count_unsaved_corrections(
+                table1_data,
+                original_data.get("table1_displayed", []),
+            ) + _count_unsaved_corrections(
+                table2_data,
+                original_data.get("table2_displayed", []),
+            )
+
+        commit_label = t_("general.commit_corrections")
+        if unsaved_count > 0:
+            commit_label = f" {commit_label} ({unsaved_count})"
+        else:
+            commit_label = f" {commit_label}"
+
+        commit_button_style = {
+            "margin-right": "10px",
+            "--corrections-commit-bg": UI.DEFAULT_BUTTON_COLOR,
+            "--corrections-commit-border": UI.DEFAULT_BUTTON_COLOR,
+            "--corrections-commit-text": "#ffffff",
+        }
+        if unsaved_count > 0:
+            commit_button_style.update(
+                {
+                    "--corrections-commit-bg": UI.DIRTY_BUTTON_WARNING_COLOR,
+                    "--corrections-commit-border": UI.DIRTY_BUTTON_WARNING_COLOR,
+                    "--corrections-commit-text": UI.DIRTY_BUTTON_TEXT_COLOR,
+                }
+            )
+
+        return (
+            CallbackResponse()
+            .add(commit_disabled)
+            .add(reset_disabled)
+            .add(commit_label)
+            .add(commit_button_style)
+            .build()
+        )
 
     # Callback 3: Track edits and manage button states
     @app.callback(
@@ -863,6 +1106,9 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             if isinstance(val, str) and val.strip() == "":
                 return None
 
+            if col == ColumnNames.SET_MISSING:
+                return _as_bool_set_missing(val)
+
             if col in {
                 ColumnNames.CALCULATED_VALUE,
                 ColumnNames.FIELD_VALUE,
@@ -910,6 +1156,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             field_val = row.get(ColumnNames.FIELD_VALUE)
             corrected_val = row.get("corrected_value")
             comment_val = row.get("comment", "")
+            set_missing = _as_bool_set_missing(row.get(ColumnNames.SET_MISSING))
 
             # Treat empty strings like None for emptiness check
             def empty(val, col):
@@ -920,6 +1167,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                 empty(calculated_val, ColumnNames.CALCULATED_VALUE)
                 and empty(field_val, ColumnNames.FIELD_VALUE)
                 and empty(corrected_val, "corrected_value")
+                and not set_missing
                 and (
                     comment_val is None
                     or (isinstance(comment_val, str) and comment_val.strip() == "")
@@ -948,8 +1196,9 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                     for col in [
                         ColumnNames.CALCULATED_VALUE,
                         ColumnNames.FIELD_VALUE,
-                        "corrected_value",
-                        "comment",
+                        ColumnNames.CORRECTED_VALUE,
+                        ColumnNames.SET_MISSING,
+                        ColumnNames.COMMENT,
                     ]:
                         current_val = current_row.get(col)
                         original_val = original_row.get(col)
@@ -987,8 +1236,9 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                     for col in [
                         ColumnNames.CALCULATED_VALUE,
                         ColumnNames.FIELD_VALUE,
-                        "corrected_value",
-                        "comment",
+                        ColumnNames.CORRECTED_VALUE,
+                        ColumnNames.SET_MISSING,
+                        ColumnNames.COMMENT,
                     ]:
                         current_val = current_row.get(col)
                         original_val = original_row.get(col)
@@ -1016,6 +1266,8 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         State(ids.CORRECTIONS_OBSERVATIONS_TABLE_1, "data"),
         State(ids.CORRECTIONS_OBSERVATIONS_TABLE_2, "data"),
         State(ids.CORRECTIONS_ORIGINAL_DATA_STORE, "data"),
+        State(ids.CORRECTIONS_WELL1_DROPDOWN, "value"),
+        State(ids.CORRECTIONS_WELL2_DROPDOWN, "value"),
         prevent_initial_call=True,
     )
     @log_callback(
@@ -1025,7 +1277,14 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
     def commit_or_reset_corrections(
-        _commit_clicks, _reset_clicks, table1_data, table2_data, original_data, **kwargs
+        _commit_clicks,
+        _reset_clicks,
+        table1_data,
+        table2_data,
+        original_data,
+        state_well1_id,
+        state_well2_id,
+        **kwargs,
     ):
         """Commit or reset corrections based on which button was clicked.
 
@@ -1044,6 +1303,10 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             Current table 2 data with edits.
         original_data : dict
             Original data with table1/table2 keys.
+        state_well1_id : str or None
+            Currently selected well 1 id.
+        state_well2_id : str or None
+            Currently selected well 2 id.
 
         Returns
         -------
@@ -1061,13 +1324,17 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         trigger_id = ctx_obj.triggered_id
 
         if trigger_id == ids.CORRECTIONS_COMMIT_BUTTON:
-            return _handle_commit_corrections(table1_data, table2_data, original_data)
+            return _handle_commit_corrections(
+                table1_data, table2_data, original_data, state_well1_id, state_well2_id
+            )
         elif trigger_id == ids.CORRECTIONS_RESET_BUTTON:
-            return _handle_reset_corrections(table1_data, table2_data, original_data)
+            return _handle_reset_corrections(
+                table1_data, table2_data, original_data, state_well1_id, state_well2_id
+            )
 
         return CallbackResponse().add(no_update).add(no_update).add(no_update).build()
 
-    def _handle_commit_corrections(table1_data, table2_data, original_data):
+    def _handle_commit_corrections(table1_data, table2_data, original_data, wid1, wid2):
         """Handle committing corrections to the database.
 
         Parameters
@@ -1078,6 +1345,10 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             Current table 2 data with edits.
         original_data : dict
             Original data with table1/table2 keys.
+        wid1 : str or None
+            Currently selected well 1 id.
+        wid2 : str or None
+            Currently selected well 2 id.
 
         Returns
         -------
@@ -1099,6 +1370,8 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                 return None
             if isinstance(val, str) and val.strip() == "":
                 return None
+            if col == ColumnNames.SET_MISSING:
+                return _as_bool_set_missing(val)
             if col in {
                 ColumnNames.CALCULATED_VALUE,
                 ColumnNames.FIELD_VALUE,
@@ -1125,9 +1398,11 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             return na == nb
 
         try:
+            wids = []  # collect well ids to clear caches
             corrections_to_save = []
-            original_table1 = original_data.get("table1", [])
-            original_table2 = original_data.get("table2", [])
+            # Use displayed (baseline) data for comparison
+            original_table1 = original_data.get("table1_displayed", [])
+            original_table2 = original_data.get("table2_displayed", [])
 
             # Collect corrections from table 1
             if table1_data and original_table1:
@@ -1145,18 +1420,33 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                             original_row.get("comment"),
                             "comment",
                         )
+                        set_missing_changed = not _equal_values(
+                            current_row.get(ColumnNames.SET_MISSING),
+                            original_row.get(ColumnNames.SET_MISSING),
+                            ColumnNames.SET_MISSING,
+                        )
 
-                        if corrected_changed or comment_changed:
-                            # Only save if corrected_value is provided
-                            corrected_val = _normalize_value(
-                                current_row.get("corrected_value"), "corrected_value"
+                        if corrected_changed or comment_changed or set_missing_changed:
+                            set_missing = _as_bool_set_missing(
+                                current_row.get(ColumnNames.SET_MISSING)
                             )
-                            if corrected_val is not None:
+                            corrected_val = (
+                                np.nan
+                                if set_missing
+                                else _normalize_value(
+                                    current_row.get(ColumnNames.CORRECTED_VALUE),
+                                    ColumnNames.CORRECTED_VALUE,
+                                )
+                            )
+                            if corrected_val is not None or set_missing:
                                 corrections_to_save.append(
                                     {
                                         "measurement_tvp_id": current_row[
                                             "measurement_tvp_id"
                                         ],
+                                        ColumnNames.TIMESTAMP: current_row.get(
+                                            ColumnNames.DATETIME
+                                        ),
                                         "original_calculated_value": _normalize_value(
                                             original_row.get(
                                                 ColumnNames.CALCULATED_VALUE
@@ -1165,8 +1455,10 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                                         ),
                                         "corrected_value": corrected_val,
                                         "comment": current_row.get("comment", ""),
+                                        "display_name": wid1,
                                     }
                                 )
+                                wids.append(wid1)
 
             # Collect corrections from table 2
             if table2_data and original_table2:
@@ -1184,18 +1476,33 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                             original_row.get("comment"),
                             "comment",
                         )
+                        set_missing_changed = not _equal_values(
+                            current_row.get(ColumnNames.SET_MISSING),
+                            original_row.get(ColumnNames.SET_MISSING),
+                            ColumnNames.SET_MISSING,
+                        )
 
-                        if corrected_changed or comment_changed:
-                            # Only save if corrected_value is provided
-                            corrected_val = _normalize_value(
-                                current_row.get("corrected_value"), "corrected_value"
+                        if corrected_changed or comment_changed or set_missing_changed:
+                            set_missing = _as_bool_set_missing(
+                                current_row.get(ColumnNames.SET_MISSING)
                             )
-                            if corrected_val is not None:
+                            corrected_val = (
+                                np.nan
+                                if set_missing
+                                else _normalize_value(
+                                    current_row.get(ColumnNames.CORRECTED_VALUE),
+                                    ColumnNames.CORRECTED_VALUE,
+                                )
+                            )
+                            if corrected_val is not None or set_missing:
                                 corrections_to_save.append(
                                     {
                                         "measurement_tvp_id": current_row[
                                             "measurement_tvp_id"
                                         ],
+                                        ColumnNames.TIMESTAMP: current_row.get(
+                                            ColumnNames.DATETIME
+                                        ),
                                         "original_calculated_value": _normalize_value(
                                             original_row.get(
                                                 ColumnNames.CALCULATED_VALUE
@@ -1204,21 +1511,21 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                                         ),
                                         "corrected_value": corrected_val,
                                         "comment": current_row.get("comment", ""),
+                                        "display_name": wid2,
                                     }
                                 )
+                                wids.append(wid2)
 
             if len(corrections_to_save) == 0:
+                # Inform user that there are no corrections to commit
+                alert = AlertBuilder.warning(t_("general.no_corrections_to_commit"))
                 return (
-                    CallbackResponse()
-                    .add(AlertBuilder.no_alert())
-                    .add(no_update)
-                    .add(no_update)
-                    .build()
+                    CallbackResponse().add(alert).add(no_update).add(no_update).build()
                 )
 
             # Save corrections to database
             corrections_df = pd.DataFrame(corrections_to_save)
-            ts_service.save_correction(corrections_df)
+            ts_service.save_correction(wids, corrections_df)
 
             # Prepare trigger store data to reload fresh data
             trigger_data = {
@@ -1244,7 +1551,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             )
             return CallbackResponse().add(alert).add(no_update).add(no_update).build()
 
-    def _handle_reset_corrections(table1_data, table2_data, original_data):
+    def _handle_reset_corrections(table1_data, table2_data, original_data, wid1, wid2):
         """Handle resetting corrections in the database.
 
         Parameters
@@ -1255,6 +1562,10 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             Current table 2 data.
         original_data : dict
             Original data from store.
+        wid1 : str or None
+            Currently selected well 1 id.
+        wid2 : str or None
+            Currently selected well 2 id.
 
         Returns
         -------
@@ -1271,6 +1582,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
             )
 
         try:
+            wids = []
             corrections_to_reset = []
 
             # Collect corrections to reset from table 1
@@ -1291,6 +1603,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                                 ],
                             }
                         )
+                        wids.append(wid1)
 
             # Collect corrections to reset from table 2
             if table2_data:
@@ -1310,19 +1623,18 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                                 ],
                             }
                         )
+                        wids.append(wid2)
 
             if len(corrections_to_reset) == 0:
+                # Inform user that there are no corrections to reset
+                alert = AlertBuilder.warning(t_("general.no_corrections_to_reset"))
                 return (
-                    CallbackResponse()
-                    .add(AlertBuilder.no_alert())
-                    .add(no_update)
-                    .add(no_update)
-                    .build()
+                    CallbackResponse().add(alert).add(no_update).add(no_update).build()
                 )
 
             # Reset corrections in database
             corrections_df = pd.DataFrame(corrections_to_reset)
-            ts_service.reset_correction(corrections_df)
+            ts_service.reset_correction(wids, corrections_df)
 
             # Prepare trigger store data to reload fresh data
             trigger_data = {
@@ -1470,6 +1782,81 @@ def register_correction_callbacks(app: Dash, data: DataManager):
         raise PreventUpdate
 
 
+def _normalize_correction_value(val, col):
+    """Normalize correction values for robust comparison."""
+    if val is None:
+        return None
+    if isinstance(val, str) and val.strip() == "":
+        return None
+
+    if col == ColumnNames.SET_MISSING:
+        return _as_bool_set_missing(val)
+
+    if col in {
+        ColumnNames.CALCULATED_VALUE,
+        ColumnNames.FIELD_VALUE,
+        "corrected_value",
+    }:
+        try:
+            if isinstance(val, (int, float)):
+                return val if not pd.isna(val) else None
+            return float(str(val))
+        except (TypeError, ValueError):
+            return None
+
+    if col == "comment":
+        return val.strip() if isinstance(val, str) else val
+
+    return val
+
+
+def _equal_correction_values(a, b, col):
+    """Compare normalized values and treat None/NaN equivalently."""
+    na = _normalize_correction_value(a, col)
+    nb = _normalize_correction_value(b, col)
+
+    if na is None and (nb is None or pd.isna(nb)):
+        return True
+    if nb is None and (na is None or pd.isna(na)):
+        return True
+
+    return na == nb
+
+
+def _count_unsaved_corrections(current_table, original_table):
+    """Count rows with unsaved correction changes."""
+    if not current_table or not original_table:
+        return 0
+
+    unsaved_count = 0
+    max_rows = min(len(current_table), len(original_table))
+
+    for row_idx in range(max_rows):
+        current_row = current_table[row_idx]
+        original_row = original_table[row_idx]
+
+        corrected_changed = not _equal_correction_values(
+            current_row.get("corrected_value"),
+            original_row.get("corrected_value"),
+            "corrected_value",
+        )
+        comment_changed = not _equal_correction_values(
+            current_row.get("comment"),
+            original_row.get("comment"),
+            "comment",
+        )
+        set_missing_changed = not _equal_correction_values(
+            current_row.get(ColumnNames.SET_MISSING),
+            original_row.get(ColumnNames.SET_MISSING),
+            ColumnNames.SET_MISSING,
+        )
+
+        if corrected_changed or comment_changed or set_missing_changed:
+            unsaved_count += 1
+
+    return unsaved_count
+
+
 def _prepare_observation_table_data(obs_df):
     """Prepare observation DataFrame for table display."""
     try:
@@ -1505,6 +1892,12 @@ def _prepare_observation_table_data(obs_df):
     # Show correction reason in comment column if it exists
     table_df[ColumnNames.COMMENT] = table_df[ColumnNames.CORRECTION_REASON].fillna("")
 
+    # SET_MISSING is True when an active DB correction exists but the corrected
+    # value is NaN (i.e. initial_calculated_value is set, calculated_value is NULL).
+    has_db_correction = table_df[ColumnNames.INITIAL_CALCULATED_VALUE].notna()
+    corrected_to_nan = has_db_correction & pd.isna(current_calculated)
+    table_df[ColumnNames.SET_MISSING] = corrected_to_nan
+
     # Format datetime
     table_df[ColumnNames.DATETIME] = table_df[ColumnNames.DATETIME].dt.strftime(
         ConfigDefaults.DATETIME_FORMAT
@@ -1518,11 +1911,26 @@ def _prepare_observation_table_data(obs_df):
             ColumnNames.FIELD_VALUE,
             ColumnNames.CALCULATED_VALUE,
             ColumnNames.CORRECTED_VALUE,
+            ColumnNames.SET_MISSING,
             ColumnNames.COMMENT,
             ColumnNames.MEASUREMENT_TVP_ID,
             ColumnNames.INITIAL_CALCULATED_VALUE,
         ]
     ].to_dict("records")
+
+
+def _as_bool_set_missing(value) -> bool:
+    """Normalize set-missing values from DataTable payload to bool."""
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        return normalized in {"true", "1", "yes", "set nan", "nan"}
+
+    return bool(value)
 
 
 def _filter_by_date_range(table_data, start_date, end_date):
@@ -1570,3 +1978,136 @@ def _filter_by_date_range(table_data, start_date, end_date):
     )
 
     return df.to_dict("records")
+
+
+def _extract_qc_result_wid(traval_result_figure_store):
+    """Extract QC-result well id from TRAVAL_RESULT_FIGURE_STORE payload."""
+    if traval_result_figure_store is None:
+        return None
+
+    if isinstance(traval_result_figure_store, (list, tuple)):
+        if not traval_result_figure_store:
+            return None
+        candidate = traval_result_figure_store[0]
+    else:
+        candidate = traval_result_figure_store
+
+    try:
+        return int(candidate)
+    except (TypeError, ValueError):
+        return None
+
+
+def _merge_traval_comments_into_observations(
+    obs_df: pd.DataFrame,
+    wid: int | None,
+    qc_result_wid: int | None,
+    traval_result_df: pd.DataFrame | None,
+) -> pd.DataFrame:
+    """Merge QC detection comments into observation correction reason column.
+
+    Merge is applied only when the currently loaded well equals the well for the
+    active QC result. Existing correction reasons are preserved.
+    """
+    if (
+        obs_df is None
+        or obs_df.empty
+        or traval_result_df is None
+        or traval_result_df.empty
+        or wid is None
+        or qc_result_wid is None
+        or int(wid) != int(qc_result_wid)
+    ):
+        return obs_df
+
+    if ColumnNames.COMMENT not in traval_result_df.columns:
+        return obs_df
+
+    result = obs_df.copy()
+
+    existing_reason = (
+        result.get(ColumnNames.CORRECTION_REASON, pd.Series(index=result.index))
+        .fillna("")
+        .astype(str)
+    )
+
+    detector_comment_series = (
+        traval_result_df[ColumnNames.COMMENT].fillna("").astype(str).str.strip()
+    )
+
+    detector_comment_series = detector_comment_series[detector_comment_series != ""]
+    if detector_comment_series.empty:
+        return result
+
+    qc_comments = pd.Series(index=result.index, dtype="object")
+
+    if (
+        ColumnNames.MEASUREMENT_TVP_ID in result.columns
+        and ColumnNames.MEASUREMENT_TVP_ID in traval_result_df.columns
+    ):
+        detector_by_tvp = (
+            traval_result_df.loc[detector_comment_series.index]
+            .dropna(subset=[ColumnNames.MEASUREMENT_TVP_ID])
+            .drop_duplicates(subset=[ColumnNames.MEASUREMENT_TVP_ID], keep="last")
+            .set_index(ColumnNames.MEASUREMENT_TVP_ID)[ColumnNames.COMMENT]
+        )
+        qc_comments = result[ColumnNames.MEASUREMENT_TVP_ID].map(detector_by_tvp)
+
+    if qc_comments.isna().all():
+        detector_by_datetime = detector_comment_series.copy()
+        try:
+            detector_by_datetime.index = pd.to_datetime(detector_by_datetime.index)
+            qc_comments = pd.Series(
+                detector_by_datetime.reindex(result.index).values,
+                index=result.index,
+            )
+        except Exception:
+            return result
+
+    qc_comments = qc_comments.fillna("").astype(str).str.strip()
+    existing_empty = existing_reason.str.strip() == ""
+    result.loc[existing_empty, ColumnNames.CORRECTION_REASON] = qc_comments.loc[
+        existing_empty
+    ]
+
+    return result
+
+
+def _filter_to_effective_non_empty_comments(
+    table_data: list[dict] | None,
+    table_num: int,
+    edit_history: dict | None,
+    well_key: str,
+) -> list[dict]:
+    """Keep only rows where effective comment is non-empty.
+
+    Effective comment means:
+    - edited comment in the current session (when present in edit_history),
+      otherwise
+    - baseline comment in table data.
+    """
+    if not table_data:
+        return []
+
+    history = edit_history or {}
+    filtered_rows: list[dict] = []
+
+    for row in table_data:
+        datetime_val = row.get(ColumnNames.DATETIME)
+        baseline_comment = row.get(ColumnNames.COMMENT)
+        effective_comment = baseline_comment
+
+        if datetime_val:
+            row_key = f"{well_key}:table{table_num}:{datetime_val}"
+            row_edits = history.get(row_key, {})
+            if ColumnNames.COMMENT in row_edits:
+                effective_comment = row_edits.get(ColumnNames.COMMENT)
+
+        if effective_comment is None:
+            continue
+        if str(effective_comment).strip() == "":
+            continue
+
+        filtered_rows.append(row)
+
+    return filtered_rows

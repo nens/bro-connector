@@ -25,7 +25,7 @@ class WellStatic(Base):
 
 class WellDynamic(Base):
     __tablename__ = "groundwater_monitoring_well_dynamic"
-    ground_water_monitoring_well_dynamic_id: Mapped[int] = mapped_column(
+    groundwater_monitoring_well_dynamic_id: Mapped[int] = mapped_column(
         primary_key=True
     )
     ground_level_position: Mapped[float]

@@ -17,7 +17,7 @@ from gwdatalens.app.src.cache import cache
 from gwdatalens.app.src.components.layout import create_layout
 from gwdatalens.app.src.data import (
     DataManager,
-    # HydropandasDataSource,
+    PastaStoreDataSource,
     PostgreSQLDataSource,
     QCCoordinator,
 )
@@ -47,49 +47,107 @@ external_stylesheets = [
 i18n.set("locale", config.get("LOCALE"))
 i18n.load_path.append(LOCALE_PATH)
 
+
+def _create_pastastore_from_config() -> pst.PastaStore:
+    """Create PastaStore from config with safe fallback to DictConnector."""
+    pst_cfg = config.get("pastastore")
+    name = pst_cfg["name"]
+    pastastore_path = Path(pst_cfg["path"])
+    connector_type = pst_cfg.get("connector", "dict")
+
+    try:
+        if name.endswith(".zip"):
+            return pst.PastaStore.from_zip(pastastore_path / name)
+
+        if connector_type == "arcticdb":
+            conn = pst.ArcticDBConnector(name=name, uri=f"lmdb://{pastastore_path}")
+        elif connector_type == "pas":
+            conn = pst.PasConnector(name=name, path=pastastore_path)
+        elif connector_type == "dict":
+            conn = pst.DictConnector(name=name)
+        else:
+            raise ValueError(f"Unknown connector type '{connector_type}'")
+
+        store = pst.PastaStore(conn)
+        logger.info(store)
+        return store
+    except (FileNotFoundError, OSError, ValueError, RuntimeError) as e:
+        logger.warning(
+            "Failed to initialize configured pastastore (%s). Falling back to "
+            "in-memory DictConnector PastaStore. Error: %s",
+            connector_type,
+            e,
+        )
+        return pst.PastaStore(pst.DictConnector(name="runtime"))
+
+
+def _create_startup_pastastore_from_extent(extent: list[float]) -> pst.PastaStore:
+    """Create in-memory PastaStore from BRO data within EPSG:28992 extent."""
+    import hydropandas as hpd
+
+    xmin, xmax, ymin, ymax = [float(v) for v in extent]
+    extent_28992 = [xmin, xmax, ymin, ymax]
+
+    logger.info(
+        "Bootstrapping startup data from BRO extent EPSG:28992: %s",
+        extent_28992,
+    )
+    oc = hpd.read_bro(extent=extent_28992, epsg=28992)
+    conn = pst.DictConnector(name="startup_bro")
+    startup_pstore = oc.to_pastastore(conn=conn, pstore_name="startup_bro")
+    logger.info(
+        "Startup BRO extent load completed. Pastastore '%s' contains %s oseries.",
+        startup_pstore.name,
+        len(startup_pstore.oseries),
+    )
+    return startup_pstore
+
+
 # %% Connect to database
 
-# postgreql database
-db = PostgreSQLDataSource(config=config.get_database_config())
+data_backend = str(config.get("DATA_BACKEND", "postgresql")).lower()
+startup_extent = config.get("EXTENT")
 
-# hydropandas 'database'
-# db = HydropandasDataSource(extent=[116500, 120000, 439000, 442000], source="bro")
-# db = HydropandasDataSource(
-#     fname=Path(__file__).parent / ".." / "data" / "example_obscollection.zip",
-#     source="bro",
-# )
-
-# %% load pastastore
-pastastore_config = config.get("pastastore")
-name = pastastore_config["name"]
-pastastore_path = Path(pastastore_config["path"])
-
-if name.endswith(".zip"):
-    pstore = pst.PastaStore.from_zip(pastastore_path / name)
+# %%
+if startup_extent is not None:
+    pstore = _create_startup_pastastore_from_extent(startup_extent)
+    db = PastaStoreDataSource(pstore=pstore)
+elif data_backend == "postgresql":
+    db = PostgreSQLDataSource(
+        config=config.get_database_config(),
+        use_cache=config.get("USE_LRU_CACHE"),
+        max_cache_size=config.get("MAX_CACHE_SIZE"),
+        cache_timeout=config.get("CACHE_TIMEOUT"),
+    )
+    pstore = _create_pastastore_from_config()
+elif data_backend == "pastastore":
+    pstore = _create_pastastore_from_config()
+    db = PastaStoreDataSource(pstore=pstore)
 else:
-    connector_type = pastastore_config["connector"]
-    if connector_type == "arcticdb":
-        conn = pst.ArcticDBConnector(name=name, uri=f"lmdb://{pastastore_path}")
-    elif connector_type == "pas":
-        conn = pst.PasConnector(name=name, path=pastastore_path)
-    else:
-        raise ValueError(f"Unknown connector type '{connector_type}'")
-    pstore = pst.PastaStore(conn)
-    logger.info(pstore)
+    raise ValueError(
+        "Unknown DATA_BACKEND '%s'. Expected one of: postgresql, pastastore"
+        % data_backend
+    )
 
 # update KNMI time series
-if pastastore_config["update_knmi"] and not pstore.empty:
+pastastore_config = config.get("pastastore")
+if pastastore_config["update_knmi"] and not pstore.empty and startup_extent is None:
     from pastastore.extensions import activate_hydropandas_extension  # noqa: I001
 
     activate_hydropandas_extension()
     # update to yesterday
     tmax = pd.Timestamp.today().normalize() - pd.Timedelta(days=1)
     pstore.hpd.update_knmi_meteo(tmax=tmax)
+elif pastastore_config["update_knmi"] and startup_extent is not None:
+    logger.info(
+        "Skipping startup KNMI bulk update for extent bootstrap; "
+        "KNMI data will be downloaded on-demand during modeling."
+    )
 
 
 # %% traval interface
 
-qc = QCCoordinator(data_source=db, pastastore=pstore)
+qc = QCCoordinator(data_source=db)
 
 # %%
 # add all components to our data manager object

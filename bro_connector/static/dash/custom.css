@@ -30,11 +30,14 @@ html, body {
     font-weight: 500;
 }
 
-#help-button-open {
+#help-button-open,
+#time-range-apply-button {
     background-color: #006f92;
-    margin-left: auto;
     font-size: medium;
+}
 
+#help-button-open {
+    margin-left: auto;
     /* Push this element to the right */
 }
 
@@ -54,6 +57,12 @@ html, body {
 .gwdatalens-main button[id*="-button"] {
     background-color: #006f92 !important;
     font-size: medium;
+}
+
+.gwdatalens-main #corrections-commit-button {
+    background-color: var(--corrections-commit-bg, #006f92) !important;
+    border-color: var(--corrections-commit-border, #006f92) !important;
+    color: var(--corrections-commit-text, #ffffff) !important;
 }
 
 .gwdatalens-main button.btn-close {
@@ -243,6 +252,11 @@ html, body {
     border-bottom-left-radius: 0px;
     border: 1px solid #ccc;
     border-bottom: none;
+}
+
+/* CORRECTIONS TAB - plotly modebar spacing/alignment */
+#correction-series-chart .modebar {
+    top: 6px !important;
 }
 
 /* dropdown menu hover effect */
@@ -506,6 +520,11 @@ Defines the .dbc class
 
 /* ------------ datepickers ----------------------- */
 
+/* Ensure the calendar popup renders above table headers and filter fields */
+.SingleDatePicker_picker {
+    z-index: 9999 !important;
+}
+
 .dbc .SingleDatePickerInput__withBorder {
     border: var(--bs-border-width) solid var(--bs-border-color) !important;
     background-color: transparent !important;
@@ -545,6 +564,38 @@ Defines the .dbc class
     font-family: var(--bs-body-font-family);
     line-height: 34px !important;
     padding: 0 10px !important
+}
+
+#time-range-filter-container .DateInput_input {
+    font-size: 0.85rem !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    padding: 0 10px !important;
+    box-sizing: border-box;
+    border: 0 !important;
+}
+
+#time-range-filter-container .SingleDatePicker,
+#time-range-filter-container .SingleDatePickerInput,
+#time-range-filter-container .DateInput,
+#time-range-filter-container .SingleDatePickerInput__withBorder {
+    min-height: 38px !important;
+    height: auto !important;
+    line-height: normal !important;
+    box-sizing: border-box;
+    vertical-align: top;
+}
+
+#time-range-filter-container .SingleDatePickerInput__withBorder {
+    border: var(--bs-border-width) solid var(--bs-border-color) !important;
+    border-bottom: var(--bs-border-width) solid var(--bs-border-color) !important;
+    border-radius: var(--bs-border-radius) !important;
+    background-color: var(--bs-body-bg) !important;
+    overflow: visible !important;
+}
+
+#time-range-filter-container .DateInput_input__focused {
+    border-bottom: 0 !important;
 }
 
 .dbc .DayPicker {

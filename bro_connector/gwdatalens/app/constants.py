@@ -5,6 +5,8 @@ Centralizes magic strings and numbers used throughout the application.
 
 from pathlib import Path
 
+import plotly.express as px
+
 from gwdatalens.app.src.components import ids
 
 
@@ -46,7 +48,7 @@ class DatabaseFields:
     FIELD_STATUS_QUALITY_CONTROL = "status_quality_control"
     FIELD_MEASUREMENT_POINT_METADATA_ID = "measurement_point_metadata_id"
     FIELD_MEASUREMENT_TVP_ID = "measurement_tvp_id"
-    FIELD_CENSOR_REASON_DATALENS = "censor_reason_datalens"
+    FIELD_CENSOR_REASON_DATALENS = "status_quality_control_reason_datalens"
     FIELD_CENSOR_REASON = "censor_reason"
     FIELD_VALUE_LIMIT = "value_limit"
     FIELD_INITIAL_CALCULATED_VALUE = "initial_calculated_value"
@@ -92,7 +94,10 @@ class ColumnNames:
     CORRECTION_QUALIFIER = "correction_qualifier"
     UNIT = "unit"
     NUMBER_OF_OBSERVATIONS = "metingen"
+    NUMBER_OF_CONTROL_OBSERVATIONS = "controlemetingen"
     NUMBER_OF_TUBES = "ntubes"
+    TMIN = "first_observation_date"
+    TMAX = "last_observation_date"
 
     # Internal columns
     INTERNAL_ID = "internal_id"
@@ -114,6 +119,36 @@ class ColumnNames:
     CATEGORY = "category"
     DATETIME = "datetime"
     CORRECTED_VALUE = "corrected_value"
+    SET_MISSING = "set_missing"
+
+
+class TimeRangeDefaults:
+    """Default values for the global time-range filter.
+
+    The filter limits which portion of a time series is loaded from the
+    database. ``DEFAULT_PRESET`` is applied at startup; users can override it
+    from the UI. Set to ``'all'`` to disable limiting by default.
+    """
+
+    # Key used as default when the application starts.
+    # Must be one of the keys in PRESETS below.
+    DEFAULT_PRESET = "last_2_years"
+
+    # Ordered mapping: dropdown key -> (label key, pandas offset string or None)
+    # None means "no date filter" (load all data).
+    PRESETS: dict = {
+        "last_month": ("general.time_range_last_month", "30D"),
+        "last_3_months": ("general.time_range_last_3_months", "3MS"),
+        "last_year": ("general.time_range_last_year", "12MS"),
+        "last_2_years": ("general.time_range_last_2_years", "24MS"),
+        "last_5_years": ("general.time_range_last_5_years", "60MS"),
+        "custom": ("general.time_range_custom", None),
+        "all": ("general.time_range_all", None),
+    }
+
+    # timezone to interpret time series data. This time zone does not include DST
+    # which ensures no duplicate timestamps arise during DST transitions.
+    LOCAL_TIMEZONE = "Etc/GMT-1"
 
 
 class QCDefaults:
@@ -204,6 +239,8 @@ class UI:
     # Button colors
     DEFAULT_BUTTON_COLOR = "#006f92"
     CLEAR_BUTTON_COLOR = "darkred"
+    DIRTY_BUTTON_WARNING_COLOR = "#760707"
+    DIRTY_BUTTON_TEXT_COLOR = "#FFFFFF"
 
 
 class PlotConstants:
@@ -247,6 +284,9 @@ class PlotConstants:
     CI_FILL_COLOR = "rgba(100,149,237,0.1)"
     CI_LINE_COLOR = "rgba(100,149,237,0.35)"
     SIM_LINE_COLOR = "cornflowerblue"
+
+    # TRAVAL rule colors
+    ERROR_DETECTION_RULES_COLORS = px.colors.qualitative.Bold
 
 
 class UnitConversion:

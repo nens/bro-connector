@@ -9,7 +9,6 @@ import logging
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
-import plotly.express as px
 import plotly.graph_objs as go
 import traval
 from pandas import DataFrame, Series, Timedelta
@@ -240,7 +239,7 @@ class QCPlotter:
         """
         traces = []
         ts = detector.series
-        colors = px.colors.qualitative.Dark24
+        colors = PlotConstants.ERROR_DETECTION_RULES_COLORS
 
         for step, corrections in detector.corrections.items():
             if isinstance(corrections, np.ndarray) or corrections.empty:

@@ -5,6 +5,7 @@ HELP_BUTTON_OPEN = "help-button-open"
 HELP_BUTTON_CLOSE = "help-button-close"
 HELP_MODAL = "help-modal"
 HELP_TITLE = "help-title"
+LOAD_PASTASTORE_UPLOAD = "load-pastastore-upload"
 
 # ALERT
 ALERT = "alert"
@@ -24,6 +25,7 @@ ALERT_LOAD_RULESET = "alert-load-ruleset"
 ALERT_RUN_TRAVAL = "alert-run-traval"
 ALERT_TAB_RENDER = "alert-tab-render"
 ALERT_STATUS_CORRECTIONS = "alert-status-corrections"
+ALERT_LOAD_PASTASTORE = "alert-load-pastastore"
 
 # STORES
 SELECTED_OSERIES_STORE = "selected-oseries-store"
@@ -32,6 +34,7 @@ ACTIVE_TABLE_SELECTION_STORE = "qc-result-table-selection"
 TRAVAL_RULESET_STORE = "traval-ruleset-values-store"
 TRAVAL_RESULT_FIGURE_STORE = "traval-result-figure-store"
 TRAVAL_RESULT_TABLE_STORE = "traval-result-table-store"
+PASTASTORE_REFRESH_STORE = "pastastore-refresh-store"
 
 # DUPLICATE STORES
 OVERVIEW_TABLE_SELECTION_1 = "overview-table-selection-1"
@@ -70,6 +73,7 @@ OVERVIEW_TABLE = "overview-table"
 LOADING_SERIES_CHART = "loading-series_chart"
 SERIES_CHART = "series-chart"
 OVERVIEW_CANCEL_BUTTON = "overview-cancel-button"
+OVERVIEW_TIME_RANGE_REFRESH_STORE = "overview-time-range-refresh-store"
 
 # MODEL TAB
 MODEL_DROPDOWN_SELECTION = "model-dropdown-selection"
@@ -132,6 +136,13 @@ CORRECTIONS_TUBE_TABLE = "corrections-tube-table"
 WELL_CONFIGURATION_PLOT = "well-configuration-plot"
 LOADING_WELL_CONFIGURATION_PLOT = "loading-well-configuration-plot"
 
+# GLOBAL TIME RANGE FILTER (persists across all tabs via dcc.Store in layout)
+TIME_RANGE_STORE = "time-range-store"
+TIME_RANGE_PRESET_DROPDOWN = "time-range-preset-dropdown"
+TIME_RANGE_TMIN_DATEPICKER = "time-range-tmin-datepicker"
+TIME_RANGE_TMAX_DATEPICKER = "time-range-tmax-datepicker"
+TIME_RANGE_APPLY_BUTTON = "time-range-apply-button"
+
 # CORRECTIONS TAB - Well Selection & Editing
 CORRECTIONS_WELL1_DROPDOWN = "corrections-well1-dropdown"
 CORRECTIONS_WELL2_DROPDOWN = "corrections-well2-dropdown"
@@ -140,6 +151,7 @@ CORRECTIONS_OBSERVATIONS_TABLE = "corrections-observations-table"
 CORRECTIONS_OBSERVATIONS_TABLE_1 = "corrections-observations-table-1"
 CORRECTIONS_OBSERVATIONS_TABLE_2 = "corrections-observations-table-2"
 CORRECTIONS_COMMIT_BUTTON = "corrections-commit-button"
+CORRECTIONS_COMMIT_BUTTON_LABEL = "corrections-commit-button-label"
 CORRECTIONS_RESET_BUTTON = "corrections-reset-button"
 CORRECTIONS_ORIGINAL_DATA_STORE = "corrections-original-data-store"
 CORRECTIONS_EDIT_HISTORY_STORE = "corrections-edit-history-store"
@@ -148,9 +160,11 @@ LOADING_CORRECTIONS_TABLE_2 = "loading-corrections-table-2"
 CORRECTIONS_BKB_INPUT = "corrections-bkb-input"
 CORRECTIONS_OBSERVATION_CM_INPUT = "corrections-observation-cm-input"
 CORRECTIONS_OBSERVATION_MNAP_INPUT = "corrections-observation-mnap-input"
+CORRECTIONS_CONVERSION_TOOLTIP_ICON = "corrections-conversion-tooltip-icon"
 # Intermediate stores to avoid duplicate outputs
 CORRECTIONS_COMMIT_TRIGGER_STORE = "corrections-commit-trigger-store"
 CORRECTIONS_RESET_TRIGGER_STORE = "corrections-reset-trigger-store"
 # Date range filtering
 CORRECTIONS_DATE_RANGE_STORE = "corrections-date-range-store"
 CORRECTIONS_DATE_RANGE_INFO = "corrections-date-range-info"
+CORRECTIONS_SHOW_QC_ONLY_SWITCH = "corrections-show-qc-only-switch"

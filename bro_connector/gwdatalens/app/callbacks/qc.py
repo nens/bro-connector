@@ -43,11 +43,55 @@ from gwdatalens.app.validators import validate_not_empty
 logger = logging.getLogger(__name__)
 
 
+def _run_qc_button_idle() -> html.Span:
+    return html.Span([html.I(className="fa-solid fa-gear"), " Run QC"])
+
+
+def _run_qc_button_loading() -> html.Span:
+    return html.Span([html.I(className="fa-solid fa-spinner fa-spin"), " Run QC"])
+
+
 # %% TRAVAL TAB
 def register_qc_callbacks(app, data):
     qc_service = QCService(data.qc, data.db)
     well_service = WellService(data.db)
     ts_service = TimeSeriesService(data.db)
+
+    def _get_effective_qc_range(
+        qc_tmin: str | None,
+        qc_tmax: str | None,
+        time_range: dict | None,
+    ) -> tuple[pd.Timestamp | None, pd.Timestamp | None]:
+        """Compute effective QC run window.
+
+        The effective window is the intersection of:
+        - user-selected QC datepicker range (if provided)
+        - global time-range store bounds (if provided)
+        """
+        effective_tmin = pd.Timestamp(qc_tmin) if qc_tmin else None
+        effective_tmax = pd.Timestamp(qc_tmax) if qc_tmax else None
+
+        global_tmin = time_range.get("tmin") if time_range else None
+        global_tmax = time_range.get("tmax") if time_range else None
+
+        if global_tmin is not None:
+            global_tmin_ts = pd.Timestamp(global_tmin)
+            if effective_tmin is None or effective_tmin < global_tmin_ts:
+                effective_tmin = global_tmin_ts
+
+        if global_tmax is not None:
+            global_tmax_ts = pd.Timestamp(global_tmax)
+            if effective_tmax is None or effective_tmax > global_tmax_ts:
+                effective_tmax = global_tmax_ts
+
+        if (
+            effective_tmin is not None
+            and effective_tmax is not None
+            and effective_tmin > effective_tmax
+        ):
+            effective_tmin = effective_tmax
+
+        return effective_tmin, effective_tmax
 
     def _get_trigger_index(triggered_id, inputs_list):
         for i, item in enumerate(inputs_list):
@@ -86,6 +130,7 @@ def register_qc_callbacks(app, data):
         Output(ids.QC_CHART_STORE_1, "data"),
         Input(ids.QC_DROPDOWN_SELECTION, "value"),
         Input(ids.QC_DROPDOWN_ADDITIONAL, "value"),
+        Input(ids.TIME_RANGE_STORE, "data"),
         # State(ids.QC_DROPDOWN_ADDITIONAL, "disabled"),  # NOTE: not sure what for?
         State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
     )
@@ -98,6 +143,7 @@ def register_qc_callbacks(app, data):
     def plot_qc_time_series(
         value: int | None,
         additional_values: list[int] | None,
+        time_range: dict | None,
         traval_figure: tuple | None,
     ) -> dict:
         """Plot time series.
@@ -110,6 +156,8 @@ def register_qc_callbacks(app, data):
         additional_values : list or None
             Additional series to include in the plot. If None, no additional series
             will be included.
+        time_range : dict or None
+            Global time-range store value with keys ``tmin`` and ``tmax``.
         traval_figure : tuple or None
             A tuple containing a stored name and a traval-result figure. If the stored
             name matches the primary series name, the traval-figure will be returned.
@@ -125,12 +173,24 @@ def register_qc_callbacks(app, data):
 
         additional = additional_values or []
 
+        # When a traval figure is already stored for this series, return it directly
+        # (it already contains the full time range; do NOT apply tmin/tmax filter here
+        # so the traval result is always shown in full).
         if traval_figure is not None:
             stored_name, figure = traval_figure
             if stored_name == value:
                 return figure
 
-        return plot_obs([value] + additional, data)
+        tmin = time_range.get("tmin") if time_range else None
+        tmax = time_range.get("tmax") if time_range else None
+        preset = time_range.get("preset") if time_range else None
+        return plot_obs(
+            [value] + additional,
+            data,
+            tmin=tmin,
+            tmax=tmax,
+            time_range_preset=preset,
+        )
 
     @app.callback(
         Output(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_1, "data"),
@@ -172,6 +232,7 @@ def register_qc_callbacks(app, data):
         Output(ids.QC_DATEPICKER_TMAX, "disabled"),
         Output(ids.QC_DATEPICKER_TMAX, "date"),
         Input(ids.QC_DROPDOWN_SELECTION, "value"),
+        Input(ids.TIME_RANGE_STORE, "data"),
         prevent_initial_call=True,
     )
     @log_callback(
@@ -180,7 +241,9 @@ def register_qc_callbacks(app, data):
         log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
-    def enable_datepickers(wid: int | None) -> tuple[bool, Any, bool, Any]:
+    def enable_datepickers(
+        wid: int | None, time_range: dict | None
+    ) -> tuple[bool, Any, bool, Any]:
         """Enable datepickers and set dates when a well is selected.
 
         Parameters
@@ -202,6 +265,23 @@ def register_qc_callbacks(app, data):
 
             start_date = ts.index[0].to_pydatetime()
             end_date = ts.index[-1].to_pydatetime()
+
+            # Default QC run window follows global time-range selection,
+            # clamped to available series bounds.
+            global_tmin = time_range.get("tmin") if time_range else None
+            global_tmax = time_range.get("tmax") if time_range else None
+            if global_tmin is not None:
+                tmin_candidate = pd.to_datetime(global_tmin).to_pydatetime()
+                if tmin_candidate > start_date:
+                    start_date = tmin_candidate
+            if global_tmax is not None:
+                tmax_candidate = pd.to_datetime(global_tmax).to_pydatetime()
+                if tmax_candidate < end_date:
+                    end_date = tmax_candidate
+
+            if start_date > end_date:
+                start_date = end_date
+
             return False, start_date, False, end_date
         except EmptyResultError:
             logger.warning("No time series data for well %s", wid)
@@ -697,8 +777,16 @@ def register_qc_callbacks(app, data):
         State(ids.QC_DROPDOWN_SELECTION, "value"),
         State(ids.QC_DATEPICKER_TMIN, "date"),
         State(ids.QC_DATEPICKER_TMAX, "date"),
+        State(ids.TIME_RANGE_STORE, "data"),
         State(ids.QC_RUN_ONLY_UNVALIDATED_CHECKBOX, "value"),
-        running=[(Output(ids.LOADING_QC_CHART, "display"), "show", "auto")],
+        running=[
+            (Output(ids.LOADING_QC_CHART, "display"), "show", "auto"),
+            (
+                Output(ids.QC_RUN_TRAVAL_BUTTON, "children"),
+                _run_qc_button_loading(),
+                _run_qc_button_idle(),
+            ),
+        ],
         background=False,
         # NOTE: only used if background is True
         # running=[
@@ -719,6 +807,7 @@ def register_qc_callbacks(app, data):
         wid: int | None,
         tmin: str | None,
         tmax: str | None,
+        time_range: dict | None,
         only_unvalidated: list[bool],
     ) -> tuple[tuple[str, dict], dict, None, bool, tuple]:
         """Run the error detection process based on the provided parameters.
@@ -764,10 +853,14 @@ def register_qc_callbacks(app, data):
             raise PreventUpdate
 
         try:
+            effective_tmin, effective_tmax = _get_effective_qc_range(
+                tmin, tmax, time_range
+            )
+
             result, figure = qc_service.run_traval(
                 wid,
-                tmin=tmin,
-                tmax=tmax,
+                tmin=effective_tmin,
+                tmax=effective_tmax,
                 only_unvalidated=only_unvalidated,
             )
             return (

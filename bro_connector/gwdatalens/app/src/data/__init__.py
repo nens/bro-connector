@@ -1,6 +1,6 @@
 # ruff: noqa: F401
 from gwdatalens.app.src.data.data_backends import (
-    HydropandasDataSource,
+    PastaStoreDataSource,
     PostgreSQLDataSource,
 )
 from gwdatalens.app.src.data.data_manager import DataManager
