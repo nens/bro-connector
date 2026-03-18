@@ -73,23 +73,33 @@ def create_or_delete_tubes(
     #         tube.delete()
 
 
-def Export_selected_items_to_csv(self, request, queryset):
-    meta = self.model._meta
-    field_names = [field.name for field in meta.fields]
+def export_selected_items_to_csv(modeladmin, request, queryset):
+    # Database fields
+    field_names = [field.name for field in modeladmin.model._meta.fields]
 
+    # Add property fields (customize per admin later)
+    extra_properties = getattr(modeladmin, "export_properties", [])
+
+    # Combined header
+    headers = field_names + extra_properties
+
+    # CSV setup
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f"attachment; filename={meta}.csv"
-    writer = csv.writer(response)
 
-    writer.writerow(field_names)
+    model_name = str(modeladmin.model._meta).replace(".","_")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{model_name}_{timestamp}.csv"
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+
+    writer = csv.writer(response)
+    writer.writerow(headers)
+
     for obj in queryset:
-        writer.writerow([getattr(obj, field) for field in field_names])
+        db_values = [getattr(obj, field) for field in field_names]
+        prop_values = [getattr(obj, prop) for prop in extra_properties]
+        writer.writerow(db_values + prop_values)
 
     return response
-
-
-admin.site.add_action(Export_selected_items_to_csv)
-
 
 class BroIdNullFilter(admin.SimpleListFilter):
     title = _("Met/Zonder BRO-ID")  # label in the sidebar
@@ -499,7 +509,8 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         EventsInline,
     )
 
-    actions = ["deliver_to_bro", "check_status", "generate_fieldform"]
+    actions = [export_selected_items_to_csv, "deliver_to_bro", "check_status", "generate_fieldform"]
+    export_properties = ["xy"]
 
     def well_link(self, obj):
         filter_ids = obj.open_comments_well_ids
@@ -686,6 +697,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "date_from",
         "groundwater_monitoring_well_static__well_code",
     )
+    actions = [export_selected_items_to_csv]
 
     list_display = (
         "groundwater_monitoring_well_static",
@@ -802,7 +814,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
         GLDInline,
     )
 
-    actions = ["deliver_gld_to_true"]
+    actions = [export_selected_items_to_csv, "deliver_gld_to_true"]
 
     def in_monitoring_net(self, obj):
         return len(MeasuringPoint.objects.filter(groundwater_monitoring_tube=obj)) > 0
@@ -863,6 +875,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
     list_filter = (TubeFilter,)
     autocomplete_fields = ["groundwater_monitoring_tube_static"]
     readonly_fields = ["date_till", "screen_top_position", "screen_bottom_position"]
+    actions = [export_selected_items_to_csv]
 
     fields = [
         "groundwater_monitoring_tube_static",
@@ -939,6 +952,7 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
     list_filter = (TubeFilter,)
     autocomplete_fields = ["groundwater_monitoring_tube_static"]
     readonly_fields = ["electrode_count"]
+    actions = [export_selected_items_to_csv]
 
     inlines = (ElectrodeInline,)
 
@@ -967,6 +981,7 @@ class ElectrodeStaticAdmin(admin.ModelAdmin):
     )
     list_filter = ("electrode_static_id", "geo_ohm_cable")
     autocomplete_fields = ["geo_ohm_cable"]
+    actions = [export_selected_items_to_csv]
 
     search_fields = get_searchable_fields(gmw_models.Electrode)
 
@@ -993,6 +1008,7 @@ class EventAdmin(admin.ModelAdmin):
         "groundwater_monitoring_tube_dynamic",
         "electrodes",
     )
+    actions = [export_selected_items_to_csv]
 
     def save_model(self, request, obj: gmw_models.Event, form, change):
         valid = True
@@ -1070,6 +1086,7 @@ class MaintenancePartyAdmin(admin.ModelAdmin):
         "function",
         "organisation",
     )
+    actions = [export_selected_items_to_csv]
 
     search_fields = get_searchable_fields(gmw_models.MaintenanceParty)
 
@@ -1090,6 +1107,7 @@ class MaintenanceAdmin(admin.ModelAdmin):
         "execution_by",
     )
     autocomplete_fields = ["groundwater_monitoring_well_static"]
+    actions = [export_selected_items_to_csv]
 
 
 class GmwSyncLogAdmin(admin.ModelAdmin):

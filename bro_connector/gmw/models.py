@@ -274,7 +274,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     @property
     def xy(self):
         return f"({self.x}, {self.y})"
-    xy.fget.short_description = "Coordinaten (RD-km)"
+    xy.fget.short_description = "Coordinaten (RD)"
     
     @property
     def latlon(self):
