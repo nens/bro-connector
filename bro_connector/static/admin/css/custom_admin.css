@@ -1,0 +1,23 @@
+/* Or use a percentage for responsive behavior */
+#content-main select {
+    width: 70%;
+    max-width: 700px;
+}
+
+/* Controls the outer container — this drives the overall width */
+#content-main .select2-container {
+    width: 70% !important;
+    max-width: 700px !important;
+}
+
+/* The closed selection box */
+#content-main .select2-selection.select2-selection--single {
+    width: 100% !important;  /* Let it fill the container above */
+    max-width: unset !important;
+}
+
+/* The open dropdown list panel */
+#content-main .select2-dropdown {
+    width: 70% !important;
+    max-width: 700px !important;
+}
