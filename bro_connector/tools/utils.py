@@ -182,7 +182,9 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
     if instance.bro_type.lower() == "gmw":
         if instance.bro_id is not None:
             gmw = retrieve_historic_gmw.GMWHandler()
-            import_info = retrieve_historic_gmw.handle_individual_bro_id(instance.bro_id, gmw)
+            import_info = retrieve_historic_gmw.handle_individual_bro_id(
+                instance.bro_id, gmw
+            )
         else:
             import_info = retrieve_historic_gmw.run(
                 kvk_number=instance.kvk_number,
@@ -193,7 +195,9 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
     if instance.bro_type.lower() == "gld":
         if instance.bro_id is not None:
             gld = retrieve_historic_gld.GLDHandler()
-            import_info = retrieve_historic_gld.handle_individual_bro_id(instance.bro_id, gld)
+            import_info = retrieve_historic_gld.handle_individual_bro_id(
+                instance.bro_id, gld
+            )
         else:
             import_info = retrieve_historic_gld.run(
                 kvk_number=instance.kvk_number,
@@ -212,6 +216,7 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
     )
     instance.report += report.get("message") + "\n"
     instance.executed = True
+
 
 def process_zip_bro_file(instance: BroImport):
     # Read ZIP file
@@ -386,8 +391,8 @@ def process_csv_file(instance: GLDImport):  # noqa C901
             groundwater_level_dossier=gld,
             observation_metadata=Obs_Meta,
             observation_process=Obs_Pro,
-            observation_starttime = first_datetime,
-            observation_endtime = last_datetime
+            observation_starttime=first_datetime,
+            observation_endtime=last_datetime,
         )
         # Detect duplicates
         duplicate_mask = reader.duplicated(subset=[time_col], keep="first")
@@ -397,8 +402,8 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                 "Alleen de eerste voorgekomen waardes gebruikt.\n\n"
             )
         # Keep only the first occurrence per timestamp
-        reader_clean = reader.drop_duplicates(subset=[time_col], keep="first")  
-            
+        reader_clean = reader.drop_duplicates(subset=[time_col], keep="first")
+
         mms = []
         mtvps = []
         for _, row in reader_clean.iterrows():
@@ -460,7 +465,7 @@ def process_csv_file(instance: GLDImport):  # noqa C901
                 logger.info(f"Bulk updating/creating failed for observation: {obs}")
                 logger.exception(e)
                 instance.executed = False
-                return            
+                return
 
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(

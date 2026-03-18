@@ -6,7 +6,6 @@ callback orchestration.
 """
 
 import logging
-from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -40,7 +39,7 @@ class TimeSeriesService:
         self,
         wid: int,
         observation_type: str = "reguliereMeting",
-        columns: Optional[List[str]] = None,
+        columns: list[str] | None = None,
     ) -> pd.DataFrame:
         """Get time series for a well.
 
@@ -69,8 +68,8 @@ class TimeSeriesService:
             raise TimeSeriesError(msg, wid, e) from e
 
     def get_series_for_multiple_wells(
-        self, wids: List[int], observation_type: str = "reguliereMeting"
-    ) -> Dict[int, pd.DataFrame]:
+        self, wids: list[int], observation_type: str = "reguliereMeting"
+    ) -> dict[int, pd.DataFrame]:
         """Get time series for multiple wells.
 
         Parameters
@@ -107,7 +106,7 @@ class TimeSeriesService:
         """
         return self.db.count_measurements_per_tube()
 
-    def check_if_wells_have_data(self, wids: List[int]) -> bool:
+    def check_if_wells_have_data(self, wids: list[int]) -> bool:
         """Check if any wells in list have observation data.
 
         Parameters
@@ -126,7 +125,7 @@ class TimeSeriesService:
     def get_timeseries_with_column(
         self,
         wid: int,
-        column: Optional[str] = None,
+        column: str | None = None,
         observation_type: str = "reguliereMeting",
     ) -> pd.DataFrame:
         """Get time series with specific column.

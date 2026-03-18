@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -18,7 +18,7 @@ from gwdatalens.app.src.utils import conditional_cache
 logger = logging.getLogger(__name__)
 
 try:
-    with open(MAPBOX_ACCESS_TOKEN, "r", encoding="utf-8") as f:
+    with open(MAPBOX_ACCESS_TOKEN, encoding="utf-8") as f:
         mapbox_access_token = f.read()
 except FileNotFoundError:
     if config.get("USE_MAPBOX"):
@@ -33,7 +33,7 @@ except FileNotFoundError:
 )
 def render(
     data: DataManager,
-    selected_data: Optional[List[int]] = None,
+    selected_data: list[int] | None = None,
 ) -> dcc.Graph:
     df = data.db.gmw_gdf.copy()
     return dcc.Graph(
@@ -60,8 +60,8 @@ def render(
 
 def draw_map(
     df: pd.DataFrame,
-    selected_data: Optional[List[int]] = None,
-) -> Dict[str, Any]:
+    selected_data: list[int] | None = None,
+) -> dict[str, Any]:
     """Draw ScatterMap.
 
     Parameters

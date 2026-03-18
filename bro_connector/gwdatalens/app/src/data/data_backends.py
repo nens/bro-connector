@@ -13,9 +13,9 @@ import logging
 import os
 import pickle
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import cached_property
-from typing import Any, List, Optional, Union
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
@@ -85,7 +85,7 @@ class DataSourceTemplate(ABC):
 
     @property
     @abstractmethod
-    def list_observation_wells_with_data(self) -> List[str]:
+    def list_observation_wells_with_data(self) -> list[str]:
         """List of measurement location names.
 
         Returns
@@ -95,7 +95,7 @@ class DataSourceTemplate(ABC):
         """
 
     @abstractmethod
-    def list_observation_wells_with_data_sorted_by_distance(self, wid) -> List[str]:
+    def list_observation_wells_with_data_sorted_by_distance(self, wid) -> list[str]:
         """List of measurement location names, sorted by distance.
 
         Parameters
@@ -114,7 +114,7 @@ class DataSourceTemplate(ABC):
         self,
         wid: int,
         tube_id: int,
-        observation_type: Optional[str] = None,
+        observation_type: str | None = None,
     ) -> pd.DataFrame:
         """Get time series.
 
@@ -299,7 +299,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         return locs
 
     @cached_property
-    def list_observation_wells(self) -> List[str]:
+    def list_observation_wells(self) -> list[str]:
         """Return a list of observation wells.
 
         Returns
@@ -325,7 +325,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
 
         return self.gmw_gdf.loc[mask, GMW_METADATA_COLUMNS]
 
-    def list_observation_wells_with_data_sorted_by_distance(self, wid) -> List[str]:
+    def list_observation_wells_with_data_sorted_by_distance(self, wid) -> list[str]:
         """List locations sorted by their distance from a given location.
 
         Parameters
@@ -419,7 +419,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         self,
         query: str | None = None,
         operator: str = "==",
-        columns: Optional[List[str] | str] = None,
+        columns: list[str] | str | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
         """Query the gmw_gdf with a pandas query string.
@@ -469,10 +469,10 @@ class PostgreSQLDataSource(DataSourceTemplate):
 
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
         observation_type="reguliereMeting",
-        column: Optional[Union[List[str], str]] = None,
+        column: list[str] | str | None = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series for the measurements for given bro-id and tube-id.
 
@@ -784,7 +784,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
                 ColumnNames.INITIAL_CALCULATED_VALUE: original_calc_value,
                 ColumnNames.CALCULATED_VALUE: corrected_value,
                 ColumnNames.CORRECTION_REASON: row.get("comment", ""),
-                ColumnNames.CORRECTION_TIME: datetime.now(timezone.utc),
+                ColumnNames.CORRECTION_TIME: datetime.now(UTC),
             }
             # include PK with actual column name for ORM bulk update
             param[DatabaseFields.FIELD_MEASUREMENT_TVP_ID] = measurement_tvp_id
@@ -966,7 +966,7 @@ class HydropandasDataSource(DataSourceTemplate):
         return self._gmw_to_gdf()
 
     @cached_property
-    def list_observation_wells(self) -> List[str]:
+    def list_observation_wells(self) -> list[str]:
         """Return a list of all observation wells.
 
         Returns
@@ -1076,10 +1076,10 @@ class HydropandasDataSource(DataSourceTemplate):
 
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict] = None,
+        wid: int | None = None,
+        query: dict | None = None,
         observation_type="reguliereMeting",
-        column: Optional[Union[List[str], str]] = None,
+        column: list[str] | str | None = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series/DataFrame for the measurements.
 
@@ -1141,9 +1141,9 @@ class HydropandasDataSource(DataSourceTemplate):
 
     def query_gdf(
         self,
-        query: Optional[str] = None,
+        query: str | None = None,
         operator: str = "==",
-        columns: Optional[Union[List[str], str]] = None,
+        columns: list[str] | str | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
         """Query the gmw_gdf with filtering.

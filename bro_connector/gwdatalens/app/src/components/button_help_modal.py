@@ -5,7 +5,7 @@ from gwdatalens.app.paths import ASSETS_PATH
 from gwdatalens.app.src.components import ids
 
 # load Modal helper text from MarkDown
-with open(ASSETS_PATH / "qc_dashboard_help.md", "r") as f:
+with open(ASSETS_PATH / "qc_dashboard_help.md") as f:
     help_md = dcc.Markdown("".join(f.readlines()), mathjax=True)
 
 

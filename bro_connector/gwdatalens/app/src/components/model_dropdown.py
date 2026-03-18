@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any
 
 from dash import dcc, html
 
@@ -7,7 +7,7 @@ from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
 
 
-def render(data: Any, selected_data: Optional[List[int]]) -> html.Div:
+def render(data: Any, selected_data: list[int] | None) -> html.Div:
     """Renders a dropdown component for selecting a time series.
 
     Parameters

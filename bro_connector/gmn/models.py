@@ -203,6 +203,11 @@ class GroundwaterMonitoringNet(models.Model):
         verbose_name = "Grondwatermonitoring Meetnet"
         verbose_name_plural = "Grondwatermonitoring Meetnetten"
         ordering = ("name",)
+    
+    class Media:
+        css = {
+            'all': ('admin/css/admin_custom.css',)
+        }
 
 
 class Subgroup(models.Model):

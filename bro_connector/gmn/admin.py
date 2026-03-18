@@ -2,7 +2,7 @@ import csv
 
 from django.contrib import admin
 from django.http import HttpResponse
-from django.urls import reverse
+from django.urls import path, reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from gmn.management.tasks.gmn_sync import sync_gmn
@@ -62,9 +62,16 @@ def _register(model, admin_class):
 
 class SubgroupMeasuringPointInline(admin.TabularInline):
     model = MeasuringPoint.subgroup.through
-    extra = 0
+    extra = 1
     verbose_name = "Meetpunt"
     verbose_name_plural = "Meetpunten"
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("measuringpoint", "measuringpoint__gmn")
+        )
 
 
 class MeasuringPointsInline(admin.TabularInline):

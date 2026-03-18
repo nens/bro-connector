@@ -1,5 +1,6 @@
 import csv
 import datetime
+import logging
 import os
 from collections import Counter
 
@@ -16,7 +17,7 @@ from gld.models import GroundwaterLevelDossier
 from gmw.models import GroundwaterMonitoringWellStatic
 from main.settings.base import gld_SETTINGS
 from reversion_compare.helpers import patch_admin
-import logging
+
 from . import models
 from .custom_filters import (
     CompletelyDeliveredFilter,
@@ -336,17 +337,17 @@ class ObservationAdmin(admin.ModelAdmin):
         if obj.observation_type is not None:
             return obj.observation_type
         return "-"
-    
+
     def measurement_type(self, obj: models.Observation):
         if obj.measurement_type is not None:
             return obj.measurement_type
         return "-"
-    
+
     def status(self, obj: models.Observation):
         if obj.status is not None:
             return obj.status
         return "-"
-    
+
     @admin.action(description="Sluit Observatie")
     def close_observation(self, request, queryset):
         for item in queryset.filter(observation_endtime__isnull=True):

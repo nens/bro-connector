@@ -165,7 +165,7 @@ set "REVERSION_FILE=%VENV_DIR%\Lib\site-packages\reversion\admin.py"
 if exist "%REVERSION_FILE%" (
     echo Patching reversion admin.py...
     powershell -Command "(Get-Content -Path '%REVERSION_FILE%') -replace 'is_hidden\(\)', 'hidden' | Set-Content -Path '%REVERSION_FILE%'"
-    
+
     findstr /c:"hidden" "%REVERSION_FILE%" >nul
     if !errorlevel!==0 (
         echo Reversion patch applied successfully.

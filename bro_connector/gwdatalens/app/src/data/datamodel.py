@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -18,7 +17,7 @@ class WellStatic(Base):
     nitg_code: Mapped[str]
     coordinates: Mapped[str]
     reference_system: Mapped[str]
-    construction_date: Mapped[Optional[datetime]] = mapped_column(
+    construction_date: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 
@@ -55,7 +54,7 @@ class TubeDynamic(Base):
     )
     tube_top_position: Mapped[float]
     plain_tube_part_length: Mapped[float]
-    date_created: Mapped[Optional[datetime]] = mapped_column(
+    date_created: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     groundwater_monitoring_tube_static_id: Mapped[int] = mapped_column(
@@ -105,9 +104,9 @@ class MeasurementTvp(Base):
     measurement_point_metadata_id: Mapped[int] = mapped_column(
         ForeignKey("measurement_point_metadata.measurement_point_metadata_id")
     )
-    initial_calculated_value: Mapped[Optional[float]] = mapped_column(nullable=True)
-    correction_reason: Mapped[Optional[str]] = mapped_column(nullable=True)
-    correction_time: Mapped[Optional[datetime]] = mapped_column(
+    initial_calculated_value: Mapped[float | None] = mapped_column(nullable=True)
+    correction_reason: Mapped[str | None] = mapped_column(nullable=True)
+    correction_time: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 

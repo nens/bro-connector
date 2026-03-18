@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from dash import dash_table, html
 from dash.dash_table.Format import Format
 
@@ -9,7 +7,7 @@ from gwdatalens.app.src.components.styling import DATA_TABLE_HEADER_BGCOLOR
 from gwdatalens.app.src.data.data_manager import DataManager
 
 
-def render(data: DataManager, selected_data: Optional[List[int]] = None) -> html.Div:
+def render(data: DataManager, selected_data: list[int] | None = None) -> html.Div:
     """Render an the piezometer overview table.
 
     Parameters

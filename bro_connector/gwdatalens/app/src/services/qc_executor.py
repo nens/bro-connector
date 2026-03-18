@@ -5,7 +5,6 @@ isolated from data access, formatting, and visualization concerns.
 """
 
 import logging
-from typing import Optional
 
 import traval
 from pandas import Series
@@ -33,7 +32,7 @@ class QCExecutor:
     def __init__(self, ruleset: traval.RuleSet):
         """Initialize with a ruleset."""
         self.ruleset = ruleset
-        self.detector: Optional[traval.Detector] = None
+        self.detector: traval.Detector | None = None
 
     def execute(self, series: Series) -> traval.Detector:
         """Run quality control detection on a time series.

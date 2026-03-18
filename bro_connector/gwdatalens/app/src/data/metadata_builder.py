@@ -4,8 +4,6 @@ Builds and enriches GMW metadata from database queries, including
 spatial transformations, screen positions, and display names.
 """
 
-from typing import Optional
-
 import geopandas as gpd
 import pandas as pd
 
@@ -38,7 +36,7 @@ class GMWMetadataBuilder:
     def __init__(
         self,
         connector: DatabaseConnector,
-        spatial_transformer: Optional[SpatialTransformer] = None,
+        spatial_transformer: SpatialTransformer | None = None,
     ):
         """Initialize metadata builder."""
         self.connector = connector
@@ -113,7 +111,7 @@ class GMWMetadataBuilder:
     def enrich_metadata(
         self,
         gdf: gpd.GeoDataFrame,
-        measurement_counts: Optional[pd.DataFrame] = None,
+        measurement_counts: pd.DataFrame | None = None,
     ) -> gpd.GeoDataFrame:
         """Enrich metadata with screen positions, names, and spatial data.
 

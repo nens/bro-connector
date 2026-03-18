@@ -5,7 +5,7 @@ and query execution for PostgreSQL backends.
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import quote
 
 import geopandas as gpd
@@ -46,7 +46,7 @@ class DatabaseConnector:
         Connection is created lazily on first database access.
         """
         self.config: dict = config
-        self._engine: Optional[Engine] = None
+        self._engine: Engine | None = None
         logger.info(
             "Database connector initialized (connection deferred until first use)"
         )
