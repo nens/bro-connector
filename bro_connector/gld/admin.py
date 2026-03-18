@@ -8,6 +8,9 @@ from django.contrib import admin, messages
 from django.db.models import fields
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse
+from django.utils.html import format_html
+
 from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
 )
@@ -165,7 +168,22 @@ class MeasurementTvpInline(admin.TabularInline):
     ordering = ["-measurement_time"]
     extra = 0
     max_num = 0
+    max_viewable = 50
 
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by("-measurement_time")
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Limit the number of forms that Django constructs."""
+        FormSet = super().get_formset(request, obj, **kwargs)
+
+        class LimitedFormSet(FormSet):
+            def get_queryset(self_nonlocal):
+                qs = super(LimitedFormSet, self_nonlocal).get_queryset()
+                return qs[:self.max_viewable]
+
+        return LimitedFormSet
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -335,9 +353,20 @@ class ObservationAdmin(admin.ModelAdmin):
         "timestamp_first_measurement",
         "timestamp_last_measurement",
         "observation_id_bro",
+        "view_all_measurements_link",
     ]
+    
 
     inlines = (MeasurementTvpInline,)
+    
+    def view_all_measurements_link(self, obj):
+        url = (
+            reverse("admin:gld_measurementtvp_changelist")
+            + f"?observation__observation_id__exact={obj.pk}"
+        )
+        return format_html('<a href="{}" target="_blank">Alle metingen bekijken</a>', url)
+    view_all_measurements_link.short_description = "Alle metingen"
+
 
     actions = [export_selected_items_to_csv, "close_observation", "change_up_to_date_status"]
 
