@@ -411,14 +411,13 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
     )
 
     list_display = (
-        "groundwater_monitoring_well_static_id",
+        "well_code",
+        "internal_id",
         "bro_id",
         "nitg_code",
-        "well_code",
         "delivery_accountable_party",
         "initial_function",
-        "coordinates",
-        "in_management",
+        "xy",
     )
 
     list_filter = (
@@ -430,6 +429,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         BroIdNullFilter,
     )
     readonly_fields = (
+        "xy",
         "lat",
         "lon",
         "report",
@@ -688,20 +688,19 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     )
 
     list_display = (
-        "groundwater_monitoring_well_dynamic_id",
         "groundwater_monitoring_well_static",
+        "internal_id",
         "date_from",
         "date_till",
         "number_of_standpipes",
         "owner",
         "well_head_protector",
         "ground_level_position",
-        "deliver_gld_to_bro",
     )
 
     list_filter = (WellFilter, "owner")
     autocomplete_fields = ["groundwater_monitoring_well_static"]
-    readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "date_till"]
+    readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "internal_id", "date_till"]
 
     fields = [
         "groundwater_monitoring_well_static",
@@ -780,8 +779,8 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     )
 
     list_display = (
-        "groundwater_monitoring_tube_static_id",
         "groundwater_monitoring_well_static",
+        "internal_id",
         "tube_number",
         "tube_type",
         "number_of_geo_ohm_cables",
@@ -795,7 +794,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     )
     list_filter = (WellFilter, "deliver_gld_to_bro")
 
-    readonly_fields = ["number_of_geo_ohm_cables", "in_monitoring_net", "report"]
+    readonly_fields = ["number_of_geo_ohm_cables", "internal_id", "in_monitoring_net", "report"]
 
     inlines = (
         TubeDynamicInline,
@@ -852,7 +851,6 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
         "date_from",
     )
     list_display = (
-        "groundwater_monitoring_tube_dynamic_id",
         "groundwater_monitoring_tube_static",
         "date_from",
         "date_till",

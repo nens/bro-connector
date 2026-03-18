@@ -270,6 +270,16 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     @property
     def lon(self):
         return self.coordinates_4326.x
+    
+    @property
+    def xy(self):
+        return f"({self.x}, {self.y})"
+    xy.fget.short_description = "Coordinaten (RD-km)"
+    
+    @property
+    def latlon(self):
+        return f"({self.lat}, {self.lon})"
+    latlon.fget.short_description = "Coordinaten (lat, lon)"
 
     @property
     def project_number(self):
@@ -420,7 +430,7 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
         related_name="state",
-        verbose_name="Put",
+        verbose_name="Putcode",
     )
     date_from = models.DateTimeField(
         help_text="formaat: YYYY-MM-DD", verbose_name="Geldig vanaf"
@@ -590,6 +600,15 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
 
     deliver_gld_to_bro.fget.short_description = "GLD aanleveren aan BRO"
 
+    @property
+    def internal_id(self):
+        return (
+            GroundwaterMonitoringWellStatic.objects.get(
+                groundwater_monitoring_well_static_id=self.groundwater_monitoring_well_static.groundwater_monitoring_well_static_id
+            ).internal_id
+        )
+    internal_id.fget.short_description = "Veldnaam"
+
     class Meta:
         managed = True
         db_table = 'gmw"."groundwater_monitoring_well_dynamic'
@@ -605,7 +624,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
         related_name="tube",
-        verbose_name="Put",
+        verbose_name="Putcode",
     )
     deliver_gld_to_bro = models.BooleanField(
         blank=True, default=False, verbose_name="Lever GLD aan naar BRO"
@@ -713,6 +732,15 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
             gmn_ids.append(mp.gmn.gmn_bro_id)
 
         return gmn_ids
+    
+    @property
+    def internal_id(self):
+        return (
+            GroundwaterMonitoringWellStatic.objects.get(
+                groundwater_monitoring_well_static_id=self.groundwater_monitoring_well_static.groundwater_monitoring_well_static_id
+            ).internal_id
+        )
+    internal_id.fget.short_description = "Veldnaam"
 
     def save(self, *args, **kwargs):
         # Ensure tube_number is an integer
