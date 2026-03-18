@@ -56,6 +56,20 @@ def s2d(string: str):
     return string
 
 
+def is_broid(bro_id: str) -> bool:
+    """
+    Check if the given bro_id is a valid BRO ID.
+    """
+    if bro_id:
+        return (
+            bro_id.startswith(("GMW", "GMN", "GLD", "FRD"))
+            and len(bro_id) == 15
+            and bro_id[3:].isdigit()
+        )
+
+    return False
+
+
 def read_observation_id_from_xml(xml_string) -> str:
     # Define the namespaces
     namespaces = {
@@ -292,13 +306,13 @@ class Observation(BaseModel):
     # Considerations / TO-DO:
     observation_starttime = models.DateTimeField(
         blank=True, null=True, verbose_name="Starttijd"
-    ) # Should we just remove this field and determine based on first measurement?
+    )  # Should we just remove this field and determine based on first measurement?
     result_time = models.DateTimeField(
         blank=True, null=True, verbose_name="Resultaat tijd"
-    ) # Should we auto-determine this based on metadata + last measurement, but allow the option to set for volledigBeoordeeld?
+    )  # Should we auto-determine this based on metadata + last measurement, but allow the option to set for volledigBeoordeeld?
     observation_endtime = models.DateTimeField(
         blank=True, null=True, verbose_name="Eindtijd"
-    ) # Should we just remove this field and determine based on last measurement?
+    )  # Should we just remove this field and determine based on last measurement?
 
     up_to_date_in_bro = models.BooleanField(
         default=False, editable=False, verbose_name="Up to date in BRO"
@@ -518,10 +532,9 @@ class ObservationMetadata(BaseModel):
     )
 
     def __str__(self):
-        if self.responsible_party:
-            return f"{self.responsible_party.name}-{'reg' if self.observation_type == 'reguliereMeting' else 'con'}-{self.status if self.observation_type != 'controlemeting' else ''}"
-        else:
-            return f"{'reg' if self.observation_type == 'reguliereMeting' else 'con'}-{self.status if self.observation_type != 'controlemeting' else ''}"
+        prefix = f"{self.responsible_party.name}-" if self.responsible_party else ""
+        return f"{prefix}{self.observation_type}{'-' + self.status if self.observation_type != 'controlemeting' else ''}"
+        
 
     class Meta:
         managed = True
@@ -575,9 +588,9 @@ class ObservationProcess(BaseModel):
 
     def __str__(self):
         try:
-            if not self.air_pressure_compensation_type:
-                return f"{self.measurement_instrument_type}-{self.air_pressure_compensation_type}"
-            return f"{self.measurement_instrument_type}-{s2d(self.evaluation_procedure)}-{s2d(self.process_reference)}"
+            if self.air_pressure_compensation_type is not None:
+                return f"{self.measurement_instrument_type}-{self.air_pressure_compensation_type}-{self.evaluation_procedure}-{self.process_reference}"
+            return f"{self.measurement_instrument_type}-{self.evaluation_procedure}-{self.process_reference}"
         except Exception as e:
             logger.exception(e)
             return str(self.observation_process_id)
@@ -722,7 +735,10 @@ class MeasurementPointMetadata(BaseModel):
         verbose_name="Censuurreden",
     )
     status_quality_control_reason_datalens = models.CharField(
-        max_length=200, blank=True, null=True, verbose_name="Status kwaliteitscontrole reden Datalens"
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Status kwaliteitscontrole reden Datalens",
     )
     value_limit = models.CharField(
         max_length=50, blank=True, null=True, default=None, verbose_name="Limietwaarde"
@@ -885,6 +901,8 @@ class gld_registration_log(BaseModel):
                     "gmn_bro_id", flat=True
                 )
             ]
+            # remove gmn broId is None from list
+            gmn_ids = [gmn_id for gmn_id in gmn_ids if is_broid(gmn_id["broId"])]
             srcdocdata = {
                 "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                 "groundwaterMonitoringNets": gmn_ids,
@@ -1050,12 +1068,8 @@ class gld_registration_log(BaseModel):
             )
             # We are interested in the brondocument, not the delivery itself
             # Although they overlap for our use, as we only ever sent one document per delivery
-            delivery_status = delivery_info.json()["brondocuments"][0][
-                "status"
-            ]
-            bro_id = delivery_info.json()["brondocuments"][0][
-                "broId"
-            ]
+            delivery_status = delivery_info.json()["brondocuments"][0]["status"]
+            bro_id = delivery_info.json()["brondocuments"][0]["broId"]
             self.gld_bro_id = bro_id
             self.date_modified = datetime.datetime.now()
             self.comments = f"Delivery status: {delivery_status}"

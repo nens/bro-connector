@@ -322,6 +322,7 @@ class GldSyncHandler:
                         "gmn_bro_id"
                     )
                 ]
+                gmn_ids = [gmn_id for gmn_id in gmn_ids if models.is_broid(gmn_id["broId"])]
                 srcdocdata = {
                     "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                     "groundwaterMonitoringNets": monitoring_nets,
