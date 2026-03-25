@@ -254,7 +254,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
     list_max_show_all = 1000  # Prevents loading all records
 
-    search_fields = ["measurement_point_metadata_id", "censor_reason_datalens"]
+    search_fields = ["measurement_point_metadata_id", "censor_reason", "censor_reason_datalens"]
     list_display = ("__str__",)
 
     list_filter = (
@@ -304,6 +304,7 @@ class ObservationAdmin(admin.ModelAdmin):
     )
 
     search_fields = [
+        "observation_id",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__groundwater_monitoring_well_static_id",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__well_code",
         "groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__bro_id",
@@ -387,6 +388,7 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
     )
 
     search_fields = [
+        "observation_metadata_id",
         "observation_type",
         "status",
         "responsible_party",
@@ -412,6 +414,7 @@ class ObservationProcessAdmin(admin.ModelAdmin):
     )
 
     search_fields = [
+        "observation_process_id",
         "process_reference",
         "measurement_instrument_type",
         "air_pressure_compensation_type",
