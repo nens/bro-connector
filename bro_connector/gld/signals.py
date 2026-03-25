@@ -175,7 +175,7 @@ def post_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
 
 @receiver(pre_save, sender=Observation)
 def pre_save_observation(sender, instance: Observation, **kwargs):
-    if instance.observation_endtime:
+    if instance.observation_endtime and instance.observation_metadata:
         if (
             instance.observation_metadata.status == "voorlopig"
             or instance.observation_metadata.observation_type == "controlemeting"
@@ -188,6 +188,8 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
                 < datetime.datetime.now().astimezone()
                 else datetime.datetime.now().astimezone()
             )
+    else:
+        instance.result_time = instance.timestamp_last_measurement
 
 
 @receiver(post_save, sender=Observation)
