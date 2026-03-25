@@ -105,8 +105,9 @@ packages = [
 
 [tool.pytest.ini_options]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-testpaths = ["bro/tests", "frd/tests", "gar/tests", "gld/tests", "gmn/tests", "gmw/tests", "tools/tests"]
+testpaths = ["tests"]
 log_level = "DEBUG"
+DJANGO_SETTINGS_MODULE = "main.settings.development"
 
 [tool.coverage.run]
 source = [

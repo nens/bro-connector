@@ -42,6 +42,7 @@ from gmw.choices import (
     WELLSTABILITY,
     WELLSTATUS,
 )
+from main.settings.base import KVK_USER
 from gmw.utils import generate_put_code
 from main.models import BaseModel
 from PIL import Image
@@ -53,6 +54,12 @@ def _get_token(owner: Organisation):
         "user": owner.bro_user,
         "pass": owner.bro_token,
     }
+
+def gld_to_bro(self: 'GroundwaterMonitoringTubeStatic') -> bool:
+    # If the well is in management, the default should be to deliver to BRO
+    if self.groundwater_monitoring_well_static.delivery_accountable_party is not None and self.groundwater_monitoring_well_static.delivery_accountable_party.company_number == KVK_USER:
+        return True
+    return False
 
 
 class GroundwaterMonitoringWellStatic(BaseModel):
@@ -608,7 +615,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         verbose_name="Put",
     )
     deliver_gld_to_bro = models.BooleanField(
-        blank=True, default=False, verbose_name="Lever GLD aan naar BRO"
+        blank=True, default=gld_to_bro, verbose_name="Lever GLD aan naar BRO"
     )
     tube_number = models.IntegerField(
         blank=True,
