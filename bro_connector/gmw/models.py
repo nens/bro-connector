@@ -55,13 +55,6 @@ def _get_token(owner: Organisation):
         "pass": owner.bro_token,
     }
 
-def gld_to_bro(self: 'GroundwaterMonitoringTubeStatic') -> bool:
-    # If the well is in management, the default should be to deliver to BRO
-    if self.groundwater_monitoring_well_static.delivery_accountable_party is not None and self.groundwater_monitoring_well_static.delivery_accountable_party.company_number == KVK_USER:
-        return True
-    return False
-
-
 class GroundwaterMonitoringWellStatic(BaseModel):
     groundwater_monitoring_well_static_id = models.AutoField(
         primary_key=True, verbose_name="DB ID"
@@ -390,6 +383,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
 
     def save(self, *args, **kwargs):
         # Call the parent class's save method
+
         super().save(*args, **kwargs)
         if (
             self.removal_date is not None
@@ -615,7 +609,7 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         verbose_name="Put",
     )
     deliver_gld_to_bro = models.BooleanField(
-        blank=True, default=gld_to_bro, verbose_name="Lever GLD aan naar BRO"
+        blank=True, default=False, verbose_name="Lever GLD aan naar BRO"
     )
     tube_number = models.IntegerField(
         blank=True,
