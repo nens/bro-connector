@@ -1,5 +1,5 @@
 import csv
-
+import datetime
 from django.contrib import admin
 from django.db.models import Model, fields
 from django.http import HttpResponse
@@ -24,24 +24,33 @@ from .models import (
     MeasurementConfiguration,
 )
 
+def export_selected_items_to_csv(modeladmin, request, queryset):
+    # Database fields
+    field_names = [field.name for field in modeladmin.model._meta.fields]
 
-def Export_selected_items_to_csv(self, request, queryset):
-    meta = self.model._meta
-    field_names = [field.name for field in meta.fields]
+    # Add property fields (customize per admin later)
+    extra_properties = getattr(modeladmin, "export_properties", [])
 
+    # Combined header
+    headers = field_names + extra_properties
+
+    # CSV setup
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f"attachment; filename={meta}.csv"
-    writer = csv.writer(response)
 
-    writer.writerow(field_names)
+    model_name = str(modeladmin.model._meta).replace(".","_")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{model_name}_{timestamp}.csv"
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+
+    writer = csv.writer(response)
+    writer.writerow(headers)
+
     for obj in queryset:
-        writer.writerow([getattr(obj, field) for field in field_names])
+        db_values = [getattr(obj, field) for field in field_names]
+        prop_values = [getattr(obj, prop) for prop in extra_properties]
+        writer.writerow(db_values + prop_values)
 
     return response
-
-
-admin.site.add_action(Export_selected_items_to_csv)
-
 
 class BroIdNullFilter(admin.SimpleListFilter):
     title = _("Met/Zonder BRO-ID")  # label in the sidebar
@@ -93,7 +102,7 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
 
     autocomplete_fields = ["groundwater_monitoring_tube"]
 
-    actions = ["deliver_to_bro", "check_status"]
+    actions = [export_selected_items_to_csv, "deliver_to_bro", "check_status"]
 
     readonly_fields = [
         "frd_bro_id",
@@ -119,6 +128,8 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
         syncer = FRDSync()
         syncer.handle(queryset, check_only=True)
 
+    
+
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):
     list_display = (
@@ -131,11 +142,13 @@ class InstrumentConfigurationAdmin(admin.ModelAdmin):
         "formation_resistance_dossier",
         "electromagnetic_measurement_method",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class ElectromagneticMeasurementMethodAdmin(admin.ModelAdmin):
     list_display = ("id",)
     list_filter = ()
+    actions = [export_selected_items_to_csv]
 
 
 class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
@@ -154,6 +167,7 @@ class GeoOhmMeasurementMethodAdmin(admin.ModelAdmin):
         "assessment_procedure",
         "measurement_date",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class CalculatedFormationresistanceAdmin(admin.ModelAdmin):
@@ -168,6 +182,7 @@ class CalculatedFormationresistanceAdmin(admin.ModelAdmin):
         "electromagnetic_measurement_method",
         "geo_ohm_measurement_method",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
@@ -181,11 +196,13 @@ class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
         "measurement_configuration",
         "datetime",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class GMWElectrodeReferenceAdmin(admin.ModelAdmin):
     list_display = ("id",)
     list_filter = ()
+    actions = [export_selected_items_to_csv]
 
 
 class ElectrodePairAdmin(admin.ModelAdmin):
@@ -198,6 +215,7 @@ class ElectrodePairAdmin(admin.ModelAdmin):
         "elektrode1",
         "elektrode2",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class MeasurementConfigurationAdmin(admin.ModelAdmin):
@@ -212,22 +230,26 @@ class MeasurementConfigurationAdmin(admin.ModelAdmin):
         "measurement_pair",
         "flowcurrent_pair",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class ElectromagneticSeriesAdmin(admin.ModelAdmin):
     list_display = ("id",)
 
     list_filter = ()
+    actions = [export_selected_items_to_csv]
 
 
 class FormationresistanceSeriesAdmin(admin.ModelAdmin):
     list_display = ("id",)
     list_filter = ()
+    actions = [export_selected_items_to_csv]
 
 
 class ElectromagneticRecordAdmin(admin.ModelAdmin):
     list_display = ("id",)
     list_filter = ()
+    actions = [export_selected_items_to_csv]
 
 
 class FormationresistanceRecordAdmin(admin.ModelAdmin):
@@ -244,6 +266,7 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
         "formationresistance",
         "status_qualitycontrol",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class FrdSyncLogAdmin(admin.ModelAdmin):
@@ -278,6 +301,7 @@ class FrdSyncLogAdmin(admin.ModelAdmin):
         "delivery_id",
         "delivery_type",
     )
+    actions = [export_selected_items_to_csv]
 
 
 _register(FormationResistanceDossier, FormationResistanceDossierAdmin)
