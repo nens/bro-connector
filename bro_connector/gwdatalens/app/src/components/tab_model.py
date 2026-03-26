@@ -225,6 +225,19 @@ def render_content(data: DataManager, selected_data: List):
             dcc.Store(id=ids.MODEL_DIAGNOSTICS_CHART_2),
             dcc.Store(id=ids.MODEL_SAVE_BUTTON_1),
             dcc.Store(id=ids.MODEL_SAVE_BUTTON_2),
+            dbc.Row(
+                dbc.Col(
+                    html.Small(
+                        [
+                            html.I(className="fa-solid fa-circle-info me-1 text-info"),
+                            t_("general.model_saved_only_disclaimer"),
+                        ],
+                        className="text-muted",
+                    ),
+                    width=12,
+                ),
+                className="mt-2",
+            ),
         ],
         fluid=True,
     )

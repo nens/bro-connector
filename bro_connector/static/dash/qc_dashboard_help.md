@@ -1,70 +1,53 @@
-The GW DataLens dashboard can be used to validate groundwater measurements.
+GW DataLens is a dashboard for viewing and quality-controlling groundwater head time series.
 
 ---
 
-The validation process consists of the following steps:
+## Workflow
 
-   1. Select a head time series from a database. ([Overview](#overview-tab))
-   2. Run a set of error-detection rules to identify potentially suspect measurements. ([Error Detection](#error-detection-tab))
-   3. The time series is manually reviewed (accepting or rejecting) suggestions made by the  error detection algorithm. ([Manual Review](#error-detection-tab))
+1. **Select** a time series. → [Overview](#overview-tab)
+2. **Run error detection** to flag suspect measurements. → [Error Detection](#error-detection-tab)
+3. **Correct** measurement values where needed. → [Corrections](#corrections-tab)
+4. **Review** flagged measurements: accept, reject, or assign labels manually. → [Review](#review-tab)
 
-Additionally, there are two extra tabs that might prove useful in support of this process:
+Optionally, create or inspect time series models used in error detection. → [Models](#time-series-models-tab)
 
-- Time series models can be inspected or created using the [Time Series
-  Models](#time-series-models-tab) tab. These models can be used in the error detection step.
-- Manual control observations can be reviewed and modified in the
-  [Corrections](#corrections-tab).
+Use the **time range** dropdown (top right) to set the period used for loading and displaying data.
+
+---
 
 ### Overview tab
 
-The overview tab consists of three elements:
+- **Map** (top left): select locations with the mouse or rectangle tool (up to 50).
+- **Table** (top right): (Shift+)click rows to plot time series.
+- **Chart** (bottom): shows the selected time series.
 
-- Interactive map view showing measurement locations (top left)
-- Interactive table showing measurement location metadata (top right)
-- Interactive chart showing time series (bottom)
+### Models tab
 
-There are two ways of plotting head time series:
-
-- Select one or multiple (up to 10) measurement locations on the map using your
-     mouse or the rectangle selection tool.
-- (Shift+)Click on row(s) in the table.
-
-### Time Series Models tab
-
-The time series models tab allows users to create or inspect time series models using
-Pastas and Pastastore. Models are created using precipitation and evaporation from the
-nnearest KNMI station.
+Create or inspect Pastas time series models (stored in a PastaStore). Models use precipitation and evaporation from the nearest KNMI station and can be used as a reference signal in error detection.
 
 ### Error Detection tab
 
-The Error Detection tab lets you run automatic error detection schemes on head time
-series (see the [`traval`](https://traval.readthedocs.io) package). The rules that
-comprise the error detection algorithm are shown in the expandable section at the
-bottom. The error detection rules that are applied can be modified or adjusted in the
-dashboard.
+Runs automatic error detection using [`traval`](https://traval.readthedocs.io).
 
-Steps:
+1. Select a time series from the dropdown.
+2. Optionally adjust rules and parameters under **Show Parameters**.
+3. Click **Run TRAVAL**.
 
-   1. Use the first dropdown to select or search for any time series in the database.
-   2. Optionally modify the rules or parameters used for error detection under the `Show Parameters` button.
-   3. Press the "Run TRAVAL" button.
-   4. The chart will update showing the original time series and the measurements that were deemed suspect by the error detection algorithm. If available a pastas model simulation and prediction interval are also shown in the chart.
-
-### Manual Review tab
-
-The Manual Review tab lets you review the results of the error detection scheme and
-commit your manual review to the database, or download the results as a CSV file.
+The chart shows suspect measurements and, if available, a Pastas model simulation with prediction interval.
 
 ### Corrections tab
 
-The Corrections tab lets you inspect observation well locations in more detail.
-It shows a graph of well configuration (showing all tubes), and the time series
-for each observation well. It lets you select two time series for comparison, and
-edit manual observations with a helpful calculator tool at the bottom. Modifcations
-can be commited to the database.
+Shows all tubes at a location with well configuration and screen depths. Select up to two time series for side-by-side comparison and edit values manually. Optionally use the calculator tool to compute levels relative to NAP. Changes can be committed to the database.
+
+### Review tab
+
+Accept or reject flagged measurements and commit the review to the database, or download results as a CSV file.
+
+---
 
 ### References
 
-- Documentation for [traval](https://traval.readthedocs.io/en/latest/).
-- Documentation for [pastas](https://pastas.dev/).
-- Documentation for [pastastore](https://pastastore.readthedocs.io/en/latest/).
+- [`traval`](https://traval.readthedocs.io/en/latest/) — error detection package
+- [`pastas`](https://pastas.dev/) — time series modelling
+- [`pastastore`](https://pastastore.readthedocs.io/en/latest/) — model storage
+- [`hydropandas`](https://hydropandas.readthedocs.io/en/latest/) — download meteorological data

@@ -5,7 +5,7 @@ from typing import Any
 
 import pandas as pd
 import pastas as ps
-from dash import Input, Output, State, no_update
+from dash import Input, Output, State, html, no_update
 from dash.exceptions import PreventUpdate
 from packaging.version import parse
 from pastas.extensions import register_plotly
@@ -29,6 +29,31 @@ register_plotly()
 
 PASTASTORE_GT_1_7_1 = parse(PASTASTORE_VERSION) > parse("1.7.1")
 
+
+def _generate_button_idle() -> html.Span:
+    return html.Span(
+        [html.I(className="fa-solid fa-gear"), " " + t_("general.generate")]
+    )
+
+
+def _generate_button_loading() -> html.Span:
+    return html.Span(
+        [html.I(className="fa-solid fa-spinner fa-spin"), " " + t_("general.generate")]
+    )
+
+
+def _save_button_idle() -> html.Span:
+    return html.Span(
+        [html.I(className="fa-solid fa-floppy-disk"), " " + t_("general.save")]
+    )
+
+
+def _save_button_loading() -> html.Span:
+    return html.Span(
+        [html.I(className="fa-solid fa-spinner fa-spin"), " " + t_("general.save")]
+    )
+
+
 # %% MODEL TAB
 
 
@@ -50,6 +75,11 @@ def register_model_callbacks(app, data):
         running=[
             (Output(ids.LOADING_MODEL_RESULTS_CHART, "display"), "show", "auto"),
             (Output(ids.LOADING_MODEL_DIAGNOSTICS_CHART, "display"), "show", "auto"),
+            (
+                Output(ids.MODEL_GENERATE_BUTTON, "children"),
+                _generate_button_loading(),
+                _generate_button_idle(),
+            ),
         ],
         prevent_initial_call=True,
     )
@@ -86,9 +116,14 @@ def register_model_callbacks(app, data):
             # Get well name for model
             name = well_service.get_well_name(wid)
 
-            # Add or update series in pastastore
+            # Add or update series in pastastore (update also overwrites, to ensure
+            # measurements that have been removed in a time series through the app
+            # are also purged in the pastastore)
             if name in data.pastastore.oseries_names:
-                data.pastastore.update_oseries(ts, name, force=True)
+                ometa = data.pastastore.get_metadata(
+                    libname="oseries", names=name, as_frame=False
+                )
+                data.pastastore.add_oseries(ts, name, ometa, overwrite=True)
                 logger.info(
                     "Head time series '%s' updated in pastastore database.", name
                 )
@@ -105,11 +140,13 @@ def register_model_callbacks(app, data):
 
             # Get meteorological data if available
             if PASTASTORE_GT_1_7_1:
-                data.get_knmi_data(name)
+                data.get_knmi_data(name, tmin=tmin, tmax=tmax)
 
             # Create and solve model
+            ts.index.name = None
             ml = ps.Model(ts)
             data.pastastore.add_recharge(ml)
+
             ml.solve(freq="D", tmin=tmin, tmax=tmax, report=False)
             ml.add_noisemodel(ps.ArNoiseModel())
             ml.solve(freq="D", tmin=tmin, tmax=tmax, report=False, initial=False)
@@ -144,6 +181,13 @@ def register_model_callbacks(app, data):
         Output(ids.ALERT_SAVE_MODEL, "data"),
         Input(ids.MODEL_SAVE_BUTTON, "n_clicks"),
         State(ids.PASTAS_MODEL_STORE, "data"),
+        running=[
+            (
+                Output(ids.MODEL_SAVE_BUTTON, "children"),
+                _save_button_loading(),
+                _save_button_idle(),
+            ),
+        ],
         prevent_initial_call=True,
     )
     @log_callback(
@@ -167,7 +211,11 @@ def register_model_callbacks(app, data):
         os.remove("temp.pas")
 
         try:
+            # NOTE: avoid issue where freq of series is not set when loading from
+            # pas file.
+            data.pastastore.validator.set_check_model_series_values(False)
             data.pastastore.add_model(ml, overwrite=True)
+            data.pastastore.validator.set_check_model_series_values(True)
             return AlertBuilder.success(
                 f"Success! Saved model for {ml.oseries.name} in Pastastore!"
             )

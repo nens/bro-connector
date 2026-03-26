@@ -2,10 +2,11 @@
 
 # %%
 import logging
+from typing import Optional, Sequence, Union
 from urllib.parse import quote
 
 import pandas as pd
-from sqlalchemy import and_, create_engine, func, select
+from sqlalchemy import case, column, create_engine, func, select, table
 from sqlalchemy.dialects import postgresql
 
 from gwdatalens.app.config import config
@@ -230,8 +231,6 @@ def sql_count_measurements():
     Returns counts for both 'reguliereMeting' and 'controlemeting' observation types
     as separate columns on the same row for each well/tube combination.
     """
-    from sqlalchemy import case
-
     measurements_per_observation = (
         select(
             datamodel.MeasurementTvp.observation_id,
@@ -319,6 +318,227 @@ def sql_count_measurements():
     return stmt
 
 
+def sql_get_timeseries_date_range(
+    observation_type: Optional[Union[str, Sequence[str]]] = None,
+):
+    """Return first/last observation timestamp per well/tube time series.
+
+    Uses the same measurement scope as :func:`sql_get_timeseries` and
+    :func:`sql_count_measurements` (MeasurementTvp -> Observation ->
+    GroundwaterLevelDossier -> TubeStatic -> WellStatic) and excludes
+    ``NULL`` timestamps.
+
+    Notes
+    -----
+    This query is intentionally optimized for speed:
+    - no window function
+    - no deduplication step
+
+    Duplicate rows at identical ``measurement_time`` do not affect
+    ``MIN``/``MAX`` results, so skipping deduplication preserves correctness
+    while avoiding unnecessary work.
+
+    Parameters
+    ----------
+    observation_type : str or sequence of str, optional
+        Optional filter for observation type(s), e.g. ``"reguliereMeting"``
+        and/or ``"controlemeting"``. When omitted, all types are included.
+
+    Returns
+    -------
+    sqlalchemy.sql.Select
+        Columns: well_static_id, tube_static_id, bro_id, well_code,
+        nitg_code, tube_number, first_observation_date, last_observation_date
+    """
+    base = (
+        select(
+            datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
+                "well_static_id"
+            ),
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
+                "tube_static_id"
+            ),
+            datamodel.WellStatic.bro_id,
+            datamodel.WellStatic.well_code,
+            datamodel.WellStatic.nitg_code,
+            datamodel.TubeStatic.tube_number,
+            func.min(datamodel.MeasurementTvp.measurement_time).label(
+                "first_observation_date"
+            ),
+            func.max(datamodel.MeasurementTvp.measurement_time).label(
+                "last_observation_date"
+            ),
+        )
+        .select_from(datamodel.MeasurementTvp)
+        .join(
+            datamodel.Observation,
+            datamodel.Observation.observation_id
+            == datamodel.MeasurementTvp.observation_id,
+        )
+        .join(
+            datamodel.ObservationMetadata,
+            datamodel.ObservationMetadata.observation_metadata_id
+            == datamodel.Observation.observation_metadata_id,
+        )
+        .join(
+            datamodel.GroundwaterLevelDossier,
+            datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id
+            == datamodel.Observation.groundwater_level_dossier_id,
+        )
+        .join(
+            datamodel.TubeStatic,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id
+            == datamodel.GroundwaterLevelDossier.groundwater_monitoring_tube_id,
+        )
+        .join(
+            datamodel.WellStatic,
+            datamodel.WellStatic.groundwater_monitoring_well_static_id
+            == datamodel.TubeStatic.groundwater_monitoring_well_static_id,
+        )
+        .where(datamodel.MeasurementTvp.measurement_time.is_not(None))
+    )
+
+    if observation_type is not None:
+        if isinstance(observation_type, str):
+            base = base.where(
+                datamodel.ObservationMetadata.observation_type == observation_type
+            )
+        else:
+            base = base.where(
+                datamodel.ObservationMetadata.observation_type.in_(observation_type)
+            )
+
+    stmt = base.group_by(
+        datamodel.WellStatic.groundwater_monitoring_well_static_id,
+        datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+        datamodel.WellStatic.bro_id,
+        datamodel.WellStatic.well_code,
+        datamodel.WellStatic.nitg_code,
+        datamodel.TubeStatic.tube_number,
+    )
+
+    return stmt
+
+
+def sql_count_measurements_deduplicated():
+    """Count deduplicated measurements per well/tube, matching sql_get_timeseries.
+
+    Applies the same ``ROW_NUMBER()`` deduplication logic as
+    :func:`sql_get_timeseries` (``deduplicate=True``): for each
+    ``(well_static_id, tube_static_id, measurement_time)`` triple, only the
+    row with the highest ``measurement_tvp_id`` survives.  The surviving rows
+    are then counted and pivoted into ``metingen`` / ``controlemetingen``
+    columns, exactly as :func:`sql_count_measurements` does, but with the
+    deduplication applied first.
+
+    This query is more expensive than :func:`sql_count_measurements` because
+    it must sort every measurement row by ``measurement_tvp_id`` to determine
+    which one wins per timestamp.  Use it to compare against the old counts
+    and to detect how many duplicate timestamps exist per tube.
+
+    Returns
+    -------
+    sqlalchemy.sql.Select
+        Columns: well_static_id, tube_static_id, bro_id, well_code, nitg_code,
+        tube_number, metingen, controlemetingen
+    """
+    # Step 1 – apply the same ROW_NUMBER window as sql_get_timeseries, but
+    # partition by (well_static_id, tube_static_id, measurement_time) so that
+    # the global scan covers every well/tube in a single pass.
+    inner = (
+        select(
+            datamodel.MeasurementTvp.measurement_tvp_id,
+            datamodel.MeasurementTvp.measurement_time,
+            datamodel.ObservationMetadata.observation_type,
+            datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
+                "well_static_id"
+            ),
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
+                "tube_static_id"
+            ),
+            datamodel.WellStatic.bro_id,
+            datamodel.WellStatic.well_code,
+            datamodel.WellStatic.nitg_code,
+            datamodel.TubeStatic.tube_number,
+            func.row_number()
+            .over(
+                partition_by=[
+                    datamodel.WellStatic.groundwater_monitoring_well_static_id,
+                    datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+                    datamodel.MeasurementTvp.measurement_time,
+                ],
+                order_by=datamodel.MeasurementTvp.measurement_tvp_id.desc(),
+            )
+            .label("rn"),
+        )
+        .select_from(datamodel.MeasurementTvp)
+        .join(
+            datamodel.Observation,
+            datamodel.MeasurementTvp.observation_id
+            == datamodel.Observation.observation_id,
+        )
+        .join(
+            datamodel.ObservationMetadata,
+            datamodel.Observation.observation_metadata_id
+            == datamodel.ObservationMetadata.observation_metadata_id,
+        )
+        .join(
+            datamodel.GroundwaterLevelDossier,
+            datamodel.Observation.groundwater_level_dossier_id
+            == datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id,
+        )
+        .join(
+            datamodel.TubeStatic,
+            datamodel.GroundwaterLevelDossier.groundwater_monitoring_tube_id
+            == datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+        )
+        .join(
+            datamodel.WellStatic,
+            datamodel.TubeStatic.groundwater_monitoring_well_static_id
+            == datamodel.WellStatic.groundwater_monitoring_well_static_id,
+        )
+        .where(datamodel.MeasurementTvp.measurement_time.is_not(None))
+        .cte("ranked_all_measurements")
+    )
+
+    # Step 2 – keep only the winning row per timestamp (rn = 1), then count
+    # and pivot into metingen / controlemetingen columns.
+    stmt = (
+        select(
+            inner.c.well_static_id,
+            inner.c.tube_static_id,
+            inner.c.bro_id,
+            inner.c.well_code,
+            inner.c.nitg_code,
+            inner.c.tube_number,
+            func.sum(
+                case(
+                    (inner.c.observation_type == "reguliereMeting", 1),
+                    else_=0,
+                )
+            ).label("metingen"),
+            func.sum(
+                case(
+                    (inner.c.observation_type == "controlemeting", 1),
+                    else_=0,
+                )
+            ).label("controlemetingen"),
+        )
+        .select_from(inner)
+        .where(inner.c.rn == 1)
+        .group_by(
+            inner.c.well_static_id,
+            inner.c.tube_static_id,
+            inner.c.bro_id,
+            inner.c.well_code,
+            inner.c.nitg_code,
+            inner.c.tube_number,
+        )
+    )
+
+    return stmt
+
+
 def sql_observations_for_well_and_tube(well_static_id: int, tube_number: int):
     """Return observations for a specific well_static_id and tube_number.
 
@@ -388,7 +608,64 @@ def sql_observations_for_well_and_tube(well_static_id: int, tube_number: int):
     return stmt
 
 
-def sql_measurements_for_observation(observation_id: int):
+def sql_measurement_counts_per_observation():
+    """Count measurements per observation with well/tube context."""
+    stmt = (
+        select(
+            datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
+                "well_static_id"
+            ),
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
+                "tube_static_id"
+            ),
+            datamodel.Observation.observation_id,
+            datamodel.ObservationMetadata.observation_type,
+            func.count(func.distinct(datamodel.MeasurementTvp.measurement_time)).label(
+                "number_of_measurements"
+            ),
+        )
+        .select_from(datamodel.MeasurementTvp)
+        .join(
+            datamodel.Observation,
+            datamodel.Observation.observation_id
+            == datamodel.MeasurementTvp.observation_id,
+        )
+        .join(
+            datamodel.ObservationMetadata,
+            datamodel.ObservationMetadata.observation_metadata_id
+            == datamodel.Observation.observation_metadata_id,
+        )
+        .join(
+            datamodel.GroundwaterLevelDossier,
+            datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id
+            == datamodel.Observation.groundwater_level_dossier_id,
+        )
+        .join(
+            datamodel.TubeStatic,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id
+            == datamodel.GroundwaterLevelDossier.groundwater_monitoring_tube_id,
+        )
+        .join(
+            datamodel.WellStatic,
+            datamodel.WellStatic.groundwater_monitoring_well_static_id
+            == datamodel.TubeStatic.groundwater_monitoring_well_static_id,
+        )
+        .group_by(
+            datamodel.WellStatic.groundwater_monitoring_well_static_id,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+            datamodel.Observation.observation_id,
+            datamodel.ObservationMetadata.observation_type,
+        )
+        .order_by(
+            datamodel.WellStatic.groundwater_monitoring_well_static_id,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+            datamodel.Observation.observation_id,
+        )
+    )
+    return stmt
+
+
+def sql_measurements_for_observation_id(observation_id: int):
     """Return all measurements for a specific observation.
 
     Useful for inspecting the actual measurement data for a given observation.
@@ -418,41 +695,214 @@ def sql_measurements_for_observation(observation_id: int):
     return stmt
 
 
-def sql_get_timeseries(well_static_id: int, tube_static_id: int, observation_type: str):
-    stmt = (
-        select(
-            datamodel.MeasurementTvp.measurement_time,
-            datamodel.MeasurementTvp.field_value,
-            datamodel.MeasurementTvp.calculated_value,
-            datamodel.MeasurementPointMetadata.status_quality_control,
-            datamodel.MeasurementPointMetadata.status_quality_control_reason_datalens,
-            datamodel.MeasurementPointMetadata.censor_reason,
-            datamodel.MeasurementPointMetadata.value_limit,
-            datamodel.MeasurementTvp.field_value_unit,
-            datamodel.MeasurementTvp.measurement_tvp_id,
-            datamodel.MeasurementTvp.measurement_point_metadata_id,
-            datamodel.MeasurementTvp.initial_calculated_value,
-            datamodel.MeasurementTvp.correction_reason,
-            datamodel.MeasurementTvp.correction_time,
+def sql_get_timeseries(
+    well_static_id: int,
+    tube_static_id: int,
+    observation_type: Optional[Union[str, Sequence[str]]] = None,
+    tmin: Optional[str] = None,
+    tmax: Optional[str] = None,
+    deduplicate: bool = True,
+):
+    """Return all measurements for a specific well and tube.
+
+    Parameters
+    ----------
+    well_static_id : int
+        The groundwater_monitoring_well_static_id to filter on.
+    tube_static_id : int
+        The groundwater_monitoring_tube_static_id to filter on.
+    observation_type : str or sequence of str, optional
+        Filter by observation type, e.g. ``"reguliereMeting"`` or
+        ``"controlemeting"``.  When omitted (default) both types are returned.
+    tmin : str or None, optional
+        ISO-8601 date string (or anything castable by PostgreSQL to a
+        ``timestamp``).  When provided only measurements at or after this
+        timestamp are returned.  This filter is applied *inside* the CTE so
+        PostgreSQL can use the index on ``measurement_time``.
+    tmax : str or None, optional
+        ISO-8601 date string.  When provided only measurements at or before
+        this timestamp are returned.
+    deduplicate : bool, optional
+        When ``True`` (default) a ``ROW_NUMBER()`` window function is used to
+        keep one row per distinct ``measurement_time`` across all observations
+        for the well/tube. Preference order is:
+
+        1. rows with non-null ``measurement_point_metadata_id``;
+        2. highest ``measurement_tvp_id`` as deterministic tiebreaker.
+
+        This eliminates duplicates that arise when the same timestamp appears
+        in multiple observations (e.g. after a BRO correction upload), at the
+        cost of an extra sort on the server.
+
+        Set to ``False`` when the data is known to be clean and the
+        window-function overhead is unacceptable; in that case duplicate
+        timestamps may appear in the result and are left to the caller to
+        handle.
+
+    Returns
+    -------
+    sqlalchemy.sql.Select
+        A statement that returns all measurements with well/tube context.
+    """
+    # Base columns shared by both the deduplicated and raw paths.
+    _base_columns = [
+        datamodel.MeasurementTvp.measurement_tvp_id,
+        datamodel.MeasurementTvp.measurement_time,
+        datamodel.MeasurementTvp.field_value,
+        datamodel.MeasurementTvp.field_value_unit,
+        datamodel.MeasurementTvp.calculated_value,
+        datamodel.MeasurementTvp.initial_calculated_value,
+        datamodel.MeasurementTvp.correction_reason,
+        datamodel.MeasurementTvp.correction_time,
+        datamodel.MeasurementPointMetadata.measurement_point_metadata_id,
+        datamodel.MeasurementPointMetadata.status_quality_control,
+        datamodel.MeasurementPointMetadata.status_quality_control_reason_datalens,
+        datamodel.MeasurementPointMetadata.censor_reason,
+        datamodel.MeasurementPointMetadata.value_limit,
+        datamodel.ObservationMetadata.observation_type,
+        datamodel.Observation.observation_id,
+        datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
+            "well_static_id"
+        ),
+        datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
+            "tube_static_id"
+        ),
+        datamodel.WellStatic.bro_id,
+        datamodel.WellStatic.well_code,
+        datamodel.WellStatic.nitg_code,
+        datamodel.TubeStatic.tube_number,
+    ]
+
+    # Common join chain + well/tube filters, shared by both paths.
+    base = (
+        select(*_base_columns)
+        .select_from(datamodel.MeasurementTvp)
+        .outerjoin(
+            datamodel.MeasurementPointMetadata,
+            datamodel.MeasurementTvp.measurement_point_metadata_id
+            == datamodel.MeasurementPointMetadata.measurement_point_metadata_id,
         )
-        .join(datamodel.MeasurementPointMetadata)
-        .join(datamodel.Observation)
-        .join(datamodel.ObservationMetadata)
-        .join(datamodel.GroundwaterLevelDossier)
-        .join(datamodel.TubeStatic)
-        .join(datamodel.WellStatic)
-        .filter(
-            and_(
-                datamodel.WellStatic.groundwater_monitoring_well_static_id
-                == _to_int(well_static_id),
-            ),
+        .join(
+            datamodel.Observation,
+            datamodel.MeasurementTvp.observation_id
+            == datamodel.Observation.observation_id,
+        )
+        .join(
+            datamodel.ObservationMetadata,
+            datamodel.Observation.observation_metadata_id
+            == datamodel.ObservationMetadata.observation_metadata_id,
+        )
+        .join(
+            datamodel.GroundwaterLevelDossier,
+            datamodel.Observation.groundwater_level_dossier_id
+            == datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id,
+        )
+        .join(
+            datamodel.TubeStatic,
+            datamodel.GroundwaterLevelDossier.groundwater_monitoring_tube_id
+            == datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+        )
+        .join(
+            datamodel.WellStatic,
+            datamodel.TubeStatic.groundwater_monitoring_well_static_id
+            == datamodel.WellStatic.groundwater_monitoring_well_static_id,
+        )
+        .where(
+            datamodel.WellStatic.groundwater_monitoring_well_static_id
+            == _to_int(well_static_id),
             datamodel.TubeStatic.groundwater_monitoring_tube_static_id
             == _to_int(tube_static_id),
-            datamodel.ObservationMetadata.observation_type == observation_type,
+            datamodel.MeasurementTvp.measurement_time.is_not(None),
         )
-        .order_by(datamodel.MeasurementTvp.measurement_time)
     )
+
+    if observation_type is not None:
+        if isinstance(observation_type, str):
+            base = base.where(
+                datamodel.ObservationMetadata.observation_type == observation_type
+            )
+        else:
+            base = base.where(
+                datamodel.ObservationMetadata.observation_type.in_(observation_type)
+            )
+
+    # Date-range filters applied before the window so the planner can use the
+    # index on measurement_time and prune the scan early.
+    if tmin is not None:
+        base = base.where(datamodel.MeasurementTvp.measurement_time >= tmin)
+    if tmax is not None:
+        base = base.where(datamodel.MeasurementTvp.measurement_time <= tmax)
+
+    if not deduplicate:
+        # Fast path: no window function.  Callers receive raw rows and are
+        # responsible for handling any duplicate timestamps.
+        return base.order_by(datamodel.MeasurementTvp.measurement_time)
+
+    # Deduplicate path: add ROW_NUMBER() partitioned by measurement_time only
+    # (across all observations for this well/tube). For any timestamp shared
+    # by multiple observations, prefer rows that still link to
+    # measurement_point_metadata (needed for QC updates), then use highest
+    # measurement_tvp_id as deterministic tie-breaker.
+    inner = base.add_columns(
+        func.row_number()
+        .over(
+            partition_by=[datamodel.MeasurementTvp.measurement_time],
+            order_by=[
+                datamodel.MeasurementTvp.measurement_point_metadata_id.is_(None),
+                datamodel.MeasurementTvp.measurement_tvp_id.desc(),
+            ],
+        )
+        .label("rn")
+    )
+    ranked = inner.cte("ranked_measurements")
+
+    stmt = (
+        select(
+            ranked.c.measurement_tvp_id,
+            ranked.c.measurement_time,
+            ranked.c.field_value,
+            ranked.c.field_value_unit,
+            ranked.c.calculated_value,
+            ranked.c.initial_calculated_value,
+            ranked.c.correction_reason,
+            ranked.c.correction_time,
+            ranked.c.measurement_point_metadata_id,
+            ranked.c.status_quality_control,
+            ranked.c.status_quality_control_reason_datalens,
+            ranked.c.censor_reason,
+            ranked.c.value_limit,
+            ranked.c.observation_type,
+            ranked.c.observation_id,
+            ranked.c.well_static_id,
+            ranked.c.tube_static_id,
+            ranked.c.bro_id,
+            ranked.c.well_code,
+            ranked.c.nitg_code,
+            ranked.c.tube_number,
+        )
+        .select_from(ranked)
+        .where(ranked.c.rn == 1)
+        .order_by(ranked.c.measurement_time)
+    )
+
     return stmt
+
+
+def sql_get_krw_lichaam_per_tube():
+    """Return krw_lichaam per groundwater_monitoring_tube_static_id."""
+    gld_grondwaterlichaam = table(
+        "grondwaterlichaam",
+        column("groundwater_monitoring_tube_static_id"),
+        column("krw_lichaam"),
+        schema="gld",
+    )
+
+    return select(
+        gld_grondwaterlichaam.c.groundwater_monitoring_tube_static_id.label(
+            "tube_static_id"
+        ),
+        gld_grondwaterlichaam.c.krw_lichaam,
+    )
 
 
 # =============================================================================
@@ -515,26 +965,26 @@ def sql_observations_per_gld():
     """Show all Observations per GroundwaterLevelDossier with full context."""
     stmt = (
         select(
+            datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
+                "well_static_id"
+            ),
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
+                "tube_static_id"
+            ),
+            datamodel.WellStatic.bro_id,
+            datamodel.WellStatic.nitg_code,
             datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id.label(
                 "gld_id"
             ),
             datamodel.Observation.observation_id,
             datamodel.ObservationMetadata.observation_type,
-            datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
-                "tube_static_id"
-            ),
             datamodel.TubeStatic.tube_number,
             datamodel.TubeDynamic.groundwater_monitoring_tube_dynamic_id.label(
                 "tube_dynamic_id"
             ),
             datamodel.TubeDynamic.tube_top_position,
             datamodel.TubeDynamic.date_created.label("tube_dynamic_date_created"),
-            datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
-                "well_static_id"
-            ),
-            datamodel.WellStatic.bro_id,
-            datamodel.WellStatic.nitg_code,
-            datamodel.WellDynamic.ground_water_monitoring_well_dynamic_id.label(
+            datamodel.WellDynamic.groundwater_monitoring_well_dynamic_id.label(
                 "well_dynamic_id"
             ),
             datamodel.WellDynamic.ground_level_position,
@@ -588,6 +1038,9 @@ def sql_all_observations_overview():
             ),
             datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
                 "well_static_id"
+            ),
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
+                "tube_static_id"
             ),
             datamodel.WellStatic.bro_id,
             datamodel.WellStatic.nitg_code,
@@ -788,12 +1241,27 @@ def sql_duplicate_tube_numbers_per_well():
     return stmt
 
 
+def sql_count_measurements_per_observation():
+    stmt = (
+        select(
+            datamodel.MeasurementTvp.observation_id,
+            func.count(func.distinct(datamodel.MeasurementTvp.measurement_time)).label(
+                "number_of_measurements"
+            ),
+        )
+        .select_from(datamodel.MeasurementTvp)
+        .group_by(datamodel.MeasurementTvp.observation_id)
+    )
+    return stmt
+
+
 def run_sql(stmt, print_sql: bool = False):
-    user = config.get("user")
-    password = config.get("password")
-    host = config.get("host")
-    port = config.get("port")
-    database = config.get("database")
+    dbconfig = config.get_database_config()
+    user = dbconfig.get("user")
+    password = dbconfig.get("password")
+    host = dbconfig.get("host")
+    port = dbconfig.get("port")
+    database = dbconfig.get("database")
 
     # URL-encode the password
     encoded_password = quote(password, safe="")
@@ -814,24 +1282,3 @@ def run_sql(stmt, print_sql: bool = False):
     with engine.connect() as conn:
         df = pd.read_sql(stmt, con=conn)
     return df
-
-
-# %%
-if __name__ == "__main__":
-    # # Minimal test: print the compiled SQL and optionally run when DATABASE_URL is set
-    # stmt = sql_get_gmws()
-    # compiled = stmt.compile(
-    #     dialect=postgresql.dialect(), compile_kwargs={"literal_binds": False}
-    # )
-    # print("\nCompiled SQL (PostgreSQL dialect):\n")
-    # print(compiled)
-
-    # with engine.connect() as conn:
-    #     df = gpd.read_postgis(stmt, con=conn, geom_col="coordinates")
-    #     print("\nSample result (head):\n", df.head())
-
-    # Test count
-    df = run_sql(sql_count_measurements(), print_sql=True)
-    print("\nSample result (head):\n", df.head())
-
-# %%
