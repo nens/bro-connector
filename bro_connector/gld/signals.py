@@ -217,6 +217,7 @@ def on_save_observation(sender, instance: Observation, **kwargs):
             observation_process=last_observation.observation_process,
         )
 
+
 @receiver(pre_save, sender=MeasurementTvp)
 def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     if not instance.measurement_point_metadata:

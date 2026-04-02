@@ -62,10 +62,10 @@ def plot_obs(
     wids: list[int] | None,
     data: DataManager,
     plot_manual_obs: bool = False,
-    tmin: Optional[str] = None,
-    tmax: Optional[str] = None,
-    time_range_preset: Optional[str] = None,
-) -> Dict[str, Any]:
+    tmin: str | None = None,
+    tmax: str | None = None,
+    time_range_preset: str | None = None,
+) -> dict[str, Any]:  # noqa: C901
     """Plots observation data for given monitoring wells and tube numbers.
 
     Parameters

@@ -189,7 +189,7 @@ class QCResultFormatter:
 
         if validated_mask.sum() == len(df):
             raise EmptyResultError(
-                "All observations are already validated %s" % df.index.name
+                f"All observations are already validated {df.index.name}"
             )
 
         # Clear data for validated observations (they appear but are skipped)

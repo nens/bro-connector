@@ -1,8 +1,9 @@
 import csv
 import datetime
+
 from django.contrib import admin
 from django.http import HttpResponse
-from django.urls import path, reverse
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from gmn.management.tasks.gmn_sync import sync_gmn
@@ -33,7 +34,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     # CSV setup
     response = HttpResponse(content_type="text/csv")
 
-    model_name = str(modeladmin.model._meta).replace(".","_")
+    model_name = str(modeladmin.model._meta).replace(".", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
@@ -160,7 +161,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
     inlines = (MeasuringPointsInline,)
 
     actions = [
-        export_selected_items_to_csv, 
+        export_selected_items_to_csv,
         "deliver_to_bro",
         "check_status",
         "generate_frd_fieldform",

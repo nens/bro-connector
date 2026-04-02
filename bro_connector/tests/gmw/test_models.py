@@ -1,7 +1,6 @@
 import pytest
-from django.contrib.gis.geos import Point
-
 from bro.models import Organisation
+from django.contrib.gis.geos import Point
 from gmw.models import GroundwaterMonitoringWellStatic
 from main.settings.base import KVK_USER
 
@@ -25,4 +24,4 @@ def test_deliver_to_bro_default_function(default_organisation):
         tube_number="1",
     )
 
-    assert tube.deliver_gld_to_bro == True
+    assert tube.deliver_gld_to_bro is True

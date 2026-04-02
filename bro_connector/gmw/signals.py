@@ -1,10 +1,10 @@
 import datetime
 
-from main.settings.base import KVK_USER
 import reversion
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
+from main.settings.base import KVK_USER
 
 from .models import (
     Event,
@@ -116,11 +116,15 @@ def on_save_gmw_synchronisatie_log(
 def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwargs):
     if instance.delivery_accountable_party is None:
         return
-    
-    if instance.delivery_accountable_party.company_number == int(KVK_USER) and instance.groundwater_monitoring_well_static_id is None:
-            instance.deliver_gmw_to_bro = True
-            instance.in_management = True 
-       
+
+    if (
+        instance.delivery_accountable_party.company_number == int(KVK_USER)
+        and instance.groundwater_monitoring_well_static_id is None
+    ):
+        instance.deliver_gmw_to_bro = True
+        instance.in_management = True
+
+
 # if (
 #         instance.in_management is False
 #         and instance.delivery_accountable_party.company_number == settings.KVK_USER

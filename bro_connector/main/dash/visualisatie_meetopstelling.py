@@ -220,7 +220,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
             mode="lines",
             opacity=0.0,
             customdata=np.transpose([maaiveld_y]),
-            line=dict(color="green", width=2),
+            line={"color": "green", "width": 2},
         )
 
         print("NOT SCATTER")
@@ -233,7 +233,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
             # Voor de spraakverwarring: onderkant buis is ook echt de
             # onderkant van de buis, daarom "stijbuis" i.p.v. "stijbuisdeel"
             name="stijgbuis",
-            marker=dict(color="#8c8c8c", line=dict(color="black")),
+            marker={"color": "#8c8c8c", "line": {"color": "black"}},
             customdata=np.transpose([stijgbuis, bk_stijgbuis, ok_stijgbuis]),
             hovertext=bk_stijgbuis,
             width=width_original,
@@ -253,9 +253,10 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
             y=flter,
             base=ok_filter,  # Startpunten van component 2
             name="filter",
-            marker=dict(
-                color="#abaaa9", line=dict(color="black")
-            ),  # Kleur van component 2
+            marker={
+                "color": "#abaaa9",
+                "line": {"color": "black"},
+            },  # Kleur van component 2
             width=width_original,
             marker_pattern_shape=["|" for _ in range(len(ok_filter))],
             customdata=np.transpose(
@@ -282,9 +283,10 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
                 y=ingeplaatst_deel,
                 base=ok_ingeplaatst_deel,  # Startpunten van component 3
                 name="ingeplaatst deel",
-                marker=dict(
-                    color="#abaaa9", line=dict(color="#8c8c8c")
-                ),  # Kleur van component 3
+                marker={
+                    "color": "#abaaa9",
+                    "line": {"color": "#8c8c8c"},
+                },  # Kleur van component 3
                 customdata=np.transpose([ingeplaatst_deel, bk_ingeplaatst_deel]),
                 hovertext=bk_stijgbuis,
                 width=width_ingeplaatst,
@@ -369,23 +371,23 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
         print("NOT TRACES 1")
 
         barchart.update_traces(
-            marker=dict(
-                size=8,
-                symbol="arrow-bar-left",
-                line=dict(width=2, color="DarkSlateGrey"),
-            ),
-            selector=dict(mode="markers"),
+            marker={
+                "size": 8,
+                "symbol": "arrow-bar-left",
+                "line": {"width": 2, "color": "DarkSlateGrey"},
+            },
+            selector={"mode": "markers"},
         )
 
         print("NOT TRACES 2")
 
         barchart.update_traces(
-            marker=dict(
-                size=8,
-                symbol="arrow-bar-left",
-                line=dict(width=2, color="DarkSlateGrey"),
-            ),
-            selector=dict(mode="markers"),
+            marker={
+                "size": 8,
+                "symbol": "arrow-bar-left",
+                "line": {"width": 2, "color": "DarkSlateGrey"},
+            },
+            selector={"mode": "markers"},
         )
 
         # Meetinstrument dieptes
@@ -436,12 +438,12 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
                     showlegend=showlegend,
                     name="druksensor",
                     text=name,
-                    marker=dict(
-                        color="purple",
-                        size=10,
-                        symbol="arrow-bar-up",
-                        angleref="previous",
-                    ),
+                    marker={
+                        "color": "purple",
+                        "size": 10,
+                        "symbol": "arrow-bar-up",
+                        "angleref": "previous",
+                    },
                 ),
                 row=1,
                 col=1,
@@ -469,7 +471,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
                 opacity=0.25,  # Doorzichtigheid van het vak
                 name="Maaiveld",
                 layer="below",  # Plaats het vak onder de grafiek
-                line=dict(width=0),  # Lijndikte van het vak
+                line={"width": 0},  # Lijndikte van het vak
             ),
             row=1,
             col=1,
@@ -483,7 +485,7 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
                 x1=len(startpunten) + 1,
                 y0=y_position,
                 y1=y_position,
-                line=dict(color="green", width=2),
+                line={"color": "green", "width": 2},
                 layer="below",
             ),
             row=1,
@@ -497,9 +499,11 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
             + 1,  # Set the ending x-coordinate (can be adjusted based on your data range)
             y0=0,  # Set the y-coordinate for the horizontal line
             y1=0,  # Set the y-coordinate for the horizontal line
-            line=dict(
-                color="black", width=1, dash="dash"
-            ),  # Customize line color, width, and style
+            line={
+                "color": "black",
+                "width": 1,
+                "dash": "dash",
+            },  # Customize line color, width, and style
             row=1,
             col=1,  # Make sure to adjust the row and col values based on your subplot configuration
         )
@@ -549,18 +553,18 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
 
         barchart.add_trace(
             go.Table(
-                header=dict(
-                    values=list(position_table.columns.values),
-                    font=dict(size=10),
-                    align="left",
-                ),
-                cells=dict(
-                    values=[
+                header={
+                    "values": list(position_table.columns.values),
+                    "font": {"size": 10},
+                    "align": "left",
+                },
+                cells={
+                    "values": [
                         position_table[k].tolist()
                         for k in list(position_table.columns.values)
                     ],
-                    align="left",
-                ),
+                    "align": "left",
+                },
             ),
             row=2,
             col=1,
@@ -572,25 +576,33 @@ def generate_graph(selection, selection_electrode, event, options, referentie): 
         # Update de layout van de grafiek
         barchart.update_layout(
             yaxis1_title=f"Hoogte ({referentie})",
-            xaxis1=dict(
-                showline=False, showgrid=False, zeroline=False, fixedrange=True
-            ),
+            xaxis1={
+                "showline": False,
+                "showgrid": False,
+                "zeroline": False,
+                "fixedrange": True,
+            },
             yaxis1_range=[
                 selection["onderkant filter"].min() - 2,
                 selection["bovenkant buis"].values[0] + 2,
             ],
-            yaxis1=dict(showline=True, showgrid=False, zeroline=False, fixedrange=True),
+            yaxis1={
+                "showline": True,
+                "showgrid": False,
+                "zeroline": False,
+                "fixedrange": True,
+            },
             barmode="stack",  # Gebruik de gestapelde modus
             # paper_bgcolor="rgba(0,0,0,0)",
-            margin=dict(l=30, r=10, t=30, b=10),
+            margin={"l": 30, "r": 10, "t": 30, "b": 10},
             showlegend=True,
-            legend=dict(
-                orientation="v",
-                yanchor="top",
-                y=1,
-                xanchor="right",
-                x=1.15,
-            ),
+            legend={
+                "orientation": "v",
+                "yanchor": "top",
+                "y": 1,
+                "xanchor": "right",
+                "x": 1.15,
+            },
             height=800,
         )
 

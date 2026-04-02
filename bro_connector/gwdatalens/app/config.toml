@@ -17,4 +17,4 @@ LOG_LEVEL = "WARNING"          # set logging level: DEBUG, INFO, WARNING, ERROR,
 connector = "pas"               # database connector pas|dict|arctic
 name = "zeeland_bro"            # name of the pastas database
 path = "./gwdatalens/pastasdb/" # path to pastas model database
-update_knmi = false 
+update_knmi = false

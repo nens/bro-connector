@@ -218,13 +218,13 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
             quality_regime=dossier.quality_regime
             if dossier.quality_regime
             else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
-            defaults=dict(
-                validation_status="VALID",
-                delivery_id=None,
-                delivery_type="register",
-                delivery_status="OPGENOMEN_LVBRO",
-                comments="Imported into BRO-Connector.",
-            ),
+            defaults={
+                "validation_status": "VALID",
+                "delivery_id": None,
+                "delivery_type": "register",
+                "delivery_status": "OPGENOMEN_LVBRO",
+                "comments": "Imported into BRO-Connector.",
+            },
         )[0]
         return
 

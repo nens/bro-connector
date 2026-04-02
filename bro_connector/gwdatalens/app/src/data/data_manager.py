@@ -75,8 +75,8 @@ class DataManager:
     def get_knmi_data(
         self,
         name: str,
-        tmin: Optional[Any] = None,
-        tmax: Optional[Any] = None,
+        tmin: Any | None = None,
+        tmax: Any | None = None,
     ) -> None:
         """Get nearest KNMI meteo time series for a location.
 

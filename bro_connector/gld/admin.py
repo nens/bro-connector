@@ -8,10 +8,9 @@ import reversion
 from django.contrib import admin, messages
 from django.db.models import fields
 from django.http import HttpResponse
-from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from django.utils.html import format_html
-
+from django.utils.translation import gettext_lazy as _
 from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
 )
@@ -48,7 +47,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     # CSV setup
     response = HttpResponse(content_type="text/csv")
 
-    model_name = str(modeladmin.model._meta).replace(".","_")
+    model_name = str(modeladmin.model._meta).replace(".", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
@@ -171,7 +170,6 @@ class MeasurementTvpInline(admin.TabularInline):
     max_num = 0
     max_viewable = 50
 
-
     def get_queryset(self, request):
         return super().get_queryset(request).order_by("-measurement_time")
 
@@ -182,9 +180,10 @@ class MeasurementTvpInline(admin.TabularInline):
         class LimitedFormSet(FormSet):
             def get_queryset(self_nonlocal):
                 qs = super(LimitedFormSet, self_nonlocal).get_queryset()
-                return qs[:self.max_viewable]
+                return qs[: self.max_viewable]
 
         return LimitedFormSet
+
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -283,7 +282,11 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 class MeasurementPointMetadataAdmin(admin.ModelAdmin):
     list_max_show_all = 1000  # Prevents loading all records
 
-    search_fields = ["measurement_point_metadata_id", "censor_reason", "censor_reason_datalens"]
+    search_fields = [
+        "measurement_point_metadata_id",
+        "censor_reason",
+        "censor_reason_datalens",
+    ]
     list_display = ("__str__",)
 
     list_filter = (
@@ -357,20 +360,25 @@ class ObservationAdmin(admin.ModelAdmin):
         "observation_id_bro",
         "view_all_measurements_link",
     ]
-    
 
     inlines = (MeasurementTvpInline,)
-    
+
     def view_all_measurements_link(self, obj):
         url = (
             reverse("admin:gld_measurementtvp_changelist")
             + f"?observation__observation_id__exact={obj.pk}"
         )
-        return format_html('<a href="{}" target="_blank">Alle metingen bekijken</a>', url)
+        return format_html(
+            '<a href="{}" target="_blank">Alle metingen bekijken</a>', url
+        )
+
     view_all_measurements_link.short_description = "Alle metingen"
 
-
-    actions = [export_selected_items_to_csv, "close_observation", "change_up_to_date_status"]
+    actions = [
+        export_selected_items_to_csv,
+        "close_observation",
+        "change_up_to_date_status",
+    ]
 
     ordering = ["-observation_starttime"]
     # extra = 0
@@ -507,7 +515,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     )
     # Retry generate startregistration
     actions = [
-        export_selected_items_to_csv, 
+        export_selected_items_to_csv,
         "regenerate_start_registration_sourcedocument",
         "validate_startregistration_sourcedocument",
         "deliver_startregistration_sourcedocument",
@@ -717,7 +725,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     autocomplete_fields = ("observation",)
 
     actions = [
-        export_selected_items_to_csv, 
+        export_selected_items_to_csv,
         "regenerate_sourcedocuments",
         "validate_sourcedocuments",
         "deliver_sourcedocuments",

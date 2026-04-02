@@ -40,7 +40,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        delete = True if options["delete"] == "Yes" else False
+        True if options["delete"] == "Yes" else False
         gmn_grouped = group_monitoring_nets()
         print(gmn_grouped)
 
@@ -164,10 +164,10 @@ def update_measuring_points(
         measuring_points: QuerySet[MeasuringPoint],
         next_measuring_points: QuerySet[MeasuringPoint],
     ):
-        measuring_point_codes = list(set([m.code for m in measuring_points]))
-        next_measuring_point_codes = list(set([m.code for m in next_measuring_points]))
+        measuring_point_codes = list({m.code for m in measuring_points})
+        next_measuring_point_codes = list({m.code for m in next_measuring_points})
         check = any(
-            [code not in measuring_point_codes for code in next_measuring_point_codes]
+            code not in measuring_point_codes for code in next_measuring_point_codes
         )
 
         if check:
@@ -185,10 +185,10 @@ def update_measuring_points(
         measuring_points: QuerySet[MeasuringPoint],
         next_measuring_points: QuerySet[MeasuringPoint],
     ):
-        measuring_point_codes = list(set([m.code for m in measuring_points]))
-        next_measuring_point_codes = list(set([m.code for m in next_measuring_points]))
+        measuring_point_codes = list({m.code for m in measuring_points})
+        next_measuring_point_codes = list({m.code for m in next_measuring_points})
         check = any(
-            [code not in next_measuring_point_codes for code in measuring_point_codes]
+            code not in next_measuring_point_codes for code in measuring_point_codes
         )
 
         if check:

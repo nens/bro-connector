@@ -1,6 +1,6 @@
 from main.settings.base import MODULES
 
-BRO_TYPES = tuple()
+BRO_TYPES = ()
 
 for module in MODULES:
     BRO_TYPES += ((f"{module}".upper(), f"{module}".upper()),)

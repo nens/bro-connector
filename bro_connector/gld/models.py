@@ -534,7 +534,6 @@ class ObservationMetadata(BaseModel):
     def __str__(self):
         prefix = f"{self.responsible_party.name}-" if self.responsible_party else ""
         return f"{prefix}{self.observation_type}{'-' + self.status if self.observation_type != 'controlemeting' else ''}"
-        
 
     class Meta:
         managed = True

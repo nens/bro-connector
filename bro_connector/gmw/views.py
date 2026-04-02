@@ -9,7 +9,7 @@ import gmw.models as gmw_models
 from bro.models import Organisation
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Prefetch
+from django.db.models import Max, Prefetch
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -67,9 +67,6 @@ def get_cache_key(request: HttpRequest):
     cache_key = f"map:{session_id}:{cache_base}"
     print("Created cache key: ", cache_key)
     return cache_key
-
-
-from django.db.models import Max
 
 
 def get_glds_with_latest_data_fast():

@@ -42,7 +42,6 @@ from gmw.choices import (
     WELLSTABILITY,
     WELLSTATUS,
 )
-from main.settings.base import KVK_USER
 from gmw.utils import generate_put_code
 from main.models import BaseModel
 from PIL import Image
@@ -54,6 +53,7 @@ def _get_token(owner: Organisation):
         "user": owner.bro_user,
         "pass": owner.bro_token,
     }
+
 
 class GroundwaterMonitoringWellStatic(BaseModel):
     groundwater_monitoring_well_static_id = models.AutoField(
@@ -270,15 +270,17 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     @property
     def lon(self):
         return self.coordinates_4326.x
-    
+
     @property
     def xy(self):
         return f"({self.x}, {self.y})"
+
     xy.fget.short_description = "Coordinaten (RD)"
-    
+
     @property
     def latlon(self):
         return f"({self.lat}, {self.lon})"
+
     latlon.fget.short_description = "Coordinaten (lat, lon)"
 
     @property
@@ -603,11 +605,10 @@ class GroundwaterMonitoringWellDynamic(BaseModel):
 
     @property
     def internal_id(self):
-        return (
-            GroundwaterMonitoringWellStatic.objects.get(
-                groundwater_monitoring_well_static_id=self.groundwater_monitoring_well_static.groundwater_monitoring_well_static_id
-            ).internal_id
-        )
+        return GroundwaterMonitoringWellStatic.objects.get(
+            groundwater_monitoring_well_static_id=self.groundwater_monitoring_well_static.groundwater_monitoring_well_static_id
+        ).internal_id
+
     internal_id.fget.short_description = "Veldnaam"
 
     class Meta:
@@ -733,14 +734,13 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
             gmn_ids.append(mp.gmn.gmn_bro_id)
 
         return gmn_ids
-    
+
     @property
     def internal_id(self):
-        return (
-            GroundwaterMonitoringWellStatic.objects.get(
-                groundwater_monitoring_well_static_id=self.groundwater_monitoring_well_static.groundwater_monitoring_well_static_id
-            ).internal_id
-        )
+        return GroundwaterMonitoringWellStatic.objects.get(
+            groundwater_monitoring_well_static_id=self.groundwater_monitoring_well_static.groundwater_monitoring_well_static_id
+        ).internal_id
+
     internal_id.fget.short_description = "Veldnaam"
 
     def save(self, *args, **kwargs):

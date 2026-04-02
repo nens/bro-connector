@@ -684,13 +684,13 @@ def create_sourcedocs(
             event_id=event.change_id,
             delivery_type=delivery_type,
             quality_regime=quality_regime,
-            defaults=dict(
-                comments=f"succesfully generated {source_doc_type} request",
-                date_modified=datetime.datetime.now(),
-                validation_status=None,
-                process_status=process_status,
-                file=filename,
-            ),
+            defaults={
+                "comments": f"succesfully generated {source_doc_type} request",
+                "date_modified": datetime.datetime.now(),
+                "validation_status": None,
+                "process_status": process_status,
+                "file": filename,
+            },
             object_id_accountable_party=srcdocdata["objectIdAccountableParty"],
         )
 
@@ -701,11 +701,11 @@ def create_sourcedocs(
             event_id=event.change_id,
             delivery_type=delivery_type,
             quality_regime=quality_regime,
-            defaults=dict(
-                comments=f"Failed to create {source_doc_type} source document: {e}",
-                date_modified=datetime.datetime.now(),
-                process_status=process_status,
-            ),
+            defaults={
+                "comments": f"Failed to create {source_doc_type} source document: {e}",
+                "date_modified": datetime.datetime.now(),
+                "process_status": process_status,
+            },
         )
 
 
@@ -775,26 +775,26 @@ def create_construction_sourcedocs(
     models.gmw_registration_log.objects.update_or_create(
         event_id=event.change_id,
         delivery_type=delivery_type,
-        defaults=dict(
-            quality_regime=well.quality_regime,
-            bro_id=srcdocdata.get("broId", None),
-            comments="succesfully generated Construction request",
-            date_modified=datetime.datetime.now(),
-            validation_status=None,
-            process_status=process_status,
-            file=filename,
-            object_id_accountable_party=srcdocdata["objectIdAccountableParty"],
-        ),
+        defaults={
+            "quality_regime": well.quality_regime,
+            "bro_id": srcdocdata.get("broId", None),
+            "comments": "succesfully generated Construction request",
+            "date_modified": datetime.datetime.now(),
+            "validation_status": None,
+            "process_status": process_status,
+            "file": filename,
+            "object_id_accountable_party": srcdocdata["objectIdAccountableParty"],
+        },
     )
 
 
 def handle_not_valid_or_error(
     registration: models.gmw_registration_log, validation_info
 ):
-    defaults = dict(
-        validation_status=validation_info["status"],
-        process_status="source_document_validation_succesful",
-    )
+    defaults = {
+        "validation_status": validation_info["status"],
+        "process_status": "source_document_validation_succesful",
+    }
     try:
         validation_errors = validation_info["errors"]
         comments = f"Validated registration document, found errors: {validation_errors}"
@@ -839,12 +839,12 @@ def validate_gmw_registration_request(
         comments = "Succesfully validated sourcedocument, no errors"
         models.gmw_registration_log.objects.update_or_create(
             id=registration.pk,
-            defaults=dict(
-                date_modified=datetime.datetime.now(),
-                comments=comments,
-                validation_status=validation_status,
-                process_status="source_document_validation_succesful",
-            ),
+            defaults={
+                "date_modified": datetime.datetime.now(),
+                "comments": comments,
+                "validation_status": validation_status,
+                "process_status": "source_document_validation_succesful",
+            },
         )
     elif str(validation_status) == "401":
         registration.comments = f"Niet geautoriseerd om te leveren op {bro_info['projectnummer']} - {validation_info}"

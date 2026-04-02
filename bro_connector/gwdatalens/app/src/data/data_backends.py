@@ -11,11 +11,12 @@ to specialized modules.
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from functools import cached_property
 from pathlib import Path
 from time import perf_counter
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
@@ -135,8 +136,8 @@ class DataSourceTemplate(ABC):
     @abstractmethod
     def get_tube_numbers(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
         return_ids: bool = False,
     ):
         """Get tube names/ids for a selected well."""
@@ -146,7 +147,7 @@ class DataSourceTemplate(ABC):
         self,
         query: str | None = None,
         operator: str = "==",
-        columns: Optional[List[str] | str] = None,
+        columns: list[str] | str | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
         """Query the metadata GeoDataFrame."""
@@ -175,12 +176,12 @@ class DataSourceTemplate(ABC):
     @abstractmethod
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        columns: Optional[Union[List[str], str]] = None,
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        columns: list[str] | str | None = None,
+        tmin: str | None = None,
+        tmax: str | None = None,
         deduplicate: bool = True,
     ) -> pd.DataFrame:
         """Get time series.
@@ -273,8 +274,8 @@ class PostgreSQLDataSource(DataSourceTemplate):
         self,
         config: dict,
         use_cache: bool = False,
-        max_cache_size: Optional[int] = None,
-        cache_timeout: Optional[int] = None,
+        max_cache_size: int | None = None,
+        cache_timeout: int | None = None,
     ):
         """Initialize PostgreSQL data source.
 
@@ -306,7 +307,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         # TTL-expiring cache is wrong here.  Using a plain attribute avoids
         # re-executing two database queries on every get_timeseries() call
         # when USE_LRU_CACHE is false.
-        self._gmw_gdf_store: Optional[gpd.GeoDataFrame] = None
+        self._gmw_gdf_store: gpd.GeoDataFrame | None = None
 
     @property
     def engine(self):
@@ -386,7 +387,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
 
     def get_timeseries_date_range_per_tube(
         self,
-        observation_type: Optional[Union[str, Sequence[str]]] = None,
+        observation_type: str | Sequence[str] | None = None,
     ) -> pd.DataFrame:
         """Get first and last observation timestamp per tube from database.
 
@@ -645,14 +646,14 @@ class PostgreSQLDataSource(DataSourceTemplate):
     @conditional_cachedmethod(lambda self: self._cache)
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        columns: Optional[Union[List[str], str]] = None,
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        columns: list[str] | str | None = None,
+        tmin: str | None = None,
+        tmax: str | None = None,
         deduplicate: bool = True,
-        column: Optional[Union[List[str], str]] = None,
+        column: list[str] | str | None = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series for the measurements for given bro-id and tube-id.
 
@@ -943,7 +944,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
     def _execute_db_write(
         self,
         stmt,
-        params: Optional[Sequence[dict[str, Any]]] = None,
+        params: Sequence[dict[str, Any]] | None = None,
         *,
         operation_name: str,
         lock_timeout: str = "5s",
@@ -1395,7 +1396,7 @@ class PastaStoreDataSource(DataSourceTemplate):
         return "oseries_name"
 
     @cached_property
-    def gmw_gdf(self) -> gpd.GeoDataFrame:
+    def gmw_gdf(self) -> gpd.GeoDataFrame:  # noqa: C901
         oseries_df = self.pstore.oseries.copy()
         if oseries_df is None:
             oseries_df = pd.DataFrame()
@@ -1551,7 +1552,7 @@ class PastaStoreDataSource(DataSourceTemplate):
         self,
         query: str | None = None,
         operator: str = "==",
-        columns: Optional[List[str] | str] = None,
+        columns: list[str] | str | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
         """Query the gmw_gdf with a pandas query string.
@@ -1630,15 +1631,15 @@ class PastaStoreDataSource(DataSourceTemplate):
 
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        columns: Optional[Union[List[str], str]] = None,
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        columns: list[str] | str | None = None,
+        tmin: str | None = None,
+        tmax: str | None = None,
         deduplicate: bool = True,
-        column: Optional[Union[List[str], str]] = None,
-    ) -> pd.DataFrame:
+        column: list[str] | str | None = None,
+    ) -> pd.DataFrame:  # noqa: C901
         """Return a Pandas Series for the measurements for given location name.
 
         Values returned in m. Return None when there are no measurements.

@@ -1,7 +1,8 @@
 # bro_connector/conftest.py
 import os
-import pytest
+
 import psycopg2
+import pytest
 from django.conf import settings
 
 
@@ -13,8 +14,6 @@ def django_db_setup(django_test_environment, django_db_blocker):
     2. Run create_schemas.sql against it.
     3. Let Django run its migrations.
     """
-    from django.test.utils import setup_databases
-    from django.db import connections
 
     db = settings.DATABASES["default"]
     test_db_name = f"test_{db['NAME']}"
@@ -60,27 +59,3 @@ def django_db_setup(django_test_environment, django_db_blocker):
             cur.execute(f.read())
     conn.close()
     print("[conftest] Schemas created successfully.")
-
-    # # Step 3: Run Django migrations (keepdb=True skips DROP/CREATE since we did it,
-    # # but tells Django the DB already exists — no serialization attempt)
-    # with django_db_blocker.unblock():
-    #     setup_databases(verbosity=1, interactive=False, keepdb=True)
-
-    # yield
-
-    # # Teardown
-    # with django_db_blocker.unblock():
-    #     for c in connections.all():
-    #         c.close()
-
-    # conn = psycopg2.connect(
-    #     dbname=db["NAME"],
-    #     user=db["USER"],
-    #     password=db["PASSWORD"],
-    #     host=db.get("HOST", "localhost"),
-    #     port=db.get("PORT", 5432),
-    # )
-    # conn.autocommit = True
-    # with conn.cursor() as cur:
-    #     cur.execute(f'DROP DATABASE IF EXISTS "{test_db_name}"')
-    # conn.close()

@@ -149,14 +149,14 @@ def create_construction_event(gmw_dict, groundwater_monitoring_well_static) -> E
         delivery_type="register",
         event_id=event.change_id,
         bro_id=event.groundwater_monitoring_well_static.bro_id,
-        defaults=dict(
-            date_modified=datetime.datetime.now(),
-            validation_status="VALIDE",
-            delivery_status="OPGENOMEN_LVBRO",
-            comments="Imported with the BRO-Import functionality.",
-            quality_regime=event.groundwater_monitoring_well_static.quality_regime,
-            process_status="delivery_approved",
-        ),
+        defaults={
+            "date_modified": datetime.datetime.now(),
+            "validation_status": "VALIDE",
+            "delivery_status": "OPGENOMEN_LVBRO",
+            "comments": "Imported with the BRO-Import functionality.",
+            "quality_regime": event.groundwater_monitoring_well_static.quality_regime,
+            "process_status": "delivery_approved",
+        },
     )
 
     return event
@@ -250,12 +250,12 @@ class Updater:
                 delivery_type="register",
                 event_id=self.event.change_id,
                 bro_id=self.event.groundwater_monitoring_well_static.bro_id,
-                defaults=dict(
-                    validation_status="VALIDE",
-                    delivery_status="OPGENOMEN_LVBRO",
-                    comments="Imported with the BRO-Import functionality.",
-                    quality_regime=self.event.groundwater_monitoring_well_static.quality_regime,
-                ),
+                defaults={
+                    "validation_status": "VALIDE",
+                    "delivery_status": "OPGENOMEN_LVBRO",
+                    "comments": "Imported with the BRO-Import functionality.",
+                    "quality_regime": self.event.groundwater_monitoring_well_static.quality_regime,
+                },
             )
         # print("Event and event date: ", self.event, self.event.event_date)
 

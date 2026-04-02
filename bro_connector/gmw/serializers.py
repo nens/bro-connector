@@ -91,46 +91,12 @@ class GMWSerializer(serializers.ModelSerializer):
                 ],
             )
         return "..."
-        # main_pictures = obj.picture.order_by("-recording_datetime", "-picture_id").filter(is_main=True).all()
-        # if main_pictures:
-        #     picture = main_pictures.first()
-        # else:
-        #     picture = obj.picture.order_by("-recording_datetime", "-picture_id").first()
-
-        # if picture and picture.picture:
-        #     # return picture.image_tag
-        #     return format_html_join(
-        #         "",
-        #         '<div style="margin-bottom: 0.5em;"><img src="{}" style="max-width:100px; max-height:100px;"><br><small>{}</small></div>',
-        #         [
-        #             (
-        #                 picture.picture.url,
-        #                 picture.recording_datetime.strftime("%Y-%m-%d %H:%M")
-        #                 if picture.recording_datetime
-        #                 else "No timestamp",
-        #             )
-        #         ],
-        #     )
-        # else:
-        #     return "..."
 
     def get_nitg_code(self, obj):
         return obj.nitg_code
 
-    def get_label(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
-        return obj.__str__()
-
     def get_has_open_comments(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return obj.has_open_comments
-
-    # def get_tubes(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
-    #     tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
-    #         groundwater_monitoring_well_static=obj
-    #     )
-    #     if tubes:
-    #         return list(set([tube.groundwater_monitoring_tube_static_id for tube in tubes]))
-
-    #     return []
 
     def get_glds(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         tubes = gmw_models.GroundwaterMonitoringTubeStatic.objects.filter(
