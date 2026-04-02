@@ -42,6 +42,7 @@ def django_db_setup(django_test_environment, django_db_blocker):
     # Step 2: Create schemas inside the fresh test database
     sql_path = os.path.join(
         os.path.dirname(__file__),
+        "..",
         "installation_help",
         "create_schemas.sql",
     )
