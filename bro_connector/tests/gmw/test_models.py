@@ -11,7 +11,7 @@ from main.settings.base import KVK_USER
 def default_organisation():
     return Organisation.objects.create(
         name="Test Organisation",
-        kvk_number=int(KVK_USER),
+        company_number=int(KVK_USER),
     )
 
 
@@ -21,7 +21,8 @@ def test_deliver_to_bro_default_function(default_organisation):
         delivery_accountable_party=default_organisation,
         coordinates=Point(0, 0),  # adjust field name to match your model
     )
-
-    tube = gmw.tube.first()
+    tube = gmw.tube.create(
+        tube_number="1",
+    )
 
     assert tube.deliver_gld_to_bro == True

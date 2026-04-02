@@ -84,6 +84,7 @@ dependencies = [
     { name = "bcrypt" },
     { name = "blinker" },
     { name = "bro-exchange" },
+    { name = "cachetools" },
     { name = "certifi" },
     { name = "cffi" },
     { name = "channels" },
@@ -135,7 +136,6 @@ dependencies = [
     { name = "pastastore" },
     { name = "plotly" },
     { name = "polars" },
-    { name = "psycopg2" },
     { name = "psycopg2-binary" },
     { name = "pycparser" },
     { name = "pygments" },
@@ -175,6 +175,7 @@ requires-dist = [
     { name = "bcrypt", specifier = "==4.2.0" },
     { name = "blinker", specifier = "==1.7.0" },
     { name = "bro-exchange", git = "https://github.com/nens/bro-exchange?rev=5caacc13998b009456fa0b6bb25a7f51a77466fc" },
+    { name = "cachetools", specifier = "==6.2.4" },
     { name = "certifi", specifier = "==2024.7.4" },
     { name = "cffi", specifier = "==1.17.0" },
     { name = "channels", specifier = "==4.0.0" },
@@ -223,10 +224,9 @@ requires-dist = [
     { name = "pandas", specifier = "==2.2.2" },
     { name = "paramiko", specifier = "==3.4.0" },
     { name = "pastas" },
-    { name = "pastastore" },
+    { name = "pastastore", specifier = ">=1.11.0" },
     { name = "plotly", specifier = "==6.0.1" },
     { name = "polars" },
-    { name = "psycopg2", specifier = "==2.9.9" },
     { name = "psycopg2-binary" },
     { name = "pycparser", specifier = "==2.22" },
     { name = "pygments", specifier = "==2.17.2" },
@@ -273,6 +273,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1d/69/0b5c1259e12fbcf5c2abe5934b5c0c1294ec0f845e2b4b2a51a91d79a4fb/cachelib-0.13.0.tar.gz", hash = "sha256:209d8996e3c57595bee274ff97116d1d73c4980b2fd9a34c7846cd07fd2e1a48", size = 34418 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9b/42/960fc9896ddeb301716fdd554bab7941c35fb90a1dc7260b77df3366f87f/cachelib-0.13.0-py3-none-any.whl", hash = "sha256:8c8019e53b6302967d4e8329a504acf75e7bc46130291d30188a6e4e58162516", size = 20914 },
+]
+
+[[package]]
+name = "cachetools"
+version = "6.2.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/1d/ede8680603f6016887c062a2cf4fc8fdba905866a3ab8831aa8aa651320c/cachetools-6.2.4.tar.gz", hash = "sha256:82c5c05585e70b6ba2d3ae09ea60b79548872185d2f24ae1f2709d37299fd607", size = 31731 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/fc/1d7b80d0eb7b714984ce40efc78859c022cd930e402f599d8ca9e39c78a4/cachetools-6.2.4-py3-none-any.whl", hash = "sha256:69a7a52634fed8b8bf6e24a050fb60bff1c9bd8f6d24572b99c32d4e71e62a51", size = 11551 },
 ]
 
 [[package]]
@@ -1366,16 +1375,18 @@ wheels = [
 
 [[package]]
 name = "pastastore"
-version = "1.10.1"
+version = "1.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "colorama" },
+    { name = "pandas" },
     { name = "pastas" },
     { name = "pyyaml" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4d/9b/c7969e92e5670dae92fab9aadbe6f019172cb5492e837498de1dbfa02964/pastastore-1.10.1.tar.gz", hash = "sha256:7961824e20be1e8f7834d6abb51eee9f739cf9a1c5d2df0338f79d36ab05a4e4", size = 79070 }
+sdist = { url = "https://files.pythonhosted.org/packages/38/c3/3635d65a22e48cb638bd6859c0ff866821f8be49a2046689a9829ddda79e/pastastore-1.13.0.tar.gz", hash = "sha256:ace2a90920a483d78c385042d31bcf8cc8bb12b7fe7da5c195aa968171391fc7", size = 95076 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/4a/f43706d2c053710f3538aaf91bb9ded2d42fa68425487e09da726370871d/pastastore-1.10.1-py3-none-any.whl", hash = "sha256:12fe0a0eded7b7b674b573c072bcba8fd77ee290f31e3a7b5d7f7d204c609388", size = 84604 },
+    { url = "https://files.pythonhosted.org/packages/54/6a/47d87f94154285640b092e72e4d6fb7bbdad495b897ff09caa834a9168b0/pastastore-1.13.0-py3-none-any.whl", hash = "sha256:04a691a2809572eeeacb507434cc3a9dfc9874e992f1f233a68ee7db0376d9d1", size = 103052 },
 ]
 
 [[package]]
@@ -1471,18 +1482,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/cb/e7/b88b973021be07b13d91b9301cc14392c994225ef5107a32a8ffd3fd6424/polars-1.30.0-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:ffb3ef133454275d4254442257c5f71dd6e393ce365c97997dadeb6fa9d6d4b5", size = 33416871 },
     { url = "https://files.pythonhosted.org/packages/dd/7c/d46d4381adeac537b8520b653dc30cb8b7edbf59883d71fbb989e9005de1/polars-1.30.0-cp39-abi3-win_amd64.whl", hash = "sha256:c26b633a9bd530c5fc09d317fca3bb3e16c772bd7df7549a9d8ec1934773cc5d", size = 36363630 },
     { url = "https://files.pythonhosted.org/packages/fb/b5/5056d0c12aadb57390d0627492bef8b1abf3549474abb9ae0fd4e2bfa885/polars-1.30.0-cp39-abi3-win_arm64.whl", hash = "sha256:476f1bde65bc7b4d9f80af370645c2981b5798d67c151055e58534e89e96f2a8", size = 32643590 },
-]
-
-[[package]]
-name = "psycopg2"
-version = "2.9.9"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c9/5e/dc6acaf46d78979d6b03458b7a1618a68e152a6776fce95daac5e0f0301b/psycopg2-2.9.9.tar.gz", hash = "sha256:d1454bde93fb1e224166811694d600e746430c006fbb031ea06ecc2ea41bf156", size = 384926 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/2c/1fc5b9d33cd248c548ba19f2cef8e89cabaafab9858a602868a592cdc1b0/psycopg2-2.9.9-cp311-cp311-win32.whl", hash = "sha256:ade01303ccf7ae12c356a5e10911c9e1c51136003a9a1d92f7aa9d010fb98372", size = 1024163 },
-    { url = "https://files.pythonhosted.org/packages/37/2c/5133dd3183a3bd82371569f0dd783e6927672de7e671b278ce248810b7f7/psycopg2-2.9.9-cp311-cp311-win_amd64.whl", hash = "sha256:121081ea2e76729acfb0673ff33755e8703d45e926e416cb59bae3a86c6a4981", size = 1163579 },
-    { url = "https://files.pythonhosted.org/packages/13/13/f74ffe6b6f58822e807c70391dc5679a53feb92ce119ccb8a6546c3fb893/psycopg2-2.9.9-cp312-cp312-win32.whl", hash = "sha256:d735786acc7dd25815e89cc4ad529a43af779db2e25aa7c626de864127e5a024", size = 1024634 },
-    { url = "https://files.pythonhosted.org/packages/58/4b/c4a26e191882b60150bfcb639e416524ae7f8249ab7ee854fb5247f16c40/psycopg2-2.9.9-cp312-cp312-win_amd64.whl", hash = "sha256:a7653d00b732afb6fc597e29c50ad28087dcb4fbfb28e86092277a559ae4e693", size = 1163789 },
 ]
 
 [[package]]
