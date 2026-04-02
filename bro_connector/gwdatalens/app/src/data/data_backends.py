@@ -11,7 +11,7 @@ to specialized modules.
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
 from time import perf_counter
@@ -64,6 +64,8 @@ except (ModuleNotFoundError, ImportError):
     CACHETOOLS_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
+
+UTC = timezone.utc
 
 GMW_METADATA_COLUMNS = [
     ColumnNames.WELL_STATIC_ID,
