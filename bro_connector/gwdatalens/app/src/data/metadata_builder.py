@@ -139,8 +139,10 @@ class GMWMetadataBuilder:
                 how="left",
             )
             gdf["metingen"] = gdf["metingen"].fillna(0).astype(int)
+            gdf["controlemetingen"] = gdf["controlemetingen"].fillna(0).astype(int)
         else:
             gdf["metingen"] = 0
+            gdf["controlemetingen"] = 0
 
         # Add spatial data
         gdf = self.spatial_transformer.add_wgs84_to_gdf(gdf)

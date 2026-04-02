@@ -6,6 +6,7 @@ callback orchestration.
 """
 
 import logging
+from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -35,11 +36,13 @@ class TimeSeriesService:
         """Initialize with data source."""
         self.db = data_source
 
-    def get_series_for_observation_well(
+    def get_timeseries_for_observation_well(
         self,
         wid: int,
-        observation_type: str = "reguliereMeting",
-        columns: list[str] | None = None,
+        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
+        columns: Optional[List[str]] = None,
+        tmin: Optional[str] = None,
+        tmax: Optional[str] = None,
     ) -> pd.DataFrame:
         """Get time series for a well.
 
@@ -47,10 +50,16 @@ class TimeSeriesService:
         ----------
         wid : int
             Well internal ID
-        observation_type : str
-            Type of observation to fetch
+        observation_type : str, sequence or None
+            Observation type(s) to fetch. Provide None to load all types.
         columns : list of str, optional
             Specific columns to return
+        tmin : str or None, optional
+            ISO-8601 date string; only measurements at or after this timestamp
+            are returned.
+        tmax : str or None, optional
+            ISO-8601 date string; only measurements at or before this timestamp
+            are returned.
 
         Returns
         -------
@@ -59,7 +68,11 @@ class TimeSeriesService:
         """
         try:
             ts = self.db.get_timeseries(
-                wid=wid, observation_type=observation_type, column=columns
+                wid,
+                observation_type=observation_type,
+                columns=columns,
+                tmin=tmin,
+                tmax=tmax,
             )
             return ts
         except Exception as e:
@@ -68,8 +81,12 @@ class TimeSeriesService:
             raise TimeSeriesError(msg, wid, e) from e
 
     def get_series_for_multiple_wells(
-        self, wids: list[int], observation_type: str = "reguliereMeting"
-    ) -> dict[int, pd.DataFrame]:
+        self,
+        wids: List[int],
+        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
+        tmin: Optional[str] = None,
+        tmax: Optional[str] = None,
+    ) -> Dict[int, pd.DataFrame]:
         """Get time series for multiple wells.
 
         Parameters
@@ -78,6 +95,10 @@ class TimeSeriesService:
             List of well internal IDs
         observation_type : str
             Type of observation to fetch
+        tmin : str or None, optional
+            ISO-8601 date string lower bound.
+        tmax : str or None, optional
+            ISO-8601 date string upper bound.
 
         Returns
         -------
@@ -87,7 +108,9 @@ class TimeSeriesService:
         series_dict = {}
         for wid in wids:
             try:
-                ts = self.get_series_for_observation_well(wid, observation_type)
+                ts = self.get_timeseries_for_observation_well(
+                    wid, observation_type, tmin=tmin, tmax=tmax
+                )
                 if ts is not None and not ts.empty:
                     series_dict[wid] = ts
             # allow failed results, so single well failure does not crash app
@@ -184,10 +207,32 @@ class TimeSeriesService:
         pd.Series
             Time series values
         """
-        ts = self.db.get_timeseries(wid)
-        return ts.loc[:, self.db.value_column].dropna()
+        ts = self.db.get_timeseries(wid, columns=[self.db.value_column])
+        return ts.dropna()
 
-    def save_correction(self, corrections_df: pd.DataFrame) -> None:
+    def _invalidate_cache_for_wid(self, wid: int) -> None:
+        """Remove all cache entries that belong to a given well ID.
+
+        ``cachetools.cachedmethod`` uses ``methodkey`` by default, which strips
+        ``self`` before building the key.  The first positional argument
+        (``wid``) therefore lands at index 0.  Calls with extra parameters such
+        as *tmin*, *tmax*, or *observation_type* produce longer keys that also
+        start with ``wid``.  Iterating over a snapshot of the keys and removing
+        every entry whose first element equals *wid* covers all call variants.
+
+        Parameters
+        ----------
+        wid : int
+            Well internal ID whose cached entries should be evicted.
+        """
+        if not (hasattr(self.db, "use_cache") and self.db.use_cache):
+            return
+        stale_keys = [k for k in list(self.db._cache.keys()) if k[0] == wid]
+        for key in stale_keys:
+            del self.db._cache[key]
+        logger.debug("Evicted %d cache entries for wid=%s", len(stale_keys), wid)
+
+    def save_correction(self, wids: List[int], corrections_df: pd.DataFrame) -> None:
         """Save manual corrections to database.
 
         Parameters
@@ -196,9 +241,11 @@ class TimeSeriesService:
             Corrections data to save
         """
         self.db.save_correction(corrections_df)
+        for wid in wids:
+            self._invalidate_cache_for_wid(wid)
         logger.info("Saved %d corrections", len(corrections_df))
 
-    def reset_correction(self, corrections_df: pd.DataFrame) -> None:
+    def reset_correction(self, wids, corrections_df: pd.DataFrame) -> None:
         """Reset manual corrections in database.
 
         Parameters
@@ -207,9 +254,11 @@ class TimeSeriesService:
             Corrections to reset
         """
         self.db.reset_correction(corrections_df)
+        for wid in wids:
+            self._invalidate_cache_for_wid(wid)
         logger.info("Reset %d corrections", len(corrections_df))
 
-    def save_qualifier(self, qualifiers_df: pd.DataFrame) -> None:
+    def save_qualifier(self, wid: int, qualifiers_df: pd.DataFrame) -> None:
         """Save qualifiers to database.
 
         Parameters
@@ -217,5 +266,7 @@ class TimeSeriesService:
         qualifiers_df : pd.DataFrame
             Qualifier data to save
         """
+        # delete cached copy after saving new qualifiers
         self.db.save_qualifier(qualifiers_df)
+        self._invalidate_cache_for_wid(wid)
         logger.info("Saved %d qualifiers", len(qualifiers_df))

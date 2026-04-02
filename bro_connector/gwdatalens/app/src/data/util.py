@@ -1,9 +1,17 @@
 import logging
-from typing import Any
+from functools import wraps
+from typing import Any, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import traval
+
+try:
+    from cachetools import cachedmethod
+
+    CACHETOOLS_AVAILABLE = True
+except (ModuleNotFoundError, ImportError):
+    CACHETOOLS_AVAILABLE = False
 
 logger = logging.getLogger("__name__")
 
@@ -118,3 +126,72 @@ def get_model_sim_pi(
 
         pi = pd.DataFrame(index=raw.index, columns=["lower", "upper"], data=np.nan)
     return sim_i, pi.astype(float)
+
+
+def _make_hashable(value):
+    """Recursively convert unhashable types to hashable equivalents.
+
+    Lists become tuples, dicts become frozensets of (key, value) pairs.
+    All other types are returned as-is.
+    """
+    if isinstance(value, list):
+        return tuple(_make_hashable(v) for v in value)
+    if isinstance(value, dict):
+        return frozenset((k, _make_hashable(v)) for k, v in value.items())
+    return value
+
+
+def _hashable_key(self, *args, **kwargs):
+    """Key function for cachedmethod that tolerates unhashable args/kwargs.
+
+    Mirrors ``cachetools.keys.methodkey``: ``self`` is accepted but excluded
+    from the key so that ``k[0]`` is always the first real argument (``wid``).
+    Lists and dicts in arguments are converted to hashable equivalents before
+    building the key tuple.  Sorted kwargs are appended as flat (name, value)
+    pairs after the positional arguments.
+    """
+    key = tuple(_make_hashable(a) for a in args)
+    if kwargs:
+        key += tuple(
+            item for k, v in sorted(kwargs.items()) for item in (k, _make_hashable(v))
+        )
+    return key
+
+
+def conditional_cachedmethod(cache_getter):
+    """Decorator to conditionally cache a method using cachetools.cachedmethod.
+
+    This decorator checks the class USE_CACHE flag and only applies caching when
+    both cachetools is available and caching is enabled. It also bypasses caching
+    when ``query`` is provided in ``kwargs`` because ``query`` can be a
+    non-hashable dictionary.
+
+    Uses a custom key function so that list/dict arguments (e.g. ``columns=[...]``)
+    are converted to hashable types instead of raising ``TypeError``.
+
+    Parameters
+    ----------
+    cache_getter : callable
+        Function that returns the cache object from self
+        (e.g., lambda self: self._cache)
+    """
+
+    def decorator(func):
+        if not CACHETOOLS_AVAILABLE:
+            # No cachetools available - just return the original function
+            return func
+
+        # Create the cached version once at decoration time, using a key function
+        # that handles unhashable argument types.
+        cached_func = cachedmethod(cache_getter, key=_hashable_key)(func)
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if self.use_cache and "query" not in kwargs:
+                return cached_func(self, *args, **kwargs)
+            else:
+                return func(self, *args, **kwargs)
+
+        return wrapper
+
+    return decorator

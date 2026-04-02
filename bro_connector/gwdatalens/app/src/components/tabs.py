@@ -26,7 +26,7 @@ def render() -> dcc.Tabs:
             tab_overview.render(),
             tab_model.render(),
             tab_qc.render(),
-            tab_qc_result.render(),
             tab_corrections.render(),
+            tab_qc_result.render(),
         ],
     )

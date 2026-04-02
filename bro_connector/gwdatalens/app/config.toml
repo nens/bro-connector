@@ -1,16 +1,20 @@
 [settings]
-DEBUG = false                 # enable debug mode, only for standalone mode
+DEBUG = false                # enable debug mode, only for standalone mode
 LOCALE = "nl"                # application language, options: "nl", "en"
-DJANGO_APP = true           # set to True to run under Django application
-CACHING = false              # set to True to enable caching, does not work when DJANGO_APP is true
+DATA_BACKEND = "postgresql"  # datasource backend: postgresql|pastastore
+DJANGO_APP = true            # set to True to run under Django application
+FLASK_CACHING = false        # set to True to enable flask caching, does not work when DJANGO_APP is true
+USE_LRU_CACHE = true         # set to True to use LRU cache for PostgreSQLDataSource, requires cachetools package
+MAX_CACHE_SIZE = 32          # maximum size of the LRU cache, only used if USE_LRU_CACHE is true
+CACHE_TIMEOUT = 900          # cache timeout in seconds for LRU cache
 SERIES_LOAD_LIMIT = 50       # number of observations to load and plot simultaneously
 PORT = 8050                  # default port for the Dash app
 BACKGROUND_CALLBACKS = false # false is recommended at this moment
-USE_MAPBOX = false           # set to True to use Mapbox for plotting, requires access token
-LOG_LEVEL = "DEBUG"          # set logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+USE_MAPBOX = false           # DEPRECATED: set to True to use Mapbox for plotting, requires access token
+LOG_LEVEL = "WARNING"          # set logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 [pastastore]
+connector = "pas"               # database connector pas|dict|arctic
 name = "zeeland_bro"            # name of the pastas database
 path = "./gwdatalens/pastasdb/" # path to pastas model database
-connector = "pas"               # database connector
-update_knmi = false             # update knmi data in pastas database on startup
+update_knmi = false 

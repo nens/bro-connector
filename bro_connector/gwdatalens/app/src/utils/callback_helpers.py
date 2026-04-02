@@ -314,7 +314,7 @@ def extract_selected_points_x(selected_points) -> list | None:
     if pts.empty or "x" not in pts:
         return None
 
-    return pd.to_datetime(pts["x"]).tolist()
+    return pd.to_datetime(pts["x"], format="mixed").tolist()
 
 
 class CallbackResponse:

@@ -288,7 +288,7 @@ class QCService:
         """
         try:
             # Get the series
-            series = self.db.get_timeseries(wid=wid, column=self.db.value_column)
+            series = self.db.get_timeseries(wid, column=self.db.value_column)
             validate_not_empty(series, context=f"time series for well {wid}")
 
             # Apply time filters

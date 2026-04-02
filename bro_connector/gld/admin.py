@@ -9,6 +9,9 @@ from django.contrib import admin, messages
 from django.db.models import fields
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse
+from django.utils.html import format_html
+
 from gld.management.commands.gld_sync_to_bro import (
     GldSyncHandler,
 )
@@ -32,22 +35,33 @@ from .custom_filters import (
 logger = logging.getLogger(__name__)
 
 
-def Export_selected_items_to_csv(self, request, queryset):
-    meta = self.model._meta
-    field_names = [field.name for field in meta.fields]
+def export_selected_items_to_csv(modeladmin, request, queryset):
+    # Database fields
+    field_names = [field.name for field in modeladmin.model._meta.fields]
 
+    # Add property fields (customize per admin later)
+    extra_properties = getattr(modeladmin, "export_properties", [])
+
+    # Combined header
+    headers = field_names + extra_properties
+
+    # CSV setup
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f"attachment; filename={meta}.csv"
-    writer = csv.writer(response)
 
-    writer.writerow(field_names)
+    model_name = str(modeladmin.model._meta).replace(".","_")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{model_name}_{timestamp}.csv"
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+
+    writer = csv.writer(response)
+    writer.writerow(headers)
+
     for obj in queryset:
-        writer.writerow([getattr(obj, field) for field in field_names])
+        db_values = [getattr(obj, field) for field in field_names]
+        prop_values = [getattr(obj, prop) for prop in extra_properties]
+        writer.writerow(db_values + prop_values)
 
     return response
-
-
-admin.site.add_action(Export_selected_items_to_csv)
 
 
 class BroIdNullFilter(admin.SimpleListFilter):
@@ -155,7 +169,22 @@ class MeasurementTvpInline(admin.TabularInline):
     ordering = ["-measurement_time"]
     extra = 0
     max_num = 0
+    max_viewable = 50
 
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by("-measurement_time")
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Limit the number of forms that Django constructs."""
+        FormSet = super().get_formset(request, obj, **kwargs)
+
+        class LimitedFormSet(FormSet):
+            def get_queryset(self_nonlocal):
+                qs = super(LimitedFormSet, self_nonlocal).get_queryset()
+                return qs[:self.max_viewable]
+
+        return LimitedFormSet
 
 class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -202,7 +231,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
 
     inlines = (ObservationInline,)
 
-    actions = ["deliver_to_bro", "check_status"]
+    actions = [export_selected_items_to_csv, "deliver_to_bro", "check_status"]
 
     @admin.display(boolean=True)
     def completely_delivered(self, obj):
@@ -261,6 +290,7 @@ class MeasurementPointMetadataAdmin(admin.ModelAdmin):
         "status_quality_control",
         "censor_reason",
     )
+    actions = [export_selected_items_to_csv]
 
 
 class MeasurementTvpAdmin(admin.ModelAdmin):
@@ -273,6 +303,7 @@ class MeasurementTvpAdmin(admin.ModelAdmin):
         "observation",
     )
     list_filter = (ObservationFilter,)
+    actions = [export_selected_items_to_csv]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -324,11 +355,22 @@ class ObservationAdmin(admin.ModelAdmin):
         "timestamp_first_measurement",
         "timestamp_last_measurement",
         "observation_id_bro",
+        "view_all_measurements_link",
     ]
+    
 
     inlines = (MeasurementTvpInline,)
+    
+    def view_all_measurements_link(self, obj):
+        url = (
+            reverse("admin:gld_measurementtvp_changelist")
+            + f"?observation__observation_id__exact={obj.pk}"
+        )
+        return format_html('<a href="{}" target="_blank">Alle metingen bekijken</a>', url)
+    view_all_measurements_link.short_description = "Alle metingen"
 
-    actions = ["close_observation", "change_up_to_date_status"]
+
+    actions = [export_selected_items_to_csv, "close_observation", "change_up_to_date_status"]
 
     ordering = ["-observation_starttime"]
     # extra = 0
@@ -386,6 +428,7 @@ class ObservationMetadataAdmin(admin.ModelAdmin):
         "status",
         "responsible_party",
     )
+    actions = [export_selected_items_to_csv]
 
     search_fields = [
         "observation_metadata_id",
@@ -412,6 +455,7 @@ class ObservationProcessAdmin(admin.ModelAdmin):
         "process_type",
         "evaluation_procedure",
     )
+    actions = [export_selected_items_to_csv]
 
     search_fields = [
         "observation_process_id",
@@ -463,6 +507,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
     )
     # Retry generate startregistration
     actions = [
+        export_selected_items_to_csv, 
         "regenerate_start_registration_sourcedocument",
         "validate_startregistration_sourcedocument",
         "deliver_startregistration_sourcedocument",
@@ -672,6 +717,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
     autocomplete_fields = ("observation",)
 
     actions = [
+        export_selected_items_to_csv, 
         "regenerate_sourcedocuments",
         "validate_sourcedocuments",
         "deliver_sourcedocuments",
