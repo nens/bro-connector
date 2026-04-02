@@ -1,6 +1,6 @@
 import datetime
 
-from bro_connector.main.settings.base import KVK_USER
+from main.settings.base import KVK_USER
 import reversion
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save, pre_save
