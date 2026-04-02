@@ -204,6 +204,9 @@ class GroundwaterMonitoringNet(models.Model):
         verbose_name_plural = "Grondwatermonitoring Meetnetten"
         ordering = ("name",)
 
+    class Media:
+        css = {"all": ("admin/css/admin_custom.css",)}
+
 
 class Subgroup(models.Model):
     gmn = models.ForeignKey(
@@ -264,6 +267,7 @@ class MeasuringPoint(models.Model):
         verbose_name="Filter",
         related_name="measuring_point",
     )
+    # Preferably, should never be None
     code = models.CharField(
         max_length=255,
         null=True,
@@ -296,12 +300,13 @@ class MeasuringPoint(models.Model):
     )
 
     def __str__(self):
+        # Name format should indicate GMN and wellcode
+        network_name = self.gmn.name
         if self.code:
-            return self.code
+            return f"{network_name}-{self.code}"
         elif self.id:
-            return self.id
-        else:
-            return "New monitoring point"
+            return f"{network_name}-{self.id}"
+        return f"{network_name}-New monitoring point"
 
     def save(self, *args, **kwargs):
         if (

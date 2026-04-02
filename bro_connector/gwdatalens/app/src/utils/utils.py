@@ -1,7 +1,8 @@
 import functools
 import logging
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from dash import callback_context
 

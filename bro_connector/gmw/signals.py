@@ -2,8 +2,9 @@ import datetime
 
 import reversion
 from django.core.cache import cache
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
+from main.settings.base import KVK_USER
 
 from .models import (
     Event,
@@ -61,14 +62,15 @@ def on_delete_groundwater_monitoring_well_static(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=GroundwaterMonitoringTubeStatic)
-def on_save_groundwater_monitoring_tube_static(sender, instance: GroundwaterMonitoringTubeStatic, created, **kwargs):
+def on_save_groundwater_monitoring_tube_static(
+    sender, instance: GroundwaterMonitoringTubeStatic, created, **kwargs
+):
     if created and not instance.state.exists():
         GroundwaterMonitoringTubeDynamic.objects.create(
             groundwater_monitoring_tube_static=instance,
             date_from=datetime.datetime.now(),
         )
 
-    
     if (
         instance.groundwater_monitoring_well_static.in_management is True
         and instance.groundwaterleveldossier.count() == 0
@@ -78,7 +80,6 @@ def on_save_groundwater_monitoring_tube_static(sender, instance: GroundwaterMoni
             groundwater_monitoring_tube=instance,
             quality_regime="IMBRO",
         )
-
 
 
 @receiver(post_delete, sender=GroundwaterMonitoringTubeStatic)
@@ -111,9 +112,20 @@ def on_save_gmw_synchronisatie_log(
                 )
 
 
-# @receiver(pre_save, sender=GroundwaterMonitoringWellStatic)
-# def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwargs):
-#     if (
+@receiver(pre_save, sender=GroundwaterMonitoringWellStatic)
+def pre_save_gmw_static(sender, instance: GroundwaterMonitoringWellStatic, **kwargs):
+    if instance.delivery_accountable_party is None:
+        return
+
+    if (
+        instance.delivery_accountable_party.company_number == int(KVK_USER)
+        and instance.groundwater_monitoring_well_static_id is None
+    ):
+        instance.deliver_gmw_to_bro = True
+        instance.in_management = True
+
+
+# if (
 #         instance.in_management is False
 #         and instance.delivery_accountable_party.company_number == settings.KVK_USER
 #     ):

@@ -29,7 +29,7 @@ DATABASES = {
         "HOST": host,
         "PORT": port,
         "OPTIONS": {
-            "options": "-c search_path=django_admin,public,gmw,gld,frd,gmn,gar,tools"
+            "options": "-c search_path=django_admin,public,gmw,gld,frd,gmn,gar,tools,bro"
         },
     },
 }

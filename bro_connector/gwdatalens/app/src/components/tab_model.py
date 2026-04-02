@@ -1,9 +1,7 @@
 import logging
-from typing import List, Optional
 
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import (
     ids,
@@ -33,7 +31,7 @@ def render() -> dcc.Tab:
 
 
 def render_datepicker_tmin(
-    data: DataManager, selected_data: Optional[List[int]]
+    data: DataManager, selected_data: list[int] | None
 ) -> dcc.DatePickerSingle:
     """Renders a DatePickerSingle component for selecting the minimum date (tmin).
 
@@ -85,7 +83,7 @@ def render_datepicker_tmin(
 
 
 def render_datepicker_tmax(
-    data: DataManager, selected_data: Optional[List[int]]
+    data: DataManager, selected_data: list[int] | None
 ) -> dcc.DatePickerSingle:
     """Renders a DatePickerSingle component for selecting the maximum date (tmax).
 
@@ -152,7 +150,7 @@ def render_checkbox() -> dbc.Checkbox:
     )
 
 
-def render_content(data: DataManager, selected_data: List):
+def render_content(data: DataManager, selected_data: list):
     """Renders the content for the model tab.
 
     Parameters

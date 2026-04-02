@@ -464,7 +464,7 @@ class Command(BaseCommand):
 
         if (
             I_WILLINGLY_RUN_THIS_SCRIPT_AND_REALISE_THAT_I_MIGHT_CREATE_MEASUREMENT_DUPLICATES
-            == True
+            is True
         ):
             result = create_imbro_glds(csv=options["csv"])
             logger.info("IMBRO/A to IMBRO Summary:")

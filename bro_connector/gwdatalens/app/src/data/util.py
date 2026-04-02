@@ -1,6 +1,6 @@
 import logging
 from functools import wraps
-from typing import Any, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -30,11 +30,11 @@ def get_model_sim_pi(
     ml: Any,
     raw: pd.DataFrame,
     ci: float = 0.99,
-    tmin: Optional[Any] = None,
-    tmax: Optional[Any] = None,
-    smoothfreq: Optional[str] = None,
-    savedir: Optional[Any] = None,
-) -> Tuple[pd.Series, pd.DataFrame]:
+    tmin: Any | None = None,
+    tmax: Any | None = None,
+    smoothfreq: str | None = None,
+    savedir: Any | None = None,
+) -> tuple[pd.Series, pd.DataFrame]:
     """Compute time series model simulation and prediction interval.
 
     Parameters

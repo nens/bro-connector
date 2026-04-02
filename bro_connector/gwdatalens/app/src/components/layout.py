@@ -1,5 +1,4 @@
 from dash import Dash, dcc, html
-
 from gwdatalens.app.src.components import (
     button_help_modal,
     button_load_pastastore,

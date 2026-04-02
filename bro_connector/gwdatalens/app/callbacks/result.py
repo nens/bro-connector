@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from dash import ALL, Input, Output, Patch, State, dcc, html, no_update
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import ColumnNames, ConfigDefaults, PlotConstants, QCFlags
 from gwdatalens.app.messages import ErrorMessages, SuccessMessages, t_

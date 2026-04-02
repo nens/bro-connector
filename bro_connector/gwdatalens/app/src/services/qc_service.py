@@ -7,15 +7,14 @@ and result processing for the traval QC workflow.
 import logging
 from copy import deepcopy
 from functools import partial
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
-from traval import rulelib
-
 from gwdatalens.app.constants import QCDefaults
 from gwdatalens.app.exceptions import TimeSeriesError
 from gwdatalens.app.src.data.qc_custom_rules import make_rule_pastas_obswell
 from gwdatalens.app.validators import validate_not_empty
+from traval import rulelib
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +44,8 @@ class QCService:
         self.custom_rules = {"pastas_obswell": make_rule_pastas_obswell(self.db)}
 
     def get_rule_from_ruleset(
-        self, istep: Optional[int] = None, stepname: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, istep: int | None = None, stepname: str | None = None
+    ) -> dict[str, Any]:
         """Get rule from current ruleset.
 
         Parameters
@@ -97,9 +96,9 @@ class QCService:
     def add_rule_to_ruleset(
         self,
         rule_name: str,
-        rule_kwargs: Optional[Dict[str, Any]] = None,
+        rule_kwargs: dict[str, Any] | None = None,
         inject_manual_obs: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Add a new rule to the current ruleset.
 
         Parameters
@@ -209,7 +208,7 @@ class QCService:
 
     def derive_rule_parameters_for_series(
         self, series_name: str
-    ) -> Tuple[List[Any], List[str]]:
+    ) -> tuple[list[Any], list[str]]:
         """Derive rule parameters for a specific time series.
 
         Evaluates callable parameters with the series name.
@@ -264,10 +263,10 @@ class QCService:
     def run_qc_on_series(
         self,
         wid: int,
-        tmin: Optional[pd.Timestamp] = None,
-        tmax: Optional[pd.Timestamp] = None,
+        tmin: pd.Timestamp | None = None,
+        tmax: pd.Timestamp | None = None,
         only_unvalidated: bool = False,
-    ) -> Tuple[pd.Series, pd.DataFrame]:
+    ) -> tuple[pd.Series, pd.DataFrame]:
         """Run quality control on a time series.
 
         Parameters
@@ -313,8 +312,8 @@ class QCService:
     def run_traval(
         self,
         wid: int,
-        tmin: Optional[pd.Timestamp] = None,
-        tmax: Optional[pd.Timestamp] = None,
+        tmin: pd.Timestamp | None = None,
+        tmax: pd.Timestamp | None = None,
         only_unvalidated: bool = False,
     ):
         """Run traval via the traval manager."""
@@ -340,7 +339,7 @@ class QCService:
         """
         return self.traval._ruleset.get_resolved_ruleset(series_name)
 
-    def _generate_default_kwargs(self, func) -> Dict[str, Any]:
+    def _generate_default_kwargs(self, func) -> dict[str, Any]:
         """Generate default kwargs for a rule function.
 
         Parameters

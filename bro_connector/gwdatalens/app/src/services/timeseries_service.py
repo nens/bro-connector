@@ -6,11 +6,10 @@ callback orchestration.
 """
 
 import logging
-from typing import Dict, List, Optional, Sequence, Union
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.exceptions import TimeSeriesError
 
@@ -39,10 +38,10 @@ class TimeSeriesService:
     def get_timeseries_for_observation_well(
         self,
         wid: int,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        columns: Optional[List[str]] = None,
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        columns: list[str] | None = None,
+        tmin: str | None = None,
+        tmax: str | None = None,
     ) -> pd.DataFrame:
         """Get time series for a well.
 
@@ -82,11 +81,11 @@ class TimeSeriesService:
 
     def get_series_for_multiple_wells(
         self,
-        wids: List[int],
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
-    ) -> Dict[int, pd.DataFrame]:
+        wids: list[int],
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        tmin: str | None = None,
+        tmax: str | None = None,
+    ) -> dict[int, pd.DataFrame]:
         """Get time series for multiple wells.
 
         Parameters
@@ -129,7 +128,7 @@ class TimeSeriesService:
         """
         return self.db.count_measurements_per_tube()
 
-    def check_if_wells_have_data(self, wids: List[int]) -> bool:
+    def check_if_wells_have_data(self, wids: list[int]) -> bool:
         """Check if any wells in list have observation data.
 
         Parameters
@@ -148,7 +147,7 @@ class TimeSeriesService:
     def get_timeseries_with_column(
         self,
         wid: int,
-        column: Optional[str] = None,
+        column: str | None = None,
         observation_type: str = "reguliereMeting",
     ) -> pd.DataFrame:
         """Get time series with specific column.
@@ -232,7 +231,7 @@ class TimeSeriesService:
             del self.db._cache[key]
         logger.debug("Evicted %d cache entries for wid=%s", len(stale_keys), wid)
 
-    def save_correction(self, wids: List[int], corrections_df: pd.DataFrame) -> None:
+    def save_correction(self, wids: list[int], corrections_df: pd.DataFrame) -> None:
         """Save manual corrections to database.
 
         Parameters

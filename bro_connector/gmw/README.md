@@ -212,7 +212,7 @@ classDiagram
         int bro_user
         int bro_token
     }
-    
+
     class BROProject{
         str name
         int project_number

@@ -17,7 +17,6 @@ from dash import (
     no_update,
 )
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.constants import ConfigDefaults
 from gwdatalens.app.exceptions import (
     EmptyResultError,

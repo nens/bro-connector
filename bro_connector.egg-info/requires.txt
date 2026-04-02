@@ -48,10 +48,10 @@ packaging==24.0
 pandas==2.2.2
 paramiko==3.4.0
 pastas
-pastastore
+pastastore>=1.11.0
+cachetools==6.2.4
 plotly==6.0.1
 polars
-psycopg2==2.9.9
 psycopg2-binary
 pyOpenSSL
 pycparser==2.22
@@ -80,6 +80,8 @@ xmltodict==0.13.0
 django-image-uploader-widget
 setuptools
 gunicorn==23.0.0
+pytest>=8.4.0
+pre-commit>=4.5.1
 
 [test]
 pytest

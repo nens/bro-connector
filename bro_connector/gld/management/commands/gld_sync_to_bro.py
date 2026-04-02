@@ -322,6 +322,11 @@ class GldSyncHandler:
                         "gmn_bro_id"
                     )
                 ]
+                [
+                    gmn_id
+                    for gmn_id in monitoring_nets
+                    if models.is_broid(gmn_id["broId"])
+                ]
                 srcdocdata = {
                     "objectIdAccountableParty": f"{internal_id}-{dossier.quality_regime}",
                     "groundwaterMonitoringNets": monitoring_nets,
@@ -364,13 +369,13 @@ class GldSyncHandler:
                 gmw_bro_id=bro_id_gmw,
                 filter_number=tube_number,
                 quality_regime=quality_regime,
-                defaults=dict(
-                    comments="Succesfully generated startregistration request",
-                    date_modified=datetime.datetime.now(),
-                    validation_status=None,
-                    process_status=process_status,
-                    file=filename,
-                ),
+                defaults={
+                    "comments": "Succesfully generated startregistration request",
+                    "date_modified": datetime.datetime.now(),
+                    "validation_status": None,
+                    "process_status": process_status,
+                    "file": filename,
+                },
             )[0]
 
         except Exception as e:
@@ -379,11 +384,11 @@ class GldSyncHandler:
                 gmw_bro_id=bro_id_gmw,
                 filter_number=tube_number,
                 quality_regime=quality_regime,
-                defaults=dict(
-                    comments=f"Failed to create startregistration source document: {e}",
-                    date_modified=datetime.datetime.now(),
-                    process_status=process_status,
-                ),
+                defaults={
+                    "comments": f"Failed to create startregistration source document: {e}",
+                    "date_modified": datetime.datetime.now(),
+                    "process_status": process_status,
+                },
             )[0]
 
     def validate_gld_startregistration_request(
@@ -574,14 +579,14 @@ class GldSyncHandler:
                         gld_bro_id=dossier.gld_bro_id,
                         filter_number=dossier.tube_number,
                         delivery_type="register",
-                        defaults=dict(
-                            validation_status="VALID",
-                            delivery_id=None,
-                            delivery_type="register",
-                            delivery_status="OPGENOMEN_LVBRO",
-                            comments="Imported into BRO-Connector.",
-                            quality_regime=dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
-                        ),
+                        defaults={
+                            "validation_status": "VALID",
+                            "delivery_id": None,
+                            "delivery_type": "register",
+                            "delivery_status": "OPGENOMEN_LVBRO",
+                            "comments": "Imported into BRO-Connector.",
+                            "quality_regime": dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
+                        },
                     )
                     continue
 
@@ -790,18 +795,18 @@ class GldSyncHandler:
             record, created = models.gld_addition_log.objects.update_or_create(
                 observation=observation,
                 addition_type=form_addition_type(observation),
-                defaults=dict(
-                    observation_identifier=observation_id,
-                    date_modified=datetime.datetime.now(),
-                    start_date=first_timestamp_datetime,
-                    end_date=final_timestamp_datetime,
-                    broid_registration=gld_bro_id,
-                    comments="Succesfully generated XML sourcedocument",
-                    file=filename,
-                    validation_status="TO_BE_VALIDATED",
-                    addition_type=addition_type,
-                    process_status="source_document_created",
-                ),
+                defaults={
+                    "observation_identifier": observation_id,
+                    "date_modified": datetime.datetime.now(),
+                    "start_date": first_timestamp_datetime,
+                    "end_date": final_timestamp_datetime,
+                    "broid_registration": gld_bro_id,
+                    "comments": "Succesfully generated XML sourcedocument",
+                    "file": filename,
+                    "validation_status": "TO_BE_VALIDATED",
+                    "addition_type": addition_type,
+                    "process_status": "source_document_created",
+                },
             )
 
         # Failure to create the source document for this observation
@@ -809,12 +814,12 @@ class GldSyncHandler:
             # all_records_created = False
             record, created = models.gld_addition_log.objects.update_or_create(
                 observation_id=observation.observation_id,
-                defaults=dict(
-                    date_modified=datetime.datetime.now(),
-                    broid_registration=gld_bro_id,
-                    comments=f"Failed to generate XML source document, {e}",
-                    process_status="failed_to_create_source_document",
-                ),
+                defaults={
+                    "date_modified": datetime.datetime.now(),
+                    "broid_registration": gld_bro_id,
+                    "comments": f"Failed to generate XML source document, {e}",
+                    "process_status": "failed_to_create_source_document",
+                },
             )
 
         return (record, created)

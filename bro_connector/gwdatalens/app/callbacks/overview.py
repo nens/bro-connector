@@ -4,7 +4,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from dash import Input, Output, Patch, State, no_update
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import ColumnNames, ConfigDefaults
 from gwdatalens.app.exceptions import EmptyResultError, QueryError

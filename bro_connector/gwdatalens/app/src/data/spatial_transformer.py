@@ -4,13 +4,10 @@ Handles coordinate system transformations and spatial enrichment
 for groundwater monitoring well data.
 """
 
-from typing import Tuple
-
 import geopandas as gpd
 import numpy as np
-from pyproj import Transformer
-
 from gwdatalens.app.src.data.util import EPSG_28992, WGS84
+from pyproj import Transformer
 
 
 class SpatialTransformer:
@@ -35,7 +32,7 @@ class SpatialTransformer:
 
     def transform_to_wgs84(
         self, x: np.ndarray, y: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Transform coordinates from RD to WGS84.
 
         Parameters

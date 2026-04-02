@@ -3,6 +3,7 @@ README.md
 pyproject.toml
 bro_connector/__init__.py
 bro_connector/asgi.py
+bro_connector/conftest.py
 bro_connector/manage.py
 bro_connector/urls.py
 bro_connector/wsgi.py

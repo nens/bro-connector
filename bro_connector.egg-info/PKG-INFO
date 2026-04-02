@@ -77,10 +77,10 @@ Requires-Dist: packaging==24.0
 Requires-Dist: pandas==2.2.2
 Requires-Dist: paramiko==3.4.0
 Requires-Dist: pastas
-Requires-Dist: pastastore
+Requires-Dist: pastastore>=1.11.0
+Requires-Dist: cachetools==6.2.4
 Requires-Dist: plotly==6.0.1
 Requires-Dist: polars
-Requires-Dist: psycopg2==2.9.9
 Requires-Dist: psycopg2-binary
 Requires-Dist: pyOpenSSL
 Requires-Dist: pycparser==2.22
@@ -109,6 +109,8 @@ Requires-Dist: xmltodict==0.13.0
 Requires-Dist: django-image-uploader-widget
 Requires-Dist: setuptools
 Requires-Dist: gunicorn==23.0.0
+Requires-Dist: pytest>=8.4.0
+Requires-Dist: pre-commit>=4.5.1
 Provides-Extra: test
 Requires-Dist: pytest; extra == "test"
 Dynamic: license-file

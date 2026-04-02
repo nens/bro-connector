@@ -1,5 +1,6 @@
 import csv
 import datetime
+
 from django.contrib import admin
 from django.db.models import Model, fields
 from django.http import HttpResponse
@@ -24,6 +25,7 @@ from .models import (
     MeasurementConfiguration,
 )
 
+
 def export_selected_items_to_csv(modeladmin, request, queryset):
     # Database fields
     field_names = [field.name for field in modeladmin.model._meta.fields]
@@ -37,7 +39,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     # CSV setup
     response = HttpResponse(content_type="text/csv")
 
-    model_name = str(modeladmin.model._meta).replace(".","_")
+    model_name = str(modeladmin.model._meta).replace(".", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
@@ -51,6 +53,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
         writer.writerow(db_values + prop_values)
 
     return response
+
 
 class BroIdNullFilter(admin.SimpleListFilter):
     title = _("Met/Zonder BRO-ID")  # label in the sidebar
@@ -127,8 +130,6 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
     def check_status(self, request, queryset):
         syncer = FRDSync()
         syncer.handle(queryset, check_only=True)
-
-    
 
 
 class InstrumentConfigurationAdmin(admin.ModelAdmin):

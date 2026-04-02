@@ -4,10 +4,9 @@ Extracts repeated validation patterns into reusable functions.
 """
 
 import logging
-from typing import Any, List, Optional, Union
+from typing import Any
 
 import pandas as pd
-
 from gwdatalens.app.exceptions import (
     EmptyResultError,
     MultipleResultsError,
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def validate_single_result(
-    query_result: Union[pd.DataFrame, pd.Series], context: str = "query"
+    query_result: pd.DataFrame | pd.Series, context: str = "query"
 ) -> Any:
     """Validate that a query returned exactly one result.
 
@@ -61,9 +60,9 @@ def validate_single_result(
 
 
 def validate_not_empty(
-    df: Union[pd.DataFrame, pd.Series, List],
+    df: pd.DataFrame | pd.Series | list,
     context: str = "data",
-) -> Union[pd.DataFrame, pd.Series]:
+) -> pd.DataFrame | pd.Series:
     """Validate that a DataFrame/Series is not empty.
 
     Parameters
@@ -114,7 +113,7 @@ def validate_not_none(value: Any, context: str = "value") -> Any:
 
 
 def validate_selection_limit(
-    items: Union[List, pd.Series],
+    items: list | pd.Series,
     limit: int,
 ) -> bool:
     """Check if selection exceeds limit.
@@ -197,7 +196,7 @@ def validate_date_range(tmin, tmax, context: str = "date range") -> tuple:
     return tmin, tmax
 
 
-def validate_well_id(wid: Optional[int], context: str = "well") -> int:
+def validate_well_id(wid: int | None, context: str = "well") -> int:
     """Validate well ID is not None.
 
     Parameters
