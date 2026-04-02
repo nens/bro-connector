@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional, Dict
 
 import pandas as pd
 import plotly.express as px

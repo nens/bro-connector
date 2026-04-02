@@ -36,7 +36,7 @@ class WellService:
         """Initialize with data source."""
         self.db = data_source
 
-    def _existing_wids(self, wids: List[int]) -> List[int]:
+    def _existing_wids(self, wids: list[int]) -> list[int]:
         """Return only well IDs that are present in current metadata index."""
         if not wids:
             return []

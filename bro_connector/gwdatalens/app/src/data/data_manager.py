@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from hydropandas.io.knmi import get_nearest_station_xy
 from pandas import Timedelta
