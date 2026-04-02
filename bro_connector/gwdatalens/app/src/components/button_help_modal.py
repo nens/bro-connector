@@ -1,5 +1,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+
 from gwdatalens.app.paths import ASSETS_PATH
 from gwdatalens.app.src.components import ids
 

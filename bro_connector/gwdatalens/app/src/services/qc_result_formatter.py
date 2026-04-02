@@ -7,11 +7,12 @@ status flags, and translations.
 
 import logging
 
+from pandas import DataFrame, Series
+
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import ColumnNames, QCFlags
 from gwdatalens.app.exceptions import EmptyResultError
 from gwdatalens.app.messages import t_
-from pandas import DataFrame, Series
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +189,7 @@ class QCResultFormatter:
 
         if validated_mask.sum() == len(df):
             raise EmptyResultError(
-                f"All observations are already validated {df.index.name}"
+                "All observations are already validated %s" % df.index.name
             )
 
         # Clear data for validated observations (they appear but are skipped)

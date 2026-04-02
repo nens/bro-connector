@@ -1,5 +1,6 @@
 from dash import dcc, html
 from dash_bootstrap_components import Button
+
 from gwdatalens.app.constants import UI
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids

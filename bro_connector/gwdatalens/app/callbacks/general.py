@@ -9,6 +9,7 @@ import dash_bootstrap_components as dbc
 import pastastore as pst
 from dash import Input, Output, State, html, no_update
 from dash.exceptions import PreventUpdate
+
 from gwdatalens.app.constants import ConfigDefaults
 from gwdatalens.app.messages import ErrorMessages, SuccessMessages, t_
 from gwdatalens.app.src.components import (

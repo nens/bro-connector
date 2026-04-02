@@ -1,5 +1,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import UI, ConfigDefaults
 from gwdatalens.app.messages import t_

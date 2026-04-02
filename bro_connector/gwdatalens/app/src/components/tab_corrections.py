@@ -3,13 +3,14 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import __version__ as DASH_VERSION
 from dash import dash_table, dcc, html
+from packaging.version import parse as parse_version
+
 from gwdatalens.app.constants import UI, ColumnNames
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.components.overview_chart import plot_obs
 from gwdatalens.app.src.components.styling import DATA_TABLE_HEADER_BGCOLOR
 from gwdatalens.app.src.data.data_manager import DataManager
-from packaging.version import parse as parse_version
 
 
 def render() -> dcc.Tab:

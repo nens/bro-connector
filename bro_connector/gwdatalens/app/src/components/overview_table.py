@@ -1,5 +1,6 @@
 from dash import dash_table, html
 from dash.dash_table.Format import Format
+
 from gwdatalens.app.constants import UI, ColumnNames
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.components.styling import DATA_TABLE_HEADER_BGCOLOR

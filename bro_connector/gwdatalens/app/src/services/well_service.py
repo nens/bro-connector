@@ -9,6 +9,7 @@ from typing import Any
 
 import geopandas as gpd
 import pandas as pd
+
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.exceptions import EmptyResultError, QueryError
 from gwdatalens.app.validators import validate_not_empty
@@ -35,7 +36,7 @@ class WellService:
         """Initialize with data source."""
         self.db = data_source
 
-    def _existing_wids(self, wids: list[int]) -> list[int]:
+    def _existing_wids(self, wids: List[int]) -> List[int]:
         """Return only well IDs that are present in current metadata index."""
         if not wids:
             return []

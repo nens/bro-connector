@@ -1,6 +1,7 @@
 # %%
 import pandas as pd
 import plotly.graph_objects as go
+
 from gwdatalens.app.constants import ColumnNames
 
 

@@ -6,10 +6,11 @@ callback orchestration.
 """
 
 import logging
-from collections.abc import Sequence
+from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
+
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.exceptions import TimeSeriesError
 
@@ -38,10 +39,10 @@ class TimeSeriesService:
     def get_timeseries_for_observation_well(
         self,
         wid: int,
-        observation_type: str | Sequence[str] | None = "reguliereMeting",
-        columns: list[str] | None = None,
-        tmin: str | None = None,
-        tmax: str | None = None,
+        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
+        columns: Optional[List[str]] = None,
+        tmin: Optional[str] = None,
+        tmax: Optional[str] = None,
     ) -> pd.DataFrame:
         """Get time series for a well.
 
@@ -81,11 +82,11 @@ class TimeSeriesService:
 
     def get_series_for_multiple_wells(
         self,
-        wids: list[int],
-        observation_type: str | Sequence[str] | None = "reguliereMeting",
-        tmin: str | None = None,
-        tmax: str | None = None,
-    ) -> dict[int, pd.DataFrame]:
+        wids: List[int],
+        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
+        tmin: Optional[str] = None,
+        tmax: Optional[str] = None,
+    ) -> Dict[int, pd.DataFrame]:
         """Get time series for multiple wells.
 
         Parameters
@@ -231,7 +232,7 @@ class TimeSeriesService:
             del self.db._cache[key]
         logger.debug("Evicted %d cache entries for wid=%s", len(stale_keys), wid)
 
-    def save_correction(self, wids: list[int], corrections_df: pd.DataFrame) -> None:
+    def save_correction(self, wids: List[int], corrections_df: pd.DataFrame) -> None:
         """Save manual corrections to database.
 
         Parameters

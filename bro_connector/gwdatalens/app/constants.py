@@ -6,6 +6,7 @@ Centralizes magic strings and numbers used throughout the application.
 from pathlib import Path
 
 import plotly.express as px
+
 from gwdatalens.app.src.components import ids
 
 

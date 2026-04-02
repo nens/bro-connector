@@ -1,11 +1,12 @@
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
+from packaging.version import parse as parse_version
+
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import UI, ConfigDefaults
 from gwdatalens.app.src.cache import cache
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.utils import conditional_cache
-from packaging.version import parse as parse_version
 
 
 @conditional_cache(

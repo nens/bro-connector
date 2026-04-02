@@ -7,6 +7,11 @@ import pandas as pd
 import pastas as ps
 from dash import Input, Output, State, html, no_update
 from dash.exceptions import PreventUpdate
+from packaging.version import parse
+from pastas.extensions import register_plotly
+from pastas.io.pas import PastasEncoder
+from pastastore.version import __version__ as PASTASTORE_VERSION
+
 from gwdatalens.app.constants import ConfigDefaults
 from gwdatalens.app.messages import ErrorMessages, SuccessMessages, t_
 from gwdatalens.app.src.components import ids
@@ -18,10 +23,6 @@ from gwdatalens.app.src.utils.callback_helpers import (
     EmptyFigure,
     get_callback_context,
 )
-from packaging.version import parse
-from pastas.extensions import register_plotly
-from pastas.io.pas import PastasEncoder
-from pastastore.version import __version__ as PASTASTORE_VERSION
 
 logger = logging.getLogger(__name__)
 register_plotly()

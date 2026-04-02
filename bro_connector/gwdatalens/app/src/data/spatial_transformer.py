@@ -6,8 +6,9 @@ for groundwater monitoring well data.
 
 import geopandas as gpd
 import numpy as np
-from gwdatalens.app.src.data.util import EPSG_28992, WGS84
 from pyproj import Transformer
+
+from gwdatalens.app.src.data.util import EPSG_28992, WGS84
 
 
 class SpatialTransformer:

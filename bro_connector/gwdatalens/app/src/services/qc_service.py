@@ -10,11 +10,12 @@ from functools import partial
 from typing import Any
 
 import pandas as pd
+from traval import rulelib
+
 from gwdatalens.app.constants import QCDefaults
 from gwdatalens.app.exceptions import TimeSeriesError
 from gwdatalens.app.src.data.qc_custom_rules import make_rule_pastas_obswell
 from gwdatalens.app.validators import validate_not_empty
-from traval import rulelib
 
 logger = logging.getLogger(__name__)
 

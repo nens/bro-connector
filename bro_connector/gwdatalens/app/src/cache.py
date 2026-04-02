@@ -5,6 +5,7 @@ caching implementation.
 """
 
 from flask_caching import Cache
+
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import ConfigDefaults
 

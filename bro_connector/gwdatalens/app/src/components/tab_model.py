@@ -2,6 +2,7 @@ import logging
 
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import (
     ids,

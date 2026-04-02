@@ -2,14 +2,15 @@
 
 # %%
 import logging
-from collections.abc import Sequence
+from typing import Optional, Sequence, Union
 from urllib.parse import quote
 
 import pandas as pd
-from gwdatalens.app.config import config
-from gwdatalens.app.src.data import datamodel
 from sqlalchemy import case, column, create_engine, func, select, table
 from sqlalchemy.dialects import postgresql
+
+from gwdatalens.app.config import config
+from gwdatalens.app.src.data import datamodel
 
 logger = logging.getLogger(__name__)
 
@@ -318,7 +319,7 @@ def sql_count_measurements():
 
 
 def sql_get_timeseries_date_range(
-    observation_type: str | Sequence[str] | None = None,
+    observation_type: Optional[Union[str, Sequence[str]]] = None,
 ):
     """Return first/last observation timestamp per well/tube time series.
 
@@ -697,9 +698,9 @@ def sql_measurements_for_observation_id(observation_id: int):
 def sql_get_timeseries(
     well_static_id: int,
     tube_static_id: int,
-    observation_type: str | Sequence[str] | None = None,
-    tmin: str | None = None,
-    tmax: str | None = None,
+    observation_type: Optional[Union[str, Sequence[str]]] = None,
+    tmin: Optional[str] = None,
+    tmax: Optional[str] = None,
     deduplicate: bool = True,
 ):
     """Return all measurements for a specific well and tube.

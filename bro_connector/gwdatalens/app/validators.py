@@ -7,6 +7,7 @@ import logging
 from typing import Any
 
 import pandas as pd
+
 from gwdatalens.app.exceptions import (
     EmptyResultError,
     MultipleResultsError,

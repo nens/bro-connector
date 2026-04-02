@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 from dash import dcc
+
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import UI, ConfigDefaults, PlotConstants
 from gwdatalens.app.messages import t_
