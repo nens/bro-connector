@@ -80,6 +80,7 @@ xmltodict==0.13.0
 django-image-uploader-widget
 setuptools
 gunicorn==23.0.0
+pytest>=8.4.0
 
 [test]
 pytest
