@@ -167,7 +167,7 @@ def has_necessary_helper_files(filenames):
     required_extensions = [".dbf", ".prj", ".shx"]
 
     # Count occurrences of each required extension
-    counts = {ext: 0 for ext in required_extensions}
+    counts = dict.fromkeys(required_extensions, 0)
     for f in filenames:
         ext = f.lower()[-4:]
         if ext in counts:

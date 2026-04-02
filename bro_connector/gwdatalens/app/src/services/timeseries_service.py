@@ -10,7 +10,6 @@ from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.exceptions import TimeSeriesError
 

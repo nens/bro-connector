@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import tomli
-
 from gwdatalens.app.constants import ConfigDefaults
 
 logging.basicConfig(level=ConfigDefaults.STARTUP_LOG_LEVEL)

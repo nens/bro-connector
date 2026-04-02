@@ -22,23 +22,6 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pastastore as pst
-from pastastore import PastaStore
-from pyproj import Transformer
-from sqlalchemy import (
-    bindparam,
-    func,
-    or_,
-    select,
-    text,
-    update,
-    values,
-)
-from sqlalchemy import (
-    column as sa_column,
-)
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session
-
 from gwdatalens.app.constants import (
     ColumnNames,
     DatabaseFields,
@@ -56,6 +39,22 @@ from gwdatalens.app.src.data.metadata_builder import (
 from gwdatalens.app.src.data.spatial_transformer import SpatialTransformer
 from gwdatalens.app.src.data.util import EPSG_28992, WGS84, conditional_cachedmethod
 from gwdatalens.app.validators import validate_not_empty, validate_single_result
+from pastastore import PastaStore
+from pyproj import Transformer
+from sqlalchemy import (
+    bindparam,
+    func,
+    or_,
+    select,
+    text,
+    update,
+    values,
+)
+from sqlalchemy import (
+    column as sa_column,
+)
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
 try:
     from cachetools import TTLCache

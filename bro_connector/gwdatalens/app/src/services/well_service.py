@@ -9,7 +9,6 @@ from typing import Any
 
 import geopandas as gpd
 import pandas as pd
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.exceptions import EmptyResultError, QueryError
 from gwdatalens.app.validators import validate_not_empty

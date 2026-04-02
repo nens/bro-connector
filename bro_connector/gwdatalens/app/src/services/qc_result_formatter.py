@@ -7,12 +7,11 @@ status flags, and translations.
 
 import logging
 
-from pandas import DataFrame, Series
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import ColumnNames, QCFlags
 from gwdatalens.app.exceptions import EmptyResultError
 from gwdatalens.app.messages import t_
+from pandas import DataFrame, Series
 
 logger = logging.getLogger(__name__)
 

@@ -6,11 +6,10 @@ from collections.abc import Sequence
 from urllib.parse import quote
 
 import pandas as pd
-from sqlalchemy import case, column, create_engine, func, select, table
-from sqlalchemy.dialects import postgresql
-
 from gwdatalens.app.config import config
 from gwdatalens.app.src.data import datamodel
+from sqlalchemy import case, column, create_engine, func, select, table
+from sqlalchemy.dialects import postgresql
 
 logger = logging.getLogger(__name__)
 

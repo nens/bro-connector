@@ -1,14 +1,13 @@
 import dash_bootstrap_components as dbc
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
-from packaging.version import parse as parse_version
-
 from gwdatalens.app.constants import UI
 from gwdatalens.app.messages import ErrorMessages, t_
 from gwdatalens.app.src.components import ids, qc_results_table
 from gwdatalens.app.src.data.data_manager import DataManager
 from gwdatalens.app.src.data.qc_definitions import qc_categories
 from gwdatalens.app.src.utils.callback_helpers import EmptyFigure
+from packaging.version import parse as parse_version
 
 
 def render() -> dcc.Tab:

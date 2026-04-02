@@ -8,7 +8,6 @@ import i18n
 import pandas as pd
 import pastastore as pst
 from dash import CeleryManager, Dash, DiskcacheManager
-
 from gwdatalens.app.callbacks import register_callbacks
 from gwdatalens.app.config import config
 from gwdatalens.app.messages import t_

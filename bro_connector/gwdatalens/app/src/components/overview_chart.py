@@ -5,9 +5,6 @@ import plotly.express as px
 import plotly.graph_objs as go
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
-from packaging.version import parse as parse_version
-from pandas import Timedelta, Timestamp
-
 from gwdatalens.app.constants import (
     UI,
     ColumnNames,
@@ -18,6 +15,8 @@ from gwdatalens.app.constants import (
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.data.data_manager import DataManager
+from packaging.version import parse as parse_version
+from pandas import Timedelta, Timestamp
 
 
 def render(data: DataManager, selected_data: list[int] | None = None) -> html.Div:

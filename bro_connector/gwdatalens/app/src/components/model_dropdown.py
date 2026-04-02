@@ -1,7 +1,6 @@
 from typing import Any
 
 from dash import dcc, html
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids

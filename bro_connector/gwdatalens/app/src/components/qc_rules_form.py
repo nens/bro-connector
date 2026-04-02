@@ -4,7 +4,6 @@ from inspect import signature
 import dash_bootstrap_components as dbc
 import numpy as np
 from dash import dcc, html
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import UI, ColumnNames
 from gwdatalens.app.src.components import ids

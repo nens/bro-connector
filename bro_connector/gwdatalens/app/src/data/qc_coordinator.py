@@ -2,12 +2,11 @@ import logging
 from copy import deepcopy
 
 import traval
-from pandas import DataFrame
-
 from gwdatalens.app.constants import ColumnNames, QCDefaults
 from gwdatalens.app.src.services.qc_executor import QCExecutor
 from gwdatalens.app.src.services.qc_plotter import QCPlotter
 from gwdatalens.app.src.services.qc_result_formatter import QCResultFormatter
+from pandas import DataFrame
 
 logger = logging.getLogger(__name__)
 
