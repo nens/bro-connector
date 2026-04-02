@@ -81,6 +81,7 @@ django-image-uploader-widget
 setuptools
 gunicorn==23.0.0
 pytest>=8.4.0
+pre-commit>=4.5.1
 
 [test]
 pytest
