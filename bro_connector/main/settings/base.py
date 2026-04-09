@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import os
+import pytz
 import platform
 from pathlib import Path
 
@@ -181,7 +182,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"  # "Europe/Amsterdam"
+TIME_ZONE = "Europe/Amsterdam"  # "Europe/Amsterdam"
+TZINFO = pytz.timezone(TIME_ZONE)
 
 USE_I18N = True
 

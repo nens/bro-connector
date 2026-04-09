@@ -220,7 +220,6 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
     ]
 
     readonly_fields = [
-        "gld_bro_id",
         "gmw_bro_id",
         "tube_number",
         "first_measurement",
@@ -260,7 +259,7 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
             gld_actions.check_and_deliver_start(dossier)
 
         for dossier in queryset.filter(gld_bro_id__isnull=False):
-            gld_actions.check_and_deliver_additions(dossier)
+            gld_actions.gen_val_and_deliver_additions(dossier)
 
         # Then check the status of each individual registration log
         for dossier in queryset.filter(gld_bro_id__isnull=False):
