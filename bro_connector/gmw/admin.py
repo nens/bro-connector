@@ -86,7 +86,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     # CSV setup
     response = HttpResponse(content_type="text/csv")
 
-    model_name = str(modeladmin.model._meta).replace(".","_")
+    model_name = str(modeladmin.model._meta).replace(".", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
@@ -100,6 +100,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
         writer.writerow(db_values + prop_values)
 
     return response
+
 
 class BroIdNullFilter(admin.SimpleListFilter):
     title = _("Met/Zonder BRO-ID")  # label in the sidebar
@@ -509,7 +510,12 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         EventsInline,
     )
 
-    actions = [export_selected_items_to_csv, "deliver_to_bro", "check_status", "generate_fieldform"]
+    actions = [
+        export_selected_items_to_csv,
+        "deliver_to_bro",
+        "check_status",
+        "generate_fieldform",
+    ]
     export_properties = ["xy"]
 
     def well_link(self, obj):
@@ -712,7 +718,12 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
 
     list_filter = (WellFilter, "owner")
     autocomplete_fields = ["groundwater_monitoring_well_static"]
-    readonly_fields = ["number_of_standpipes", "deliver_gld_to_bro", "internal_id", "date_till"]
+    readonly_fields = [
+        "number_of_standpipes",
+        "deliver_gld_to_bro",
+        "internal_id",
+        "date_till",
+    ]
 
     fields = [
         "groundwater_monitoring_well_static",
@@ -806,7 +817,12 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     )
     list_filter = (WellFilter, "deliver_gld_to_bro")
 
-    readonly_fields = ["number_of_geo_ohm_cables", "internal_id", "in_monitoring_net", "report"]
+    readonly_fields = [
+        "number_of_geo_ohm_cables",
+        "internal_id",
+        "in_monitoring_net",
+        "report",
+    ]
 
     inlines = (
         TubeDynamicInline,
@@ -1052,7 +1068,7 @@ class EventAdmin(admin.ModelAdmin):
                     obj.groundwater_monitoring_well_dynamic
                 )
             else:
-                valid_wd, report_wd = False, "No dynamic well\n"
+                valid_wd, _report_wd = False, "No dynamic well\n"
 
             valid_ws, report_ws = validate_well_static(
                 obj.groundwater_monitoring_well_static
@@ -1066,7 +1082,6 @@ class EventAdmin(admin.ModelAdmin):
                 or not valid_ws
             ):
                 valid = False
-                report = f"Electrode:\n{report_e}\nTube Dynamic:\n{report_td}\nTube Static:\n{report_ts}\nWell Dynamic:\n{report_wd}\nWell Static:\n{report_ws}"
 
         # obj.bro_actions = report
         obj.complete_bro = valid

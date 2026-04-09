@@ -53,6 +53,8 @@ class ConfigManager:
         self._config = {
             "DEBUG": False,
             "LOCALE": "nl",
+            "DATA_BACKEND": "pastastore",
+            "EXTENT": None,
             "DJANGO_APP": False,
             "CACHING": False,
             "SERIES_LOAD_LIMIT": ConfigDefaults.MAX_WELLS_SELECTION,
@@ -67,9 +69,9 @@ class ConfigManager:
             "CALLBACK_LOG_TRIGGER": ConfigDefaults.CALLBACK_LOG_TRIGGER,
             "pastastore": {
                 "name": "pastastore",
-                "path": "./gwdatalens/pastasdb/",
-                "connector": "pas",
-                "update_knmi": False,
+                "path": "",
+                "connector": "dict",
+                "update_knmi": False,  # update knmi time series on startup
             },
         }
         logger.debug("Loaded default configuration")
@@ -141,6 +143,7 @@ class ConfigManager:
             ),
             f"{env_prefix}PORT": ("PORT", int),
             f"{env_prefix}LOCALE": ("LOCALE", str),
+            f"{env_prefix}DATA_BACKEND": ("DATA_BACKEND", str),
             f"{env_prefix}CACHING": (
                 "CACHING",
                 lambda x: x.lower() in ("true", "1", "yes"),

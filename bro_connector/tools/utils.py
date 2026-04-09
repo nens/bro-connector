@@ -170,7 +170,7 @@ def has_necessary_helper_files(filenames):
     required_extensions = [".dbf", ".prj", ".shx"]
 
     # Count occurrences of each required extension
-    counts = {ext: 0 for ext in required_extensions}
+    counts = dict.fromkeys(required_extensions, 0)
     for f in filenames:
         ext = f.lower()[-4:]
         if ext in counts:
@@ -185,7 +185,9 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
     if instance.bro_type.lower() == "gmw":
         if instance.bro_id is not None:
             gmw = retrieve_historic_gmw.GMWHandler()
-            import_info = retrieve_historic_gmw.handle_individual_bro_id(instance.bro_id, gmw)
+            import_info = retrieve_historic_gmw.handle_individual_bro_id(
+                instance.bro_id, gmw
+            )
         else:
             import_info = retrieve_historic_gmw.run(
                 kvk_number=instance.kvk_number,
@@ -196,7 +198,9 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
     if instance.bro_type.lower() == "gld":
         if instance.bro_id is not None:
             gld = retrieve_historic_gld.GLDHandler()
-            import_info = retrieve_historic_gld.handle_individual_bro_id(instance.bro_id, gld)
+            import_info = retrieve_historic_gld.handle_individual_bro_id(
+                instance.bro_id, gld
+            )
         else:
             import_info = retrieve_historic_gld.run(
                 kvk_number=instance.kvk_number,
@@ -215,6 +219,7 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
     )
     instance.report += report.get("message") + "\n"
     instance.executed = True
+
 
 def process_zip_bro_file(instance: BroImport):
     # Read ZIP file

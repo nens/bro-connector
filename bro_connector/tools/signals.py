@@ -11,13 +11,12 @@ from gmn.models import (
     MeasuringPoint,
     Subgroup,
 )
-from main.management.tasks.retrieve_historic_gmw import handle_individual_bro_id
 from tools.utils import (
     get_monitoring_tube,
+    import_from_bro,
     process_csv_file,
     process_zip_bro_file,
     process_zip_file,
-    import_from_bro,
 )
 
 from .models import BroImport, GLDImport, GMNImport
@@ -38,9 +37,7 @@ def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
     instance.executed = False
 
     if not instance.file:
-        instance.report += (
-            "Geen bestand geupload, daarom is er geen shape of de default shape gebruikt - wanneer in de settings aanwezig.\n"
-        )
+        instance.report += "Geen bestand geupload, daarom is er geen shape of de default shape gebruikt - wanneer in de settings aanwezig.\n"
         import_from_bro(instance)
     elif instance.file.name.endswith(".zip"):
         process_zip_bro_file(
@@ -143,7 +140,7 @@ def convert_str_to_datetime(
         "%Y-%m-%d %H:%M:%S.%f",  # Date + time with microseconds
         "%Y-%m-%dT%H:%M:%S.%f",  # ISO with microseconds
         "%d/%m/%Y",  # European format (day/month/year)
-        "%d-%m-%Y", # European format (day-month-year)
+        "%d-%m-%Y",  # European format (day-month-year)
     ]
 
     for fmt in formats:
@@ -199,7 +196,7 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
             gmn=instance.monitoring_network,
             groundwater_monitoring_tube=monitoring_tube,
             code=row[0],
-            defaults={"added_to_gmn_date": convert_str_to_datetime(row[3]).date()}
+            defaults={"added_to_gmn_date": convert_str_to_datetime(row[3]).date()},
             ## Does this have to be the oldest date if a the measuring_point already exists? Or should it be overwritten?
         )[0]
 

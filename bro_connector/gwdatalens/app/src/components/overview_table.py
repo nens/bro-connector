@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from dash import dash_table, html
 from dash.dash_table.Format import Format
 
@@ -9,7 +7,7 @@ from gwdatalens.app.src.components.styling import DATA_TABLE_HEADER_BGCOLOR
 from gwdatalens.app.src.data.data_manager import DataManager
 
 
-def render(data: DataManager, selected_data: Optional[List[int]] = None) -> html.Div:
+def render(data: DataManager, selected_data: list[int] | None = None) -> html.Div:
     """Render an the piezometer overview table.
 
     Parameters
@@ -42,9 +40,12 @@ def render(data: DataManager, selected_data: Optional[List[int]] = None) -> html
         ColumnNames.TUBE_NUMBER,
         ColumnNames.SCREEN_TOP,
         ColumnNames.SCREEN_BOT,
-        "x",
-        "y",
-        "metingen",
+        ColumnNames.X,
+        ColumnNames.Y,
+        ColumnNames.TMIN,
+        ColumnNames.TMAX,
+        ColumnNames.NUMBER_OF_OBSERVATIONS,
+        ColumnNames.NUMBER_OF_CONTROL_OBSERVATIONS,
     ]
     return html.Div(
         id="table-div",
@@ -65,19 +66,19 @@ def render(data: DataManager, selected_data: Optional[List[int]] = None) -> html
                     },
                     {
                         "id": ColumnNames.TUBE_NUMBER,
-                        "name": "Filternummer",
+                        "name": "#",
                         "type": "numeric",
                         # "format": Format(scheme="r", precision=1),
                     },
                     {
                         "id": ColumnNames.SCREEN_TOP,
-                        "name": "Bovenzijde filter\n[m NAP]",
+                        "name": "BKF\n[mNAP]",
                         "type": "numeric",
                         "format": {"specifier": ".2f"},
                     },
                     {
                         "id": ColumnNames.SCREEN_BOT,
-                        "name": "Onderzijde filter\n[m NAP]",
+                        "name": "OKF\n[mNAP]",
                         "type": "numeric",
                         "format": {"specifier": ".2f"},
                     },
@@ -94,8 +95,24 @@ def render(data: DataManager, selected_data: Optional[List[int]] = None) -> html
                         "format": Format(scheme="r", precision=6),
                     },
                     {
+                        "id": ColumnNames.TMIN,
+                        "name": "Start",
+                        "type": "datetime",
+                    },
+                    {
+                        "id": ColumnNames.TMAX,
+                        "name": "End",
+                        "type": "datetime",
+                    },
+                    {
                         "id": ColumnNames.NUMBER_OF_OBSERVATIONS,
                         "name": "Metingen",
+                        "type": "numeric",
+                        "format": {"specifier": ".0f"},
+                    },
+                    {
+                        "id": ColumnNames.NUMBER_OF_CONTROL_OBSERVATIONS,
+                        "name": "Controle-\nmetingen",
                         "type": "numeric",
                         "format": {"specifier": ".0f"},
                     },
@@ -124,13 +141,19 @@ def render(data: DataManager, selected_data: Optional[List[int]] = None) -> html
                 + [
                     {"if": {"column_id": ColumnNames.DISPLAY_NAME}, "width": "15%"},
                     {"if": {"column_id": ColumnNames.BRO_ID}, "width": "10%"},
-                    {"if": {"column_id": ColumnNames.TUBE_NUMBER}, "width": "10%"},
-                    {"if": {"column_id": ColumnNames.SCREEN_TOP}, "width": "15%"},
-                    {"if": {"column_id": ColumnNames.SCREEN_BOT}, "width": "15%"},
+                    {"if": {"column_id": ColumnNames.TUBE_NUMBER}, "width": "5%"},
+                    {"if": {"column_id": ColumnNames.SCREEN_TOP}, "width": "7.5%"},
+                    {"if": {"column_id": ColumnNames.SCREEN_BOT}, "width": "7.5%"},
                     {"if": {"column_id": ColumnNames.X}, "width": "7.5%"},
                     {"if": {"column_id": ColumnNames.Y}, "width": "7.5%"},
+                    {"if": {"column_id": ColumnNames.TMIN}, "width": "10%"},
+                    {"if": {"column_id": ColumnNames.TMAX}, "width": "10%"},
                     {
                         "if": {"column_id": ColumnNames.NUMBER_OF_OBSERVATIONS},
+                        "width": "10%",
+                    },
+                    {
+                        "if": {"column_id": ColumnNames.NUMBER_OF_CONTROL_OBSERVATIONS},
                         "width": "10%",
                     },
                 ],

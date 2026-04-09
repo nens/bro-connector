@@ -18,6 +18,7 @@ from gwdatalens.app.src.utils.callback_helpers import (
     CallbackResponse,
     EmptyFigure,
     TimestampStore,
+    get_callback_context,
     validate_selection_limit,
 )
 
@@ -30,8 +31,9 @@ def register_overview_callbacks(app, data):
 
     @app.callback(
         Output(ids.SELECTED_OSERIES_STORE, "data"),
-        Input(ids.OVERVIEW_MAP, "selectedData"),
+        Input(ids.OVERVIEW_MAP, "selectedData"),  # allow_optional=True
         State(ids.SELECTED_OSERIES_STORE, "data"),
+        prevent_initial_call=True,
     )
     @log_callback(
         log_time=ConfigDefaults.CALLBACK_LOG_TIME,
@@ -72,12 +74,15 @@ def register_overview_callbacks(app, data):
         Output(ids.OVERVIEW_TABLE, "data"),
         Output(ids.ALERT_TIME_SERIES_CHART, "data"),
         Output(ids.OVERVIEW_TABLE_SELECTION_1, "data"),
-        Input(ids.OVERVIEW_MAP, "selectedData"),
+        Input(ids.OVERVIEW_MAP, "selectedData"),  # allow_optional=True
+        Input(ids.OVERVIEW_TIME_RANGE_REFRESH_STORE, "data"),
+        State(ids.TIME_RANGE_STORE, "data"),
         State(ids.SELECTED_OSERIES_STORE, "data"),
         State(ids.OVERVIEW_TABLE_SELECTION_1, "data"),
         State(ids.OVERVIEW_TABLE_SELECTION_2, "data"),
         background=False,
         prevent_initial_call=True,
+        optional=True,
     )
     @log_callback(
         log_time=ConfigDefaults.CALLBACK_LOG_TIME,
@@ -87,15 +92,28 @@ def register_overview_callbacks(app, data):
     )
     def plot_overview_time_series(
         selectedData: dict | None,
+        _overview_refresh_signal: tuple | None,
+        time_range: dict | None,
         selected_oseries: list[int] | None,
         table_selected_1: dict | None,
         table_selected_2: dict | None,
+        **kwargs,
     ) -> tuple[dict, list[dict] | Any, tuple, dict]:
         """Plot time series and sync table based on map or stored selection.
 
         Handles synchronization between map selection, table display, and chart.
         Determines if selection originated from table (to avoid table update loops).
+        Re-renders automatically when the global time-range filter changes.
         """
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = ctx_obj.triggered_id
+        time_range_triggered = triggered_id == ids.OVERVIEW_TIME_RANGE_REFRESH_STORE
+
+        # Extract tmin/tmax from the time range store
+        tmin = time_range.get("tmin") if time_range else None
+        tmax = time_range.get("tmax") if time_range else None
+        preset = time_range.get("preset") if time_range else None
+
         # Determine if selection originated from table
         table_triggered = _was_selection_from_table(table_selected_1, table_selected_2)
 
@@ -124,7 +142,7 @@ def register_overview_callbacks(app, data):
                 )
 
             # Generate table data (skip if selection came from table)
-            if table_triggered:
+            if time_range_triggered or table_triggered:
                 table_data = no_update
             else:
                 table_data = well_service.get_well_metadata_for_display(wids).to_dict(
@@ -151,7 +169,13 @@ def register_overview_callbacks(app, data):
                         .build()
                     )
 
-                chart = plot_obs(wids, data)
+                chart = plot_obs(
+                    wids,
+                    data,
+                    tmin=tmin,
+                    tmax=tmax,
+                    time_range_preset=preset,
+                )
                 return (
                     CallbackResponse()
                     .add_figure(chart)
@@ -209,10 +233,19 @@ def register_overview_callbacks(app, data):
         # Handle fallback to stored selection
         elif selected_oseries is not None:
             wids = selected_oseries
-            chart = plot_obs(wids, data)
-            table_data = well_service.get_well_metadata_for_display(
-                well_service.get_all_well_ids()
-            ).to_dict("records")
+            chart = plot_obs(
+                wids,
+                data,
+                tmin=tmin,
+                tmax=tmax,
+                time_range_preset=preset,
+            )
+            if time_range_triggered:
+                table_data = no_update
+            else:
+                table_data = well_service.get_well_metadata_for_display(
+                    well_service.get_all_well_ids()
+                ).to_dict("records")
             return (
                 CallbackResponse()
                 .add_figure(chart)

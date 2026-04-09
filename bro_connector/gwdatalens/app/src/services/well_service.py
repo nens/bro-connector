@@ -5,7 +5,7 @@ metadata transformations for display and analysis.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import geopandas as gpd
 import pandas as pd
@@ -35,6 +35,24 @@ class WellService:
     def __init__(self, data_source):
         """Initialize with data source."""
         self.db = data_source
+
+    def _existing_wids(self, wids: list[int]) -> list[int]:
+        """Return only well IDs that are present in current metadata index."""
+        if not wids:
+            return []
+
+        index = self.db.gmw_gdf.index
+        valid_wids = [wid for wid in wids if wid in index]
+
+        if len(valid_wids) != len(wids):
+            missing = [wid for wid in wids if wid not in index]
+            logger.info(
+                "Ignoring %d stale well id(s) not present in current datasource: %s",
+                len(missing),
+                missing,
+            )
+
+        return valid_wids
 
     def get_well_configuration(self, wid: int) -> pd.DataFrame:
         """Get well configuration for all tubes at a location.
@@ -67,6 +85,7 @@ class WellService:
                 ColumnNames.DISPLAY_NAME,
             ]
             df = self.db.gmw_gdf.loc[wids, usecols].set_index(ColumnNames.DISPLAY_NAME)
+            df.sort_index(inplace=True)
             return df
         except KeyError as e:
             msg = "Failed to get well configuration for %s"
@@ -79,7 +98,7 @@ class WellService:
             raise
 
     def get_wells_with_data_sorted_by_distance(
-        self, wid: int, max_results: Optional[int] = None
+        self, wid: int, max_results: int | None = None
     ) -> gpd.GeoDataFrame:
         """Get wells sorted by distance from reference well.
 
@@ -104,7 +123,7 @@ class WellService:
             logger.exception("Well %s not found or has no data: %s", wid, e)
             raise
 
-    def get_tube_ids_from_names(self, tube_names: List[str]) -> List[int]:
+    def get_tube_ids_from_names(self, tube_names: list[str]) -> list[int]:
         """Convert tube names to internal IDs.
 
         Parameters
@@ -131,7 +150,7 @@ class WellService:
             logger.exception(msg, e)
             raise EmptyResultError(msg) from e
 
-    def get_tubes_for_location(self, wid: int) -> List[str]:
+    def get_tubes_for_location(self, wid: int) -> list[str]:
         """Get all tube names for a location.
 
         Parameters
@@ -156,7 +175,7 @@ class WellService:
             logger.exception(msg, wid, e)
             raise EmptyResultError(msg, wid, e) from e
 
-    def get_tubes_as_dropdown_options(self, wid: int) -> List[Dict[str, Any]]:
+    def get_tubes_as_dropdown_options(self, wid: int) -> list[dict[str, Any]]:
         """Get tubes for location formatted as dropdown options.
 
         Parameters
@@ -190,8 +209,8 @@ class WellService:
             return []
 
     def format_wells_as_options(
-        self, wid: int, max_results: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        self, wid: int, max_results: int | None = None
+    ) -> list[dict[str, Any]]:
         """Format nearby wells as dropdown options.
 
         Parameters
@@ -227,7 +246,7 @@ class WellService:
             return []
 
     def get_well_metadata_for_display(
-        self, wids: List[int], columns: Optional[List[str]] = None
+        self, wids: list[int], columns: list[str] | None = None
     ) -> pd.DataFrame:
         """Get well metadata formatted for table display.
 
@@ -256,7 +275,10 @@ class WellService:
                 ColumnNames.SCREEN_BOT,
                 ColumnNames.X,
                 ColumnNames.Y,
+                ColumnNames.TMIN,
+                ColumnNames.TMAX,
                 ColumnNames.NUMBER_OF_OBSERVATIONS,
+                ColumnNames.NUMBER_OF_CONTROL_OBSERVATIONS,
             ]
 
         try:
@@ -272,8 +294,8 @@ class WellService:
             return pd.DataFrame()
 
     def get_selected_wells_from_map_data(
-        self, selected_data: Dict[str, Any]
-    ) -> Tuple[Optional[List[str]], Optional[List[int]]]:
+        self, selected_data: dict[str, Any]
+    ) -> tuple[list[str] | None, list[int] | None]:
         """Extract well names and IDs from Dash map selection data.
 
         Parameters
@@ -299,7 +321,7 @@ class WellService:
         except EmptyResultError:
             return None, None
 
-    def prepare_map_selection_data(self, wids: List[int]) -> Dict[str, Any]:
+    def prepare_map_selection_data(self, wids: list[int]) -> dict[str, Any]:
         """Prepare selection data for map highlighting.
 
         Parameters
@@ -313,7 +335,11 @@ class WellService:
             Plotly selectedData structure
         """
         try:
-            dfm = self.db.gmw_gdf.loc[wids].copy()
+            valid_wids = self._existing_wids(wids)
+            if not valid_wids:
+                return {"points": []}
+
+            dfm = self.db.gmw_gdf.loc[valid_wids].copy()
             # Assign correct trace index:
             # trace 0 for wells without data, trace 1 for wells with data
             dfm["curveNumber"] = (dfm["metingen"] > 0).astype(int)
@@ -328,7 +354,7 @@ class WellService:
                         "lat": dfm["lat"].loc[i],
                         "text": dfm[ColumnNames.DISPLAY_NAME].loc[i],
                     }
-                    for i in wids
+                    for i in valid_wids
                 ]
             }
             return selected_data
@@ -347,7 +373,7 @@ class WellService:
         return self.db.list_locations
 
     def query_wells(
-        self, columns: Optional[List[str]] = None, **query_kwargs
+        self, columns: list[str] | None = None, **query_kwargs
     ) -> gpd.GeoDataFrame:
         """Query wells with flexible filters.
 
@@ -384,7 +410,7 @@ class WellService:
             logger.exception("Failed to get name for well %s: %s", wid, e)
             return f"Well {wid}"
 
-    def get_well_names(self, wids: List[int]) -> List[str]:
+    def get_well_names(self, wids: list[int]) -> list[str]:
         """Get display names for multiple wells.
 
         Parameters
@@ -403,7 +429,7 @@ class WellService:
             logger.exception("Failed to get names for wells %s: %s", wids, e)
             return [f"Well {wid}" for wid in wids]
 
-    def get_all_well_ids(self) -> List[int]:
+    def get_all_well_ids(self) -> list[int]:
         """Get all well IDs in the database.
 
         Returns
@@ -413,7 +439,7 @@ class WellService:
         """
         return self.db.gmw_gdf.index.tolist()
 
-    def get_wells_by_display_name(self, names: List[str]) -> pd.Series:
+    def get_wells_by_display_name(self, names: list[str]) -> pd.Series:
         """Get well IDs from display names.
 
         Parameters
@@ -436,7 +462,7 @@ class WellService:
             logger.exception("Failed to get wells by display names %s: %s", names, e)
             return pd.Series(dtype=int)
 
-    def get_well_metadata(self, wid: int) -> Dict[str, Any]:
+    def get_well_metadata(self, wid: int) -> dict[str, Any]:
         """Get complete metadata for a well.
 
         Parameters
@@ -455,7 +481,7 @@ class WellService:
             logger.exception("Failed to get metadata for well %s: %s", wid, e)
             return {}
 
-    def get_wells_subset(self, wids: List[int]) -> gpd.GeoDataFrame:
+    def get_wells_subset(self, wids: list[int]) -> gpd.GeoDataFrame:
         """Get GeoDataFrame subset for specific wells.
 
         Parameters
@@ -469,7 +495,11 @@ class WellService:
             Subset of wells
         """
         try:
-            return self.db.gmw_gdf.loc[wids].copy()
+            valid_wids = self._existing_wids(wids)
+            if not valid_wids:
+                return self.db.gmw_gdf.iloc[0:0].copy()
+
+            return self.db.gmw_gdf.loc[valid_wids].copy()
         except Exception as e:
             logger.exception("Failed to get subset for wells %s: %s", wids, e)
-            return gpd.GeoDataFrame()
+            return self.db.gmw_gdf.iloc[0:0].copy()

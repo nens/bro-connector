@@ -32,6 +32,7 @@ class ErrorMessages:
     NO_SERIES = "general.no_series"
     CORRECTIONS_COMMIT_FAILED = "general.error_corrections_commit_failed"
     CORRECTIONS_RESET_FAILED = "general.error_corrections_reset_failed"
+    PASTASTORE_LOAD_FAILED = "general.error_pastastore_load_failed"
 
 
 class SuccessMessages:
@@ -43,3 +44,4 @@ class SuccessMessages:
     EXPORT_SUCCESS = "general.success_export_db"
     CORRECTIONS_COMMITTED = "general.success_corrections_committed"
     CORRECTIONS_RESET = "general.success_corrections_reset"
+    PASTASTORE_LOADED = "general.success_pastastore_loaded"

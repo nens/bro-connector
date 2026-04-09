@@ -1,5 +1,6 @@
 import csv
 import datetime
+
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import reverse
@@ -33,7 +34,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     # CSV setup
     response = HttpResponse(content_type="text/csv")
 
-    model_name = str(modeladmin.model._meta).replace(".","_")
+    model_name = str(modeladmin.model._meta).replace(".", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
@@ -73,9 +74,16 @@ def _register(model, admin_class):
 
 class SubgroupMeasuringPointInline(admin.TabularInline):
     model = MeasuringPoint.subgroup.through
-    extra = 0
+    extra = 1
     verbose_name = "Meetpunt"
     verbose_name_plural = "Meetpunten"
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("measuringpoint", "measuringpoint__gmn")
+        )
 
 
 class MeasuringPointsInline(admin.TabularInline):
@@ -153,7 +161,7 @@ class GroundwaterMonitoringNetAdmin(admin.ModelAdmin):
     inlines = (MeasuringPointsInline,)
 
     actions = [
-        export_selected_items_to_csv, 
+        export_selected_items_to_csv,
         "deliver_to_bro",
         "check_status",
         "generate_frd_fieldform",

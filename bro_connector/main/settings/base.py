@@ -154,7 +154,7 @@ DATABASES = {
         "PASSWORD": "",
         "HOST": "",
         "PORT": "",
-        "OPTIONS": {"options": "-c search_path=django_admin,public,gmw"},
+        "OPTIONS": {"options": "-c search_path=django_admin,public,gmw,bro"},
     }
 }
 

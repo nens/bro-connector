@@ -14,7 +14,6 @@ from gld.choices import (
     PROCESSREFERENCE,
     PROCESSTYPE,
     STATUSCODE,
-    UNIT_CHOICES,
 )
 from gmn.models import GroundwaterMonitoringNet
 from gmw.models import GroundwaterMonitoringTubeStatic

@@ -55,6 +55,7 @@ def within_bbox(coordinates) -> bool:
         return True
     return False
 
+
 def handle_individual_bro_id(bro_id: str, gld: GLDHandler) -> dict:
     print("BRO id: ", bro_id)
 
@@ -90,7 +91,6 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler) -> dict:
                 for measurement_number in range(
                     gld.number_of_measurements[ini.observation_number]
                 ):
-
                     if (
                         ini.measurement_count % step == 0
                         or ini.measurement_count == gld.total_measurements
@@ -197,9 +197,9 @@ def run(  # noqa C901
     # Import the well dat
     for id in range(gld_ids_count):
         start = time.time()
-        
+
         handle_individual_bro_id(gld_ids[id], gld)
-        
+
         imported += 1
         progressor.next()
         progressor.progress()

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -17,8 +17,11 @@ from gwdatalens.app.src.utils import conditional_cache
 
 logger = logging.getLogger(__name__)
 
+NL_DEFAULT_CENTER = {"lon": 5.3, "lat": 52.2}
+NL_DEFAULT_ZOOM = 6.2
+
 try:
-    with open(MAPBOX_ACCESS_TOKEN, "r", encoding="utf-8") as f:
+    with open(MAPBOX_ACCESS_TOKEN, encoding="utf-8") as f:
         mapbox_access_token = f.read()
 except FileNotFoundError:
     if config.get("USE_MAPBOX"):
@@ -33,14 +36,83 @@ except FileNotFoundError:
 )
 def render(
     data: DataManager,
-    selected_data: Optional[List[int]] = None,
+    selected_data: list[int] | None = None,
 ) -> dcc.Graph:
     df = data.db.gmw_gdf.copy()
+
+    if df.empty:
+        map_layout_key = "mapbox" if config.get("USE_MAPBOX") else "map"
+        map_layout = {
+            "bearing": 0,
+            "center": NL_DEFAULT_CENTER,
+            "pitch": 0,
+            "zoom": NL_DEFAULT_ZOOM,
+            "style": ConfigDefaults.DEFAULT_MAP_STYLE,
+        }
+        if config.get("USE_MAPBOX"):
+            map_layout["accesstoken"] = mapbox_access_token
+
+        empty_trace = (
+            {
+                "type": "scattermapbox",
+                "lat": [NL_DEFAULT_CENTER["lat"]],
+                "lon": [NL_DEFAULT_CENTER["lon"]],
+                "mode": "markers",
+                "marker": {"size": 1, "opacity": 0},
+                "hoverinfo": "skip",
+                "showlegend": False,
+            }
+            if config.get("USE_MAPBOX")
+            else {
+                "type": "scattermap",
+                "lat": [NL_DEFAULT_CENTER["lat"]],
+                "lon": [NL_DEFAULT_CENTER["lon"]],
+                "mode": "markers",
+                "marker": {"size": 1, "opacity": 0},
+                "hoverinfo": "skip",
+                "showlegend": False,
+            }
+        )
+
+        return dcc.Graph(
+            id=ids.OVERVIEW_MAP,
+            figure={
+                "data": [empty_trace],
+                "layout": {
+                    "margin": {"t": 0, "b": 0, "l": 0, "r": 0},
+                    "font": {"color": "#000000", "size": 11},
+                    "paper_bgcolor": "white",
+                    "clickmode": "event+select",
+                    map_layout_key: map_layout,
+                    "legend": {
+                        "x": 0.01,
+                        "y": 0.99,
+                        "xanchor": "left",
+                        "yanchor": "top",
+                    },
+                    "uirevision": False,
+                    "dragmode": "pan",
+                    "selectdirection": "d",
+                    "modebar": {"bgcolor": "rgba(255,255,255,0.9)"},
+                },
+            },
+            style={
+                "margin-top": UI.MARGIN_TOP_LARGE,
+                "height": "45cqh",
+            },
+            config={
+                "displayModeBar": True,
+                "displaylogo": False,
+                "scrollZoom": True,
+                "modeBarButtonsToAdd": ["zoom", "zoom2d"],
+            },
+        )
+
     return dcc.Graph(
         id=ids.OVERVIEW_MAP,
         figure=draw_map_mapbox(
             df,
-            mapbox_access_token=MAPBOX_ACCESS_TOKEN,
+            mapbox_token=mapbox_access_token,
             selected_data=selected_data,
         )
         if config.get("USE_MAPBOX")
@@ -60,8 +132,8 @@ def render(
 
 def draw_map(
     df: pd.DataFrame,
-    selected_data: Optional[List[int]] = None,
-) -> Dict[str, Any]:
+    selected_data: list[int] | None = None,
+) -> dict[str, Any]:
     """Draw ScatterMap.
 
     Parameters
@@ -208,7 +280,7 @@ def draw_map(
 
 def draw_map_mapbox(
     df,
-    mapbox_access_token=MAPBOX_ACCESS_TOKEN,
+    mapbox_token=MAPBOX_ACCESS_TOKEN,
     selected_data=None,
 ):
     """Draw ScatterMap.
@@ -217,7 +289,7 @@ def draw_map_mapbox(
     ----------
     df : pandas.DataFrame
         data to plot
-    mapbox_access_token : str
+    mapbox_token : str
         mapbox access token
     selected_data : list, optional
         list of selected data points
@@ -334,7 +406,7 @@ def draw_map_mapbox(
         "paper_bgcolor": "white",
         "clickmode": "event+select",
         "mapbox": {
-            "accesstoken": mapbox_access_token,
+            "accesstoken": mapbox_token,
             "bearing": 0,
             # where we want the map to be centered
             "center": center,
@@ -385,7 +457,19 @@ def get_plotting_zoom_level_and_center_coordinates(longitudes=None, latitudes=No
     if (latitudes is None or longitudes is None) or (len(latitudes) != len(longitudes)):
         # Otherwise, return the default values of 0 zoom and the coordinate
         # origin as center point
-        return 0, (0, 0)
+        return NL_DEFAULT_ZOOM, NL_DEFAULT_CENTER
+
+    if len(latitudes) == 0 or len(longitudes) == 0:
+        return NL_DEFAULT_ZOOM, NL_DEFAULT_CENTER
+
+    longitudes = np.asarray(longitudes, dtype=float)
+    latitudes = np.asarray(latitudes, dtype=float)
+    valid = np.isfinite(longitudes) & np.isfinite(latitudes)
+    if not valid.any():
+        return NL_DEFAULT_ZOOM, NL_DEFAULT_CENTER
+
+    longitudes = longitudes[valid]
+    latitudes = latitudes[valid]
 
     # Get the boundary-box
     b_box = {}

@@ -2,6 +2,7 @@ import logging
 from typing import Any, Optional
 
 from hydropandas.io.knmi import get_nearest_station_xy
+from pandas import Timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +33,51 @@ class DataManager:
 
     def __init__(
         self,
-        db: Optional[Any] = None,
-        pastastore: Optional[Any] = None,
-        qc: Optional[Any] = None,
+        db: Any | None = None,
+        pastastore: Any | None = None,
+        qc: Any | None = None,
     ):
         self.db = db
-        self.pastastore = pastastore
         self.qc = qc
+        self._pastastore = None
 
-    def get_knmi_data(self, name: str) -> None:
+        if pastastore is not None:
+            self.pastastore = pastastore
+
+    @property
+    def pastastore(self) -> Any:
+        """Return active PastaStore (single source of truth on DataManager)."""
+        return self._pastastore
+
+    @pastastore.setter
+    def pastastore(self, pastastore: Any) -> None:
+        """Set active PastaStore and synchronize dependent services."""
+        self._pastastore = pastastore
+        if self.qc is not None:
+            set_pastastore = getattr(self.qc, "set_pastastore", None)
+            if not callable(set_pastastore):
+                raise TypeError(
+                    "QC coordinator must implement set_pastastore(pastastore)."
+                )
+            set_pastastore(pastastore)
+
+    def set_pastastore(self, pastastore: Any) -> None:
+        """Set or replace active PastaStore at runtime.
+
+        Parameters
+        ----------
+        pastastore : Any
+            PastaStore instance to set as active store.
+        """
+        self.pastastore = pastastore
+        logger.info("Active PastaStore updated at runtime.")
+
+    def get_knmi_data(
+        self,
+        name: str,
+        tmin: Optional[Any] = None,
+        tmax: Optional[Any] = None,
+    ) -> None:
         """Get nearest KNMI meteo time series for a location.
 
         Downloads RD, RH and EV24 time series from nearest stations for a particular
@@ -51,6 +88,10 @@ class DataManager:
         ----------
         name : str
             The name of the observation well.
+        tmin : optional
+            Start date for knmi download
+        tmax : optional
+            End date for knmi download
         """
         # download both RH and RD to check which is nearest
         for meteo_var, kind in [
@@ -77,11 +118,28 @@ class DataManager:
                 activate_hydropandas_extension()
 
                 # download and store data
-                self.pastastore.hpd.download_nearest_knmi_meteo(name, meteo_var, kind)
+                kwargs = {}
+                if tmin is not None:
+                    # include default pastas warmup
+                    kwargs["tmin"] = tmin.floor("h") - Timedelta(days=10 * 365)
+                if tmax is not None:
+                    kwargs["tmax"] = tmax.ceil("h")
+
+                self.pastastore.hpd.download_nearest_knmi_meteo(
+                    name,
+                    meteo_var,
+                    kind,
+                    **kwargs,
+                )
                 logger.info(
-                    "Downloading and storing KNMI time series '%s' for '%s'",
+                    (
+                        "Downloading and storing KNMI time series '%s' for '%s' "
+                        "(tmin=%s, tmax=%s)"
+                    ),
                     meteo_var,
                     name,
+                    kwargs.get("tmin"),
+                    kwargs.get("tmax"),
                 )
             else:
                 logger.info(

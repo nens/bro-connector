@@ -6,10 +6,9 @@ additional series overlays.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
-import plotly.express as px
 import plotly.graph_objs as go
 import traval
 from pandas import DataFrame, Series, Timedelta
@@ -37,13 +36,13 @@ class QCPlotter:
     def plot_detection_result(
         self,
         detector: traval.Detector,
-        model: Optional[Any] = None,
-        tmin: Optional[Any] = None,
-        tmax: Optional[Any] = None,
-        ignore: Optional[List] = None,
-        qualifiers: Optional[Series] = None,
-        additional_series: Optional[Union[Series, DataFrame, List]] = None,
-    ) -> Dict[str, Any]:
+        model: Any | None = None,
+        tmin: Any | None = None,
+        tmax: Any | None = None,
+        ignore: list | None = None,
+        qualifiers: Series | None = None,
+        additional_series: Series | DataFrame | list | None = None,
+    ) -> dict[str, Any]:
         """Create a complete QC detection result plot.
 
         Parameters
@@ -142,7 +141,7 @@ class QCPlotter:
 
     def _create_qualifier_traces(
         self, detector: traval.Detector, qualifiers: Series
-    ) -> List[go.Scattergl]:
+    ) -> list[go.Scattergl]:
         """Create traces for different data qualifiers.
 
         Parameters
@@ -186,8 +185,8 @@ class QCPlotter:
         return traces
 
     def _create_additional_series_traces(
-        self, additional_series: Union[Series, DataFrame, List]
-    ) -> List[go.Scattergl]:
+        self, additional_series: Series | DataFrame | list
+    ) -> list[go.Scattergl]:
         """Create traces for additional series (e.g., manual observations).
 
         Parameters
@@ -222,8 +221,8 @@ class QCPlotter:
         return traces
 
     def _create_detection_marker_traces(
-        self, detector: traval.Detector, ignore: Optional[List] = None
-    ) -> List[go.Scattergl]:
+        self, detector: traval.Detector, ignore: list | None = None
+    ) -> list[go.Scattergl]:
         """Create traces for detection markers.
 
         Parameters
@@ -240,7 +239,7 @@ class QCPlotter:
         """
         traces = []
         ts = detector.series
-        colors = px.colors.qualitative.Dark24
+        colors = PlotConstants.ERROR_DETECTION_RULES_COLORS
 
         for step, corrections in detector.corrections.items():
             if isinstance(corrections, np.ndarray) or corrections.empty:
@@ -281,8 +280,8 @@ class QCPlotter:
         self,
         detector: traval.Detector,
         model: Any,
-        tmin: Optional[Any] = None,
-        tmax: Optional[Any] = None,
+        tmin: Any | None = None,
+        tmax: Any | None = None,
     ) -> tuple:
         """Create traces for model simulation and prediction interval.
 
@@ -371,11 +370,11 @@ class QCPlotter:
     def _create_layout(
         self,
         detector: traval.Detector,
-        model: Optional[Any] = None,
-        tmin: Optional[Any] = None,
-        tmax: Optional[Any] = None,
-        ignore: Optional[List] = None,
-    ) -> Dict[str, Any]:
+        model: Any | None = None,
+        tmin: Any | None = None,
+        tmax: Any | None = None,
+        ignore: list | None = None,
+    ) -> dict[str, Any]:
         """Create plotly layout configuration.
 
         Parameters
@@ -418,11 +417,11 @@ class QCPlotter:
 
     def _set_axis_limits_with_ignore(
         self,
-        layout: Dict[str, Any],
+        layout: dict[str, Any],
         detector: traval.Detector,
-        model: Optional[Any],
-        ignore: List,
-    ) -> Dict[str, Any]:
+        model: Any | None,
+        ignore: list,
+    ) -> dict[str, Any]:
         """Set axis limits for plot with ignored indices.
 
         Parameters

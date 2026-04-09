@@ -218,16 +218,16 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
             quality_regime=dossier.quality_regime
             if dossier.quality_regime
             else dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
-            defaults=dict(
-                validation_status="VALID",
-                delivery_id=None,
-                delivery_type="register",
-                delivery_status="OPGENOMEN_LVBRO",
-                comments="Imported into BRO-Connector.",
-            ),
+            defaults={
+                "validation_status": "VALID",
+                "delivery_id": None,
+                "delivery_type": "register",
+                "delivery_status": "OPGENOMEN_LVBRO",
+                "comments": "Imported into BRO-Connector.",
+            },
         )[0]
         return
-    
+
     delivery_type = "register" if dossier.correction_reason is None else "replace"
     gld_start_registration = gld_registration_log.objects.update_or_create(
         gmw_bro_id=dossier.gmw_bro_id,
@@ -241,10 +241,13 @@ def check_and_deliver_start(dossier: GroundwaterLevelDossier) -> None:
 
     logger.info(f"Check and deliver; Log created: {gld_start_registration}")
 
-    if gld_start_registration.delivery_id is not None and gld_start_registration.delivery_status != "FAILED":
+    if (
+        gld_start_registration.delivery_id is not None
+        and gld_start_registration.delivery_status != "FAILED"
+    ):
         gld_start_registration.check_delivery_status()
         return
-    
+
     gld_start_registration.generate_sourcedocument()
     logger.info(f"Check and deliver; File generated: {gld_start_registration.file}")
 

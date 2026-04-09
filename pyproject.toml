@@ -61,10 +61,11 @@ dependencies = [
     "pandas==2.2.2",
     "paramiko==3.4.0",
     "pastas",
-    "pastastore",
+    "pastastore>=1.11.0",
+    "cachetools==6.2.4",
     "plotly==6.0.1",
     "polars",
-    "psycopg2==2.9.9",
+    #"psycopg2==2.9.9",
     "psycopg2-binary",
     "pyOpenSSL",
     "pycparser==2.22",
@@ -92,7 +93,9 @@ dependencies = [
     "xmltodict==0.13.0",
     "django-image-uploader-widget",
     "setuptools",
-    "gunicorn==23.0.0"
+    "gunicorn==23.0.0",
+    "pytest>=8.4.0",
+    "pre-commit>=4.5.1",
 ]
 
 [project.optional-dependencies]
@@ -105,8 +108,9 @@ packages = [
 
 [tool.pytest.ini_options]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-testpaths = ["bro/tests", "frd/tests", "gar/tests", "gld/tests", "gmn/tests", "gmw/tests", "tools/tests"]
+testpaths = ["tests"]
 log_level = "DEBUG"
+DJANGO_SETTINGS_MODULE = "main.settings.development"
 
 [tool.coverage.run]
 source = [
@@ -121,7 +125,8 @@ skip_empty = true
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I", "UP", "C901"]
+select = ["E4", "E7", "E9", "F", "I", "UP", "C"]
+ignore = ["C901", "UP008"]
 
 [tool.zest-releaser]
 release = false

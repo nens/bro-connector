@@ -126,10 +126,10 @@ def generate_min_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> lis
     frd = frd_models.FormationResistanceDossier.objects.get_or_create(
         groundwater_monitoring_tube=tube,
         assessment_type="geoohmkabelBepaling",
-        defaults=dict(
-            delivery_accountable_party=tube.groundwater_monitoring_well_static.delivery_accountable_party,
-            quality_regime=tube.groundwater_monitoring_well_static.quality_regime,
-        ),
+        defaults={
+            "delivery_accountable_party": tube.groundwater_monitoring_well_static.delivery_accountable_party,
+            "quality_regime": tube.groundwater_monitoring_well_static.quality_regime,
+        },
     )[0]
     min_values = {}
     for config in frd_models.MeasurementConfiguration.objects.filter(
@@ -162,10 +162,10 @@ def generate_max_values(tube: gmw_models.GroundwaterMonitoringTubeStatic) -> lis
     frd = frd_models.FormationResistanceDossier.objects.get_or_create(
         groundwater_monitoring_tube=tube,
         assessment_type="geoohmkabelBepaling",
-        defaults=dict(
-            delivery_accountable_party=tube.groundwater_monitoring_well_static.delivery_accountable_party,
-            quality_regime=tube.groundwater_monitoring_well_static.quality_regime,
-        ),
+        defaults={
+            "delivery_accountable_party": tube.groundwater_monitoring_well_static.delivery_accountable_party,
+            "quality_regime": tube.groundwater_monitoring_well_static.quality_regime,
+        },
     )[0]
     max_values = {}
     for config in frd_models.MeasurementConfiguration.objects.filter(

@@ -5,7 +5,7 @@ and query execution for PostgreSQL backends.
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import quote
 
 import geopandas as gpd
@@ -46,7 +46,7 @@ class DatabaseConnector:
         Connection is created lazily on first database access.
         """
         self.config: dict = config
-        self._engine: Optional[Engine] = None
+        self._engine: Engine | None = None
         logger.info(
             "Database connector initialized (connection deferred until first use)"
         )
@@ -104,7 +104,18 @@ class DatabaseConnector:
         try:
             engine = create_engine(
                 connection_string,
-                connect_args={"options": "-csearch_path=gmw,gld,public,django_admin"},
+                connect_args={
+                    # Set session timezone to UTC so psycopg2 returns all
+                    # TIMESTAMPTZ values as UTC-aware datetimes with a uniform
+                    # +00:00 offset.  Without this, timestamps that span a DST
+                    # transition arrive with mixed offsets (+01:00 / +02:00)
+                    # which pandas cannot coerce to datetime64[ns] and converts
+                    # to NaT.  The application converts to local time after
+                    # loading (see PostgreSQLDataSource.get_timeseries).
+                    "options": (
+                        "-csearch_path=gmw,gld,public,django_admin -ctimezone=UTC"
+                    )
+                },
             )
             # Test connection
             with engine.connect() as conn:

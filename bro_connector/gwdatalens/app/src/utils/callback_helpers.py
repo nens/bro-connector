@@ -5,8 +5,9 @@ boilerplate and improve consistency.
 """
 
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 from dash.exceptions import PreventUpdate
@@ -83,7 +84,7 @@ class AlertBuilder:
     """
 
     @staticmethod
-    def success(message: str) -> Tuple[bool, str, str]:
+    def success(message: str) -> tuple[bool, str, str]:
         """Create success alert.
 
         Returns
@@ -94,7 +95,7 @@ class AlertBuilder:
         return (True, "success", message)
 
     @staticmethod
-    def warning(message: str) -> Tuple[bool, str, str]:
+    def warning(message: str) -> tuple[bool, str, str]:
         """Create warning alert.
 
         Returns
@@ -105,7 +106,7 @@ class AlertBuilder:
         return (True, "warning", message)
 
     @staticmethod
-    def danger(message: str) -> Tuple[bool, str, str]:
+    def danger(message: str) -> tuple[bool, str, str]:
         """Create danger/error alert.
 
         Returns
@@ -116,7 +117,7 @@ class AlertBuilder:
         return (True, "danger", message)
 
     @staticmethod
-    def no_alert() -> Tuple[bool, None, None]:
+    def no_alert() -> tuple[bool, None, None]:
         """Create no-alert response.
 
         Returns
@@ -134,7 +135,7 @@ class TimestampStore:
     """
 
     @staticmethod
-    def create(success: bool = True) -> Tuple[str, bool]:
+    def create(success: bool = True) -> tuple[str, bool]:
         """Create timestamp store data.
 
         Parameters
@@ -279,7 +280,7 @@ def extract_trigger_id(ctx_or_kwargs=None, parse_json: bool = True, **kwargs):
 
 def validate_selection_limit(
     wids: list, limit: int, error_message_template: str
-) -> Optional[Tuple]:
+) -> tuple | None:
     """Validate selection doesn't exceed limit.
 
     Parameters
@@ -301,7 +302,7 @@ def validate_selection_limit(
     return None
 
 
-def extract_selected_points_x(selected_points) -> Optional[list]:
+def extract_selected_points_x(selected_points) -> list | None:
     """Extract x-values from Plotly selectedData structure safely.
 
     Returns None when selection is missing/empty or lacks "points".
@@ -313,7 +314,7 @@ def extract_selected_points_x(selected_points) -> Optional[list]:
     if pts.empty or "x" not in pts:
         return None
 
-    return pd.to_datetime(pts["x"]).tolist()
+    return pd.to_datetime(pts["x"], format="mixed").tolist()
 
 
 class CallbackResponse:
@@ -342,7 +343,7 @@ class CallbackResponse:
         self._outputs.append(value)
         return self
 
-    def build(self) -> Tuple:
+    def build(self) -> tuple:
         """Build final response tuple.
 
         Returns
@@ -363,8 +364,8 @@ class CallbackResponse:
     def add_alert(
         self,
         show: bool,
-        alert_type: Optional[str] = None,
-        message: Optional[str] = None,
+        alert_type: str | None = None,
+        message: str | None = None,
     ) -> "CallbackResponse":
         """Add an alert output."""
         return self.add((show, alert_type, message))
