@@ -406,13 +406,13 @@ def _get_measurement_data(instance: GLDImport, reader: pd.DataFrame, time_col: s
         for m in mtvps
     ]
     measurement_details_db = [
-        (m.observation.observation_id, m.measurement_time) for m in 
+        (m.observation.observation_id, m.measurement_time.astimezone(ZoneInfo("Europe/Amsterdam"))) for m in 
         MeasurementTvp.objects.filter(
             observation_id__in=[o for o, _ in measurement_details_csv],
             measurement_time__in=[t for _, t in measurement_details_csv]
         ).all()
     ]
-
+    
     measurement_duplicates = [m for m in mtvps if (m.observation.observation_id, m.measurement_time) in measurement_details_db]
     indices_duplicates = [
         i for i, unique_constraint in enumerate(measurement_duplicates)
@@ -539,7 +539,7 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                 duplicate_rows_skipped = None
                 duplicate_rows_updated = duplicate_rows
 
-                instance.report += f"User has permission to update measurements with status {instance.status}\n"
+                instance.report += f"User has permission to update measurements with status {instance.status}\n\n"
                 instance.report += f"Updating {len(duplicate_rows_updated)} duplicate measurements, creating {len(mtvps_to_send)-len(duplicate_rows_updated)} new measurements, out of {len(mtvps_to_send)} total unique measurements\n"
         else:
             mtvps_to_send = measurement_data["measurement_tvps"]
@@ -585,10 +585,11 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                     instance.executed = False
                     return    
 
-            # for mtvp_c in mtvps_created:
-            #     if mtvp_c.pk is None:
-            #         print("pk is none")
-            #         print(mtvp_c.measurement_tvp_id)        
+            # mtvps = MeasurementTvp.objects.filter(
+            #     measurement_tvp_id__in=[m.measurement_tvp_id for m in mtvps_to_send]
+            # )
+            # for m in mtvps:
+            #     m.save() 
 
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(
@@ -634,9 +635,9 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
             reader[time_col], errors="raise", utc=True
         )  # This will raise an error if invalid format
         # Convert to Europe/Amsterdam
-        ## FIXME: Do we assume that every utc value in database is europe amsterdam utc?
-        ## For now, I've assumed that we treat all amsterdam utc data as utc
-        # reader[time_col] = reader[time_col].dt.tz_convert("Europe/Amsterdam")
+        # FIXME: Do we assume that every utc value in database is europe amsterdam utc?
+        # For now, I've assumed that we treat all amsterdam utc data as utc
+        reader[time_col] = reader[time_col].dt.tz_convert("Europe/Amsterdam")
     except Exception as e:
         instance.validated = False
         instance.report += (
