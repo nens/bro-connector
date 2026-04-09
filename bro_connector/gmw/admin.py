@@ -693,6 +693,14 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         generator.wells = queryset
         generator.generate()
 
+class RelatedSurveyAdmin(admin.ModelAdmin):
+    search_fields = get_searchable_fields(gmw_models.RelatedSurvey)
+    list_display = (
+        "related_survey_id",
+        "groundwater_monitoring_well_static",
+        "survey_id",
+    )
+
 
 class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
     form = gmw_forms.GroundwaterMonitoringWellDynamicForm
@@ -953,7 +961,6 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
             )
         obj.save()
 
-
 class GeoOhmCableAdmin(admin.ModelAdmin):
     form = gmw_forms.GeoOhmCableForm
     search_fields = ("geo_ohm_cable_id",)
@@ -1161,6 +1168,9 @@ class GmwSyncLogAdmin(admin.ModelAdmin):
 
 _register(
     gmw_models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin
+)
+_register(
+    gmw_models.RelatedSurvey, RelatedSurveyAdmin
 )
 _register(
     gmw_models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
