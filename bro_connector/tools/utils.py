@@ -2,13 +2,16 @@ import logging
 import shutil
 import zipfile
 from datetime import datetime
+from datetime import timezone
 from io import BytesIO
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 from django.db import transaction
+from django.contrib.auth.models import User
 from gld.choices import CENSORREASON, STATUSQUALITYCONTROL
 from gld.models import (
     GroundwaterLevelDossier,
@@ -344,35 +347,139 @@ def process_zip_file(instance: GLDImport):
     finally:
         zip_buffer.close()
 
+def _get_user_permission(user: User, status: str):
+    if not user:
+        return False
 
-def process_csv_file(instance: GLDImport):  # noqa C901
+    return user.is_superuser and status == "volledigBeoordeeld"
+
+def _get_measurement_data(instance: GLDImport, reader: pd.DataFrame, time_col: str, value_col: str, obs: Observation):
+    header_rows = 1
+    # Detect duplicates
+    duplicate_mask = reader.duplicated(subset=[time_col], keep="first")
+    if duplicate_mask.any():
+        instance.report += (
+            "Duplicaten gevonden in de tijd waardes. "
+            "Alleen de eerste voorgekomen waardes gebruikt.\n\n"
+        )
+    # Keep only the first occurrence per timestamp
+    reader_clean = reader.drop_duplicates(subset=[time_col], keep="first")
+        
+    mms = []
+    mtvps = []
+    rows = []
+    for index, row in reader_clean.iterrows():
+        value = row[value_col]
+        time = row[time_col]
+
+        mp_meta = MeasurementPointMetadata(value_limit=None)
+        quality = row.get("status_quality_control")
+        if pd.notna(quality):
+            mp_meta.status_quality_control = quality
+        censor_reason = row.get("censor_reason")
+        if pd.notna(censor_reason):
+            mp_meta.censor_reason = censor_reason
+        censor_limit = row.get("censor_limit")
+        if pd.notna(censor_limit):
+            mp_meta.value_limit = censor_limit
+        mms.append(mp_meta)
+
+        mtvp = MeasurementTvp(
+            observation=obs,
+            measurement_time=time,
+            field_value=value,
+            field_value_unit=instance.field_value_unit,
+            measurement_point_metadata=mp_meta,
+        )
+        mtvps.append(mtvp)
+        mtvps: list[MeasurementTvp]
+
+        rows.append(index+header_rows+1)
+
+    measurement_details_csv = [
+        (m.observation.observation_id, m.measurement_time)
+        for m in mtvps
+    ]
+    measurement_details_db = [
+        (m.observation.observation_id, m.measurement_time) for m in 
+        MeasurementTvp.objects.filter(
+            observation_id__in=[o for o, _ in measurement_details_csv],
+            measurement_time__in=[t for _, t in measurement_details_csv]
+        ).all()
+    ]
+
+    measurement_duplicates = [m for m in mtvps if (m.observation.observation_id, m.measurement_time) in measurement_details_db]
+    indices_duplicates = [
+        i for i, unique_constraint in enumerate(measurement_duplicates)
+        if unique_constraint in measurement_details_db
+    ]
+    rows_duplicates = [
+        rows[i] for i, unique_constraint in enumerate(measurement_details_csv)
+        if unique_constraint in measurement_details_db 
+    ]
+    measurement_no_duplicates = [m for m in mtvps if (m.observation.observation_id, m.measurement_time) not in measurement_details_db]
+    indices_no_duplicates = [
+        i for i, unique_constraint in enumerate(measurement_details_csv)
+        if unique_constraint not in measurement_details_db
+    ]
+    rows_no_duplicates = [
+        rows[i] for i, unique_constraint in enumerate(measurement_details_csv)
+        if unique_constraint not in measurement_details_db 
+    ]
+
+    all_data = {
+        "measurement_tvps": mtvps,
+        "measurement_metadatas": mms
+    }
+    duplicate_data = {"measurement_tvps": [], "measurement_metadatas": [], "rows": []}
+    non_duplicate_data = {"measurement_tvps": [], "measurement_metadatas": [], "rows": []} 
+
+    if measurement_duplicates:
+        duplicate_data["measurement_tvps"] = [m for m in measurement_duplicates]
+        duplicate_data["measurement_metadatas"] = [mms[i] for i in indices_duplicates]
+        duplicate_data["rows"] = rows_duplicates
+    if measurement_no_duplicates:
+        non_duplicate_data["measurement_tvps"] = measurement_no_duplicates
+        non_duplicate_data["measurement_metadatas"] = [mms[i] for i in indices_no_duplicates]
+        duplicate_data["rows"] = rows_no_duplicates
+
+    return all_data, duplicate_data, non_duplicate_data
+
+def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C901
     # Validate CSV file
-    reader = validate_csv(instance.file, instance.file.name, instance)
+    if file is None:
+        file = instance.file
+    if filename is None:
+        filename = instance.file.name
+    reader = validate_csv(file, filename, instance)
     time_col = "time" if "time" in reader.columns else "tijd"
     value_col = "value" if "value" in reader.columns else "waarde"
-    gld = GroundwaterLevelDossier.objects.filter(
-        groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
-        quality_regime=instance.quality_regime,
-    ).first()
-    if not gld:
-        gld = GroundwaterLevelDossier.objects.update_or_create(
-            gld_bro_id=instance.gld_bro_id,
-            groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
-            quality_regime=instance.quality_regime,
-        )[0]
-        instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
 
     if instance.validated:
+        # Create GLD
+        gld = GroundwaterLevelDossier.objects.filter(
+            groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
+            quality_regime=instance.quality_regime,
+        ).first()
+        if not gld:
+            gld = GroundwaterLevelDossier.objects.get_or_create(
+                gld_bro_id=instance.gld_bro_id,
+                groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
+                quality_regime=instance.quality_regime,
+            )[0]
+            instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
+
         # Create ObservationProces
-        Obs_Pro = ObservationProcess.objects.update_or_create(
+        obs_process = ObservationProcess.objects.get_or_create(
             process_reference=instance.process_reference,
             measurement_instrument_type=instance.measurement_instrument_type,
             air_pressure_compensation_type=instance.air_pressure_compensation_type,
             process_type=instance.process_type,
             evaluation_procedure=instance.evaluation_procedure,
         )[0]
+
         # Create ObservationMetadata
-        Obs_Meta = ObservationMetadata.objects.update_or_create(
+        obs_metadata = ObservationMetadata.objects.get_or_create(
             observation_type=instance.observation_type,
             status=instance.status,
             responsible_party=instance.responsible_party,
@@ -382,85 +489,101 @@ def process_csv_file(instance: GLDImport):  # noqa C901
         last_datetime = reader[time_col].max()
 
         # Create Observation
-        obs, _ = Observation.objects.update_or_create(
+        obs_list = Observation.objects.filter(
             groundwater_level_dossier=gld,
-            observation_metadata=Obs_Meta,
-            observation_process=Obs_Pro,
-            observation_starttime = first_datetime,
-            observation_endtime = last_datetime
+            observation_metadata=obs_metadata,
+            observation_process=obs_process,
         )
-        # Detect duplicates
-        duplicate_mask = reader.duplicated(subset=[time_col], keep="first")
-        if duplicate_mask.any():
-            instance.report += (
-                "Duplicaten gevonden in de tijd waardes. "
-                "Alleen de eerste voorgekomen waardes gebruikt.\n\n"
+        if not obs_list:
+            obs = Observation.objects.create(
+                groundwater_level_dossier=gld,
+                observation_metadata=obs_metadata,
+                observation_process=obs_process,            
+                observation_starttime = first_datetime,
+                observation_endtime = last_datetime
             )
-        # Keep only the first occurrence per timestamp
-        reader_clean = reader.drop_duplicates(subset=[time_col], keep="first")  
-            
-        mms = []
-        mtvps = []
-        for _, row in reader_clean.iterrows():
-            value = row[value_col]
-            time = row[time_col]
-
-            mp_meta = MeasurementPointMetadata(value_limit=None)
-            quality = row.get("status_quality_control")
-            if pd.notna(quality):
-                mp_meta.status_quality_control = quality
-            censor_reason = row.get("censor_reason")
-            if pd.notna(censor_reason):
-                mp_meta.censor_reason = censor_reason
-            censor_limit = row.get("censor_limit")
-            if pd.notna(censor_limit):
-                mp_meta.value_limit = censor_limit
-            mms.append(mp_meta)
-
-            mtvp = MeasurementTvp(
-                observation=obs,
-                measurement_time=time,
-                field_value=value,
-                field_value_unit=instance.field_value_unit,
-                measurement_point_metadata=mp_meta,
-            )
-            mtvps.append(mtvp)
-
-        with transaction.atomic():
-            try:
-                MeasurementPointMetadata.objects.bulk_create(
-                    mms,
-                    update_conflicts=False,
-                    batch_size=5000,
-                )
-                mtvps_created = MeasurementTvp.objects.bulk_create(
-                    mtvps,
-                    update_conflicts=False,
-                    ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
-                    # update_conflicts=True,
-                    # update_fields=[
-                    #     "field_value",
-                    #     "field_value_unit",
-                    #     "calculated_value",
-                    #     "measurement_point_metadata"
-                    # ],
-                    # unique_fields=[
-                    #     "observation",
-                    #     "measurement_time"
-                    # ],
-                    batch_size=5000,
-                )
-                for mtvp_c in mtvps_created:
-                    mtvp_c.save()
-
-            except Exception as e:
-                instance.report += (
-                    f"Bulk updating/creating failed for observation: {obs}"
-                )
-                logger.info(f"Bulk updating/creating failed for observation: {obs}")
-                logger.exception(e)
+        if obs_list:
+            instance.report += f"Found {len(obs_list)} observations for this combination of gld, observation metadata and observation process\n"
+            can_insert_data = False
+            for obs in obs_list:
+                if obs.observation_starttime <= first_datetime and obs.observation_endtime >= last_datetime:
+                    can_insert_data = True
+                    instance.report += f"Your csv start and end-data match or lie within start and end time of observation {obs.observation_id}. \n"
+                    break
+            if not can_insert_data: 
+                instance.report += f"Your csv start and end-data lies outside the start and end time of the existing observation(s) {obs_list}. Adjust the csv to continue\n"
                 instance.executed = False
-                return            
+                return 
+
+        measurement_data, duplicate_data, non_duplicate_data = _get_measurement_data(instance, reader, time_col, value_col, obs)
+        if duplicate_data:
+            permission_to_update = _get_user_permission(instance.user, instance.status)
+            duplicate_rows = duplicate_data["rows"]
+            instance.report += f"\nRows {duplicate_rows} of csv are already present in the database\n"
+            if not permission_to_update:
+                mtvps_to_send = non_duplicate_data["measurement_tvps"]
+                mms_to_send = non_duplicate_data["measurement_metadatas"]
+                duplicate_rows_skipped = duplicate_rows
+                duplicate_rows_updated = None
+                
+                instance.report += f"User does not have permission to update measurements with status {instance.status}\n"
+                instance.report += f"Skipping {len(duplicate_rows_skipped)} duplicate measurements, continueing with {len(mtvps_to_send)} new measurements, out of {len(mtvps_to_send)+len(duplicate_rows_skipped)} total unique measurements\n"
+            else:
+                mtvps_to_send = measurement_data["measurement_tvps"]
+                mms_to_send = measurement_data["measurement_metadatas"]
+                duplicate_rows_skipped = None
+                duplicate_rows_updated = duplicate_rows
+
+                instance.report += f"User has permission to update measurements with status {instance.status}\n"
+                instance.report += f"Updating {len(duplicate_rows_updated)} duplicate measurements, creating {len(mtvps_to_send)-len(duplicate_rows_updated)} new measurements, out of {len(mtvps_to_send)} total unique measurements\n"
+        else:
+            mtvps_to_send = measurement_data["measurement_tvps"]
+            mms_to_send = measurement_data["measurement_metadatas"]
+            duplicate_rows_skipped = None
+            duplicate_rows_updated = None
+
+            instance.report += f"No duplicate measurements found in database\n"
+            instance.report += f"Creating {len(mtvps_to_send)} new measurements\n"
+        
+        if mtvps_to_send:
+            with transaction.atomic():
+                try:
+                    ## This should read the existing mtvps and update the mms for those mtvps with the data from the importer
+                    MeasurementPointMetadata.objects.bulk_create(
+                        mms_to_send,
+                        update_conflicts=False,
+                        batch_size=5000
+                    )
+                    ## maybe split into bulk_update and bulk_create
+                    mtvps_created = MeasurementTvp.objects.bulk_create(
+                        mtvps_to_send,
+                        update_conflicts=True,
+                        update_fields=[
+                            "field_value",
+                            "field_value_unit",
+                            "calculated_value",
+                            "measurement_point_metadata"
+                        ],
+                        unique_fields=[
+                            "observation_id",
+                            "measurement_time"
+                        ],
+                        batch_size=5000
+                    )
+
+                except Exception as e:
+                    instance.report += (
+                        f"Bulk updating/creating failed for observation: {obs}"
+                    )
+                    logger.info(f"Bulk updating/creating failed for observation: {obs}")
+                    logger.exception(e)
+                    instance.executed = False
+                    return    
+
+            # for mtvp_c in mtvps_created:
+            #     if mtvp_c.pk is None:
+            #         print("pk is none")
+            #         print(mtvp_c.measurement_tvp_id)        
 
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(
@@ -506,7 +629,9 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
             reader[time_col], errors="raise", utc=True
         )  # This will raise an error if invalid format
         # Convert to Europe/Amsterdam
-        reader[time_col] = reader[time_col].dt.tz_convert("Europe/Amsterdam")
+        ## FIXME: Do we assume that every utc value in database is europe amsterdam utc?
+        ## For now, I've assumed that we treat all amsterdam utc data as utc
+        # reader[time_col] = reader[time_col].dt.tz_convert("Europe/Amsterdam")
     except Exception as e:
         instance.validated = False
         instance.report += (

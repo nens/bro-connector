@@ -170,7 +170,6 @@ class MeasurementTvpInline(admin.TabularInline):
     max_num = 0
     max_viewable = 50
 
-
     def get_queryset(self, request):
         return super().get_queryset(request).order_by("-measurement_time")
 

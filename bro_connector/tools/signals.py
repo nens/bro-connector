@@ -21,6 +21,7 @@ from tools.utils import (
 )
 
 from .models import BroImport, GLDImport, GMNImport
+from main.settings.user import get_current_user
 
 logger = getLogger("general")
 
@@ -51,6 +52,10 @@ def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
             "Ongeldig bestandstype. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
         )
 
+@receiver(pre_save, sender=GLDImport)
+def save_user(sender, instance: GLDImport, **kwargs):
+    user = get_current_user()
+    instance.user = user
 
 @receiver(pre_save, sender=GLDImport)
 def validate_and_process_file(sender, instance: GLDImport, **kwargs):

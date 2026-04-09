@@ -21,6 +21,9 @@ from gmw.models import GroundwaterMonitoringTubeStatic
 from main.models import BaseModel
 from tools.choices import BRO_HANDLERS, BRO_TYPES
 
+from django.conf import settings
+
+AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 
 class BroImport(BaseModel):
     handler = models.CharField(
@@ -156,6 +159,14 @@ class XMLImport(BaseModel):
 
 
 class GLDImport(BaseModel):
+    user = models.ForeignKey(
+        AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        verbose_name="Gebruiker",
+    )
     file = models.FileField(
         upload_to="bulk",
         help_text="columns: [time, value], optional: [status_quality_control, censor_reason, censor_limit]. Filetype: csv or zip.",
