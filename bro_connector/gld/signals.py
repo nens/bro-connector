@@ -4,6 +4,7 @@ import reversion
 from django.core.cache import cache
 from django.db.models.signals import (
     post_delete,
+    pre_delete,
     post_save,
     pre_save,
 )
@@ -164,8 +165,8 @@ def on_save_gld_addition_log(sender, instance: gld_addition_log, created, **kwar
             )
 
 
-@receiver(post_delete, sender=MeasurementTvp)
-def post_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
+@receiver(pre_delete, sender=MeasurementTvp)
+def pre_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
     metadata = instance.measurement_point_metadata
 
     if metadata:
