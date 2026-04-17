@@ -5,12 +5,15 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import logging
 
 from tools.models import GLDImport
 from gld.models import MeasurementTvp, Observation
 from bro.models import Organisation
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.settings.base import KVK_USER, TIME_ZONE
+
+logger = logging.getLogger(__name__)
 
 TEST_MEASUREMENTS =[
     ("17/12/2014 11:00", -1926, "nogNietBeoordeeld"),
@@ -26,15 +29,18 @@ TEST_MEASUREMENTS =[
     ("17/12/2014 20:55", -1000, "nogNietBeoordeeld"),
 ]
 
-def _create_test_csv():
+def _create_test_csv(measurements):
     header = "time,value,status_quality_control"
     lines = [header]
-    for (time, value, status) in TEST_MEASUREMENTS:
+    for (time, value, status) in measurements:
         line = f"{time},{value},{status}"
         lines.append(line)
     return "\n".join(lines).encode("utf-8")
 
-TEST_CSV = _create_test_csv()
+TEST_CSV = _create_test_csv(TEST_MEASUREMENTS)
+
+SAMPLE_MEASUREMENTS = TEST_MEASUREMENTS[:5]
+SAMPLE_CSV = _create_test_csv(SAMPLE_MEASUREMENTS)
 
 User = get_user_model()
 
@@ -101,13 +107,52 @@ def normal_user():
         is_staff=True,
     )
 
-def _read_mtvps_from_database(observation: Observation = None):
+def _read_mtvps_from_database(observation: Observation = None, measurements: list = []):
     mtvps = []
     if observation:
-        for (measurement_time, _, _) in TEST_MEASUREMENTS:
+        for (measurement_time, _, _) in measurements:
             mtvp_time = datetime.strptime(measurement_time, "%d/%m/%Y %H:%M").replace(tzinfo=ZoneInfo(TIME_ZONE))
             mtvps.append((observation.observation_id, mtvp_time))
     return mtvps
+
+
+def has_user_permission(report: str) -> bool:
+    """
+    Returns False if 'User does not have permission' is present in the report,
+    otherwise returns True.
+    """
+    return "User does not have permission" not in report
+
+
+def extract_n_duplicates(report: str) -> int | None:
+    """
+    Extracts the number from:
+    '{} duplicate measurements'
+    Returns the integer (e.g. 11), or None if not found.
+    """
+    match = re.search(r"(\d+) duplicate measurements", report)
+    return int(match.group(1)) if match else None
+
+
+def extract_continuing_measurements(report: str) -> int | None:
+    """
+    Extracts the number from:
+    'continueing with {} new measurements'
+    Returns the integer (e.g. 0), or None if not found.
+    """
+    match = re.search(r"continueing with (\d+) new measurements", report)
+    return int(match.group(1)) if match else None
+
+
+def extract_total_unique_measurements(report: str) -> int | None:
+    """
+    Extracts the number from:
+    'out of {} total unique measurements'
+    Returns the integer (e.g. 11), or None if not found.
+    """
+    match = re.search(r"out of (\d+) total unique measurements", report)
+    return int(match.group(1)) if match else None
+
 
 @pytest.mark.django_db
 def test_gld_importer_creates_multiple_measurements_and_permissions(
@@ -124,9 +169,6 @@ def test_gld_importer_creates_multiple_measurements_and_permissions(
     4. calculated_time is NOT None
     5. Superuser is allowed to update measurements, normal user is not
     """
-
-    mtvps_before_importing = _read_mtvps_from_database()
-
     test_file = SimpleUploadedFile(
         "test.csv",
         TEST_CSV,
@@ -136,7 +178,7 @@ def test_gld_importer_creates_multiple_measurements_and_permissions(
     importer = GLDImport.objects.create(
         user=normal_user,
         file=test_file,
-        name="Test Import",
+        name="Initial Import",
         groundwater_monitoring_tube=default_groundwater_monitoring_tube,
         responsible_party=default_organisation,
         quality_regime="IMBRO/A",
@@ -152,45 +194,84 @@ def test_gld_importer_creates_multiple_measurements_and_permissions(
     importer.save()
 
     observation = _get_observation(importer)
-    mtvps_after_importing = _read_mtvps_from_database(observation)
+    mtvps_in_first_import = _read_mtvps_from_database(observation, TEST_MEASUREMENTS)
+    print(f"MTVPs in first import: {len(mtvps_in_first_import)}")
 
-    assert len(mtvps_before_importing) < len(mtvps_after_importing)
+    ## ---------- TEST RUN WITH NORMAL USER, VOLLEDIGBEOORDEELD ----------
 
-    # # Handwritten test measurements
-    # measurements_data = [
-    #     (timezone.datetime(2024, 1, 1, 0, 0, tzinfo=timezone.utc), 10.1),
-    #     (timezone.datetime(2024, 1, 2, 0, 0, tzinfo=timezone.utc), 10.2),
-    #     (timezone.datetime(2024, 1, 3, 0, 0, tzinfo=timezone.utc), 10.3),
-    # ]
+    test_file = SimpleUploadedFile(
+        "test.csv",
+        SAMPLE_CSV,
+        content_type="text/csv",
+    )
 
-    # for time, value in measurements_data:
-    #     Measurement.objects.create(
-    #         importer=importer,
-    #         time=time,
-    #         value=value,
-    #     )
+    importer = GLDImport.objects.create(
+        user=normal_user,
+        file=test_file,
+        name="Normal Import",
+        groundwater_monitoring_tube=default_groundwater_monitoring_tube,
+        responsible_party=default_organisation,
+        quality_regime="IMBRO/A",
+        observation_type="reguliereMeting",
+        field_value_unit="m",
+        status="volledigBeoordeeld",
+        process_reference="NEN_ISO21413v2005",
+        measurement_instrument_type="druksensor",
+        air_pressure_compensation_type="capillair",
+        process_type="algoritme",
+        evaluation_procedure="onbekend",
+    )
+    importer.save()
 
-    # # ✅ Assert multiple measurements saved
-    # qs = Measurement.objects.filter(importer=importer)
-    # assert qs.count() == len(measurements_data)
+    observation = _get_observation(importer)
+    mtvps_in_second_import = _read_mtvps_from_database(observation, SAMPLE_MEASUREMENTS)
+    print(f"MTVPs in second import: {len(mtvps_in_second_import)}")
 
-    # # ✅ Assert calculated_time is populated
-    # for measurement in qs:
-    #     assert measurement.calculated_time is not None
+    permission_check = has_user_permission(importer.report)
+    assert permission_check == False
 
-    # # ✅ Permission check: superuser CAN update
-    # measurement = qs.first()
+    n_unique_measurements = extract_total_unique_measurements(importer.report)
+    assert n_unique_measurements == len(SAMPLE_MEASUREMENTS)
 
-    # measurement.value = 99.9
-    # if super_user.is_superuser:
-    #     measurement.save()
+    n_duplicate_measurements = extract_n_duplicates(importer.report)
+    assert n_duplicate_measurements == len(SAMPLE_MEASUREMENTS)
 
-    # measurement.refresh_from_db()
-    # assert measurement.value == 99.9
+    ## ---------- TEST RUN WITH NORMAL USER, VOLLEDIGBEOORDEELD ----------
+    #     
+    test_file = SimpleUploadedFile(
+        "test.csv",
+        SAMPLE_CSV,
+        content_type="text/csv",
+    )
 
-    # # ❌ Permission check: normal user CANNOT update
-    # measurement.value = 11.1
+    importer = GLDImport.objects.create(
+        user=super_user,
+        file=test_file,
+        name="Super Import",
+        groundwater_monitoring_tube=default_groundwater_monitoring_tube,
+        responsible_party=default_organisation,
+        quality_regime="IMBRO/A",
+        observation_type="reguliereMeting",
+        field_value_unit="m",
+        status="volledigBeoordeeld",
+        process_reference="NEN_ISO21413v2005",
+        measurement_instrument_type="druksensor",
+        air_pressure_compensation_type="capillair",
+        process_type="algoritme",
+        evaluation_procedure="onbekend",
+    )
 
-    # if not normal_user.is_superuser:
-    #     with pytest.raises(PermissionError):
-    #         raise PermissionError("User is not allowed to update measurements")
+    observation = _get_observation(importer)
+    mtvps_in_third_import = _read_mtvps_from_database(observation, SAMPLE_MEASUREMENTS)
+    print(f"MTVPs in third import: {len(mtvps_in_third_import)}")
+
+    assert len(mtvps_in_second_import) == len(mtvps_in_third_import)
+
+    permission_check = has_user_permission(importer.report)
+    assert permission_check == True
+
+    n_unique_measurements = extract_total_unique_measurements(importer.report)
+    assert n_unique_measurements == len(SAMPLE_MEASUREMENTS)
+
+    n_duplicate_measurements = extract_n_duplicates(importer.report)
+    assert n_duplicate_measurements == len(SAMPLE_MEASUREMENTS)

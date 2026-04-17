@@ -468,9 +468,11 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
         ).first()
         if not gld:
             gld = GroundwaterLevelDossier.objects.get_or_create(
-                gld_bro_id=instance.gld_bro_id,
                 groundwater_monitoring_tube=instance.groundwater_monitoring_tube,
                 quality_regime=instance.quality_regime,
+                defaults={
+                    "gld_bro_id": instance.gld_bro_id,
+                }
             )[0]
             instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
 
