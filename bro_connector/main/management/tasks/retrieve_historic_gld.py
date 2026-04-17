@@ -372,10 +372,10 @@ class InitializeData:
             self.gld, created = GroundwaterLevelDossier.objects.update_or_create(
                 gld_bro_id=self.gld_bro_id,
                 groundwater_monitoring_tube=self.gmts,
-                defaults={
-                    "quality_regime": self.gld_dict.get(
+                quality_regime=self.gld_dict.get(
                         self.prefix + "qualityRegime", "onbekend"
-                    ),
+                ),
+                defaults = {
                     "research_start_date": str_to_date(
                         self.gld_dict.get(self.prefix + "researchFirstDate", None)
                     ),
