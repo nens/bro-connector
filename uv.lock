@@ -15,15 +15,6 @@ wheels = [
 ]
 
 [[package]]
-name = "asttokens"
-version = "3.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4a/e7/82da0a03e7ba5141f05cce0d302e6eed121ae055e0456ca228bf693984bc/asttokens-3.0.0.tar.gz", hash = "sha256:0dcd8baa8d62b0c1d118b399b2ddba3c4aff271d0d7a9e0d4c1681c79035bbc7", size = 61978 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/8a/c46dcc25341b5bce5472c718902eb3d38600a903b14fa6aeecef3f21a46f/asttokens-3.0.0-py3-none-any.whl", hash = "sha256:e3078351a059199dd5138cb1c706e6430c05eff2ff136af5eb4790f9d28932e2", size = 26918 },
-]
-
-[[package]]
 name = "bcrypt"
 version = "4.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -80,24 +71,14 @@ name = "bro-connector"
 version = "0.1.0.dev0"
 source = { editable = "." }
 dependencies = [
-    { name = "asgiref" },
-    { name = "bcrypt" },
-    { name = "blinker" },
     { name = "bro-exchange" },
     { name = "cachetools" },
-    { name = "certifi" },
-    { name = "cffi" },
-    { name = "channels" },
-    { name = "charset-normalizer" },
-    { name = "click" },
-    { name = "colorama" },
     { name = "cryptography" },
     { name = "dash" },
     { name = "dash-bootstrap-components" },
     { name = "dash-core-components" },
     { name = "dash-html-components" },
     { name = "dash-table" },
-    { name = "diff-match-patch" },
     { name = "django" },
     { name = "django-admin-autocomplete-filter" },
     { name = "django-admin-generator" },
@@ -117,53 +98,38 @@ dependencies = [
     { name = "flask" },
     { name = "flask-caching" },
     { name = "geopandas" },
-    { name = "gunicorn" },
     { name = "hydropandas" },
     { name = "i18nice", extra = ["yaml"] },
-    { name = "icecream" },
-    { name = "idna" },
-    { name = "itsdangerous" },
     { name = "jinja2" },
     { name = "lxml" },
-    { name = "markdown-it-py" },
-    { name = "markupsafe" },
-    { name = "mdurl" },
     { name = "numpy" },
     { name = "packaging" },
     { name = "pandas" },
-    { name = "paramiko" },
     { name = "pastas" },
     { name = "pastastore" },
     { name = "plotly" },
     { name = "polars" },
     { name = "pre-commit" },
+    { name = "psycopg2" },
     { name = "psycopg2-binary" },
-    { name = "pycparser" },
-    { name = "pygments" },
-    { name = "pynacl" },
     { name = "pyopenssl" },
     { name = "pyproj" },
     { name = "pysftp" },
     { name = "pytest" },
-    { name = "python-dateutil" },
     { name = "python-utils" },
     { name = "pytz" },
     { name = "requests" },
     { name = "rich" },
-    { name = "setuptools" },
     { name = "six" },
     { name = "sqlalchemy" },
     { name = "sqlparse" },
-    { name = "tenacity" },
     { name = "toml" },
     { name = "tomli" },
     { name = "traval" },
-    { name = "typing-extensions" },
     { name = "tzdata" },
     { name = "urllib3" },
     { name = "uuid" },
     { name = "werkzeug" },
-    { name = "xmltodict" },
 ]
 
 [package.optional-dependencies]
@@ -173,24 +139,14 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "asgiref", specifier = "==3.8.1" },
-    { name = "bcrypt", specifier = "==4.2.0" },
-    { name = "blinker", specifier = "==1.7.0" },
     { name = "bro-exchange", git = "https://github.com/nens/bro-exchange?rev=5caacc13998b009456fa0b6bb25a7f51a77466fc" },
     { name = "cachetools", specifier = "==6.2.4" },
-    { name = "certifi", specifier = "==2024.7.4" },
-    { name = "cffi", specifier = "==1.17.0" },
-    { name = "channels", specifier = "==4.0.0" },
-    { name = "charset-normalizer", specifier = "==3.3.2" },
-    { name = "click", specifier = "==8.1.7" },
-    { name = "colorama", specifier = "==0.4.6" },
     { name = "cryptography", specifier = "==43.0.0" },
     { name = "dash", specifier = "==2.18.2" },
     { name = "dash-bootstrap-components", specifier = "==1.7.1" },
     { name = "dash-core-components", specifier = "==2.0.0" },
     { name = "dash-html-components", specifier = "==2.0.0" },
     { name = "dash-table", specifier = "==5.0.0" },
-    { name = "diff-match-patch", specifier = "==20230430" },
     { name = "django", specifier = "==4.2" },
     { name = "django-admin-autocomplete-filter", specifier = "==0.7.1" },
     { name = "django-admin-generator", specifier = "==2.2.1" },
@@ -210,54 +166,39 @@ requires-dist = [
     { name = "flask", specifier = "==3.0.3" },
     { name = "flask-caching" },
     { name = "geopandas" },
-    { name = "gunicorn", specifier = "==23.0.0" },
     { name = "hydropandas" },
     { name = "i18nice", extras = ["yaml"] },
-    { name = "icecream" },
-    { name = "idna", specifier = "==3.7" },
-    { name = "itsdangerous", specifier = "==2.1.2" },
     { name = "jinja2", specifier = "==3.1.3" },
     { name = "lxml", specifier = "==5.2.2" },
-    { name = "markdown-it-py", specifier = "==3.0.0" },
-    { name = "markupsafe", specifier = "==2.1.5" },
-    { name = "mdurl", specifier = "==0.1.2" },
     { name = "numpy", specifier = "==2.0.1" },
     { name = "packaging", specifier = "==24.0" },
     { name = "pandas", specifier = "==2.2.2" },
-    { name = "paramiko", specifier = "==3.4.0" },
     { name = "pastas" },
     { name = "pastastore", specifier = ">=1.11.0" },
     { name = "plotly", specifier = "==6.0.1" },
     { name = "polars" },
     { name = "pre-commit", specifier = ">=4.5.1" },
+    { name = "psycopg2", specifier = ">=2.9.12" },
     { name = "psycopg2-binary" },
-    { name = "pycparser", specifier = "==2.22" },
-    { name = "pygments", specifier = "==2.17.2" },
-    { name = "pynacl", specifier = "==1.5.0" },
     { name = "pyopenssl" },
     { name = "pyproj", specifier = "==3.6.1" },
     { name = "pysftp", specifier = "==0.2.9" },
     { name = "pytest", specifier = ">=8.4.0" },
     { name = "pytest", marker = "extra == 'test'" },
-    { name = "python-dateutil", specifier = "==2.9.0.post0" },
     { name = "python-utils", specifier = "==3.8.2" },
-    { name = "pytz", specifier = "==2024.1" },
+    { name = "pytz" },
     { name = "requests", specifier = "==2.31.0" },
     { name = "rich", specifier = "==13.7.1" },
-    { name = "setuptools" },
     { name = "six", specifier = "==1.16.0" },
     { name = "sqlalchemy" },
     { name = "sqlparse", specifier = "==0.5.1" },
-    { name = "tenacity", specifier = "==8.2.3" },
     { name = "toml", specifier = "==0.10.2" },
     { name = "tomli" },
     { name = "traval" },
-    { name = "typing-extensions", specifier = "==4.11.0" },
     { name = "tzdata", specifier = "==2024.1" },
     { name = "urllib3", specifier = "==2.2.2" },
     { name = "uuid", specifier = "==1.30" },
     { name = "werkzeug", specifier = "==3.0.2" },
-    { name = "xmltodict", specifier = "==0.13.0" },
 ]
 
 [[package]]
@@ -786,15 +727,6 @@ wheels = [
 ]
 
 [[package]]
-name = "executing"
-version = "2.2.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/91/50/a9d80c47ff289c611ff12e63f7c5d13942c65d68125160cefd768c73e6e4/executing-2.2.0.tar.gz", hash = "sha256:5d108c028108fe2551d1a7b2e8b713341e2cb4fc0aa7dcf966fa4327a5226755", size = 978693 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/7b/8f/c4d9bafc34ad7ad5d8dc16dd1347ee0e507a52c3adb6bfa8887e1c6a26ba/executing-2.2.0-py2.py3-none-any.whl", hash = "sha256:11387150cad388d62750327a53d3339fad4888b39a6fe233c3afbb54ecffd3aa", size = 26702 },
-]
-
-[[package]]
 name = "filelock"
 version = "3.25.2"
 source = { registry = "https://pypi.org/simple" }
@@ -925,18 +857,6 @@ wheels = [
 ]
 
 [[package]]
-name = "gunicorn"
-version = "23.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/34/72/9614c465dc206155d93eff0ca20d42e1e35afc533971379482de953521a4/gunicorn-23.0.0.tar.gz", hash = "sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec", size = 375031 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/7d/6dac2a6e1eba33ee43f318edbed4ff29151a49b5d37f080aad1e6469bca4/gunicorn-23.0.0-py3-none-any.whl", hash = "sha256:ec400d38950de4dfd418cff8328b2c8faed0edb0d517d3394e457c317908ca4d", size = 85029 },
-]
-
-[[package]]
 name = "hydropandas"
 version = "0.13.3"
 source = { registry = "https://pypi.org/simple" }
@@ -965,21 +885,6 @@ wheels = [
 [package.optional-dependencies]
 yaml = [
     { name = "pyyaml" },
-]
-
-[[package]]
-name = "icecream"
-version = "2.1.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "asttokens" },
-    { name = "colorama" },
-    { name = "executing" },
-    { name = "pygments" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/78/5e/9f41831f032b9ce456c919c4989952562fcc2b0eb8c038080c24ce20d6cd/icecream-2.1.4.tar.gz", hash = "sha256:58755e58397d5350a76f25976dee7b607f5febb3c6e1cddfe6b1951896e91573", size = 15872 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/57/1d/43ef7a6875190e6745ffcd1b12c7aaa7efed082897401e311ee1cd75c8b2/icecream-2.1.4-py3-none-any.whl", hash = "sha256:7bb715f69102cae871b3a361c3b656536db02cfcadac9664c673581cac4df4fd", size = 14782 },
 ]
 
 [[package]]
@@ -1559,6 +1464,18 @@ wheels = [
 ]
 
 [[package]]
+name = "psycopg2"
+version = "2.9.12"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/bc/f66df707ed1aec949fbf24e4460e4f4277a7ba23cdadb3965bb1f634ddb9/psycopg2-2.9.12.tar.gz", hash = "sha256:1dedb1c7a1d8552c4a6044c6b1c41a52e6a8e2d144af83eccac758076b1b7c15", size = 379683 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cc/a1/9cc069f8efc92383d3823ef8805c932f5fda723b3f07d2a8ee019ae2919f/psycopg2-2.9.12-cp311-cp311-win_amd64.whl", hash = "sha256:2532c0cdc6ad18c9c35cd935cc3159712e14f05276a6d29a6435c52d24b840c1", size = 2756862 },
+    { url = "https://files.pythonhosted.org/packages/7e/b2/7319dc488444b1dfe9ce89c4440df1d5425e2579e6ce9a63e2b70f648491/psycopg2-2.9.12-cp312-cp312-win_amd64.whl", hash = "sha256:83d48e66e18c301d832e93c984a7bcbc0f4ac3bb79e2137e3bc335978c756dc0", size = 2757068 },
+    { url = "https://files.pythonhosted.org/packages/91/ab/03403779a251ca14a7f1b07a41c7aa735fd451f0aebe4c4f901a231167a4/psycopg2-2.9.12-cp313-cp313-win_amd64.whl", hash = "sha256:3d23e684927d37b95cee9a943f6927b04ae2fdcd056fd0e2a30929ee89fee5a9", size = 2757176 },
+    { url = "https://files.pythonhosted.org/packages/73/4a/a3566f77501c21a6c2a1fc234dbe5dff74a86e3f150ef070e4ffb835e7f9/psycopg2-2.9.12-cp314-cp314-win_amd64.whl", hash = "sha256:a73d5513bfe929c56555006c7a9cc7ae6e4276aa99dd2b1e2544eb8bb54f8b23", size = 2848588 },
+]
+
+[[package]]
 name = "psycopg2-binary"
 version = "2.9.10"
 source = { registry = "https://pypi.org/simple" }
@@ -2025,15 +1942,6 @@ wheels = [
 ]
 
 [[package]]
-name = "tenacity"
-version = "8.2.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/89/3c/253e1627262373784bf9355db9d6f20d2d8831d79f91e9cca48050cddcc2/tenacity-8.2.3.tar.gz", hash = "sha256:5398ef0d78e63f40007c1fb4c0bff96e1911394d2fa8d194f77619c05ff6cc8a", size = 40651 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f4/f1/990741d5bb2487d529d20a433210ffa136a367751e454214013b441c4575/tenacity-8.2.3-py3-none-any.whl", hash = "sha256:ce510e327a630c9e1beaf17d42e6ffacc88185044ad85cf74c0a8887c6a0f88c", size = 24401 },
-]
-
-[[package]]
 name = "toml"
 version = "0.10.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2166,15 +2074,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0f/84/00f7193d7bd88ced26cd5f868903e431054424610dc7c041bbe87d2a4d66/werkzeug-3.0.2.tar.gz", hash = "sha256:e39b645a6ac92822588e7b39a692e7828724ceae0b0d702ef96701f90e70128d", size = 802172 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e3/23/c9843d7550092ae7ad380611c238f44afef66f58f76c1dab7dcf313e4339/werkzeug-3.0.2-py3-none-any.whl", hash = "sha256:3aac3f5da756f93030740bc235d3e09449efcf65f2f55e3602e1d851b8f48795", size = 226830 },
-]
-
-[[package]]
-name = "xmltodict"
-version = "0.13.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/39/0d/40df5be1e684bbaecdb9d1e0e40d5d482465de6b00cbb92b84ee5d243c7f/xmltodict-0.13.0.tar.gz", hash = "sha256:341595a488e3e01a85a9d8911d8912fd922ede5fecc4dce437eb4b6c8d037e56", size = 33813 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/db/fd0326e331726f07ff7f40675cd86aa804bfd2e5016c727fa761c934990e/xmltodict-0.13.0-py2.py3-none-any.whl", hash = "sha256:aa89e8fd76320154a40d19a0df04a4695fb9dc5ba977cbb68ab3e4eb225e7852", size = 9971 },
 ]
 
 [[package]]
