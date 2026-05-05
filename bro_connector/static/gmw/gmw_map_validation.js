@@ -152,6 +152,8 @@ const createPopup = (well) => {
       const color = getDateColor(gld.observation_type, gld.latest_measurement_date);
       const ObsPageValue = getObsPageValue(gld.latest_observation_id)
 
+      console.log("Latest date: ", gld.latest_measurement_date, "Color:", color)
+
       gldsContent += `
         <details ${i === 0 ? "open" : ""} style="margin-bottom:6px;">
           <summary style="cursor:pointer;font-weight:bold;">

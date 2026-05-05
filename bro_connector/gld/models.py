@@ -180,12 +180,9 @@ class GroundwaterLevelDossier(BaseModel):
             Observation.objects.filter(groundwater_level_dossier=self)
             .order_by("observation_starttime")
             .first()
-        )
-        first_measurement_date = getattr(
-            first_measurement, "observation_starttime", None
-        )
+        ).timestamp_first_measurement
 
-        return first_measurement_date
+        return first_measurement
 
     first_measurement.fget.short_description = "Eerste observatiedatum"
 
@@ -195,10 +192,9 @@ class GroundwaterLevelDossier(BaseModel):
             Observation.objects.filter(groundwater_level_dossier=self)
             .order_by("observation_starttime")
             .last()
-        )
-        last_measurement_date = getattr(last_measurement, "observation_starttime", None)
+        ).timestamp_last_measurement
 
-        return last_measurement_date
+        return last_measurement
 
     last_measurement.fget.short_description = "Laatste observatiedatum"
 

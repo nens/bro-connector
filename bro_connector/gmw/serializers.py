@@ -18,6 +18,7 @@ class GMWSerializer(serializers.ModelSerializer):
     has_open_comments = serializers.SerializerMethodField()
     # tubes = serializers.SerializerMethodField()
     glds = serializers.SerializerMethodField()
+    is_active = serializers.SerializerMethodField()
 
     class Meta:
         model = gmw_models.GroundwaterMonitoringWellStatic
@@ -41,6 +42,7 @@ class GMWSerializer(serializers.ModelSerializer):
             "has_open_comments",
             # "tubes",
             "glds",
+            "is_active",
         ]
 
     def get_label(self, obj):
@@ -149,6 +151,9 @@ class GMWSerializer(serializers.ModelSerializer):
             return list(set(obs_ids))
 
         return []
+    
+    def get_is_active(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
+        return None
 
 
 class GLDSerializer(serializers.ModelSerializer):
