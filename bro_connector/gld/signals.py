@@ -7,6 +7,7 @@ from django.db.models.signals import (
     pre_delete,
     post_save,
     pre_save,
+    pre_delete,
 )
 from django.dispatch import receiver
 from gmw.models import GroundwaterMonitoringTubeStatic
@@ -176,6 +177,9 @@ def pre_delete_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
 
 @receiver(pre_save, sender=Observation)
 def pre_save_observation(sender, instance: Observation, **kwargs):
+    if not instance.observation_starttime and instance.timestamp_first_measurement:
+        instance.observation_starttime = instance.timestamp_first_measurement
+
     if instance.observation_endtime and instance.observation_metadata:
         if (
             instance.observation_metadata.status == "voorlopig"
@@ -189,8 +193,6 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
                 < datetime.datetime.now().astimezone()
                 else datetime.datetime.now().astimezone()
             )
-    else:
-        instance.result_time = instance.timestamp_last_measurement
 
 
 @receiver(post_save, sender=Observation)

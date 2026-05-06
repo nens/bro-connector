@@ -30,6 +30,7 @@ from gmw.choices import (
     LOCKS,
     QUALITYREGIME,
     SALINITY_CHOICES,
+    SCREENPROTECTION,
     SOCKMATERIAL,
     TUBEMATERIAL,
     TUBEPACKINGMATERIAL,
@@ -200,6 +201,9 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         null=True,
         verbose_name="Zoutgehalte",
     )
+
+    is_abroad = models.BooleanField(null=True, blank=True, verbose_name="Buitenlandse put")
+    is_publicly_available = models.BooleanField(null=True, blank=True, verbose_name="Publiek beschikbaar")
 
     # Added for additional wells that are not owned by the user
     in_management = models.BooleanField(
@@ -423,6 +427,26 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         db_table = 'gmw"."groundwater_monitoring_well_static'
         verbose_name = "Grondwatermonitoring Put - Statisch"
         verbose_name_plural = "Grondwatermonitoring Putten - Statisch"
+
+class RelatedSurvey(BaseModel):
+    related_survey_id = models.AutoField(
+        primary_key=True, verbose_name="DB ID"
+    )
+    groundwater_monitoring_well_static = models.ForeignKey(
+        GroundwaterMonitoringWellStatic,
+        on_delete=models.CASCADE,
+        related_name="related_survey",
+        verbose_name="Putcode",
+    )
+    survey_id = models.CharField(
+        max_length=50, blank=False, null=False, verbose_name="Gerelateerde peilbuis survey ID", help_text="Dit kan een BHR of CPT - ID zijn."
+    )
+
+    class Meta:
+        managed = True
+        db_table = 'gmw"."related_survey'
+        verbose_name = "Gerelateerde peilbuis survey"
+        verbose_name_plural = "Gerelateerde peilbuis surveys"
 
 
 class GroundwaterMonitoringWellDynamic(BaseModel):
@@ -686,6 +710,15 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         validators=[validators_models.zandvanglengte_validator],
         verbose_name="Zandvanglengte",
     )
+
+    screen_protection = models.CharField(
+        choices=SCREENPROTECTION,
+        max_length=254,
+        null=True,
+        blank=True,
+        verbose_name="Filterbescherming",
+    )
+
     bro_actions = models.TextField(
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )

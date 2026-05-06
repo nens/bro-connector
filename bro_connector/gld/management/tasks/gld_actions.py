@@ -280,7 +280,7 @@ def check_and_deliver_start_registrations(dossier: GroundwaterLevelDossier) -> N
     start_log.check_delivery_status()
 
 
-def check_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
+def gen_val_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
     for observation in dossier.observation.filter(
         up_to_date_in_bro=False, result_time__isnull=False
     ):
@@ -306,7 +306,7 @@ def check_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
         )
         if addition_log.process_status == "source_document_validation_failed":
             logger.error(
-                f"Check and deliver; File generation failed: {addition_log.comments}"
+                f"Check and deliver; File validation failed: {addition_log.comments}"
             )
             return
 
@@ -314,12 +314,12 @@ def check_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
         logger.info(
             f"Check and deliver; File delivered: {addition_log.delivery_id} {addition_log.delivery_status}"
         )
-        if addition_log.process_status == "source_document_validation_failed":
+        if addition_log.process_status == "source_document_delivery_failed":
             logger.error(
-                f"Check and deliver; File generation failed: {addition_log.comments}"
+                f"Check and deliver; File delivery failed: {addition_log.comments}"
             )
             return
-
+        
     # Sleep for 1 seconds to avoid overwhelming the server
     time.sleep(1)
 

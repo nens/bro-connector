@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import os
+import pytz
 import platform
 from pathlib import Path
 
@@ -183,6 +184,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Europe/Amsterdam"
+TZINFO = pytz.timezone(TIME_ZONE)
 
 USE_I18N = True
 
@@ -261,6 +263,7 @@ ADMIN_REORDER = (
             "gmw.Event",
             "gmw.MaintenanceParty",
             "gmw.Maintenance",
+            "gmw.RelatedSurvey",
             "gmw.gmw_registration_log",
         ),
     },
@@ -458,6 +461,7 @@ JAZZMIN_SETTINGS = {
         "gmw.Event",
         "gmw.MaintenanceParty",
         "gmw.Maintenance",
+        "gmw.RelatedSurvey",
         "gld",
         "gld.GroundwaterLevelDossier",
         "gld.Observation",
