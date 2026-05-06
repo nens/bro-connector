@@ -474,7 +474,7 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                     "gld_bro_id": instance.gld_bro_id,
                 }
             )[0]
-            instance.report += f"GroundwaterLevelDossier aangemaakt: {gld}.\n"
+            instance.report = f"{instance.report}GroundwaterLevelDossier aangemaakt: {gld}.\n"
 
         # Create ObservationProces
         obs_process = ObservationProcess.objects.get_or_create(
@@ -510,15 +510,15 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                 observation_endtime = last_datetime
             )
         if obs_list:
-            instance.report += f"Found {len(obs_list)} observations for this combination of gld, observation metadata and observation process\n"
+            instance.report = f"{instance.report}Found {len(obs_list)} observations for this combination of gld, observation metadata and observation process\n"
             can_insert_data = False
             for obs in obs_list:
                 if obs.observation_starttime <= first_datetime and obs.observation_endtime >= last_datetime:
                     can_insert_data = True
-                    instance.report += f"Your csv start and end-data match or lie within start and end time of observation {obs.observation_id}. \n"
+                    instance.report = f"{instance.report}Your csv start and end-data match or lie within start and end time of observation {obs.observation_id}. \n"
                     break
             if not can_insert_data: 
-                instance.report += f"Your csv start and end-data lies outside the start and end time of the existing observation(s) {obs_list}. Adjust the csv to continue\n"
+                instance.report = f"{instance.report}Your csv start and end-data lies outside the start and end time of the existing observation(s) {obs_list}. Adjust the csv to continue\n"
                 instance.executed = False
                 return 
 
@@ -526,31 +526,31 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
         if duplicate_data:
             permission_to_update = _get_user_permission(instance.user, instance.status)
             duplicate_rows = duplicate_data["rows"]
-            instance.report += f"\nRows {duplicate_rows} of csv are already present in the database\n"
+            instance.report = f"{instance.report}\nRows {duplicate_rows} of csv are already present in the database\n"
             if not permission_to_update:
                 mtvps_to_send = non_duplicate_data["measurement_tvps"]
                 mms_to_send = non_duplicate_data["measurement_metadatas"]
                 duplicate_rows_skipped = duplicate_rows
                 duplicate_rows_updated = None
                 
-                instance.report += f"User does not have permission to update measurements with status {instance.status}\n"
-                instance.report += f"Skipping {len(duplicate_rows_skipped)} duplicate measurements, continueing with {len(mtvps_to_send)} new measurements, out of {len(mtvps_to_send)+len(duplicate_rows_skipped)} total unique measurements\n"
+                instance.report = f"{instance.report}User does not have permission to update measurements with status {instance.status}\n"
+                instance.report = f"{instance.report}Skipping {len(duplicate_rows_skipped)} duplicate measurements, continueing with {len(mtvps_to_send)} new measurements, out of {len(mtvps_to_send)+len(duplicate_rows_skipped)} total unique measurements\n"
             else:
                 mtvps_to_send = measurement_data["measurement_tvps"]
                 mms_to_send = measurement_data["measurement_metadatas"]
                 duplicate_rows_skipped = None
                 duplicate_rows_updated = duplicate_rows
 
-                instance.report += f"User has permission to update measurements with status {instance.status}\n\n"
-                instance.report += f"Updating {len(duplicate_rows_updated)} duplicate measurements, creating {len(mtvps_to_send)-len(duplicate_rows_updated)} new measurements, out of {len(mtvps_to_send)} total unique measurements\n"
+                instance.report = f"{instance.report}User has permission to update measurements with status {instance.status}\n\n"
+                instance.report = f"{instance.report}Updating {len(duplicate_rows_updated)} duplicate measurements, creating {len(mtvps_to_send)-len(duplicate_rows_updated)} new measurements, out of {len(mtvps_to_send)} total unique measurements\n"
         else:
             mtvps_to_send = measurement_data["measurement_tvps"]
             mms_to_send = measurement_data["measurement_metadatas"]
             duplicate_rows_skipped = None
             duplicate_rows_updated = None
 
-            instance.report += f"No duplicate measurements found in database\n"
-            instance.report += f"Creating {len(mtvps_to_send)} new measurements\n"
+            instance.report = f"{instance.report}No duplicate measurements found in database\n"
+            instance.report = f"{instance.report}Creating {len(mtvps_to_send)} new measurements\n"
         
         if mtvps_to_send:
             with transaction.atomic():
@@ -579,9 +579,7 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                     )
 
                 except Exception as e:
-                    instance.report += (
-                        f"Bulk updating/creating failed for observation: {obs}"
-                    )
+                    instance.report = f"{instance.report}Bulk updating/creating failed for observation: {obs}\n"
                     logger.info(f"Bulk updating/creating failed for observation: {obs}")
                     logger.exception(e)
                     instance.executed = False
@@ -607,7 +605,8 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                     gld.research_last_date = gld.last_measurement.date()
                 else:
                     gld.research_last_date = datetime.now().date()
-                gld.research_last_correction = datetime.now().date()
+
+                gld.research_last_correction = datetime.now()
                 gld.save()
 
         instance.executed = True
@@ -621,12 +620,12 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
     missing_columns = [col for col in required_columns if col not in reader.columns]
     if missing_columns:
         instance.validated = False
-        instance.report += f"Missende kolommen: {', '.join(missing_columns)}\n\n"
+        instance.report = f"{instance.report}Missende kolommen: {', '.join(missing_columns)}\n\n"
 
     # Check if CSV has any rows
     if reader.empty:
         instance.validated = False
-        instance.report += f"{filename} bevat geen gegevens.\n"
+        instance.report = f"{instance.report}{filename} bevat geen gegevens.\n"
         return reader
 
     # Validate the first column format for datetimes
@@ -642,9 +641,7 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
         reader[time_col] = reader[time_col].dt.tz_convert("Europe/Amsterdam")
     except Exception as e:
         instance.validated = False
-        instance.report += (
-            f"Eerste kolom moet de tijd bevatten van {filename}: {str(e)}\n\n"
-        )
+        instance.report = f"{instance.report}Eerste kolom moet de tijd bevatten van {filename}: {str(e)}\n\n"
 
     # Validate 'value' column format (numeric values)
     if "value" in reader.columns:
@@ -652,16 +649,16 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
             not pd.to_numeric(reader["value"], errors="coerce").notnull().all()
         ):  # Check if all values are numeric
             instance.validated = False
-            instance.report += f"Fout in 'value' kolom van {filename}: Bevat niet-numerieke waarden.\n\n"
+            instance.report = f"{instance.report}Fout in 'value' kolom van {filename}: Bevat niet-numerieke waarden.\n\n"
 
     # validate the status_quality_control column if given in csv
     if "status_quality_control" in reader.columns:
         STATUSQUALITYCONTROL_LIST = [status[0] for status in STATUSQUALITYCONTROL]
         if not reader["status_quality_control"].isin(STATUSQUALITYCONTROL_LIST).all():
             instance.validated = False
-            instance.report += "Fout in 'status_quality_control' kolom: Ongeldige waarden gevonden.\n\n"
+            instance.report = f"{instance.report}Fout in 'status_quality_control' kolom: Ongeldige waarden gevonden.\n\n"
     else:
-        instance.report += "De kolom 'status_quality_control' kan worden toegevoegd  om te duiden wat de kwaliteit van de meting is.\n\n"
+        instance.report = f"{instance.report}De kolom 'status_quality_control' kan worden toegevoegd  om te duiden wat de kwaliteit van de meting is.\n\n"
 
     # validate the censor_reason column if given in csv
     if "censor_reason" in reader.columns:
@@ -669,11 +666,9 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
         # Validate that all values in the column are in the allowed set
         if not reader["censor_reason"].isin(CENSORREASON_LIST).all():
             instance.validated = False
-            instance.report += (
-                "Fout in 'censor_reason': Ongeldige waarden gevonden.\n\n"
-            )
+            instance.report = f"{instance.report}Fout in 'censor_reason': Ongeldige waarden gevonden.\n\n"
     else:
-        instance.report += "De kolom 'censor_reason' kan worden toegevoegd om de censuur reden aan te geven.\n\n"
+        instance.report = f"{instance.report}De kolom 'censor_reason' kan worden toegevoegd om de censuur reden aan te geven.\n\n"
 
     # validate the censor_reason column if given in csv
     if "censor_limit" in reader.columns:
@@ -682,11 +677,9 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
             | pd.api.types.is_integer_dtype(reader["censor_limit"])
         ):
             instance.validated = False
-            instance.report += (
-                "Fout in 'censor_limit' kolom: waarden zijn niet int of float.\n\n"
-            )
+            instance.report = f"{instance.report}Fout in 'censor_limit' kolom: waarden zijn niet int of float.\n\n"
     else:
-        instance.report += "De kolom 'censor_limit' kan worden toegevoegd om aan te geven welke limiet waarde is gebruikt\n\n"
+        instance.report = f"{instance.report}De kolom 'censor_limit' kan worden toegevoegd om aan te geven welke limiet waarde is gebruikt\n\n"
 
     return reader
 
