@@ -40,7 +40,7 @@ class AnalysesAdmin(admin.ModelAdmin):
     list_display = (
         "analysis_id",
         "analysis_process_id",
-        "parameter_id",
+        "parameter",
         "analysis_measurement_value",
     )
 
@@ -66,7 +66,7 @@ class FieldMeasurementsAdmin(admin.ModelAdmin):
     list_display = (
         "field_measurement_id",
         "field_sample_id",
-        "parameter_id",
+        "parameter",
         "field_measurement_value",
     )
 
@@ -76,8 +76,8 @@ class FieldObservationsAdmin(admin.ModelAdmin):
     list_display = (
         "field_observation_id",
         "field_sample_id",
-        "primary_colour_id",
-        "secondary_colour_id",
+        "primary_colour",
+        "secondary_colour",
     )
 
 

@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 
 from ..tasks import (
     retrieve_historic_frd,
+    retrieve_historic_gar,
     retrieve_historic_gld,
     retrieve_historic_gmn,
     retrieve_historic_gmw,
@@ -33,8 +34,7 @@ class Command(BaseCommand):
             retrieve_historic_gld.run(kvk_number=kvk_number)
 
         elif bro_type == "gar":
-            pass
-            # retrieve_historic_gar.run(kvk_number = kvk_number)
+            retrieve_historic_gar.run(kvk_number=kvk_number)
 
         elif bro_type == "gmn":
             retrieve_historic_gmn.run(kvk_number=kvk_number)

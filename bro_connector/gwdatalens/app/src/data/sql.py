@@ -27,12 +27,18 @@ def sql_get_gmws():
 
     Notes
     -----
-    - Rank wells per nitg_code; keep most recent construction_date (well_rank = 1).
+    - Rank wells per nitg_code (or well_static_id when nitg_code is NULL); keep
+      most recent construction_date (well_rank = 1).
+    - Wells with nitg_code = NULL each receive their own partition so none are
+      silently dropped by the well_rank == 1 filter.
     - Rank tube_dynamic per tube_static by date_created, keeping newest.
     - Return one tube_dynamic per well/tube combination with metadata fields.
 
     """
-    # Rank wells per nitg_code, newest construction_date first
+    # Rank wells per nitg_code (or well_static_id when nitg_code is NULL),
+    # newest construction_date first.
+    # Using COALESCE ensures each NULL-nitg_code well forms its own partition
+    # so none are dropped by the well_rank == 1 filter below.
     active_well_base = select(
         datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
             "well_static_id"
@@ -43,7 +49,13 @@ def sql_get_gmws():
         datamodel.WellStatic.construction_date,
         func.row_number()
         .over(
-            partition_by=datamodel.WellStatic.nitg_code,
+            partition_by=func.coalesce(
+                datamodel.WellStatic.nitg_code,
+                func.cast(
+                    datamodel.WellStatic.groundwater_monitoring_well_static_id,
+                    postgresql.VARCHAR,
+                ),
+            ),
             order_by=[
                 datamodel.WellStatic.construction_date.desc().nullslast(),
                 datamodel.WellStatic.bro_id.desc(),

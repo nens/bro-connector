@@ -269,12 +269,8 @@ class GroundwaterLevelDossier(BaseModel):
         db_table = 'gld"."groundwater_level_dossier'
         verbose_name = "Grondwaterstandonderzoek"
         verbose_name_plural = "Grondwaterstandonderzoeken"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["groundwater_monitoring_tube", "quality_regime"],
-                name="unique_tube_quality_regime",
-            )
-        ]
+
+        # We remove the unique constraint, as multiple organisations might have a GroundwaterLevelDossier for a single tube.
 
 
 class Observation(BaseModel):
@@ -643,13 +639,13 @@ class MeasurementTvp(BaseModel):
     observation = models.ForeignKey(
         Observation,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
         verbose_name="Observatie",
         related_name="measurement",
     )
     measurement_time = models.DateTimeField(
-        blank=True, null=True, verbose_name="Tijd meting"
+        blank=False, null=False, verbose_name="Tijd meting"
     )
     field_value = models.DecimalField(
         max_digits=25,
