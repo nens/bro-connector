@@ -269,12 +269,8 @@ class GroundwaterLevelDossier(BaseModel):
         db_table = 'gld"."groundwater_level_dossier'
         verbose_name = "Grondwaterstandonderzoek"
         verbose_name_plural = "Grondwaterstandonderzoeken"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["groundwater_monitoring_tube", "quality_regime"],
-                name="unique_tube_quality_regime",
-            )
-        ]
+
+        # We remove the unique constraint, as multiple organisations might have a GroundwaterLevelDossier for a single tube.
 
 
 class Observation(BaseModel):
