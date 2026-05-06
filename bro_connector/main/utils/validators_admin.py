@@ -296,6 +296,11 @@ def validate_surface_height_filter(
             .last()
         )
 
+        # check if all items exists in order to run this validation
+        if obj.ground_level_position is None or filters_dynamic is None or filters_dynamic.screen_bottom_position is None:
+            logger.warning("Surface height validation skipped as not values are available")
+            continue
+        
         try:
             if obj.ground_level_position <= filters_dynamic.screen_bottom_position:
                 valid = False
