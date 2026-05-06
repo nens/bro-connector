@@ -73,6 +73,6 @@ KLEURSTERKTE = (
 )
 
 LIMIETSYMBOOL = (
-    "GT", "Groter dan",
-    "LT", "Kleiner dan",
+    ("GT", "Groter dan"),
+    ("LT", "Kleiner dan"),
 )

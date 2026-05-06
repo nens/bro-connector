@@ -25,6 +25,9 @@ from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWel
 from main.management.tasks import (
     retrieve_historic_gld,
     retrieve_historic_gmw,
+    retrieve_historic_gmn,
+    retrieve_historic_frd,
+    retrieve_historic_gar,
 )
 
 from .models import BroImport, GLDImport
@@ -86,12 +89,7 @@ def detect_csv_separator(file):
 def format_message(  # noqa C901
     handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int
 ) -> dict:
-    if type in ["gar", "gmn", "frd"]:
-        return {
-            "message": f"BRO type {type} is nog niet geimplementeerd.",
-            "level": "WARNING",
-        }
-    elif count == 0:
+    if count == 0:
         if handler == "KvK":
             return {
                 "message": f"Geen {type}-objecten gevonden voor kvk {kvk}.",
@@ -182,12 +180,17 @@ def has_necessary_helper_files(filenames):
 
 
 def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
+    from main.management.tasks.import_checker import get_last_import_date
+
+    import_info = {"ids_found": 0, "imported": 0}
+
     if instance.bro_type.lower() == "gmw":
+        last_import_date = get_last_import_date("gmw")
         if instance.bro_id is not None:
             gmw = retrieve_historic_gmw.GMWHandler()
             import_info = retrieve_historic_gmw.handle_individual_bro_id(
-                instance.bro_id, gmw
-            )
+                instance.bro_id, gmw, last_import_date=last_import_date
+            ) or {"ids_found": 1, "imported": 0}
         else:
             import_info = retrieve_historic_gmw.run(
                 kvk_number=instance.kvk_number,
@@ -195,18 +198,46 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
                 shp_file=shapefile_path,
                 delete=instance.delete_outside,
             )
-    if instance.bro_type.lower() == "gld":
+    elif instance.bro_type.lower() == "gld":
+        last_import_date = get_last_import_date("gld")
         if instance.bro_id is not None:
             gld = retrieve_historic_gld.GLDHandler()
             import_info = retrieve_historic_gld.handle_individual_bro_id(
-                instance.bro_id, gld
-            )
+                instance.bro_id, gld, last_import_date=last_import_date
+            ) or {"ids_found": 1, "imported": 0}
         else:
             import_info = retrieve_historic_gld.run(
                 kvk_number=instance.kvk_number,
                 handler=instance.handler,
                 shp_file=shapefile_path,
                 delete=instance.delete_outside,
+            )
+    elif instance.bro_type.lower() == "gmn":
+        if instance.bro_id is not None:
+            import_info = retrieve_historic_gmn.handle_individual_bro_id(
+                instance.bro_id
+            ) or {"ids_found": 1, "imported": 0}
+        else:
+            import_info = retrieve_historic_gmn.run(
+                kvk_number=instance.kvk_number,
+            )
+    elif instance.bro_type.lower() == "frd":
+        if instance.bro_id is not None:
+            import_info = retrieve_historic_frd.handle_individual_bro_id(
+                instance.bro_id
+            ) or {"ids_found": 1, "imported": 0}
+        else: 
+            import_info = retrieve_historic_frd.run(
+                kvk_number=instance.kvk_number,
+            )
+    elif instance.bro_type.lower() == "gar":
+        if instance.bro_id is not None:
+            import_info = retrieve_historic_gar.handle_individual_bro_id(
+                instance.bro_id
+            ) or {"ids_found": 1, "imported": 0}
+        else:
+            import_info = retrieve_historic_gar.run(
+                kvk_number=instance.kvk_number,
             )
 
     report = format_message(
