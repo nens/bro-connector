@@ -639,13 +639,13 @@ class MeasurementTvp(BaseModel):
     observation = models.ForeignKey(
         Observation,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
         verbose_name="Observatie",
         related_name="measurement",
     )
     measurement_time = models.DateTimeField(
-        blank=True, null=True, verbose_name="Tijd meting"
+        blank=False, null=False, verbose_name="Tijd meting"
     )
     field_value = models.DecimalField(
         max_digits=25,
