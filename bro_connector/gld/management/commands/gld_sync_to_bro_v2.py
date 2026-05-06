@@ -29,7 +29,7 @@ class Command(BaseCommand):
             start_log.check_delivery_status()
 
         for dossier in dossiers_with_id:
-            gld_actions.check_and_deliver_additions(dossier)
+            gld_actions.gen_val_and_deliver_additions(dossier)
 
         # Then check the status of each individual registration log
         for dossier in dossiers_with_id:
