@@ -75,9 +75,9 @@ class BroIdNullFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == "yes":
-            return queryset.filter(bro_id__isnull=True)
+            return queryset.filter(gld_bro_id__isnull=True)
         if self.value() == "no":
-            return queryset.filter(bro_id__isnull=False)
+            return queryset.filter(gld_bro_id__isnull=False)
         return queryset
 
 

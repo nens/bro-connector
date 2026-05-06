@@ -4,6 +4,7 @@ import reversion
 from django.core.cache import cache
 from django.db.models.signals import (
     post_delete,
+    pre_delete,
     post_save,
     pre_save,
     pre_delete,
