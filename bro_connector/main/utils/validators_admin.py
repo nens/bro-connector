@@ -199,12 +199,12 @@ def validate_reference_height_ahn(
 
     max_verschil = 3.0  # 3 meter verschil met AHN is maximum voor buiswaarde
 
-    if obj.tube_top_position >= (ahn + max_verschil):
+    if obj.tube_top_position and obj.tube_top_position >= (ahn + max_verschil):
         valid = False
         message = f"LET OP!: De opgegeven referentie hoogte ({obj.tube_top_position}) is meer dan {max_verschil} \
             meter hoger dan de AHN2 waarde ({round(ahn, 2)})."
 
-    elif obj.tube_top_position <= (ahn - max_verschil):
+    elif obj.tube_top_position and obj.tube_top_position <= (ahn - max_verschil):
         valid = False
         message = f"LET OP!: De opgegeven referentie hoogte ({obj.tube_top_position}) is meer dan {max_verschil} \
             meter lager dan de AHN2 waarde ({round(ahn, 2)})."
