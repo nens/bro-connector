@@ -84,82 +84,95 @@ def detect_csv_separator(file):
 
 
 def format_message(  # noqa C901
-    handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int
+    handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int,
+    conflicting_gld_ids: list | None = None,
 ) -> dict:
     if type in ["gar", "gmn", "frd"]:
-        return {
+        result = {
             "message": f"BRO type {type} is nog niet geimplementeerd.",
             "level": "WARNING",
         }
     elif count == 0:
         if handler == "KvK":
-            return {
+            result = {
                 "message": f"Geen {type}-objecten gevonden voor kvk {kvk}.",
                 "level": "ERROR",
             }
         if handler == "Shape":
             if kvk:
-                return {
+                result = {
                     "message": f"Geen {type}-objecten gevonden voor kvk {kvk} binnen {shp}.",
                     "level": "ERROR",
                 }
             else:
-                return {
+                result = {
                     "message": f"Geen {type}-objecten gevonden binnen {shp}.",
                     "level": "ERROR",
                 }
     elif count == imported:
         if handler == "KvK":
-            return {
+            result = {
                 "message": f"Alle {type}-objecten geimporteerd voor kvk {kvk}. ({imported})",
                 "level": "SUCCESS",
             }
         if handler == "Shape":
             if kvk:
-                return {
+                result = {
                     "message": f"Alle {type}-objecten geimporteerd voor kvk {kvk} binnen {shp}. ({imported})",
                     "level": "SUCCESS",
                 }
             else:
-                return {
+                result = {
                     "message": f"Alle {type}-objecten geimporteerd binnen {shp}. ({imported})",
                     "level": "SUCCESS",
                 }
 
     elif imported == 0:
         if handler == "KvK":
-            return {
+            result = {
                 "message": f"Geen {type}-objecten geimporteerd voor kvk {kvk}. {count} objecten gevonden.",
                 "level": "ERROR",
             }
         if handler == "Shape":
             if kvk:
-                return {
+                result = {
                     "message": f"Geen {type}-objecten geimporteerd voor kvk {kvk} binnen {shp}. {count} objecten gevonden.",
                     "level": "ERROR",
                 }
             else:
-                return {
+                result = {
                     "message": f"Geen {type}-objecten geimporteerd binnen {shp}. {count} objecten gevonden.",
                     "level": "ERROR",
                 }
     elif count > imported:
         if handler == "KvK":
-            return {
+            result = {
                 "message": f"{imported} van de {count} {type}-objecten geimporeerd voor kvk {kvk}.",
                 "level": "WARNING",
             }
         if handler == "Shape":
             if kvk:
-                return {
+                result = {
                     "message": f"{imported} van de {count} {type}-objecten geimporeerd voor kvk {kvk} binnen {shp}.",
                     "level": "WARNING",
                 }
             else:
-                return {
+                result = {
                     "message": f"{imported} van de {count} {type}-objecten geimporeerd binnen {shp}.",
                     "level": "WARNING",
                 }
+
+    if conflicting_gld_ids:
+        ids_str = ", ".join(str(i) for i in conflicting_gld_ids)
+        result["message"] += (
+            f"\n{len(conflicting_gld_ids)} GLD(s) konden niet worden geimporteerd "
+            f"wegens een bestaand dossier met hetzelfde filter en kwaliteitsregime "
+            f"\nGLD IDs: {ids_str}."
+        )
+        if result.get("level") == "SUCCESS":
+            result["level"] = "WARNING"
+
+    return result
 
 
 def has_necessary_helper_files(filenames):
@@ -216,9 +229,13 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
         shp=shapefile_path.name if shapefile_path else None,
         count=import_info.get("ids_found"),
         imported=import_info.get("imported"),
+        conflicting_gld_ids=import_info.get("conflicting_gld_ids"),
     )
     instance.report += report.get("message") + "\n"
-    instance.executed = True
+    if import_info.get("conflicting_gld_ids"):
+        instance.executed = False
+    else:
+        instance.executed = True
 
 
 def process_zip_bro_file(instance: BroImport):

@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 import reversion
 from bro.models import Organisation
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
 from gld.models import (
     GroundwaterLevelDossier,
@@ -76,7 +76,11 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler) -> dict:
     ini.groundwater_level_dossier()
 
     if ini.gld is None:
-        return
+        return {
+            "ids_found": 1,
+            "imported": 0,
+            "conflicting_gld_ids": [ini.conflicting_gld_id] if ini.conflicting_gld_id is not None else [],
+        }
 
     try:
         post_save.disconnect(on_save_observation, sender=Observation)
@@ -113,19 +117,19 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler) -> dict:
 
                     MeasurementTvp.objects.bulk_create(
                         ini.measurements,
-                        update_conflicts=False,
+                        # update_conflicts=False,
                         ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
-                        # update_conflicts=True,
-                        # update_fields=[
-                        #     "field_value",
-                        #     "field_value_unit",
-                        #     "calculated_value",
-                        #     "measurement_point_metadata"
-                        # ],
-                        # unique_fields=[
-                        #     "observation",
-                        #     "measurement_time"
-                        # ],
+                        update_conflicts=True,
+                        update_fields=[
+                            "field_value",
+                            "field_value_unit",
+                            "calculated_value",
+                            "measurement_point_metadata"
+                        ],
+                        unique_fields=[
+                            "observation",
+                            "measurement_time"
+                        ],
                         batch_size=5000,
                     )
                     ini.reset_measurement_number()
@@ -149,6 +153,7 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler) -> dict:
     return {
         "ids_found": 1,
         "imported": 1,
+        "conflicting_gld_ids": [],
     }
 
 
@@ -186,11 +191,12 @@ def run(  # noqa C901
 
     if gld_ids_ini_count == 0:
         print(f"No IDs found for kvk: {kvk_number}.")
-        return {"ids_found": gld_ids_ini_count, "imported": gld_ids_ini_count}
+        return {"ids_found": gld_ids_ini_count, "imported": gld_ids_ini_count, "conflicting_gld_ids": []}
 
     print(f"{gld_ids_ini_count} bro ids found for organisation.")
 
     imported = 0
+    conflicting_gld_ids = []
     gld_ids_count = len(gld_ids)
     progressor.calibrate(gld_ids, 25)
 
@@ -198,9 +204,11 @@ def run(  # noqa C901
     for id in range(gld_ids_count):
         start = time.time()
 
-        handle_individual_bro_id(gld_ids[id], gld)
+        result = handle_individual_bro_id(gld_ids[id], gld)
+        if result:
+            imported += result.get("imported", 0)
+            conflicting_gld_ids.extend(result.get("conflicting_gld_ids", []))
 
-        imported += 1
         progressor.next()
         progressor.progress()
 
@@ -212,6 +220,7 @@ def run(  # noqa C901
     info = {
         "ids_found": gld_ids_count,
         "imported": imported,
+        "conflicting_gld_ids": conflicting_gld_ids,
     }
 
     return info
@@ -219,11 +228,11 @@ def run(  # noqa C901
 
 def get_delivery_accountable_party(gld_dict: dict) -> Organisation | None:
     # return
-    company_id = gld_dict.get("0_deliveryAccountableParty", None)
+    company_id: str = gld_dict.get("0_deliveryAccountableParty", None)   
     if company_id is None:
         return None
     if company_id.isdigit():
-        organisation = Organisation.objects.get_or_create(company_number=company_id)[0]
+        organisation = Organisation.objects.get_or_create(company_number=int(company_id))[0]
         organisation.save()
         return organisation
     else:
@@ -314,6 +323,7 @@ class InitializeData:
         self.measurements = []
         self.metadatas = []
         self.observations = []
+        self.conflicting_gld_id = None
 
         self.gld_dict = gld_dict
         self.gld_bro_id = get_bro_id_by_type(
@@ -366,35 +376,50 @@ class InitializeData:
 
     def groundwater_level_dossier(self) -> None:
         # return
-        with reversion.create_revision():
-            print(self.gld_bro_id)
-            print(self.gmts)
-            self.gld, created = GroundwaterLevelDossier.objects.update_or_create(
-                gld_bro_id=self.gld_bro_id,
+        quality_regime = self.gld_dict.get(self.prefix + "qualityRegime", "onbekend")
+        try:
+            with reversion.create_revision():
+                print(self.gld_bro_id)
+                print(self.gmts)
+                self.gld, created = GroundwaterLevelDossier.objects.update_or_create(
+                    gld_bro_id=self.gld_bro_id,
+                    groundwater_monitoring_tube=self.gmts,
+                    quality_regime=quality_regime,
+                    defaults={
+                        "research_start_date": str_to_date(
+                            self.gld_dict.get(self.prefix + "researchFirstDate", None)
+                        ),
+                        "research_last_date": str_to_date(
+                            self.gld_dict.get(self.prefix + "researchLastDate", None)
+                        ),
+                        "research_last_correction": str_to_datetime(
+                            self.gld_dict.get(self.prefix + "latestCorrectionTime", None)
+                        ),
+                    },
+                )
+
+                reversion.set_comment(
+                    f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
+                )
+
+            self.gld.save()
+
+            print(self.gld, self.gld.groundwater_monitoring_tube, " - created: ", created)
+
+        except IntegrityError:
+            existing = GroundwaterLevelDossier.objects.filter(
                 groundwater_monitoring_tube=self.gmts,
-                quality_regime=self.gld_dict.get(
-                        self.prefix + "qualityRegime", "onbekend"
-                ),
-                defaults = {
-                    "research_start_date": str_to_date(
-                        self.gld_dict.get(self.prefix + "researchFirstDate", None)
-                    ),
-                    "research_last_date": str_to_date(
-                        self.gld_dict.get(self.prefix + "researchLastDate", None)
-                    ),
-                    "research_last_correction": str_to_datetime(
-                        self.gld_dict.get(self.prefix + "latestCorrectionTime", None)
-                    ),
-                },
+                quality_regime=quality_regime,
+            ).first()
+            existing_bro_id = existing.gld_bro_id if existing else "unknown"
+            self.conflicting_gld_id = existing.groundwater_level_dossier_id if existing else None
+            logger.warning(
+                f"Could not import GLD '{self.gld_bro_id}': a GLD with tube "
+                f"'{self.gmts}' and quality regime '{quality_regime}' already exists "
+                f"(existing BRO ID: '{existing_bro_id}', DB ID: {self.conflicting_gld_id}). "
+                "Import skipped for this dossier."
             )
-
-            reversion.set_comment(
-                f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
-            )
-
-        self.gld.save()
-
-        print(self.gld, self.gld.groundwater_monitoring_tube, " - created: ", created)
+            self.gld = None
 
     def observation_metadata(self) -> None:
         # return
