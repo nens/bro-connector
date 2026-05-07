@@ -23,6 +23,7 @@ from gmn.models import GroundwaterMonitoringNet
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.localsecret import DEMO
 from main.models import BaseModel
+from main.settings.base import TZINFO
 
 from .choices import (
     AIRPRESSURECOMPENSATIONTYPE,
@@ -106,9 +107,9 @@ def get_timeseries_tvp_for_observation_id(observation):
             if metadata.get("censoredReason") is None:
                 # We can't include a missing value without a censoring reason
                 continue
-
+            
         measurement_data = {
-            "time": measurement.measurement_time.isoformat(),
+            "time": measurement.measurement_time.astimezone(TZINFO).isoformat(),
             "value": float(measurement.calculated_value)
             if measurement.calculated_value
             else None,
@@ -479,6 +480,7 @@ class Observation(BaseModel):
                 tz_seporator = "-"
 
             timezone = splited_time[-1]
+            logger.info(f"Observation result time: {observation_result_time}, timezone: {timezone}")
             observation_result_time = (
                 f"{splited_time[0]}{tz_seporator}{timezone[0:2]}:{timezone[2:4]}"
             )
@@ -955,6 +957,7 @@ class gld_registration_log(BaseModel):
         gmw = GroundwaterMonitoringWellStatic.objects.get(bro_id=self.gmw_bro_id)
         source_doc_file = os.path.join(REGISTRATIONS_DIR, self.file)
         payload = open(source_doc_file)
+        validation_status = "PENDING"
         try:
             validation_info = brx.validate_sourcedoc(
                 payload, bro_info=gmw.get_bro_info(), demo=DEMO
@@ -976,6 +979,7 @@ class gld_registration_log(BaseModel):
             self.process_status = "source_document_validation_succeeded"
 
         except Exception as e:
+            validation_status = "ERROR"
             self.date_modified = datetime.datetime.now()
             self.comments = f"Failed to validate source document: {e}"
             self.process_status = "source_document_validation_failed"
@@ -1229,6 +1233,7 @@ class gld_addition_log(BaseModel):
         gmw: GroundwaterMonitoringWellStatic = self.observation.groundwater_level_dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static
         source_doc_file = os.path.join(ADDITION_DIR, self.file)
         payload = open(source_doc_file)
+        validation_status = "PENDING"
         try:
             validation_info = brx.validate_sourcedoc(
                 payload,
@@ -1250,6 +1255,7 @@ class gld_addition_log(BaseModel):
             self.process_status = "source_document_validation_succeeded"
 
         except Exception as e:
+            validation_status = "ERROR"
             self.date_modified = datetime.datetime.now()
             self.comments = f"Failed to validate source document: {e}"
             self.process_status = "source_document_validation_failed"
@@ -1308,6 +1314,7 @@ class gld_addition_log(BaseModel):
             self.date_modified = datetime.datetime.now()
             self.comments = comments
             self.delivery_status = delivery_status_update
+            self.process_status = "source_document_delivery_failed"
 
         self.save()
         return delivery_status
