@@ -22,6 +22,7 @@ from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
 from ..tasks import events_handler
 from ..tasks.bro_handlers import GMWHandler
+from ..tasks.import_checker import get_last_import_date, should_import
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
 from .bbox_handler import DataRetrieverBBOX
@@ -29,8 +30,12 @@ from .bbox_handler import DataRetrieverBBOX
 logger = logging.getLogger(__name__)
 
 
-def handle_individual_bro_id(gmw_id: str, gmw: GMWHandler):
+def handle_individual_bro_id(gmw_id: str, gmw: GMWHandler, last_import_date=None):
     print("BRO id: ", gmw_id)
+
+    if not should_import(gmw_id, "gmw", last_import_date):
+        logger.info(f"Skipping {gmw_id} – already up to date.")
+        return None
 
     gmw.get_data(gmw_id, True)
     if gmw.root is None:
@@ -136,11 +141,13 @@ def run(  # noqa C901
     gmw_ids_count = len(gmw_ids)
     progressor.calibrate(gmw_ids, 25)
 
+    last_import_date = get_last_import_date("gmw")
+
     # Import the well data
     for id in range(gmw_ids_count):
         gmw_id = gmw_ids[id]
 
-        handle_individual_bro_id(gmw_id, gmw)
+        handle_individual_bro_id(gmw_id, gmw, last_import_date=last_import_date)
         imported += 1
         gmw.reset_values()
         progressor.next()

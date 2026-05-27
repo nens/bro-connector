@@ -21,6 +21,7 @@ from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWel
 from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
 from ..tasks.bro_handlers import GLDHandler
+from ..tasks.import_checker import get_last_import_date, should_import
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
 from .bbox_handler import DataRetrieverBBOX
@@ -56,8 +57,12 @@ def within_bbox(coordinates) -> bool:
     return False
 
 
-def handle_individual_bro_id(bro_id: str, gld: GLDHandler) -> dict:
+def handle_individual_bro_id(bro_id: str, gld: GLDHandler, last_import_date=None) -> dict:
     print("BRO id: ", bro_id)
+
+    if not should_import(bro_id, "gld", last_import_date):
+        logger.info(f"Skipping {bro_id} – already up to date.")
+        return None
 
     gld.get_data(bro_id, False)
     if gld.root is None:
@@ -194,11 +199,13 @@ def run(  # noqa C901
     gld_ids_count = len(gld_ids)
     progressor.calibrate(gld_ids, 25)
 
+    last_import_date = get_last_import_date("gld")
+
     # Import the well dat
     for id in range(gld_ids_count):
         start = time.time()
 
-        handle_individual_bro_id(gld_ids[id], gld)
+        handle_individual_bro_id(gld_ids[id], gld, last_import_date=last_import_date)
 
         imported += 1
         progressor.next()
