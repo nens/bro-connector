@@ -2,7 +2,7 @@
 const allWells = JSON.parse(document.getElementById("wells_json").textContent);
 const glds = JSON.parse(document.getElementById("glds_json").textContent);
 const state = JSON.parse(document.getElementById("state_json").textContent);
-console.log(state.checkboxes)
+// console.log(state.checkboxes)
 const idSet = new Set(state.ids);
 const wells = allWells.filter(well => idSet.has(well.groundwater_monitoring_well_static_id));
 const wellMap = Object.fromEntries(
@@ -152,7 +152,7 @@ const createPopup = (well) => {
       const color = getDateColor(gld.observation_type, gld.latest_measurement_date);
       const ObsPageValue = getObsPageValue(gld.latest_observation_id)
 
-      console.log("Latest date: ", gld.latest_measurement_date, "Color:", color)
+      // console.log("Latest date: ", gld.latest_measurement_date, "Color:", color)
 
       gldsContent += `
         <details ${i === 0 ? "open" : ""} style="margin-bottom:6px;">
@@ -338,9 +338,9 @@ function getColorFromGLD(gld) {
 }
 
 const updateGLDsState = (glds, well) => {
-  if (well.bro_id === "GMW000000057308") {
-    console.log("GLDs:", glds);
-  }
+  // if (well.bro_id === "GMW000000057308") {
+  //   console.log("GLDs:", glds);
+  // }
 
   glds.forEach((gld) => {
     const hasControle = !!gld.latest_measurement_date_controle;
@@ -553,7 +553,7 @@ async function switchToBaseMap() {
   const zoom = map.getZoom();
   const visibleWells = wells
   const visibleIds = visibleWells.map(w => w.groundwater_monitoring_well_static_id);
-  console.log("IDs length: ",visibleIds.length)
+  // console.log("IDs length: ",visibleIds.length)
 
   const payload = {
     ids: visibleIds,
@@ -720,21 +720,21 @@ const deselectAllCheckboxes = () => {
   }
 
   const type = visibleMap.type;
-  console.log("🔍 Current visibleMap.type state:", type);
+  // console.log("🔍 Current visibleMap.type state:", type);
 
   // Check if any GMN is false
   const anyFalse = Object.values(type).some(value => value === false);
-  console.log(`❓ Any type false? ${anyFalse}`);
+  // console.log(`❓ Any type false? ${anyFalse}`);
 
   // Decide the new state: if any false => set all true; else set all false
   const newState = anyFalse ? true : false;
-  console.log(`➡️ Setting all types to: ${newState}`);
+  // console.log(`➡️ Setting all types to: ${newState}`);
 
   // Update visibleMap.gmns
   Object.keys(type).forEach(key => {
     type[key] = newState;
   });
-  console.log(visibleMap)
+  // console.log(visibleMap)
 
   // Sync checkboxes with visibleMap.gmns state
   Object.keys(type).forEach(key => {
@@ -743,7 +743,7 @@ const deselectAllCheckboxes = () => {
     const checkbox = document.querySelector(`#checkbox-${escapedKey}`);
     if (checkbox) {
       checkbox.checked = newState;
-      console.log(`✔️ Checkbox for '${searchKey}' set to ${newState}`);
+      // console.log(`✔️ Checkbox for '${searchKey}' set to ${newState}`);
     } else {
       console.warn(`⚠️ Checkbox #checkbox-${searchKey} not found in DOM`);
     }

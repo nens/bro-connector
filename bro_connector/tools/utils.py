@@ -85,7 +85,7 @@ def detect_csv_separator(file):
         print(f"Error reading file: {e}")
         return ","
 
-
+### FUTURE: Refactor the following functions to be more modular and testable, and to reduce complexity
 def format_message(  # noqa C901
     handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int,
     conflicting_gld_ids: list | None = None,
