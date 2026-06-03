@@ -194,6 +194,13 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
                 else datetime.datetime.now().astimezone()
             )
 
+    if instance.observation_endtime != instance.timestamp_last_measurement:
+        instance.observation_endtime = instance.timestamp_last_measurement
+
+    if instance.observation_starttime:
+        if instance.observation_starttime != instance.timestamp_first_measurement:
+            instance.observation_starttime = instance.timestamp_first_measurement 
+
 
 @receiver(post_save, sender=Observation)
 def on_save_observation(sender, instance: Observation, **kwargs):
@@ -257,3 +264,8 @@ def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
                 tube_top_position,
                 cable_length,
             )
+
+@receiver(post_save, sender=MeasurementTvp)
+def post_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
+    obs = instance.observation
+    obs.save()

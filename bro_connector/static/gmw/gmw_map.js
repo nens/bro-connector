@@ -46,14 +46,17 @@ Object.keys(organisations).forEach((orgKey) => {
 const checkOrCross = (boolean) => (boolean ? "&check;" : "&cross;");
 
 function findObjectsByIds(ids, glds) {
-  return ids.map(id =>
+  const objs = ids.map(id =>
     glds.find(gld => gld.groundwater_level_dossier_id === id)
   ).filter(Boolean); // filter(Boolean) removes null/undefined if no match found
+  console.log(objs.map(obj => console.log("Is active:", obj.is_active, "GLD ID:", obj.groundwater_level_dossier_id)));
+  return objs;
 }
 
 // Create a popup with well information and a link to the object page
 const createPopup = (well) => {
   console.log(well.glds)
+  console.log("Is active:", well.is_active, "Well ID:", well.groundwater_monitoring_well_static_id)
   const well_glds = findObjectsByIds(well.glds, glds)
   if (well.bro_id === "GMW000000057308") {
     console.log("GLDs:", well_glds);

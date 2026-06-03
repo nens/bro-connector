@@ -286,6 +286,16 @@ def gmw_map_context(request):
         end = time.time()
         print(f"finished serializing GMWs in {end - start}s")
 
+        ## COMPUTE is_active PER WELL FROM GLDS
+        well_active_map = {}
+        for gld in glds:
+            well_id = gld.get("groundwater_monitoring_well_static_id")
+            if well_id is not None and gld.get("is_active"):
+                well_active_map[well_id] = True
+        for well in wells:
+            well_id = well.get("groundwater_monitoring_well_static_id")
+            well["is_active"] = well_active_map.get(well_id, False)
+
         ## SERIALIZING ORGS AND GMNS
         start = time.time()
         party_ids = GroundwaterMonitoringWellStatic.objects.values_list(
