@@ -566,12 +566,17 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
             instance.report = f"{instance.report}Found {len(obs_list)} observations for this combination of gld, observation metadata and observation process\n"
             can_insert_data = False
             for obs in obs_list:
-                if obs.observation_starttime <= first_datetime and obs.observation_endtime >= last_datetime:
-                    can_insert_data = True
-                    instance.report = f"{instance.report}Your csv start and end-data match or lie within start and end time of observation {obs.observation_id}. \n"
-                    break
+                obs.save()
+                print(obs.observation_starttime, obs.observation_endtime, first_datetime, last_datetime)
+                print(type(obs.observation_starttime), type(first_datetime))
+                
+                if None not in [obs.observation_starttime, obs.observation_endtime]:
+                    if obs.observation_starttime <= first_datetime and obs.observation_endtime >= last_datetime:
+                        can_insert_data = True
+                        instance.report = f"{instance.report}Your csv start and end-data match or lie within start and end time of observation {obs.observation_id}. \n"
+                        break
             if not can_insert_data: 
-                instance.report = f"{instance.report}Your csv start and end-data lies outside the start and end time of the existing observation(s) {obs_list}. Adjust the csv to continue\n"
+                instance.report = f"{instance.report}Your csv start and end-data lies outside the start and end time of the existing observation(s) {list(obs_list)}. Adjust the csv to continue\n"
                 instance.executed = False
                 return 
 
