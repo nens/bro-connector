@@ -13,5 +13,7 @@
   - XML-Import functionality (GMW)
   - Data validation (GMW)
   - Integration of GW DataLens
+  - Added GLD-Correction requests
+  - Added GMW-Correction requests
 
 - Initial development and integration of GWDataLens

@@ -161,6 +161,8 @@ class GroundwaterLevelDossier(BaseModel):
         blank=True, null=True, verbose_name="Laatste correctie"
     )
 
+    observation: Manager["Observation"]
+
     @property
     def gmw_bro_id(self):
         if self.groundwater_monitoring_tube is not None:
@@ -265,12 +267,8 @@ class GroundwaterLevelDossier(BaseModel):
         db_table = 'gld"."groundwater_level_dossier'
         verbose_name = "Grondwaterstandonderzoek"
         verbose_name_plural = "Grondwaterstandonderzoeken"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["groundwater_monitoring_tube", "quality_regime"],
-                name="unique_tube_quality_regime",
-            )
-        ]
+
+        # We remove the unique constraint, as multiple organisations might have a GroundwaterLevelDossier for a single tube.
 
 
 class Observation(BaseModel):
@@ -324,7 +322,7 @@ class Observation(BaseModel):
         blank=True,
         null=True,
         editable=False,
-        verbose_name="BRO ID",
+        verbose_name="Observatie ID in BRO",
     )  # Should also import this with the BRO-Import tool
 
     measurement: Manager["MeasurementTvp"]
@@ -639,13 +637,13 @@ class MeasurementTvp(BaseModel):
     observation = models.ForeignKey(
         Observation,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
         verbose_name="Observatie",
         related_name="measurement",
     )
     measurement_time = models.DateTimeField(
-        blank=True, null=True, verbose_name="Tijd meting"
+        blank=False, null=False, verbose_name="Tijd meting"
     )
     field_value = models.DecimalField(
         max_digits=25,
@@ -1160,7 +1158,13 @@ class gld_addition_log(BaseModel):
 
     def generate_sourcedocument(
         self,
-    ) -> str:
+    ) -> None:
+        if not self.observation:
+            logger.warning("No observation linked to addition log")
+            self.comments = "No observation coupled"
+            self.save()
+            return
+
         observation_source_document_data = self.observation.get_sourcedocument_data()
         print(observation_source_document_data)
         if len(observation_source_document_data["result"]) < 1:
@@ -1178,12 +1182,12 @@ class gld_addition_log(BaseModel):
         gld_addition_sourcedocument = observation_source_document_data
         gld_addition_sourcedocument["observationId"] = f"_{uuid.uuid4()}"
 
-        # filename should be unique
-        filename = f"GLD_Addition_Observation_{self.observation.observation_id}_{self.observation.groundwater_level_dossier.gld_bro_id}.xml"
-        # try to create source document
-        try:
+        # filename should be unique"
+        filename = f"GLD_Addition_Observation_{self.observation.observation_id}_{self.observation.groundwater_level_dossier.gld_bro_id}{'-replace' if self.delivery_type == 'replace' else ''}.xml"
+        
+        if self.delivery_type == "register":
             # Create addition source document
-            gld_addition_registration_request = brx.gld_registration_request(
+            gld_addition_request = brx.gld_registration_request(
                 srcdoc="GLD_Addition",
                 requestReference=filename,
                 deliveryAccountableParty=self.observation.observation_metadata.responsible_party.company_number,  # investigator_identification (NENS voor TEST)
@@ -1191,13 +1195,25 @@ class gld_addition_log(BaseModel):
                 broId=self.observation.groundwater_level_dossier.gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,
             )
-            gld_addition_registration_request.generate()
-            gld_addition_registration_request.write_request(
+        elif self.delivery_type == "replace":
+            gld_addition_request = brx.gld_replace_request(
+                srcdoc="GLD_Addition",
+                requestReference=filename,
+                deliveryAccountableParty=self.observation.observation_metadata.responsible_party.company_number,  # investigator_identification (NENS voor TEST)
+                qualityRegime=self.observation.groundwater_level_dossier.quality_regime,
+                broId=self.observation.groundwater_level_dossier.gld_bro_id,
+                srcdocdata=gld_addition_sourcedocument,
+                correctionReason=self.observation.correction_reason
+            )
+        # try to create source document
+        try:
+            gld_addition_request.generate()
+            gld_addition_request.write_request(
                 output_dir=ADDITION_DIR, filename=filename
             )
 
             observation_id = read_observation_id_from_xml(
-                gld_addition_registration_request.request
+                gld_addition_request.request
             )
 
             # Set or update the record fields
@@ -1221,12 +1237,18 @@ class gld_addition_log(BaseModel):
 
     def validate_sourcedocument(
         self,
-    ) -> str:
+    ) -> None:
         """
         Validate the generated GLD sourcedoc
         """
         if not self.file:
             self.comments = "No file to validate"
+            self.save()
+            return
+
+        if not self.observation:
+            logger.warning("No observation linked to addition log")
+            self.comments = "No observation coupled"
             self.save()
             return
 

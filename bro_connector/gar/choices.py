@@ -32,3 +32,47 @@ MONSTERMETING = (
     ("SIKBProtocol2002vanafV4", "SIKBProtocol2002vanafV4"),
     ("onbekend", "onbekend"),
 )
+
+BEOORDELINGSPROCEDURE = (
+    ("handboekProvinciesRIVMv2017", "Handboek Provincies RIVM v2017"),
+    ("oordeelDeskundige", "Oordeel deskundige"),
+    ("qCProtocolProvinciesEnRIVMv2021", "QC Protocol Provincies en RIVM v2021"),
+    ("onbekend", "Onbekend"),
+)
+
+STATUS_KWALITEITSCONTROLE = (
+    ("goedgekeurd", "Goedgekeurd"),
+    ("afgekeurd", "Afgekeurd"),
+    ("onbeslist", "Onbeslist"),
+    ("onbekend", "Onbekend"),
+)
+
+KLEUR = (
+    ("wit", "Wit"),
+    ("grijs", "Grijs"),
+    ("zwart", "Zwart"),
+    ("rood", "Rood"),
+    ("oranje", "Oranje"),
+    ("geel", "Geel"),
+    ("groen", "Groen"),
+    ("blauw", "Blauw"),
+    ("paars", "Paars"),
+    ("bruin", "Bruin"),
+    ("roestbruin", "Roestbruin"),
+    ("beige", "Beige"),
+    ("creme", "Creme"),
+    ("kleurloos", "Kleurloos"),
+)
+
+KLEURSTERKTE = (
+    ("zeer licht", "Zeer licht"),
+    ("licht", "Licht"),
+    ("neutraal", "Neutraal"),
+    ("donker", "Donker"),
+    ("zeer donker", "Zeer donker"),
+)
+
+LIMIETSYMBOOL = (
+    ("GT", "Groter dan"),
+    ("LT", "Kleiner dan"),
+)

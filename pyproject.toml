@@ -70,6 +70,7 @@ dependencies = [
     "pytest>=8.4.0",
     "pre-commit>=4.5.1",
     "psycopg2>=2.9.12",
+    "xmltodict>=1.0.4",
 ]
 
 [project.optional-dependencies]

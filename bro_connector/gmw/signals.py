@@ -15,13 +15,24 @@ from .models import (
     gmw_registration_log,
 )
 
-# @receiver(post_save, sender=GroundwaterMonitoringWellStatic)
-# def on_save_groundwater_monitoring_static_pre(sender, **kwargs):
-#     print("Post save GMWS")
+@receiver(pre_save, sender=GroundwaterMonitoringWellDynamic)
+def on_save_groundwater_monitoring_well_dynamic_pre(sender, **kwargs):
+    # if .comment field is changed, then set the 'comment_verwerkt' to false
+    instance: GroundwaterMonitoringWellDynamic = kwargs["instance"]
+    if instance.pk is not None:
+        old_instance = GroundwaterMonitoringWellDynamic.objects.get(pk=instance.pk)
+        if old_instance.comment != instance.comment:
+            instance.comment_processed = False
 
-# @receiver(pre_save, sender=GroundwaterMonitoringWellStatic)
-# def on_save_groundwater_monitoring_static_post(sender, **kwargs):
-#     print("Pre save GMWS")
+
+@receiver(pre_save, sender=GroundwaterMonitoringTubeDynamic)
+def on_save_groundwater_monitoring_tube_dynamic_pre(sender, **kwargs):
+    # if .comment field is changed, then set the 'comment_processed' to false
+    instance: GroundwaterMonitoringTubeDynamic = kwargs["instance"]
+    if instance.pk is not None:
+        old_instance = GroundwaterMonitoringTubeDynamic.objects.get(pk=instance.pk)
+        if old_instance.comment != instance.comment:
+            instance.comment_processed = False
 
 
 @receiver([post_save, post_delete], sender=GroundwaterMonitoringWellStatic)
