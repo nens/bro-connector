@@ -724,7 +724,7 @@ class GroundwaterMonitoringWellDynamicAdmin(admin.ModelAdmin):
         "ground_level_position",
     )
 
-    list_filter = (WellFilter, "owner")
+    list_filter = (WellFilter, "owner", "comment_processed")
     autocomplete_fields = ["groundwater_monitoring_well_static"]
     readonly_fields = [
         "number_of_standpipes",
@@ -896,7 +896,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
         "tube_top_position",
         "plain_tube_part_length",
     )
-    list_filter = (TubeFilter,)
+    list_filter = (TubeFilter, "comment_processed")
     autocomplete_fields = ["groundwater_monitoring_tube_static"]
     readonly_fields = ["date_till", "screen_top_position", "screen_bottom_position"]
     actions = [export_selected_items_to_csv]

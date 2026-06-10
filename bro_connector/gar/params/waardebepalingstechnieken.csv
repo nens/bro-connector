@@ -1,0 +1,90 @@
+﻿Waarde;IMBRO;IMBRO/A;Omschrijving
+AA;✔;✔;Autoanalyser
+AA-FOTM;✔;✔;Autoanalyser - fotometrie
+AAS;✔;✔;Atomaire absorptie spectrometrie
+AAS-F;✔;✔;Atomaire absorptie spectrometrie - flame
+AAS-GF;✔;✔;Atomaire absorptie spectrometrie - grafietoven
+AAS-HG;✔;✔;Atomaire absorptie spectrometrie - hydride generatie
+AAS-KD;✔;✔;Atomaire absorptie spectrometrie - koude-damptechniek
+AERO;✔;✔;Aerometrie
+AES-F;✔;✔;Atomaire emissie spectrometrie - vlam
+AES-KD;✔;✔;Atomaire emissie spectrometrie - koude-damptechniek
+AF;✔;✔;Atomaire fluorescentie
+AF-KD;✔;✔;Atomaire fluorescentie - koude-damptechniek
+BACT;✔;✔;Bacteriologie
+CALO;✔;✔;Calorimetrie
+COND;✔;✔;Conductometrie
+COUL;✔;✔;Coulometrie
+CUVT;✔;✔;Cuvettentest
+DA;✔;✔;Discreetanalyser
+DA-S;✔;✔;Discreetanalyser - spectrometrie
+ELCH;✔;✔;Electrochemie
+ELMSR;✔;✔;Electromagnetische sensor
+FL;✔;✔;Fluorescentie
+FOTM;✔;✔;Fotometrie
+GAMMAS;✔;✔;Gammaspectrometrie
+GC;✔;✔;Gaschromatografie
+GC-ECD;✔;✔;Gaschromatografie - electron capture detector
+GC-ECD/ECD;✔;✔;Gaschromatografie - electron capture detector / el.capt.det.
+GC-ECD/MS;✔;✔;Gaschromatografie - electron capture detector / massaspect.
+GC-FID;✔;✔;Gaschromatografie - flame ionisation detector
+GC-FID/ECD;✔;✔;Gaschromatografie - flame ionisation detector / el.capt.det.
+GC-FID/IR;✔;✔;Gaschromatografie - flame ionisation detector / infrarood
+GC-FPD;✔;✔;Gaschromatografie - flame photometric detector
+GC-HRMS;✔;✔;Gaschromatografie - hoge resolutie massaspectrometrie
+GC-LRMS;✔;✔;Gaschromatografie - lage resolutie massaspectrometrie
+GC-MS;✔;✔;Gaschromatografie - massaspectrometrie
+GC-MS-HS;✔;✔;Gaschromatografie - massaspectrometrie - headspace
+GC-MS-LV-PTV;✔;✔;Gaschromatografie - massaspectrometrie - groot volume - PTV
+GC-MS-MS;✔;✔;Gaschromatografie - massaspectrometrie - massaspectrometrie
+GC-MS-PT;✔;✔;Gaschromatografie - massaspectrometrie - purge-and-trap
+GC-MS-PTV;✔;✔;Gaschromatografie - massaspectrometrie - PTV
+GC-MS-TD;✔;✔;Gaschromatografie - massaspectrometrie - thermal desorption
+GC-NPD;✔;✔;Gaschromatografie - stikstof-fosfor detector
+GENEPSLCFRSE;✔;✔;Genexpressie - luciferase
+GRAV;✔;✔;Gravimetrie
+HPLC;✔;✔;Hoge druk vloeistofchromatografie
+HPLC-APCI-MS;✔;✔;Hoge druk vloeistofchromatografie - atm.press.chem.ion. - MS
+HPLC-DAD;✔;✔;Hoge druk vloeistofchromatografie - diode array detector
+HPLC-FL;✔;✔;Hoge druk vloeistofchromatografie - fluorescentiedetector
+HPLC-MS-ESI;✔;✔;Hoge druk vloeistofchromatografie - electrospray - massasp.
+HPLC-UV;✔;✔;Hoge druk vloeistofchromatografie - UV-detector
+HPLC-UV-FL;✔;✔;Hoge druk vloeistofchromatografie - UV- en fluoresc.detector
+IC;✔;✔;Ionchromatografie
+ICP-AES;✔;✔;Inductie gekoppeld plasma - atomaire emissie spectrometrie
+ICP-HRMS;✔;✔;Inductie gekoppeld plasma - hoge resolutie massaspect.
+ICP-MS;✔;✔;Inductie gekoppeld plasma - massaspectrometrie
+IR;✔;✔;Infrarooddetectie
+IR-FT;✔;✔;Infrarood - fourier transmission
+JODM;✔;✔;Jodometrie
+LC-FL;✔;✔;Vloeistofchromatografie - fluorescentie
+LC-GC-MS;✔;✔;Vloeistofchromatografie - gaschromatografie - massaspect.
+LC-MS;✔;✔;Vloeistofchromatografie - massaspectrometrie
+LC-MS-MS;✔;✔;Vloeistofchromatografie - massaspectrometrie - massaspect.
+LC-TQMS;✔;✔;Vloeistofchromatografie - tandem quadrupool massaspect.
+LDO;✔;✔;Luminescentie opgelost zuurstof sensor
+LSC;✔;✔;vloeistofscintillatie
+MEMBF;✔;✔;Membraanfiltratie
+MICCOUL;✔;✔;Microcoulometrie
+MICCOUL-PT;✔;✔;Microcoulometrie - purge-and-trap
+MICSCOP;✔;✔;Microscopie
+MICTTPT;✔;✔;Microtiter-plaat
+NEFLMTE;✔;✔;Nefelometrie
+ORGNLTSCH;✔;✔;Organoleptisch
+POTM;✔;✔;Potentiometrie
+POTM_TITM;✔;✔;Potentiometrische titratie
+RADOMT-BWHH;✔;✔;Radiometrie, boven water - hand-held
+RADOMT-BWHHG;✔;✔;Radiometrie, boven water - hand-held met gyroscoop
+RADOMT-BWVO;✔;✔;Radiometrie, boven water - vaste opstelling
+RONTGDF;✔;✔;Röntgendiffractie
+RONTGTM;✔;✔;Röntgentransmissie
+RONTGTM_GRAV;✔;✔;Röntgentransmissie en gravimetrie (met zeef)
+SEDI;✔;✔;Sedigraaf
+STER/POLMIC;✔;✔;Stereo- en polarisatiemicrosopie
+THERMG;✔;✔;Thermografie
+THERMM;✔;✔;Thermometrie
+TITM;✔;✔;Titrimetrie
+UV/VIS;✔;✔;Spectrofotometrie
+VISL;✔;✔;Visueel
+VOL;✔;✔;Volumetrie
+qPCR;✔;✔;Kwantitatieve polymerase-kettingreactie

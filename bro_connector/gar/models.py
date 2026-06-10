@@ -5,6 +5,13 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.contrib.gis.db import models
+from gar.choices import (
+    BEOORDELINGSPROCEDURE,
+    LIMIETSYMBOOL,
+    MONSTERMETING,
+    POMPTYPE,
+    STATUS_KWALITEITSCONTROLE,
+)
 
 
 class Analyses(models.Model):
@@ -17,10 +24,12 @@ class Analyses(models.Model):
         null=True,
         verbose_name="Analyseproces-ID",
     )
-    parameter_id = models.IntegerField(
+    parameter = models.ForeignKey(
+        "TypeParameterlijsten",
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        verbose_name="Parameter-ID",
+        verbose_name="Parameter",
     )
     analysis_measurement_value = models.DecimalField(
         max_digits=100,
@@ -30,7 +39,8 @@ class Analyses(models.Model):
         verbose_name="Meetwaarde (analyse)",
     )
     limit_symbol = models.CharField(
-        max_length=1,
+        max_length=2,
+        choices=LIMIETSYMBOOL,
         blank=True,
         null=True,
         verbose_name="Grenssymbool",
@@ -42,10 +52,12 @@ class Analyses(models.Model):
         null=True,
         verbose_name="Rapportagegrens",
     )
-    quality_control_status_id = models.IntegerField(
+    quality_control_status_id = models.CharField(
+        max_length=50,
+        choices=STATUS_KWALITEITSCONTROLE,
         blank=True,
         null=True,
-        verbose_name="Kwaliteitscontrole-status-ID",
+        verbose_name="Kwaliteitscontrole status",
     )
 
     class Meta:
@@ -66,11 +78,19 @@ class AnalysisProcesses(models.Model):
     analysis_date = models.DateTimeField(
         blank=True, null=True, verbose_name="Analyedatum"
     )
-    analytical_technique_id = models.IntegerField(
-        blank=True, null=True, verbose_name="Analytische techniek ID"
+    analytical_technique = models.ForeignKey(
+        "TypeWaardebepalingstechnieken",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Analytische techniek",
     )
-    valuation_method_id = models.IntegerField(
-        blank=True, null=True, verbose_name="Waarderingsmethode ID"
+    valuation_method = models.ForeignKey(
+        "TypeWaardebepalingsmethodes",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Waarderingsmethode",
     )
 
     class Meta:
@@ -140,8 +160,12 @@ class FieldMeasurements(models.Model):
     field_sample_id = models.IntegerField(
         blank=True, null=True, verbose_name="Veldmonster ID"
     )
-    parameter_id = models.IntegerField(
-        blank=True, null=True, verbose_name="Parameter ID"
+    parameter = models.ForeignKey(
+        "TypeParameterlijsten",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Parameter",
     )
     field_measurement_value = models.DecimalField(
         max_digits=100,
@@ -150,8 +174,12 @@ class FieldMeasurements(models.Model):
         null=True,
         verbose_name="Meetwaarde (veld)",
     )
-    quality_control_status = models.IntegerField(
-        blank=True, null=True, verbose_name="Kwaliteitscontrole status"
+    quality_control_status = models.CharField(
+        max_length=50,
+        choices=STATUS_KWALITEITSCONTROLE,
+        blank=True,
+        null=True,
+        verbose_name="Kwaliteitscontrole status",
     )
 
     class Meta:
@@ -169,14 +197,28 @@ class FieldObservations(models.Model):
     field_sample_id = models.IntegerField(
         blank=True, null=True, verbose_name="Veldmonster ID"
     )
-    primary_colour_id = models.IntegerField(
-        blank=True, null=True, verbose_name="Primaire kleur ID"
+    primary_colour = models.ForeignKey(
+        "TypeColours",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="primary_colour_observations",
+        verbose_name="Primaire kleur",
     )
-    secondary_colour_id = models.IntegerField(
-        blank=True, null=True, verbose_name="Secundaire kleur ID"
+    secondary_colour = models.ForeignKey(
+        "TypeColours",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="secondary_colour_observations",
+        verbose_name="Secundaire kleur",
     )
-    colour_strength_id = models.IntegerField(
-        blank=True, null=True, verbose_name="Kleurintensiteit ID"
+    colour_strength = models.ForeignKey(
+        "TypeColourStrengths",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Kleurintensiteit",
     )
     abnormality_in_cooling = models.BooleanField(
         blank=True, null=True, verbose_name="Afwijking in koeling"
@@ -222,8 +264,12 @@ class FieldSamples(models.Model):
     delivery_accountable_party = models.IntegerField(
         blank=True, null=True, verbose_name="Verantwoordelijke partij levering"
     )
-    quality_control_method = models.IntegerField(
-        blank=True, null=True, verbose_name="Kwaliteitscontrolemethode"
+    quality_control_method = models.CharField(
+        max_length=50,
+        choices=STATUS_KWALITEITSCONTROLE,
+        blank=True,
+        null=True,
+        verbose_name="Kwaliteitscontrolemethode",
     )
     sampling_datetime = models.DateTimeField(
         blank=True, null=True, verbose_name="Bemonsteringsdatum en -tijd"
@@ -231,10 +277,20 @@ class FieldSamples(models.Model):
     sampling_operator = models.IntegerField(
         blank=True, null=True, verbose_name="Bemonsteraar"
     )
-    sampling_standard = models.IntegerField(
-        blank=True, null=True, verbose_name="Bemonsteringsnorm"
+    sampling_standard = models.CharField(
+        max_length=50,
+        choices=MONSTERMETING,
+        blank=True,
+        null=True,
+        verbose_name="Bemonsteringsnorm",
     )
-    pump_type = models.IntegerField(blank=True, null=True, verbose_name="Pompsoort")
+    pump_type = models.CharField(
+        max_length=50,
+        choices=POMPTYPE,
+        blank=True,
+        null=True,
+        verbose_name="Pompsoort",
+    )
 
     class Meta:
         managed = True
@@ -253,8 +309,15 @@ class GroundwaterCompositionResearches(models.Model):
     local_id = models.CharField(
         max_length=40, blank=True, null=True, verbose_name="Lokale ID"
     )
-    assessment_procedure_id = models.IntegerField(
-        blank=True, null=True, verbose_name="Beoordelingsprocedure ID"
+    bro_id = models.CharField(
+        max_length=40, blank=True, null=True, verbose_name="BRO ID"
+    )
+    assessment_procedure_id = models.CharField(
+        max_length=100,
+        choices=BEOORDELINGSPROCEDURE,
+        blank=True,
+        null=True,
+        verbose_name="Beoordelingsprocedure",
     )
     pesticides_examined = models.IntegerField(
         blank=True, null=True, verbose_name="Pesticiden onderzocht"
@@ -315,13 +378,16 @@ class StoffenGroepen(models.Model):
 
 
 class TypeColourStrengths(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name="ID")
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     omschrijving = models.CharField(blank=True, null=True, verbose_name="Omschrijving")
     waarde = models.CharField(blank=True, null=True, verbose_name="Waarde")
     d_begin = models.DateTimeField(blank=True, null=True, verbose_name="Begindatum")
     d_status = models.CharField(
         max_length=1, blank=True, null=True, verbose_name="Status"
     )
+
+    def __str__(self):
+        return self.waarde or str(self.id)
 
     class Meta:
         managed = True
@@ -331,7 +397,7 @@ class TypeColourStrengths(models.Model):
 
 
 class TypeColours(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name="ID")
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     description = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Omschrijving"
     )
@@ -344,6 +410,9 @@ class TypeColours(models.Model):
     status = models.CharField(
         max_length=1, blank=True, null=True, verbose_name="Status"
     )
+
+    def __str__(self):
+        return self.value or str(self.id)
 
     class Meta:
         managed = True
@@ -361,6 +430,11 @@ class TypeParameterlijsten(models.Model):
     eenheid = models.CharField(blank=True, null=True, verbose_name="Eenheid")
     hoedanigheid = models.CharField(blank=True, null=True, verbose_name="Hoedanigheid")
 
+    def __str__(self):
+        if self.aquocode:
+            return f"{self.aquocode} – {self.omschrijving}" if self.omschrijving else self.aquocode
+        return str(self.parameter_id)
+
     class Meta:
         managed = True
         db_table = 'gar"."type_parameterlijsten'
@@ -369,7 +443,7 @@ class TypeParameterlijsten(models.Model):
 
 
 class TypeWaardebepalingsmethodes(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name="ID")
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     code = models.CharField(max_length=255, blank=True, null=True, verbose_name="Code")
     omschrijving = models.CharField(blank=True, null=True, verbose_name="Omschrijving")
     groep = models.CharField(
@@ -381,6 +455,9 @@ class TypeWaardebepalingsmethodes(models.Model):
     )
     titel = models.CharField(blank=True, null=True, verbose_name="Titel")
 
+    def __str__(self):
+        return self.code or str(self.id)
+
     class Meta:
         managed = True
         db_table = 'gar"."type_waardebepalingsmethodes'
@@ -389,13 +466,16 @@ class TypeWaardebepalingsmethodes(models.Model):
 
 
 class TypeWaardebepalingstechnieken(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name="ID")
+    id = models.AutoField(primary_key=True, verbose_name="ID")
     code = models.CharField(max_length=255, blank=True, null=True, verbose_name="Code")
     omschrijving = models.CharField(blank=True, null=True, verbose_name="Omschrijving")
     d_begin = models.DateTimeField(blank=True, null=True, verbose_name="Begindatum")
     d_status = models.CharField(
         max_length=1, blank=True, null=True, verbose_name="Status"
     )
+
+    def __str__(self):
+        return self.code or str(self.id)
 
     class Meta:
         managed = True
