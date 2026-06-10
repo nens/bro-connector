@@ -194,31 +194,21 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
                 else datetime.datetime.now().astimezone()
             )
 
-
-@receiver(post_save, sender=Observation)
-def on_save_observation(sender, instance: Observation, **kwargs):
-    gld = instance.groundwater_level_dossier
-
-    open_observations = gld.observation.filter(
-        observation_endtime__isnull=True,
-        observation_process=instance.observation_process,
-        observation_metadata=instance.observation_metadata,
-    )
-    if open_observations.count() == 0:
-        last_observation: Observation = (
-            gld.observation.filter(
-                observation_process=instance.observation_process,
+    old_instance = Observation.objects.filter(pk=instance.pk).first()
+    if old_instance and old_instance.observation_endtime is None and instance.observation_endtime is not None:
+        if Observation.objects.filter(
+            observation_metadata=instance.observation_metadata,
+            groundwater_level_dossier=instance.groundwater_level_dossier,
+            observation_process=instance.observation_process,
+            observation_endtime__isnull=True,
+        ).count() == 0:
+            Observation.objects.create(
+                observation_starttime=instance.observation_endtime,
+                groundwater_level_dossier=instance.groundwater_level_dossier,
                 observation_metadata=instance.observation_metadata,
+                observation_process=instance.observation_process,
             )
-            .order_by("observation_starttime")
-            .last()
-        )
-        Observation.objects.create(
-            observation_starttime=last_observation.observation_endtime,
-            groundwater_level_dossier=last_observation.groundwater_level_dossier,
-            observation_metadata=last_observation.observation_metadata,
-            observation_process=last_observation.observation_process,
-        )
+
 
 
 @receiver(pre_save, sender=MeasurementTvp)
