@@ -16,7 +16,6 @@ from gld.models import (
     ObservationMetadata,
     ObservationProcess,
 )
-from gld.signals import on_save_observation
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
@@ -88,7 +87,6 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler, last_import_date=None
         }
 
     try:
-        post_save.disconnect(on_save_observation, sender=Observation)
         with transaction.atomic():
             step = max(1, gld.total_measurements // 4)
             for observation_number in range(gld.number_of_observations):
