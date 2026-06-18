@@ -401,6 +401,7 @@ class ObservationAdmin(admin.ModelAdmin):
     @admin.action(description="Sluit Observatie")
     def close_observation(self, request, queryset):
         for item in queryset.filter(observation_endtime__isnull=True):
+            logger.info(f"Closing observation {item.observation_id} with manual action.")
             with reversion.create_revision():
                 item.observation_endtime = (
                     datetime.datetime.now().astimezone() - datetime.timedelta(seconds=1)

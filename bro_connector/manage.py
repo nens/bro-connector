@@ -11,13 +11,13 @@ from main.settings.base import ENV
 def main():
     """Run administrative tasks."""
     if ENV == "production":
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.production")
     elif ENV == "staging":
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.staging")
     elif ENV == "development" or ENV == "demo":
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings.development")
 
     try:

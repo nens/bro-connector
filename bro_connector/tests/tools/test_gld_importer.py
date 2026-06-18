@@ -7,11 +7,11 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import logging
 
-from tools.models import GLDImport
-from gld.models import MeasurementTvp, Observation
-from bro.models import Organisation
-from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
-from main.settings.base import KVK_USER, TIME_ZONE
+from bro_connector.tools.models import GLDImport
+from bro_connector.gld.models import MeasurementTvp, Observation
+from bro_connector.bro.models import Organisation
+from bro_connector.gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
+from bro_connector.main.settings.base import KVK_USER, TIME_ZONE
 
 logger = logging.getLogger(__name__)
 

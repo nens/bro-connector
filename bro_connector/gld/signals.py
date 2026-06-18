@@ -1,5 +1,5 @@
 import datetime
-
+import logging
 import reversion
 from django.core.cache import cache
 from django.db.models.signals import (
@@ -22,6 +22,8 @@ from .models import (
     gld_addition_log,
     gld_registration_log,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _calculate_value(field_value: float, unit: str) -> float | None:
@@ -201,7 +203,7 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
             groundwater_level_dossier=instance.groundwater_level_dossier,
             observation_process=instance.observation_process,
             observation_endtime__isnull=True,
-        ).count() == 0:
+        ).count() <= 1:
             Observation.objects.create(
                 observation_starttime=instance.observation_endtime,
                 groundwater_level_dossier=instance.groundwater_level_dossier,
