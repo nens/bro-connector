@@ -2,6 +2,7 @@ import datetime
 from pathlib import Path
 
 from bro.models import Organisation
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db import models
@@ -19,8 +20,6 @@ from gmn.models import GroundwaterMonitoringNet
 from gmw.models import GroundwaterMonitoringTubeStatic
 from main.models import BaseModel
 from tools.choices import BRO_HANDLERS, BRO_TYPES
-
-from django.conf import settings
 
 AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 

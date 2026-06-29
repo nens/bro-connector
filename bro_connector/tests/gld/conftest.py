@@ -3,8 +3,10 @@ from decimal import Decimal
 
 import pytest
 from bro.models import Organisation
+from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.utils import timezone
+from rest_framework.test import APIClient
 from gld.models import (
     GroundwaterLevelDossier,
     MeasurementPointMetadata,
@@ -36,6 +38,10 @@ def default_groundwater_monitoring_well(default_organisation):
     return GroundwaterMonitoringWellStatic.objects.create(
         delivery_accountable_party=default_organisation,
         bro_id="GMW000000000001",
+        # Avoid gmw's on_save_groundwater_monitoring_tube_static signal
+        # auto-creating a GroundwaterLevelDossier (and its ObservationMetadata)
+        # for this well's tube, which the gld fixtures create explicitly.
+        in_management=False,
     )
 
 
@@ -64,23 +70,23 @@ def default_tube_dynamic(default_groundwater_monitoring_tube):
 @pytest.fixture
 @pytest.mark.django_db
 def default_observation_metadata(default_organisation):
-    return ObservationMetadata.objects.create(
+    return ObservationMetadata.objects.get_or_create(
         observation_type="reguliereMeting",
         status="voorlopig",
         responsible_party=default_organisation,
-    )
+    )[0]
 
 
 @pytest.fixture
 @pytest.mark.django_db
 def default_observation_process():
-    return ObservationProcess.objects.create(
+    return ObservationProcess.objects.get_or_create(
         measurement_instrument_type="druksensor",
         evaluation_procedure="oordeelDeskundige",
         process_type="algoritme",
         process_reference="STOWAgwst",
         air_pressure_compensation_type="capillair",
-    )
+    )[0]
 
 
 @pytest.fixture
@@ -96,6 +102,7 @@ def default_groundwater_level_dossier(default_groundwater_monitoring_tube):
         gld = GroundwaterLevelDossier.objects.create(
             groundwater_monitoring_tube=default_groundwater_monitoring_tube,
             quality_regime="IMBRO",
+            gld_bro_id="GLD000000000012",
         )
     finally:
         post_save.connect(on_save_groundwater_level_dossier, sender=GroundwaterLevelDossier)
@@ -109,11 +116,11 @@ def default_observation(
     default_observation_metadata,
     default_observation_process,
 ):
-    return Observation.objects.create(
+    return Observation.objects.get_or_create(
         groundwater_level_dossier=default_groundwater_level_dossier,
         observation_metadata=default_observation_metadata,
         observation_process=default_observation_process,
-    )
+    )[0]
 
 
 @pytest.fixture
@@ -139,3 +146,32 @@ def default_measurement_tvp(default_observation):
         field_value=Decimal("-1.234"),
         field_value_unit="m",
     )
+
+
+@pytest.fixture
+@pytest.mark.django_db
+def api_user():
+    """External partner credentials used for Basic Auth against the API."""
+    return get_user_model().objects.create_user(
+        username="external-partner", password="s3cret-pass"
+    )
+
+
+@pytest.fixture
+def api_client(api_user):
+    """An authenticated DRF test client using HTTP Basic Auth."""
+    client = APIClient()
+    client.credentials(**_basic_auth_header("external-partner", "s3cret-pass"))
+    return client
+
+
+@pytest.fixture
+def anonymous_api_client():
+    return APIClient()
+
+
+def _basic_auth_header(username, password):
+    import base64
+
+    credentials = base64.b64encode(f"{username}:{password}".encode()).decode()
+    return {"HTTP_AUTHORIZATION": f"Basic {credentials}"}

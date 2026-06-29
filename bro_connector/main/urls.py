@@ -31,6 +31,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", RedirectView.as_view(url=reverse_lazy("admin:index"))),
     path("", include(("gmw.urls", "gmw"), namespace="gmw")),
+    path("api/gld/", include(("gld.urls", "gld"), namespace="gld_api")),
     path("django_plotly_dash/", include("django_plotly_dash.urls")),
     path("gwdatalens/", render_gwdatalens_tool, name="gwdatalens"),
 ]
