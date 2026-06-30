@@ -8,8 +8,101 @@ from rest_framework.views import APIView
 
 
 class ObservationMeasurementsUpdateView(APIView):
-    """Update measurement_tvp values (and quality metadata) for one or more
-    observations belonging to a GroundwaterLevelDossier."""
+    """
+    Update `MeasurementTvp` values and quality metadata for one or more measurements
+    belonging to a `GroundwaterLevelDossier`.
+
+    Requires **HTTP Basic Authentication** (username + password).
+
+    ---
+
+    ## Access
+
+    Send a `POST` request with a JSON body.
+    Example using the Python `requests` library:
+
+        import requests
+
+        response = requests.post(
+            "https://<host>/gld/observation/measurements/",
+            auth=("username", "password"),
+            json={
+                "gld_id": 1,
+                "observation_type": "reguliereMeting",
+                "validatie_status": "goedgekeurd",
+                "measurements": [
+                    {
+                        "measurement_time": "2024-01-15T08:00:00+00:00",
+                        "calculated_value": -1.234,
+                        "status_quality_control": "goedgekeurd",
+                        "status_quality_control_reason_datalens": "manual review",
+                        "value_limit": "none",
+                        "comment": "corrected after inspection"
+                    }
+                ]
+            }
+        )
+        print(response.json())
+
+    ---
+
+    ## Input
+
+    | Field | Type | Required | Description |
+    |---|---|---|---|
+    | `gld_id` | integer | yes | Primary key of the `GroundwaterLevelDossier` to update. |
+    | `observation_type` | string | yes | Target observation type (e.g. `reguliereMeting`, `controlemeting`). |
+    | `validatie_status` | string | no | Narrows observation selection by status (e.g. `goedgekeurd`, `voorlopig`). Omit to include all statuses. |
+    | `measurements` | list | yes | List of measurement update items (see below). |
+
+    ### measurements item fields
+
+    | Field | Type | Required | Max length | Description |
+    |---|---|---|---|---|
+    | `measurement_time` | datetime (ISO 8601) | yes | — | Identifies the `MeasurementTvp` record to update. |
+    | `calculated_value` | float | no | — | New calculated value. The original is backed up in `initial_calculated_value` if not yet set. |
+    | `comment` | string | no | 255 | Free-text comment stored on the `MeasurementTvp`. |
+    | `status_quality_control` | string | no | 200 | Quality-control status written to `MeasurementPointMetadata`. |
+    | `status_quality_control_reason_datalens` | string | no | 200 | Reason string written to `MeasurementPointMetadata`. |
+    | `value_limit` | string | no | 50 | Limit indicator written to `MeasurementPointMetadata`. |
+
+    ---
+
+    ## Process
+
+    1. The request body is validated against the input schema above.
+    2. The `GroundwaterLevelDossier` with `pk=gld_id` is fetched — returns **400** if not found.
+    3. `Observation` records are filtered by dossier, `observation_type`, and `validatie_status` — returns **400** if none match.
+    4. For each item in `measurements`, the matching `MeasurementTvp` is looked up by `measurement_time`:
+        - **Found** → `calculated_value`, `comment`, and linked `MeasurementPointMetadata` fields are updated.
+        - **Not found** → the timestamp is recorded in `not_found`.
+    5. If any records were updated, observations already registered in the BRO
+       (`up_to_date_in_bro=True` or `observation_id_bro` is set) are flagged:
+       `correction_reason` → `eigenCorrectie`, `up_to_date_in_bro` → `False`.
+
+    ---
+
+    ## Output — HTTP 200
+
+    **`updated`** — list of successfully updated records:
+
+        [{"observation_pk": 42, "measurement_time": "2024-01-15T08:00:00+00:00"}, ...]
+
+    **`not_found`** — list of timestamps for which no `MeasurementTvp` was found:
+
+        [{"observation_pk": null, "measurement_time": "2024-01-16T08:00:00+00:00"}, ...]
+
+    ---
+
+    ## Errors
+
+    | Status | Cause |
+    |---|---|
+    | 410 | `gld_id` does not match any `GroundwaterLevelDossier`. |
+    | 411 | No `Observation` matches the supplied `observation_type` / `validatie_status`. |
+    | 400 | Request body fails validation — field-level error details are included. |
+    | 401 | Missing or invalid Basic Authentication credentials. |
+    """
 
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
@@ -30,7 +123,7 @@ class ObservationMeasurementsUpdateView(APIView):
                 {
                     "detail": f"GroundwaterLevelDossier met id '{gld_id}' bestaat niet."
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_410_GONE,
             )
 
         observations = Observation.objects.filter(
@@ -48,7 +141,7 @@ class ObservationMeasurementsUpdateView(APIView):
                         f"validatie_status='{validatie_status}'."
                     )
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_411_LENGTH_REQUIRED,
             )
 
         updated = []
@@ -66,11 +159,11 @@ class ObservationMeasurementsUpdateView(APIView):
             )
 
             if tvp is None:
-                not_found.append(_isoformat(measurement_time))
+                not_found.append({"observation_pk": None, "measurement_time": _isoformat(measurement_time)})
                 continue
 
             _apply_measurement_update(tvp, item)
-            updated.append(_isoformat(measurement_time))
+            updated.append({"observation_pk": tvp.observation_id, "measurement_time": _isoformat(measurement_time)})
 
         if updated:
             _flag_observations_for_correction(observations)
