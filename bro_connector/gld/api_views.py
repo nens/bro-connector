@@ -90,7 +90,8 @@ def _isoformat(value):
 
 def _apply_measurement_update(tvp: MeasurementTvp, item: dict) -> None:
     if "calculated_value" in item and item["calculated_value"] is not None:
-        tvp.initial_calculated_value = tvp.calculated_value
+        if tvp.initial_calculated_value is None:
+            tvp.initial_calculated_value = tvp.calculated_value
         tvp.calculated_value = item["calculated_value"]
     if "comment" in item:
         tvp.comment = item["comment"]
