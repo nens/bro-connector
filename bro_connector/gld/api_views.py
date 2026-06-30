@@ -1,11 +1,10 @@
+from gld.models import GroundwaterLevelDossier, MeasurementTvp, Observation
+from gld.serializers import MeasurementUpdateRequestSerializer
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from gld.models import GroundwaterLevelDossier, MeasurementTvp, Observation
-from gld.serializers import MeasurementUpdateRequestSerializer
 
 
 class ObservationMeasurementsUpdateView(APIView):
@@ -91,6 +90,7 @@ def _isoformat(value):
 
 def _apply_measurement_update(tvp: MeasurementTvp, item: dict) -> None:
     if "calculated_value" in item and item["calculated_value"] is not None:
+        tvp.initial_calculated_value = tvp.calculated_value
         tvp.calculated_value = item["calculated_value"]
     if "comment" in item:
         tvp.comment = item["comment"]
