@@ -20,7 +20,6 @@ from .models import (
     FrdSyncLog,
     GeoOhmMeasurementMethod,
     GeoOhmMeasurementValue,
-    GMWElectrodeReference,
     InstrumentConfiguration,
     MeasurementConfiguration,
 )
@@ -200,12 +199,6 @@ class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
     actions = [export_selected_items_to_csv]
 
 
-class GMWElectrodeReferenceAdmin(admin.ModelAdmin):
-    list_display = ("id",)
-    list_filter = ()
-    actions = [export_selected_items_to_csv]
-
-
 class ElectrodePairAdmin(admin.ModelAdmin):
     list_display = (
         "id",
@@ -311,7 +304,6 @@ _register(InstrumentConfiguration, InstrumentConfigurationAdmin)
 _register(ElectromagneticMeasurementMethod, ElectromagneticMeasurementMethodAdmin)
 _register(GeoOhmMeasurementMethod, GeoOhmMeasurementMethodAdmin)
 _register(GeoOhmMeasurementValue, GeoOhmMeasurementValueAdmin)
-_register(GMWElectrodeReference, GMWElectrodeReferenceAdmin)
 _register(ElectrodePair, ElectrodePairAdmin)
 _register(MeasurementConfiguration, MeasurementConfigurationAdmin)
 _register(FormationresistanceSeries, FormationresistanceSeriesAdmin)
@@ -327,7 +319,6 @@ patch_admin(GeoOhmMeasurementMethod)
 patch_admin(CalculatedFormationresistanceMethod)
 patch_admin(InstrumentConfiguration)
 patch_admin(ElectromagneticMeasurementMethod)
-patch_admin(GMWElectrodeReference)
 patch_admin(ElectrodePair)
 patch_admin(MeasurementConfiguration)
 patch_admin(FormationresistanceSeries)

@@ -20,7 +20,6 @@ from frd.models import (
     FrdSyncLog,
     GeoOhmMeasurementMethod,
     GeoOhmMeasurementValue,
-    GMWElectrodeReference,
     InstrumentConfiguration,
     MeasurementConfiguration,
 )
@@ -539,9 +538,9 @@ class GEMConfigurationRegistration(Registration):
     def format_request_reference(self):
         return f"registration_mc_{self.formation_resistance_dossier.frd_bro_id}_{datetime.now().date()}"
 
-    def format_electrode_reference(self, electrode: GMWElectrodeReference):
+    def format_electrode_reference(self, electrode):
         return {
-            "cable_number": electrode.cable_number,
+            "cable_number": electrode.geo_ohm_cable.cable_number,
             "electrode_number": electrode.electrode_number,
         }
 

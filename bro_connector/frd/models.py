@@ -351,27 +351,10 @@ class GeoOhmMeasurementMethod(BaseModel):
             )
 
 
-class GMWElectrodeReference(BaseModel):
-    cable_number = models.IntegerField(
-        blank=True, null=True, verbose_name="Kabelnummer"
-    )
-    electrode_number = models.IntegerField(
-        blank=True, null=True, verbose_name="Electrodenummer"
-    )
-
-    def __str__(self) -> str:
-        return f"C{self.cable_number}E{self.electrode_number}"
-
-    class Meta:
-        managed = True
-        db_table = 'frd"."gmw_electrode_reference'
-        verbose_name_plural = "GMW Elektrode Referenties"
-
-
 class ElectrodePair(BaseModel):
     # Static of dynamic electrode -> Ik denk static
     elektrode1 = models.ForeignKey(
-        GMWElectrodeReference,
+        Electrode,
         on_delete=models.CASCADE,
         null=True,
         blank=False,
@@ -379,7 +362,7 @@ class ElectrodePair(BaseModel):
         verbose_name="Electrode 1",
     )
     elektrode2 = models.ForeignKey(
-        GMWElectrodeReference,
+        Electrode,
         on_delete=models.CASCADE,
         null=True,
         blank=False,
@@ -388,7 +371,7 @@ class ElectrodePair(BaseModel):
     )
 
     def __str__(self):
-        return f"{self.elektrode1}-{self.elektrode2}"
+        return f"{self.elektrode1} - {self.elektrode2}"
 
     class Meta:
         managed = True
@@ -429,6 +412,27 @@ class MeasurementConfiguration(BaseModel):
             return f"{self.configuration_name}"
         else:
             return f"{self.id}: {self.flowcurrent_pair}-{self.measurement_pair}"
+
+    @property
+    def measurement_position(self):
+        """Return the electrode_position of the first electrode of the measurement pair.
+
+        Returns the average electrode_position (m NAP) of the two measurement
+        electrodes, or None if either position is missing.
+        """
+        if not (self.measurement_pair and self.measurement_pair.elektrode1 and self.measurement_pair.elektrode2):
+            return None
+        
+        ref = self.measurement_pair.elektrode1
+        ref2 = self.measurement_pair.elektrode2
+
+        if ref.electrode_position is None or ref2.electrode_position is None:
+            return None
+        
+        # average height
+        return round((float(ref.electrode_position) + float(ref2.electrode_position)) / 2, 3)
+
+    measurement_position.fget.short_description = "Meetpositie"
 
     class Meta:
         managed = True
@@ -791,23 +795,8 @@ def string_to_float(string: str) -> float:
         raise Exception("Unkown formationresistance format.")
 
 
-def retrieve_electrode_position(
-    electrode_reference: GMWElectrodeReference,
-    monitoring_tube: GroundwaterMonitoringTubeStatic,
-) -> float:
-    geo_ohm_cable = GeoOhmCable.objects.filter(
-        cable_number=electrode_reference.cable_number,
-        groundwater_monitoring_tube_static=monitoring_tube,
-    ).first()
-
-    electrode = Electrode.objects.filter(
-        geo_ohm_cable=geo_ohm_cable,
-        electrode_number=electrode_reference.electrode_number,
-    ).first()
-
-    positie_float = string_to_float(electrode.electrode_position)
-
-    return positie_float
+def retrieve_electrode_position(electrode: Electrode) -> float:
+    return string_to_float(electrode.electrode_position)
 
 
 def calculate_electode_distance(electrode_position_1, electrode_position_2) -> float:
@@ -820,15 +809,9 @@ def calculate_electode_distance(electrode_position_1, electrode_position_2) -> f
 def create_or_update_geo_record(
     measurement_value: GeoOhmMeasurementValue, series: FormationresistanceSeries
 ):
-    monitoring_tube = measurement_value.geo_ohm_measurement_method.formation_resistance_dossier.groundwater_monitoring_tube
-
     measurement_pair = get_measurement_pair(measurement_value)
-    electrode_position_1 = retrieve_electrode_position(
-        measurement_pair.elektrode1, monitoring_tube
-    )
-    electrode_position_2 = retrieve_electrode_position(
-        measurement_pair.elektrode2, monitoring_tube
-    )
+    electrode_position_1 = retrieve_electrode_position(measurement_pair.elektrode1)
+    electrode_position_2 = retrieve_electrode_position(measurement_pair.elektrode2)
     measurement_position = (electrode_position_1 + electrode_position_2) / 2
 
     electrode_distance = calculate_electode_distance(

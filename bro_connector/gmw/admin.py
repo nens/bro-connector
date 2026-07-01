@@ -277,7 +277,7 @@ class TubeStaticInline(admin.TabularInline):
     max_num = 0
 
     def number_of_geo_ohm_cables_display(self, instance):
-        return instance.number_of_geo_ohm_cables
+        return instance.geo_ohm_cable_count
 
     number_of_geo_ohm_cables_display.short_description = "Aantal kabels"
 
@@ -292,7 +292,7 @@ class TubeStaticInline(admin.TabularInline):
                 "deliver_gld_to_bro",
                 "tube_number",
                 "tube_type",
-                "number_of_geo_ohm_cables",
+                "geo_ohm_cable_count",
                 "bro_actions",
                 "report",
             )
@@ -814,7 +814,7 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
         "internal_id",
         "tube_number",
         "tube_type",
-        "number_of_geo_ohm_cables",
+        "geo_ohm_cable_count",
         "tube_material",
         "screen_length",
         "sock_material",
@@ -826,7 +826,6 @@ class GroundwaterMonitoringTubeStaticAdmin(admin.ModelAdmin):
     list_filter = (WellFilter, "deliver_gld_to_bro")
 
     readonly_fields = [
-        "number_of_geo_ohm_cables",
         "internal_id",
         "in_monitoring_net",
         "report",
@@ -969,12 +968,11 @@ class GeoOhmCableAdmin(admin.ModelAdmin):
         "geo_ohm_cable_id",
         "groundwater_monitoring_tube_static",
         "cable_number",
-        # "electrode_count",
+        "electrode_count",
     )
 
     list_filter = (TubeFilter,)
     autocomplete_fields = ["groundwater_monitoring_tube_static"]
-    readonly_fields = ["electrode_count"]
     actions = [export_selected_items_to_csv]
 
     inlines = (ElectrodeInline,)

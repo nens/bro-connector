@@ -1,17 +1,20 @@
-import pytest
+import logging
 import re
-from django.utils import timezone
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth import get_user_model
 from datetime import datetime
 from zoneinfo import ZoneInfo
-import logging
 
-from bro_connector.tools.models import GLDImport
-from bro_connector.gld.models import MeasurementTvp, Observation
-from bro_connector.bro.models import Organisation
-from bro_connector.gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
-from bro_connector.main.settings.base import KVK_USER, TIME_ZONE
+import pytest
+from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+from bro.models import Organisation
+from gld.models import Observation
+from gmw.models import (
+    GroundwaterMonitoringTubeStatic,
+    GroundwaterMonitoringWellStatic,
+)
+from main.settings.base import KVK_USER, TIME_ZONE
+from tools.models import GLDImport
 
 logger = logging.getLogger(__name__)
 

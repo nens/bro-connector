@@ -1,3 +1,32 @@
+# 24 electrodes per cable, numbered 1–24 matching the field measurement CSV.
+elektrode_schema = [str(i) for i in range(1, 25)]
+
+# Each 4-electrode Wenner config a-b-c-d produces:
+#   measurement pair (inner): M{b}-{c}  →  [str(b), str(c)]
+#   current pair    (outer):  C{a}-{d}  →  [str(a), str(d)]
+#
+# Short configs: n-(n+1)-(n+2)-(n+3)  for n = 1..21
+# Long  configs: a-(a+2)-(a+4)-(a+6)  for a = 1, 3, 5, ..., 17
+pair_schema = {
+    # --- short measurement pairs (inner) ---
+    **{f"M{n+1}-{n+2}": [str(n + 1), str(n + 2)] for n in range(1, 22)},
+    # --- short current pairs (outer) ---
+    **{f"C{n}-{n+3}": [str(n), str(n + 3)] for n in range(1, 22)},
+    # --- long measurement pairs (inner, skip-1) ---
+    **{f"M{a+2}-{a+4}": [str(a + 2), str(a + 4)] for a in range(1, 18, 2)},
+    # --- long current pairs (outer, skip-1) ---
+    **{f"C{a}-{a+6}": [str(a), str(a + 6)] for a in range(1, 18, 2)},
+}
+
+# Each config entry is [measurement_pair_code, current_pair_code].
+# 21 short + 9 long = 30 configurations per cable.
+config_schema = (
+    # short: n-(n+1)-(n+2)-(n+3)
+    [[f"M{n+1}-{n+2}", f"C{n}-{n+3}"] for n in range(1, 22)]
+    # long: a-(a+2)-(a+4)-(a+6)
+    + [[f"M{a+2}-{a+4}", f"C{a}-{a+6}"] for a in range(1, 18, 2)]
+)
+
 UNDERPRIVILIGE = (
     ("ja", "ja"),
     ("nee", "nee"),

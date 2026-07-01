@@ -736,6 +736,13 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         null=True,
         verbose_name="Diepte grondwaterlichaam",
     )
+    geo_ohm_cable_count = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name="Aantal geo ohm kabels",
+        help_text="Stel in hoeveel geo-ohm kabels aan deze buis hangen. Opslaan maakt kabels aan of verwijdert ze.",
+    )
     # bro_complete
 
     state: Manager["GroundwaterMonitoringTubeDynamic"]
@@ -751,14 +758,6 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
         return report
 
     report.fget.short_description = "Rapport"
-
-    @property
-    def number_of_geo_ohm_cables(self):
-        return GeoOhmCable.objects.filter(
-            groundwater_monitoring_tube_static=self
-        ).count()
-
-    number_of_geo_ohm_cables.fget.short_description = "Aantal geo ohm kabels"
 
     @property
     def gmn_ids(self) -> list[str]:
@@ -789,6 +788,37 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
             )
 
         super().save(*args, **kwargs)
+
+        # Reconcile GeoOhmCable objects with the desired count.
+        if self.geo_ohm_cable_count is not None:
+            current_cables = GeoOhmCable.objects.filter(
+                groundwater_monitoring_tube_static=self
+            ).order_by("cable_number")
+            current_count = current_cables.count()
+            desired_count = self.geo_ohm_cable_count
+
+            if desired_count > current_count:
+                existing_numbers = set(
+                    current_cables.values_list("cable_number", flat=True)
+                )
+                next_number = 1
+                for _ in range(desired_count - current_count):
+                    while next_number in existing_numbers:
+                        next_number += 1
+                    GeoOhmCable.objects.create(
+                        groundwater_monitoring_tube_static=self,
+                        cable_number=next_number,
+                        electrode_count=24,
+                    )
+                    existing_numbers.add(next_number)
+                    next_number += 1
+
+            elif desired_count < current_count:
+                cables_to_delete = list(
+                    current_cables.order_by("-cable_number")[: current_count - desired_count]
+                )
+                for cable in cables_to_delete:
+                    cable.delete()
 
     def __str__(self):
         if self.groundwater_monitoring_well_static:
@@ -1008,21 +1038,53 @@ class GeoOhmCable(BaseModel):
         blank=True, null=True, verbose_name="Benodigde acties om BRO Compleet te maken"
     )
 
+    electrode_count = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name="Aantal electrodes",
+        help_text="Stel in hoeveel electrodes aan deze kabel hangen. Opslaan maakt electrodes aan of verwijdert ze.",
+    )
+
     electrode: Manager["Electrode"]
 
     def __str__(self):
         return f"{self.groundwater_monitoring_tube_static}-K{self.cable_number}"
 
-    @property
-    def electrode_count(self):
-        number_of_electrodes = Electrode.objects.filter(geo_ohm_cable=self).count()
-        # validators_models.aantal_elektrodes_validator(number_of_electrodes)
-        if number_of_electrodes < 2:
-            return "minimaal aantal elektrodes van 2 nog niet gelinkt aan Geo-ohmkabel"
-        else:
-            return number_of_electrodes
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
-    electrode_count.fget.short_description = "Aantal electrodes"
+        # Reconcile Electrode objects with the desired count.
+        if self.electrode_count is not None:
+            current_electrodes = Electrode.objects.filter(
+                geo_ohm_cable=self
+            ).order_by("electrode_number")
+            current_count = current_electrodes.count()
+            desired_count = self.electrode_count
+
+            if desired_count > current_count:
+                existing_numbers = set(
+                    current_electrodes.values_list("electrode_number", flat=True)
+                )
+                next_number = 1
+                for _ in range(desired_count - current_count):
+                    while next_number in existing_numbers:
+                        next_number += 1
+                    Electrode.objects.create(
+                        geo_ohm_cable=self,
+                        electrode_number=next_number,
+                    )
+                    existing_numbers.add(next_number)
+                    next_number += 1
+
+            elif desired_count < current_count:
+                electrodes_to_delete = list(
+                    current_electrodes.order_by("-electrode_number")[
+                        : current_count - desired_count
+                    ]
+                )
+                for electrode in electrodes_to_delete:
+                    electrode.delete()
 
     class Meta:
         managed = True
