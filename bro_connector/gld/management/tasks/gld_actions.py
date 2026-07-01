@@ -284,10 +284,16 @@ def gen_val_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
     for observation in dossier.observation.filter(
         up_to_date_in_bro=False, result_time__isnull=False
     ):
+        if observation.observation_id_bro is not None and observation.correction_reason is not None:
+            request_type = "replace"
+        else:
+            request_type = "register"
+
         addition_log = gld_addition_log.objects.update_or_create(
             broid_registration=dossier.gld_bro_id,
             observation=observation,
             addition_type=observation.addition_type,
+            delivery_type=request_type,
         )[0]
 
         logger.info(f"Check and deliver; Log created: {addition_log}")

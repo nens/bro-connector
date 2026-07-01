@@ -249,3 +249,8 @@ def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
                 tube_top_position,
                 cable_length,
             )
+
+@receiver(post_save, sender=MeasurementTvp)
+def post_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
+    obs = instance.observation
+    obs.save()
