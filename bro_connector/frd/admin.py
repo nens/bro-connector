@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.db.models import Model, fields
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
+from frd.custom_filters import TubeFilter
 from main.management.commands.frd_sync_to_bro import FRDSync
 from reversion_compare.helpers import patch_admin
 
@@ -83,6 +84,18 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
+class InlineMeasurementConfigurationAdmin(admin.TabularInline):
+    model = MeasurementConfiguration
+    extra = 1
+    can_delete = False
+    readonly_fields = ["measurement_position"]
+    show_change_link = True
+
+    autocomplete_fields = ["measurement_pair", "flowcurrent_pair"]
+
+    def measurement_position(self, obj):
+        return obj.measurement_position
+
 
 class FormationResistanceDossierAdmin(admin.ModelAdmin):
     list_display = (
@@ -96,11 +109,13 @@ class FormationResistanceDossierAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "frd_bro_id",
-        "groundwater_monitoring_tube",
+        TubeFilter,
         "delivery_accountable_party",
         "deliver_to_bro",
         BroIdNullFilter,
     )
+
+    inlines = [InlineMeasurementConfigurationAdmin]
 
     autocomplete_fields = ["groundwater_monitoring_tube"]
 
@@ -188,15 +203,17 @@ class CalculatedFormationresistanceAdmin(admin.ModelAdmin):
 class GeoOhmMeasurementValueAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "datetime",
         "formationresistance",
         "measurement_configuration",
-        "datetime",
     )
     list_filter = (
-        "measurement_configuration",
         "datetime",
+        "measurement_configuration",
     )
     actions = [export_selected_items_to_csv]
+
+    ordering = ("-datetime", "measurement_configuration")
 
 
 class ElectrodePairAdmin(admin.ModelAdmin):
@@ -208,6 +225,16 @@ class ElectrodePairAdmin(admin.ModelAdmin):
     list_filter = (
         "elektrode1",
         "elektrode2",
+    )
+    search_fields = (
+        "elektrode1__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code",
+        "elektrode1__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__nitg_code",
+        "elektrode1__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__internal_id",
+        "elektrode1__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id",
+        "elektrode2__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__well_code",
+        "elektrode2__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__nitg_code",
+        "elektrode2__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__internal_id",
+        "elektrode2__geo_ohm_cable__groundwater_monitoring_tube_static__groundwater_monitoring_well_static__bro_id",
     )
     actions = [export_selected_items_to_csv]
 
@@ -260,8 +287,11 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
         "formationresistance",
         "status_qualitycontrol",
     )
+    readonly_fields = ("measurement_time",)
     actions = [export_selected_items_to_csv]
 
+    def measurement_time(self, obj):
+        return obj.measurement_time
 
 class FrdSyncLogAdmin(admin.ModelAdmin):
     list_display = (

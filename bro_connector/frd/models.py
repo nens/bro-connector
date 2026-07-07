@@ -371,7 +371,9 @@ class ElectrodePair(BaseModel):
     )
 
     def __str__(self):
-        return f"{self.elektrode1} - {self.elektrode2}"
+        if self.elektrode1 is not None and self.elektrode2 is not None:
+            return f"{self.elektrode1} - {self.elektrode2}"
+        return str(self.pk)
 
     class Meta:
         managed = True
@@ -476,6 +478,8 @@ class GeoOhmMeasurementValue(BaseModel):
         verbose_name="Configuratie",
     )
     datetime = models.DateTimeField(blank=False, null=False, verbose_name="Meetmoment")
+    comment = models.TextField(blank=True, null=True, verbose_name="Opmerking")
+
 
     class Meta:
         managed = True
@@ -593,6 +597,12 @@ class FormationresistanceSeries(BaseModel):
         managed = True
         db_table = 'frd"."formationresistance_series'
         verbose_name_plural = "Formatieweerstand Series"
+    
+    def __str__(self):
+        if self.calculated_formationresistance and self.calculated_formationresistance.geo_ohm_measurement_method:
+            return f"{self.calculated_formationresistance.geo_ohm_measurement_method.formation_resistance_dossier}: {self.calculated_formationresistance.geo_ohm_measurement_method.measurement_date}"
+        else:
+            return str(self.pk)
 
 
 class FormationresistanceRecord(BaseModel):
@@ -627,10 +637,33 @@ class FormationresistanceRecord(BaseModel):
         verbose_name="Status kwaliteitscontrole",
     )
 
+    comment = models.TextField(blank=True, null=True, verbose_name="Opmerking")
+
+
     class Meta:
         managed = True
         db_table = 'frd"."formationresistance_record'
         verbose_name_plural = "Formatieweerstand Waarden"
+
+    def __str__(self):
+        if self.series and self.series.calculated_formationresistance and self.series.calculated_formationresistance.geo_ohm_measurement_method:
+            return f"{self.series.calculated_formationresistance.geo_ohm_measurement_method.formation_resistance_dossier}: {self.vertical_position} - {self.measurement_time}"
+        else:
+            return self.pk
+
+    @property
+    def measurement_time(self):
+        if not self.series:
+            return None
+        if not self.series.calculated_formationresistance:
+            return None
+        
+        if self.series.calculated_formationresistance.geo_ohm_measurement_method is not None:
+            return self.series.calculated_formationresistance.geo_ohm_measurement_method.measurement_date
+        elif self.series.calculated_formationresistance.electromagnetic_measurement_method is not None:
+            return self.series.calculated_formationresistance.electromagnetic_measurement_method.measurement_date
+        
+        return None
 
 
 class FrdSyncLog(BaseModel):
