@@ -8,7 +8,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from main.settings.base import KVK_USER
 
-from .choices import config_schema, elektrode_schema, pair_schema
+from .choices import config_schema, cross_cable_config_schema, elektrode_schema, pair_schema
 from .models import (
     Electrode,
     Event,
@@ -156,6 +156,15 @@ def post_save_geo_ohmkabel(sender, instance: GeoOhmCable, created, **kwargs):
     create_elektrode_pairs_for_geo_ohmkabel(instance)
     create_meetconfiguraties(instance)
 
+    # Create cross-cable configurations for each adjacent pair of cables on the same tube.
+    cables = list(
+        GeoOhmCable.objects.filter(
+            groundwater_monitoring_tube_static=instance.groundwater_monitoring_tube_static
+        ).order_by("cable_number")
+    )
+    for i in range(len(cables) - 1):
+        create_cross_cable_configurations(cables[i], cables[i + 1])
+
 
 def generate_list(x: int, y: int, step=1) -> list[int]:
     """
@@ -197,13 +206,7 @@ def create_elektrode_pairs_for_geo_ohmkabel(geo_ohm_cable: GeoOhmCable):
 
     Pairs for which the underlying Electrode does not yet exist are skipped.
     """
-    electrode_count = geo_ohm_cable.electrode.count()
-    counter = 0
-
     for pair_code, electrode_codes in pair_schema.items():
-        if counter >= electrode_count:
-            break
-
         elektrode1_number = int(electrode_codes[0])
         elektrode2_number = int(electrode_codes[1])
 
@@ -225,14 +228,12 @@ def create_elektrode_pairs_for_geo_ohmkabel(geo_ohm_cable: GeoOhmCable):
             elektrode1=elektrode1,
             elektrode2=elektrode2,
         ).exists():
-            counter += 1
             continue
 
         frd_models.ElectrodePair.objects.create(
             elektrode1=elektrode1,
             elektrode2=elektrode2,
         )
-        counter += 1
 
 
 def get_or_create_frd(geo_ohm_kabel: GeoOhmCable) -> frd_models.FormationResistanceDossier:
@@ -301,5 +302,77 @@ def create_meetconfiguraties(geo_ohm_kabel: GeoOhmCable):
             flowcurrent_pair=stroompaar,
             defaults={
                 "configuration_name": f"{geo_ohm_kabel}{config_code}",
+            },
+        )
+
+
+def _resolve_global_electrode(
+    cable1: GeoOhmCable, cable2: GeoOhmCable, global_number: int
+) -> Electrode:
+    """Resolve a *global* electrode number to the matching Electrode object.
+
+    Global numbering: cable1 electrodes = 1 … N, cable2 electrodes = N+1 … 2N,
+    where N = len(elektrode_schema) (24 by default).
+    """
+    n = len(elektrode_schema)
+    if global_number <= n:
+        return Electrode.objects.get(
+            geo_ohm_cable=cable1, electrode_number=global_number
+        )
+    return Electrode.objects.get(
+        geo_ohm_cable=cable2, electrode_number=global_number - n
+    )
+
+
+def _get_or_create_cross_cable_pair(
+    cable1: GeoOhmCable, cable2: GeoOhmCable, g1: int, g2: int
+) -> frd_models.ElectrodePair | None:
+    """Return (and create if needed) an ElectrodePair from global electrode numbers."""
+    try:
+        e1 = _resolve_global_electrode(cable1, cable2, g1)
+        e2 = _resolve_global_electrode(cable1, cable2, g2)
+    except Electrode.DoesNotExist:
+        return None
+
+    pair, _ = frd_models.ElectrodePair.objects.get_or_create(
+        elektrode1=e1,
+        elektrode2=e2,
+    )
+    return pair
+
+
+def create_cross_cable_configurations(cable1: GeoOhmCable, cable2: GeoOhmCable):
+    """Create the boundary MeasurementConfigurations that span cable1 and cable2.
+
+    Uses cross_cable_config_schema, where each entry is a tuple
+    (m_inner_1, m_inner_2, c_outer_1, c_outer_2) with global electrode numbers
+    (cable1 = 1–24, cable2 = 25–48).
+    """
+    frd = get_frd_or_none(cable1.groundwater_monitoring_tube_static)
+    if frd is None:
+        return
+
+    # Offset so cross-cable config names don't collide with per-cable names.
+    base_index = cable2.cable_number * len(config_schema)
+
+    for i, (m1, m2, c1, c2) in enumerate(cross_cable_config_schema):
+        meetpaar = _get_or_create_cross_cable_pair(cable1, cable2, m1, m2)
+        stroompaar = _get_or_create_cross_cable_pair(cable1, cable2, c1, c2)
+
+        if meetpaar is None or stroompaar is None:
+            logger.warning(
+                f"Cross-cable pair ({m1},{m2}) or ({c1},{c2}) could not be resolved "
+                f"for cables {cable1} and {cable2}. Config {i + 1} skipped."
+            )
+            continue
+
+        config_code = f"XEP{base_index + i + 1}"
+
+        frd_models.MeasurementConfiguration.objects.update_or_create(
+            formation_resistance_dossier=frd,
+            measurement_pair=meetpaar,
+            flowcurrent_pair=stroompaar,
+            defaults={
+                "configuration_name": f"{cable1}-{cable2}{config_code}",
             },
         )

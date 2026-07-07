@@ -27,6 +27,17 @@ config_schema = (
     + [[f"M{a+2}-{a+4}", f"C{a}-{a+6}"] for a in range(1, 18, 2)]
 )
 
+# Cross-cable boundary configurations between adjacent cables.
+# Electrode numbers are "global": cable 1 = 1–24, cable 2 = 25–48.
+# Each entry is (m_inner_1, m_inner_2, c_outer_1, c_outer_2).
+# 3 short + 3 long = 6 cross-cable configurations per adjacent cable pair.
+cross_cable_config_schema = (
+    # short boundary: n=22,23,24  →  [n, n+1, n+2, n+3]
+    [(n + 1, n + 2, n, n + 3) for n in range(22, 25)]
+    # long boundary: a=19,21,23  →  [a, a+2, a+4, a+6]
+    + [(a + 2, a + 4, a, a + 6) for a in range(19, 24, 2)]
+)
+
 UNDERPRIVILIGE = (
     ("ja", "ja"),
     ("nee", "nee"),
