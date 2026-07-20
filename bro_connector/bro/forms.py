@@ -10,4 +10,5 @@ class CompanyForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "bro_token": PasswordMaskWidget(),
+            "brostar_token": PasswordMaskWidget(),
         }

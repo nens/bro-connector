@@ -92,6 +92,10 @@ class Organisation(BaseModel):
         verbose_name="BRO Wachtwoordtoken",
         help_text="Beide tokens komen uit het bronhoudersportaal.",
     )
+    brostar_token = SecureCharField(
+        verbose_name="BROSTAR API token",
+        help_text="API token uit het BROSTAR portaal (www.brostar.nl).",
+    )
 
     class Meta:
         managed = True
