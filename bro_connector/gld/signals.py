@@ -197,6 +197,9 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
             )
 
     old_instance = Observation.objects.filter(pk=instance.pk).first()
+    if old_instance and old_instance.correction_reason != instance.correction_reason:
+        instance.up_to_date_in_bro = False
+
     if old_instance and old_instance.observation_endtime is None and instance.observation_endtime is not None:
         if Observation.objects.filter(
             observation_metadata=instance.observation_metadata,

@@ -1185,12 +1185,14 @@ class gld_addition_log(BaseModel):
         # filename should be unique"
         filename = f"GLD_Addition_Observation_{self.observation.observation_id}_{self.observation.groundwater_level_dossier.gld_bro_id}{'-replace' if self.delivery_type == 'replace' else ''}.xml"
         
+        delivery_accountable_party = self.observation.observation_metadata.responsible_party.company_number
+        print(f"Delivery accountable party: {delivery_accountable_party}")
         if self.delivery_type == "register":
             # Create addition source document
             gld_addition_request = brx.gld_registration_request(
                 srcdoc="GLD_Addition",
                 requestReference=filename,
-                deliveryAccountableParty=self.observation.observation_metadata.responsible_party.company_number,  # investigator_identification (NENS voor TEST)
+                deliveryAccountableParty=delivery_accountable_party,  # investigator_identification (NENS voor TEST)
                 qualityRegime=self.observation.groundwater_level_dossier.quality_regime,
                 broId=self.observation.groundwater_level_dossier.gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,
@@ -1199,7 +1201,7 @@ class gld_addition_log(BaseModel):
             gld_addition_request = brx.gld_replace_request(
                 srcdoc="GLD_Addition",
                 requestReference=filename,
-                deliveryAccountableParty=self.observation.observation_metadata.responsible_party.company_number,  # investigator_identification (NENS voor TEST)
+                deliveryAccountableParty=delivery_accountable_party,  # investigator_identification (NENS voor TEST)
                 qualityRegime=self.observation.groundwater_level_dossier.quality_regime,
                 broId=self.observation.groundwater_level_dossier.gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,
