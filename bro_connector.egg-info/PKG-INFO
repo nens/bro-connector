@@ -27,7 +27,7 @@ License: MIT License
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 License-File: LICENSE.MD
-Requires-Dist: bro_exchange @ git+https://github.com/nens/bro-exchange@5caacc13998b009456fa0b6bb25a7f51a77466fc
+Requires-Dist: bro_exchange @ git+https://github.com/nens/bro-exchange@7948005c9f15a9ca383a7c50d44b10b93dba57be
 Requires-Dist: cryptography==43.0.0
 Requires-Dist: dash==2.18.2
 Requires-Dist: dash-bootstrap-components==1.7.1
@@ -55,7 +55,7 @@ Requires-Dist: geopandas
 Requires-Dist: hydropandas
 Requires-Dist: i18nice[YAML]
 Requires-Dist: Jinja2==3.1.3
-Requires-Dist: lxml==5.2.2
+Requires-Dist: lxml
 Requires-Dist: numpy==2.0.1
 Requires-Dist: packaging==24.0
 Requires-Dist: pandas==2.2.2
@@ -70,7 +70,7 @@ Requires-Dist: pyproj==3.6.1
 Requires-Dist: pysftp==0.2.9
 Requires-Dist: python-utils==3.8.2
 Requires-Dist: pytz
-Requires-Dist: requests==2.31.0
+Requires-Dist: requests
 Requires-Dist: rich==13.7.1
 Requires-Dist: six==1.16.0
 Requires-Dist: sqlparse==0.5.1

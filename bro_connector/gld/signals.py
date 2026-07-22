@@ -182,6 +182,11 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
     if not instance.observation_starttime and instance.timestamp_first_measurement:
         instance.observation_starttime = instance.timestamp_first_measurement
 
+    if instance.pk:
+        old_instance = Observation.objects.get(pk=instance.pk)
+        if instance.correction_reason is not None and instance.correction_reason != old_instance.correction_reason and instance.observation_id is not None:
+            instance.up_to_date_in_bro = False
+
     if instance.observation_endtime and instance.observation_metadata:
         if (
             instance.observation_metadata.status == "voorlopig"
