@@ -37,7 +37,7 @@ geopandas
 hydropandas>=0.17.1
 i18nice[YAML]
 Jinja2==3.1.3
-lxml==5.2.2
+lxml
 markdown_it_py==3.0.0
 MarkupSafe==2.1.5
 mdurl==0.1.2
@@ -63,7 +63,7 @@ python_dateutil==2.9.0.post0
 python-dotenv==1.1.0
 python_utils==3.8.2
 pytz==2024.1
-requests==2.31.0
+requests
 rich==13.7.1
 six==1.16.0
 sqlparse==0.5.1
