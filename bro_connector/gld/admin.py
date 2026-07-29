@@ -2,10 +2,11 @@ import csv
 import datetime
 import logging
 import os
-from collections import Counter
+from collections import Counter, defaultdict
 
 import reversion
 from django.contrib import admin, messages
+from django.db import transaction
 from django.db.models import fields
 from django.http import HttpResponse
 from django.urls import reverse
@@ -377,6 +378,7 @@ class ObservationAdmin(admin.ModelAdmin):
         export_selected_items_to_csv,
         "close_observation",
         "change_up_to_date_status",
+        "convert_to_validated"
     ]
 
     ordering = ["-observation_starttime"]
@@ -421,6 +423,171 @@ class ObservationAdmin(admin.ModelAdmin):
 
                 item.save(update_fields=["up_to_date_in_bro"])
                 reversion.set_comment("Changed up_to_date_in_bro with a manual action.")
+
+
+    @admin.action(description="Converteer metingen naar volledigBeoordeeld")
+    def convert_to_validated(self, request, queryset):
+        valid_items = []
+        for item in queryset:
+            if (
+                not item.observation_metadata
+                or item.observation_metadata.observation_type != "reguliereMeting"
+                or item.observation_metadata.status != "voorlopig"
+            ):
+                self.message_user(
+                    request,
+                    f"Observation {item} is not a regular measurement or is not in 'voorlopig' status. Skipping.",
+                    level=messages.WARNING,
+                )
+                continue
+
+            if not item.all_measurements_validated:
+                self.message_user(
+                    request,
+                    f"Observation {item} does not have all measurements validated. Skipping.",
+                    level=messages.WARNING,
+                )
+                continue
+
+            if not item.measurement.all().exists():
+                self.message_user(
+                    request,
+                    f"Observation {item} does not have any measurements. Skipping.",
+                    level=messages.WARNING,
+                )
+                continue
+
+            valid_items.append(item)
+
+        if not valid_items:
+            return
+
+        # 1. Get/create the 'volledigBeoordeeld' ObservationMetadata per distinct source metadata.
+        metadata_cache = {}  # source_metadata_id -> new ObservationMetadata
+        for item in valid_items:
+            src_meta = item.observation_metadata
+            if src_meta.pk in metadata_cache:
+                continue
+
+            # Only the fields covered by the unique_metadata constraint go in the lookup.
+            lookup_fields = {
+                "observation_type": src_meta.observation_type,
+                "responsible_party": src_meta.responsible_party,
+                "status": "volledigBeoordeeld",
+            }
+            # Everything else copied over goes in defaults — only used if creating.
+            defaults = {
+                f.name: getattr(src_meta, f.name)
+                for f in src_meta._meta.fields
+                if f.name not in ("id", "status", "observation_type", "responsible_party")
+            }
+
+            new_meta, _ = models.ObservationMetadata.objects.get_or_create(
+                **lookup_fields,
+                defaults=defaults,
+            )
+            metadata_cache[src_meta.pk] = new_meta
+
+        # 2. Bulk-fetch candidate existing target observations.
+        gld_ids = {i.groundwater_level_dossier_id for i in valid_items}
+        new_meta_ids = {m.pk for m in metadata_cache.values()}
+        op_ids = {i.observation_process_id for i in valid_items}
+
+        candidates = models.Observation.objects.filter(
+            groundwater_level_dossier_id__in=gld_ids,
+            observation_metadata_id__in=new_meta_ids,
+            observation_process_id__in=op_ids,
+        ).prefetch_related("measurement")
+
+        existing_by_key = {
+            (o.groundwater_level_dossier_id, o.observation_metadata_id, o.observation_process_id): o
+            for o in candidates
+        }
+
+        # 3. Bulk-fetch source measurements.
+        item_ids = [i.pk for i in valid_items]
+        source_tvps_by_item = defaultdict(list)
+        for tvp in models.MeasurementTvp.objects.filter(observation_id__in=item_ids):
+            source_tvps_by_item[tvp.observation_id].append(tvp)
+
+        def signature(tvp):
+            return (tvp.measurement_time, tvp.field_value, tvp.field_value_unit)
+
+        to_create_observations = []
+        to_update_observations = []
+        tvp_sources = []  # (observation, [source_tvp, ...])
+        error_count = 0
+
+        for item in valid_items:
+            new_meta = metadata_cache[item.observation_metadata_id]
+            key = (item.groundwater_level_dossier_id, new_meta.pk, item.observation_process_id)
+            existing = existing_by_key.get(key)
+            source_tvps = source_tvps_by_item.get(item.pk, [])
+
+            if existing is None:
+                new_obs = models.Observation(
+                    groundwater_level_dossier=item.groundwater_level_dossier,
+                    observation_metadata=new_meta,
+                    observation_process=item.observation_process,
+                    observation_starttime=item.observation_starttime,
+                    observation_endtime=item.observation_endtime,
+                    result_time=item.result_time,
+                    up_to_date_in_bro=False,
+                )
+                to_create_observations.append(new_obs)
+                tvp_sources.append((new_obs, source_tvps))
+                continue
+
+            existing_tvps = list(existing.measurement.all())
+
+            if not existing_tvps:
+                tvp_sources.append((existing, source_tvps))
+                continue
+
+            if {signature(t) for t in existing_tvps} == {signature(t) for t in source_tvps}:
+                existing.observation_starttime = item.observation_starttime
+                existing.observation_endtime = item.observation_endtime
+                existing.result_time = item.result_time
+                to_update_observations.append(existing)
+            else:
+                error_count += 1
+                self.message_user(
+                    request,
+                    f"Observation {item.observation_id}: existing 'volledigBeoordeeld' measurements don't match the source. Skipping, no action taken.",
+                    level=messages.ERROR,
+                )
+
+        with transaction.atomic():
+            if to_create_observations:
+                models.Observation.objects.bulk_create(to_create_observations)  # pks populated (Postgres)
+
+            if to_update_observations:
+                models.Observation.objects.bulk_update(
+                    to_update_observations,
+                    ["observation_starttime", "observation_endtime", "result_time"],
+                )
+
+            new_tvps = [
+                models.MeasurementTvp(
+                    observation=obs,
+                    measurement_time=tvp.measurement_time,
+                    field_value=tvp.field_value,
+                    field_value_unit=tvp.field_value_unit,
+                    comment=tvp.comment,
+                    measurement_point_metadata=tvp.measurement_point_metadata,
+                )
+                for obs, source_tvps in tvp_sources
+                for tvp in source_tvps
+            ]
+            if new_tvps:
+                models.MeasurementTvp.objects.bulk_create(new_tvps)
+
+        self.message_user(
+            request,
+            f"{len(to_create_observations)} observation(s) created, "
+            f"{len(to_update_observations)} updated, {error_count} skipped with mismatch.",
+            level=messages.SUCCESS,
+        )
 
 
 class ObservationMetadataAdmin(admin.ModelAdmin):
