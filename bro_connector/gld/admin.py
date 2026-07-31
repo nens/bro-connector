@@ -259,8 +259,21 @@ class GroundwaterLevelDossierAdmin(admin.ModelAdmin):
         for dossier in queryset:
             gld_actions.check_and_deliver_start(dossier)
 
+        incomplete_observations = []
         for dossier in queryset.filter(gld_bro_id__isnull=False):
-            gld_actions.gen_val_and_deliver_additions(dossier)
+            incomplete_observations += gld_actions.gen_val_and_deliver_additions(
+                dossier
+            )
+
+        if incomplete_observations:
+            observation_list = ", ".join(str(obs) for obs in incomplete_observations)
+            self.message_user(
+                request,
+                "Levering was niet mogelijk voor de volgende observaties, omdat niet "
+                "alle metingen een berekende waarde en meting metadata hebben: "
+                f"{observation_list}",
+                level=messages.WARNING,
+            )
 
         # Then check the status of each individual registration log
         for dossier in queryset.filter(gld_bro_id__isnull=False):
