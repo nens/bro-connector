@@ -2,6 +2,8 @@ import logging
 import os
 import time
 
+from django.db import models
+
 from gld.management.commands import gld_sync_to_bro
 from gld.models import (
     GroundwaterLevelDossier,
@@ -280,10 +282,34 @@ def check_and_deliver_start_registrations(dossier: GroundwaterLevelDossier) -> N
     start_log.check_delivery_status()
 
 
-def gen_val_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
+def observation_measurements_incomplete(observation: Observation) -> bool:
+    """
+    Check whether any measurement (MeasurementTvp) belonging to the observation
+    is missing a calculated_value or a measurement_point_metadata.
+    """
+    return observation.measurement.filter(
+        models.Q(calculated_value__isnull=True)
+        | models.Q(measurement_point_metadata__isnull=True)
+    ).exists()
+
+
+def gen_val_and_deliver_additions(
+    dossier: GroundwaterLevelDossier,
+) -> list[Observation]:
+    incomplete_observations = []
     for observation in dossier.observation.filter(
         up_to_date_in_bro=False, result_time__isnull=False
     ):
+        if observation.observation_endtime is not None and observation_measurements_incomplete(
+            observation
+        ):
+            logger.warning(
+                f"Skipping delivery for observation ({observation}); "
+                "not all measurements have a calculated_value and measurement_point_metadata."
+            )
+            incomplete_observations.append(observation)
+            continue
+
         if observation.observation_id_bro is not None and observation.correction_reason is not None:
             request_type = "replace"
         else:
@@ -304,7 +330,7 @@ def gen_val_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
             logger.error(
                 f"Check and deliver; File generation failed: {addition_log.comments}"
             )
-            return
+            return incomplete_observations
 
         addition_log.validate_sourcedocument()
         logger.info(
@@ -314,7 +340,7 @@ def gen_val_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
             logger.error(
                 f"Check and deliver; File validation failed: {addition_log.comments}"
             )
-            return
+            return incomplete_observations
 
         addition_log.deliver_sourcedocument()
         logger.info(
@@ -324,10 +350,11 @@ def gen_val_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
             logger.error(
                 f"Check and deliver; File delivery failed: {addition_log.comments}"
             )
-            return
-        
+            return incomplete_observations
+
     # Sleep for 1 seconds to avoid overwhelming the server
     time.sleep(1)
+    return incomplete_observations
 
 
 def check_status(dossier: GroundwaterLevelDossier) -> None:
