@@ -49,10 +49,13 @@ SECRET_KEY = "django-insecure-1b2-79o0!+@%9d6gt@7k5-8=8(r@&x-(15!o7+zo-zgwg4)gbv
 
 ALLOWED_HOSTS = ["*"]
 
+BROSTAR_URL = os.environ.get("BROSTAR_URL", "https://staging.brostar.nl/api")
+
 INSTALLED_APPS = [
     "jazzmin",
     "main",
     "bro",
+    "bro_delivery",
     "gld",
     "gmw",
     "gmn",

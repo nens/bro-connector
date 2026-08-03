@@ -21,3 +21,6 @@ CREATE SCHEMA IF NOT EXISTS gar;
 
 -- Create schema 'aanlevering'
 CREATE SCHEMA IF NOT EXISTS aanlevering;
+
+-- Create schema 'bro_delivery'
+CREATE SCHEMA IF NOT EXISTS bro_delivery;
