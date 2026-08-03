@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: bro-connector
-Version: 0.1.0.dev0
+Version: 0.1.1.dev0
 Summary: Complete groundwatermonitoring data management for BRO
 License: MIT License
         
@@ -24,22 +24,23 @@ License: MIT License
         OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
         SOFTWARE.
         
-Requires-Python: >=3.11
+Requires-Python: ==3.12
 Description-Content-Type: text/markdown
 License-File: LICENSE.MD
 Requires-Dist: bro_exchange @ git+https://github.com/nens/bro-exchange@7948005c9f15a9ca383a7c50d44b10b93dba57be
-Requires-Dist: cryptography==43.0.0
+Requires-Dist: channels>=4.0.0
+Requires-Dist: cryptography>=44.0.0
 Requires-Dist: dash==2.18.2
 Requires-Dist: dash-bootstrap-components==1.7.1
 Requires-Dist: dash-core-components==2.0.0
 Requires-Dist: dash-html-components==2.0.0
 Requires-Dist: dash-table==5.0.0
-Requires-Dist: Django==4.2
+Requires-Dist: Django>=5.2
 Requires-Dist: django-admin-autocomplete-filter==0.7.1
 Requires-Dist: django-admin-generator==2.2.1
 Requires-Dist: django-bootstrap4
 Requires-Dist: django-extensions==3.2.3
-Requires-Dist: django-jazzmin==2.6.0
+Requires-Dist: django-jazzmin>=3.0.0
 Requires-Dist: django-modeladmin-reorder==0.3.1
 Requires-Dist: django-plotly-dash
 Requires-Dist: django-reversion==5.0.12
@@ -49,25 +50,28 @@ Requires-Dist: django-utils2==2.12.1
 Requires-Dist: djangorestframework==3.15.1
 Requires-Dist: dpd-components==0.1.0
 Requires-Dist: dpd-static-support==0.0.5
+Requires-Dist: factory-boy>=3.3.3
 Requires-Dist: Flask==3.0.3
 Requires-Dist: Flask-Caching
 Requires-Dist: geopandas
-Requires-Dist: hydropandas
+Requires-Dist: gunicorn>=23.0.0
+Requires-Dist: hydropandas>=0.17.1
 Requires-Dist: i18nice[YAML]
-Requires-Dist: Jinja2==3.1.3
+Requires-Dist: Jinja2>=3.1.4
 Requires-Dist: lxml
-Requires-Dist: numpy==2.0.1
+Requires-Dist: numpy>=2.2
 Requires-Dist: packaging==24.0
-Requires-Dist: pandas==2.2.2
-Requires-Dist: pastas
+Requires-Dist: pandas>=3.0
+Requires-Dist: pastas>=1.6.0
 Requires-Dist: pastastore>=1.11.0
 Requires-Dist: cachetools==6.2.4
 Requires-Dist: plotly==6.0.1
 Requires-Dist: polars
 Requires-Dist: psycopg2-binary
 Requires-Dist: pyOpenSSL
-Requires-Dist: pyproj==3.6.1
+Requires-Dist: pyproj>=3.7.0
 Requires-Dist: pysftp==0.2.9
+Requires-Dist: python-dotenv>=1.1.0
 Requires-Dist: python-utils==3.8.2
 Requires-Dist: pytz
 Requires-Dist: requests
@@ -76,12 +80,10 @@ Requires-Dist: six==1.16.0
 Requires-Dist: sqlparse==0.5.1
 Requires-Dist: SQLAlchemy
 Requires-Dist: toml==0.10.2
-Requires-Dist: tomli
 Requires-Dist: traval
 Requires-Dist: tzdata==2024.1
-Requires-Dist: urllib3==2.2.2
-Requires-Dist: uuid==1.30
-Requires-Dist: Werkzeug==3.0.2
+Requires-Dist: urllib3>=2.2.2
+Requires-Dist: Werkzeug>=3.0.4
 Requires-Dist: django-image-uploader-widget
 Requires-Dist: pytest>=8.4.0
 Requires-Dist: pre-commit>=4.5.1
