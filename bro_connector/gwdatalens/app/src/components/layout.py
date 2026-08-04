@@ -1,5 +1,4 @@
 from dash import Dash, dcc, html
-
 from gwdatalens.app.src.components import (
     button_help_modal,
     button_load_pastastore,
@@ -39,6 +38,7 @@ def create_layout(app: Dash, data: DataManager) -> html.Div:
             dcc.Store(id=ids.TRAVAL_RESULT_FIGURE_STORE),
             dcc.Store(id=ids.TRAVAL_RESULT_TABLE_STORE),
             dcc.Store(id=ids.OVERVIEW_TIME_RANGE_REFRESH_STORE),
+            dcc.Store(id=ids.OVERVIEW_TAB_RENDER_STORE),
             dcc.Store(id=ids.PASTASTORE_REFRESH_STORE),
             # Global time-range store — persists across all tab changes
             dcc.Store(

@@ -1,10 +1,11 @@
 import logging
 from functools import wraps
-from typing import Any, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
 import traval
+from gwdatalens.app.src.data import sql
 
 try:
     from cachetools import cachedmethod
@@ -195,3 +196,36 @@ def conditional_cachedmethod(cache_getter):
         return wrapper
 
     return decorator
+
+
+# %% verification stuff
+
+
+def get_all_observation_series(well_static_id: int, tube_static_id: int):
+    well_static_id = 36250
+    tube_static_id = 3710
+    stmt = sql.sql_observations_for_well_and_tube_id(well_static_id, tube_static_id)
+    obs = sql.run_sql(stmt)
+    tsdict = {}
+    for oid in obs["observation_id"]:
+        stmt = sql.sql_measurements_for_observation_id_with_metadata(oid)
+        series = sql.run_sql(stmt)
+        series["observation_id"] = oid
+        tsdict[oid] = series
+
+    df = (
+        pd.concat(list(tsdict.values()), axis=0)
+        .set_index("measurement_time")
+        .sort_index()
+    )
+
+    dupes = df.index.duplicated(keep=False)
+    print("Has duplicates:", dupes.sum())
+    if dupes.sum() > 0:
+        print(df.loc[dupes])
+
+    # original time series
+    stmt = sql.sql_get_timeseries(well_static_id, tube_static_id)
+    ts = sql.run_sql(stmt).set_index("measurement_time").sort_index()
+
+    return df, ts

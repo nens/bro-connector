@@ -1,6 +1,5 @@
 from dash import dcc, html
 from dash_bootstrap_components import Button
-
 from gwdatalens.app.constants import UI
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
@@ -119,6 +118,34 @@ def render_reset_rules_button():
             },
             disabled=True,
             id=ids.TRAVAL_RESET_RULESET_BUTTON,
+        ),
+    )
+
+
+def render_reset_qc_button():
+    """Renders a reset QC button component.
+
+    Returns
+    -------
+    html.Div
+        A `Div` element containing the reset QC button.
+    """
+    return html.Div(
+        Button(
+            html.Span(
+                [
+                    html.I(className="fa-solid fa-arrows-rotate"),
+                    " Reset QC",
+                ],
+                id="span-reset-qc",
+                n_clicks=0,
+            ),
+            style={
+                "margin-top": UI.MARGIN_TOP,
+                "margin-bottom": UI.MARGIN_BOTTOM,
+            },
+            disabled=False,
+            id=ids.QC_RESET_BUTTON,
         ),
     )
 

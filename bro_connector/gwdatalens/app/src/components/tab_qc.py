@@ -1,6 +1,5 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-
 from gwdatalens.app.constants import UI
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import (
@@ -191,6 +190,7 @@ def render_content(data: DataManager, selected_data: list[int]) -> dbc.Container
                         ),
                         width="auto",
                     ),
+                    dbc.Col([qc_traval_buttons.render_reset_qc_button()], width="auto"),
                     dbc.Col(
                         [qc_traval_buttons.render_run_traval_button()], width="auto"
                     ),
@@ -263,10 +263,7 @@ def render_content(data: DataManager, selected_data: list[int]) -> dbc.Container
             dcc.Store(id=ids.TRAVAL_RESET_RULESET_BUTTON_STORE_1),
             dcc.Store(id=ids.TRAVAL_RESET_RULESET_BUTTON_STORE_2),
             dcc.Store(id=ids.TRAVAL_RESET_RULESET_BUTTON_STORE_3),
-            dcc.Store(id=ids.LOADING_QC_CHART_STORE_1),
-            dcc.Store(id=ids.LOADING_QC_CHART_STORE_2),
             dcc.Store(id=ids.QC_CHART_STORE_1),
-            dcc.Store(id=ids.QC_CHART_STORE_2),
         ],
         fluid=True,
     )

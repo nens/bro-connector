@@ -3,7 +3,6 @@ from typing import Any
 import pandas as pd
 from dash import dash_table, html
 from dash.dash_table.Format import Format
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids

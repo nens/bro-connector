@@ -1,5 +1,4 @@
 from dash import dcc
-
 from gwdatalens.app.constants import ConfigDefaults
 from gwdatalens.app.src.components import (
     ids,

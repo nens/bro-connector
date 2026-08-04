@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from dash import ALL, Input, Output, Patch, State, dcc, html, no_update
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import ColumnNames, ConfigDefaults, PlotConstants, QCFlags
 from gwdatalens.app.messages import ErrorMessages, SuccessMessages, t_
@@ -183,7 +182,11 @@ def register_result_callbacks(app, data):
         """
         if data.db.backend == "pastastore":
             return AlertBuilder.warning(
-                t_(ErrorMessages.EXPORT_FAILED, well="current backend")
+                t_(
+                    ErrorMessages.EXPORT_FAILED,
+                    well="PastastoreDataSource",
+                    error="Pastastore backend does not support export.",
+                )
             )
 
         if not n_clicks:
@@ -266,9 +269,15 @@ def register_result_callbacks(app, data):
             well_display = str(wid[0])
         else:
             well_display = name.squeeze()
+
         # Save to database
         try:
-            ts_service.save_qualifier(wid[0], df)
+            if config.get("BRO_CONNECTOR_USE_API", False) and config.get("DJANGO_APP"):
+                ts_service.save_qualifier_api(wid[0], df)
+            else:
+                # if necessary create and update missing measurement_point_metadata_ids
+                df = ts_service.create_metadata_tables(wid[0], df)
+                ts_service.save_qualifier(wid[0], df)
 
             return AlertBuilder.success(
                 t_(SuccessMessages.EXPORT_SUCCESS, well=well_display)
@@ -277,7 +286,7 @@ def register_result_callbacks(app, data):
             logger.exception("Failed to export data to database: %s", e)
 
             return AlertBuilder.danger(
-                t_(ErrorMessages.EXPORT_FAILED, well=well_display)
+                t_(ErrorMessages.EXPORT_FAILED, well=well_display, error=str(e))
             )
 
     @app.callback(

@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from typing import Optional
-
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -107,9 +105,9 @@ class MeasurementTvp(Base):
         ForeignKey("measurement_point_metadata.measurement_point_metadata_id")
     )
     # value_to_be_corrected: Mapped[Optional[float]] = mapped_column(nullable=True)
-    initial_calculated_value: Mapped[Optional[float]] = mapped_column(nullable=True)
-    correction_reason: Mapped[Optional[str]] = mapped_column(nullable=True)
-    correction_time: Mapped[Optional[datetime]] = mapped_column(
+    initial_calculated_value: Mapped[float | None] = mapped_column(nullable=True)
+    correction_reason: Mapped[str | None] = mapped_column(nullable=True)
+    correction_time: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 
@@ -121,3 +119,9 @@ class MeasurementPointMetadata(Base):
     censor_reason: Mapped[str]
     status_quality_control_reason_datalens: Mapped[str]
     value_limit: Mapped[str]
+    date_created: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    date_modified: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )

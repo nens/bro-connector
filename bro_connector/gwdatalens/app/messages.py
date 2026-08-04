@@ -29,7 +29,6 @@ class ErrorMessages:
     NO_WELL_CONFIGURATION_DATA = "general.error_no_well_configuration_data"
     NO_PLOT_DATA = "general.error_no_plot_data"
     NO_DATA_SELECTION = "general.no_data_selection"
-    NO_SERIES = "general.no_series"
     CORRECTIONS_COMMIT_FAILED = "general.error_corrections_commit_failed"
     CORRECTIONS_RESET_FAILED = "general.error_corrections_reset_failed"
     PASTASTORE_LOAD_FAILED = "general.error_pastastore_load_failed"

@@ -11,10 +11,9 @@ from typing import Any
 import numpy as np
 import plotly.graph_objs as go
 import traval
-from pandas import DataFrame, Series, Timedelta
-
 from gwdatalens.app.constants import PlotConstants, QCDefaults
 from gwdatalens.app.src.data.util import get_model_sim_pi
+from pandas import DataFrame, Series, Timedelta
 
 logger = logging.getLogger(__name__)
 

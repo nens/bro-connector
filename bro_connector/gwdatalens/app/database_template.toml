@@ -1,0 +1,13 @@
+# Database Configuration Template
+# 
+# Copy this file to 'database.toml' in the same directory and fill in your credentials.
+# The database.toml file is added to .gitignore to keep credentials secure.
+#
+# For PostgreSQL database connection:
+
+[database]
+database = ""
+user = ""
+password = ""
+host = ""
+port = ""

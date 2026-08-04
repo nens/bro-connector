@@ -10,10 +10,9 @@ from urllib.parse import quote
 
 import geopandas as gpd
 import pandas as pd
+from gwdatalens.app.exceptions import ConfigurationError
 from sqlalchemy import create_engine, select
 from sqlalchemy.engine import Engine
-
-from gwdatalens.app.exceptions import ConfigurationError
 
 logger = logging.getLogger(__name__)
 

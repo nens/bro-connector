@@ -1,9 +1,8 @@
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
-from packaging.version import parse as parse_version
-
 from gwdatalens.app.constants import UI
 from gwdatalens.app.src.components import ids
+from packaging.version import parse as parse_version
 
 
 def render_results() -> html.Div:

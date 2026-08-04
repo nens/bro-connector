@@ -1,13 +1,10 @@
-from typing import Any, Optional, Dict
+from typing import Any
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
-from packaging.version import parse as parse_version
-from pandas import Timedelta, Timestamp
-
 from gwdatalens.app.constants import (
     UI,
     ColumnNames,
@@ -18,6 +15,8 @@ from gwdatalens.app.constants import (
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.data.data_manager import DataManager
+from packaging.version import parse as parse_version
+from pandas import Timedelta, Timestamp
 
 
 def render(data: DataManager, selected_data: list[int] | None = None) -> html.Div:
@@ -62,10 +61,10 @@ def plot_obs(
     wids: list[int] | None,
     data: DataManager,
     plot_manual_obs: bool = False,
-    tmin: Optional[str] = None,
-    tmax: Optional[str] = None,
-    time_range_preset: Optional[str] = None,
-) -> Dict[str, Any]:
+    tmin: str | None = None,
+    tmax: str | None = None,
+    time_range_preset: str | None = None,
+) -> dict[str, Any]:
     """Plots observation data for given monitoring wells and tube numbers.
 
     Parameters
@@ -128,7 +127,7 @@ def plot_obs(
 
     traces = []
     series_colors = px.colors.qualitative.Set2
-    manual_obs_colors = px.colors.qualitative.Dark2
+    # manual_obs_colors = px.colors.qualitative.Dark2
 
     # Track min/max dates across all traces
     all_dates = []
@@ -163,11 +162,11 @@ def plot_obs(
                 x=ts.index,
                 y=ts.values,
                 mode="lines",
-                line={"width": 1, "color": "gray"},
+                line={"width": 1, "color": "silver"},
                 name=display_name,
                 legendgroup=display_name,
                 showlegend=True,
-                hoverinfo=hoverinfo,
+                hoverinfo="skip",
             )
             traces.append(trace_i)
 
@@ -210,19 +209,29 @@ def plot_obs(
             if not manual_obs.empty:
                 # Track manual obs dates
                 all_dates.extend(manual_obs.index.tolist())
+                deviations = compute_deviation(manual_obs, df, data.db.value_column)
+                hover_texts = [
+                    f"Δh: {deviation:.0f} cm"
+                    if not pd.isna(deviation)
+                    else "Deviation: NaN"
+                    for deviation in deviations
+                ]
                 trace_mo = go.Scattergl(
                     x=manual_obs.index,
                     y=manual_obs[data.db.value_column],
                     mode="markers",
                     marker={
+                        "symbol": PlotConstants.CONTROL_OBS_SYMBOL,
                         "color": PlotConstants.CONTROL_OBS_COLOR,
                         "size": PlotConstants.CONTROL_OBS_SIZE,
+                        "line_width": PlotConstants.CONTROL_OBS_LINE_WIDTH,
                     },
                     name=t_("general.manual_observations"),
                     legendgroup="manual obs",
                     showlegend=True,
                     legendrank=1001,
-                    # hoverinfo=hoverinfo,
+                    hovertext=hover_texts,
+                    hoverinfo="text+x+y",
                 )
                 traces.append(trace_mo)
         else:
@@ -257,21 +266,30 @@ def plot_obs(
                 if not manual_obs.empty:
                     # Track manual obs dates
                     all_dates.extend(manual_obs.index.tolist())
+                    deviations = compute_deviation(manual_obs, df, data.db.value_column)
+                    hover_texts = [
+                        f"Δh: {deviation:.0f} cm"
+                        if not pd.isna(deviation)
+                        else "Deviation: NaN"
+                        for deviation in deviations
+                    ]
                     trace_mo_i = go.Scattergl(
                         x=manual_obs.index,
                         y=manual_obs[data.db.value_column],
                         mode="markers",
                         marker={
-                            "size": 8,
-                            "symbol": "x-thin",
-                            "line_width": 2,
-                            "line_color": manual_obs_colors[i % len(manual_obs_colors)],
+                            "size": PlotConstants.CONTROL_OBS_SIZE,
+                            "symbol": PlotConstants.CONTROL_OBS_SYMBOL,
+                            "color": series_colors[i % len(series_colors)],
+                            "line_width": PlotConstants.CONTROL_OBS_LINE_WIDTH,
+                            "line_color": series_colors[i % len(series_colors)],
                         },
                         name=t_("general.manual_observations"),
                         legendgroup=display_name,
                         legendrank=1000,
                         showlegend=True,
-                        # hoverinfo=hoverinfo,
+                        hovertext=hover_texts,
+                        hoverinfo="text+x+y",
                     )
                     traces.append(trace_mo_i)
 
@@ -377,7 +395,52 @@ def plot_obs(
             "x": 1.0,
             "y": 1.02,
         },
-        "dragmode": "pan",
+        "dragmode": "select",
+        "hovermode": "x",
         "margin": {"t": 85, "b": 20, "l": 20, "r": 10},
     }
     return {"data": traces, "layout": layout}
+
+
+def compute_deviation(manual_obs, df, value_column):
+    """Compute the deviation of control observations from the observed time series."""
+    deviations = []
+    for idx, row in manual_obs.iterrows():
+        # Find the nearest observations before and after the control measurement
+        before_mask = df.index <= idx
+        after_mask = df.index >= idx
+
+        if not before_mask.any() or not after_mask.any():
+            deviations.append(float("nan"))
+            continue
+
+        before_obs = df[before_mask].iloc[-1] if before_mask.any() else None
+        after_obs = df[after_mask].iloc[0] if after_mask.any() else None
+
+        if before_obs is None or after_obs is None:
+            deviations.append(float("nan"))
+            continue
+
+        # Check if the nearest observations are within 2 days
+        if (idx - before_obs.name).days > 2 or (after_obs.name - idx).days > 2:
+            deviations.append(float("nan"))
+            continue
+
+        # Linear interpolation
+        x0 = before_obs.name.timestamp()
+        y0 = before_obs[value_column]
+        x1 = after_obs.name.timestamp()
+        y1 = after_obs[value_column]
+        x = idx.timestamp()
+
+        if x1 == x0:
+            interpolated_value = y0
+        else:
+            interpolated_value = y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+        try:
+            deviation = (row[value_column] - interpolated_value) * 100  # Convert to cm
+        except TypeError:
+            deviation = float("nan")
+        deviations.append(deviation)
+
+    return deviations

@@ -8,7 +8,6 @@ import i18n
 import pandas as pd
 import pastastore as pst
 from dash import CeleryManager, Dash, DiskcacheManager
-
 from gwdatalens.app.callbacks import register_callbacks
 from gwdatalens.app.config import config
 from gwdatalens.app.messages import t_
@@ -125,8 +124,7 @@ elif data_backend == "pastastore":
     db = PastaStoreDataSource(pstore=pstore)
 else:
     raise ValueError(
-        "Unknown DATA_BACKEND '%s'. Expected one of: postgresql, pastastore"
-        % data_backend
+        f"Unknown DATA_BACKEND '{data_backend}'. Expected one of: postgresql, pastastore"
     )
 
 # update KNMI time series

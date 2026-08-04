@@ -17,7 +17,6 @@ from dash import (
     no_update,
 )
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.constants import ConfigDefaults
 from gwdatalens.app.exceptions import (
     EmptyResultError,
@@ -131,8 +130,7 @@ def register_qc_callbacks(app, data):
         Input(ids.QC_DROPDOWN_SELECTION, "value"),
         Input(ids.QC_DROPDOWN_ADDITIONAL, "value"),
         Input(ids.TIME_RANGE_STORE, "data"),
-        # State(ids.QC_DROPDOWN_ADDITIONAL, "disabled"),  # NOTE: not sure what for?
-        State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
+        Input(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
     )
     @log_callback(
         log_time=ConfigDefaults.CALLBACK_LOG_TIME,
@@ -172,6 +170,20 @@ def register_qc_callbacks(app, data):
             return EmptyFigure.no_selection()
 
         additional = additional_values or []
+
+        # The traval figure only contains the primary series, so we cannot use it when
+        # additional series are selected.
+        if additional:
+            tmin = time_range.get("tmin") if time_range else None
+            tmax = time_range.get("tmax") if time_range else None
+            preset = time_range.get("preset") if time_range else None
+            return plot_obs(
+                [value] + additional,
+                data,
+                tmin=tmin,
+                tmax=tmax,
+                time_range_preset=preset,
+            )
 
         # When a traval figure is already stored for this series, return it directly
         # (it already contains the full time range; do NOT apply tmin/tmax filter here
@@ -752,17 +764,6 @@ def register_qc_callbacks(app, data):
         # ]
         return is_open, no_update
 
-    # @app.callback(
-    #     Output(ids.LOADING_QC_CHART_STORE_1, "data"),
-    #     Output(ids.RUN_TRAVAL_STORE, "data"),
-    #     Input(ids.QC_RUN_TRAVAL_BUTTON, "n_clicks"),
-    # )
-    # def trigger_traval_run_and_loading_state(n_clicks):
-    #     if n_clicks:
-    #         return pd.Timestamp.now().isoformat(), n_clicks
-    #     else:
-    #         raise PreventUpdate
-
     @app.callback(
         # NOTE: Remove first output for DJANGO
         # Output(ids.QC_CHART, "figure", allow_duplicate=True),
@@ -771,9 +772,8 @@ def register_qc_callbacks(app, data):
         Output(ids.QC_DROPDOWN_ADDITIONAL, "value"),
         Output(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_2, "data"),
         Output(ids.ALERT_RUN_TRAVAL, "data"),
-        # Output(ids.LOADING_QC_CHART_STORE_2, "data"),
         Input(ids.QC_RUN_TRAVAL_BUTTON, "n_clicks"),
-        # Input(ids.RUN_TRAVAL_STORE, "data"),
+        Input(ids.QC_RESET_BUTTON, "n_clicks"),
         State(ids.QC_DROPDOWN_SELECTION, "value"),
         State(ids.QC_DATEPICKER_TMIN, "date"),
         State(ids.QC_DATEPICKER_TMAX, "date"),
@@ -803,19 +803,23 @@ def register_qc_callbacks(app, data):
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
     def run_traval(
-        n_clicks: int | None,
+        run_clicks: int | None,
+        reset_clicks: int | None,
         wid: int | None,
         tmin: str | None,
         tmax: str | None,
         time_range: dict | None,
         only_unvalidated: list[bool],
-    ) -> tuple[tuple[str, dict], dict, None, bool, tuple]:
+        **kwargs,
+    ) -> tuple[Any, Any, Any, bool, tuple]:
         """Run the error detection process based on the provided parameters.
 
         Parameters
         ----------
-        n_clicks : int
+        run_clicks : int
             The number of clicks to trigger the function.
+        reset_clicks : int
+            The number of reset clicks.
         wid : int
             The internal id of the time series.
         tmin : float
@@ -847,9 +851,26 @@ def register_qc_callbacks(app, data):
         Raises
         ------
         PreventUpdate
-            If `n_clicks` is not provided, the update is prevented.
+            If neither action has been triggered.
         """
-        if not n_clicks:
+        ctx_obj = get_callback_context(**kwargs)
+        triggered_id = extract_trigger_id(ctx_obj, parse_json=False)
+
+        if triggered_id == ids.QC_RESET_BUTTON:
+            if not reset_clicks:
+                raise PreventUpdate
+            qc_service.traval.traval_result = None
+            return (
+                CallbackResponse()
+                .add(None)
+                .add(None)
+                .add(no_update)
+                .add(False)
+                .add(AlertBuilder.no_alert())
+                .build()
+            )
+
+        if not run_clicks:
             raise PreventUpdate
 
         try:
@@ -863,6 +884,7 @@ def register_qc_callbacks(app, data):
                 tmax=effective_tmax,
                 only_unvalidated=only_unvalidated,
             )
+            qc_service.traval.traval_result = result
             return (
                 CallbackResponse()
                 .add((wid, figure))
@@ -903,45 +925,6 @@ def register_qc_callbacks(app, data):
             )
 
     @app.callback(
-        Output(ids.QC_CHART_STORE_2, "data"),
-        # Output(ids.LOADING_QC_CHART_STORE_2, "data"),
-        Input(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
-        Input(ids.TRAVAL_RESULT_TABLE_STORE, "data"),
-        prevent_initial_call=True,
-    )
-    @log_callback(
-        log_time=ConfigDefaults.CALLBACK_LOG_TIME,
-        log_inputs=ConfigDefaults.CALLBACK_LOG_INPUTS,
-        log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
-        log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
-    )
-    def update_traval_figure(figure, table):
-        """Update the traval figure and stored traval result table.
-
-        Parameters
-        ----------
-        figure : tuple or None
-            A tuple containing the figure to be updated. If None, no update is
-            performed.
-        table : list of dict
-            The table data to be converted into a DataFrame and used for updating the
-            figure.
-
-        Returns
-        -------
-        tuple
-            A tuple containing the updated figure
-        """
-        if figure is None or table is None:
-            return no_update
-
-        df = pd.DataFrame(table).set_index("datetime")
-        df.index = pd.to_datetime(df.index)
-        qc_service.traval.traval_result = df
-        _, figure = figure
-        return figure
-
-    @app.callback(
         Output(ids.QC_DROPDOWN_ADDITIONAL, "disabled"),
         Input(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_1, "data"),
         Input(ids.QC_DROPDOWN_ADDITIONAL_DISABLED_2, "data"),
@@ -953,7 +936,7 @@ def register_qc_callbacks(app, data):
         log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
-    def toggle_qc_dropdown_additional(*disabled, **kwargs):
+    def toggle_qc_dropdown_additional(*disabled):
         """Toggles the active state of the QC dropdown.
 
         Parameters
@@ -961,28 +944,14 @@ def register_qc_callbacks(app, data):
         *disabled : bool
             Variable length argument list of boolean values indicating the disabled
             state of the input.
-        **kwargs : dict
-            callback_context
 
         Returns
         -------
         bool
             enable/disable additional dropdown.
-
-        Raises
-        ------
-        PreventUpdate
-            If no inputs are disabled.
         """
-        ctx_obj = get_callback_context(**kwargs)
-        triggered_id = ctx_obj.triggered_id
-        inputs_list = ctx_obj.inputs_list
-
-        if any(disabled):
-            idx = _get_trigger_index(triggered_id, inputs_list)
-            return disabled[idx]
-
-        raise PreventUpdate
+        selection_disabled, traval_disabled = disabled
+        return bool(selection_disabled) or bool(traval_disabled)
 
     @app.callback(
         Output(ids.TRAVAL_RULES_FORM, "children"),
@@ -1063,33 +1032,10 @@ def register_qc_callbacks(app, data):
 
         raise PreventUpdate
 
-    # @app.callback(
-    #     Output(ids.LOADING_QC_CHART, "display"),
-    #     Input(ids.LOADING_QC_CHART_STORE_2, "data"),
-    #     Input(ids.LOADING_QC_CHART_STORE_1, "data"),
-    #     prevent_initial_call=True,
-    # )
-    # def toggle_chart_loading_state(*states, **kwargs):
-    #     if len(kwargs) > 0:
-    #         ctx_ = kwargs["callback_context"]
-    #         triggered_id = ctx_.triggered[0]["prop_id"].split(".")[0]
-    #         inputs_list = ctx_.inputs_list
-    #     else:
-    #         triggered_id = ctx.triggered_id
-    #         inputs_list = ctx.inputs_list
-    #     if any(states):
-    #         for i in range(len(ctx.inputs_list)):
-    #             if inputs_list[i]["id"] == triggered_id:
-    #                 break
-    #         return "auto" if i == 0 else "show"
-    #     else:
-    #         raise PreventUpdate
-
     @app.callback(
         Output(ids.QC_CHART, "figure"),
         Output(ids.LOADING_QC_CHART, "display"),
         Input(ids.QC_CHART_STORE_1, "data"),
-        Input(ids.QC_CHART_STORE_2, "data"),
         prevent_initial_call=True,
     )
     @log_callback(
@@ -1098,16 +1044,13 @@ def register_qc_callbacks(app, data):
         log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
-    def display_qc_chart(*figures, **kwargs):
+    def display_qc_chart(fig):
         """Display a QC chart.
 
         Parameters
         ----------
-        *figures : tuple
-            figure objects, figure displayed is determined by the component that
-            triggers this callback.
-        **kwargs : dict
-            callback_context
+        fig : dict
+            Figure object to display.
 
         Returns
         -------
@@ -1120,13 +1063,7 @@ def register_qc_callbacks(app, data):
         PreventUpdate
             If no figures are provided.
         """
-        ctx_obj = get_callback_context(**kwargs)
-        triggered_id = ctx_obj.triggered_id
-        inputs_list = ctx_obj.inputs_list
-
-        if any(figures):
-            idx = _get_trigger_index(triggered_id, inputs_list)
-            fig = figures[idx]
+        if fig:
             # NOTE: not sure how it can ever become a list, but it sometimes does...
             if isinstance(fig, list):
                 fig = fig[0]

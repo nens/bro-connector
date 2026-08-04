@@ -6,7 +6,6 @@ spatial transformations, screen positions, and display names.
 
 import geopandas as gpd
 import pandas as pd
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.src.data import sql
 from gwdatalens.app.src.data.database_connector import DatabaseConnector

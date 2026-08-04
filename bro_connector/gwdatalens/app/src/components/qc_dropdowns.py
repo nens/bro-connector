@@ -1,11 +1,10 @@
 from dash import dcc, html
-from traval import rulelib
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.data.data_manager import DataManager
 from gwdatalens.app.src.data.qc_custom_rules import CUSTOM_RULE_NAMES
+from traval import rulelib
 
 
 def render_selection_series_dropdown(
