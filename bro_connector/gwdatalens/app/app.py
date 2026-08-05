@@ -124,7 +124,8 @@ elif data_backend == "pastastore":
     db = PastaStoreDataSource(pstore=pstore)
 else:
     raise ValueError(
-        f"Unknown DATA_BACKEND '{data_backend}'. Expected one of: postgresql, pastastore"
+        f"Unknown DATA_BACKEND '{data_backend}'. "
+        "Expected one of: postgresql, pastastore"
     )
 
 # update KNMI time series

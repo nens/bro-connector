@@ -21,8 +21,8 @@ nl:
   # tab-qc
   show_parameters: Toon parameters
   hide_parameters: Verberg parameters
-  select_series: Selecteer een tijdreeks ...
-  select_series2: Selecteer extra tijdreeksen ...
+  select_series_qc: Selecteer een tijdreeks voor kwaliteitscontrole ...
+  select_series_qc_extra: Selecteer extra tijdreeks voor visualisatie ...
   select_rule: Selecteer een regel om toe te voegen
   add_rule_button: Toevoegen regel
   load: Open
@@ -112,7 +112,7 @@ nl:
   time_range_active: "Data van %{tmin} tot %{tmax}"
   # error messages
   error_data_load_failed: "Geen data geladen."
-  error_no_wells_selected: "Selecteer een put om verder te gaan."
+  error_no_wells_selected: "Selecteer een tijdreeks om verder te gaan."
   error_no_series_data: "Geen tijdreeksdata beschikbaar voor de geselecteerde put."
   error_no_locations: "Geen meetlocaties gevonden."
   error_qc_analysis_failed: "Kwaliteitscontrole mislukt."

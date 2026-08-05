@@ -21,8 +21,8 @@ en:
   # tab-qc
   show_parameters: Show parameters
   hide_parameters: Hide parameters
-  select_series: Select time series ...
-  select_series2: Select additional time series ...
+  select_series_qc: Select time series for quality control ...
+  select_series_qc_extra: Select additional time series for visualization ...
   select_rule: Select a rule to add
   add_rule_button: Add rule
   load: Load
@@ -112,7 +112,7 @@ en:
   time_range_active: "Showing data from %{tmin} to %{tmax}"
   # error messages
   error_data_load_failed: "Unable to load data."
-  error_no_wells_selected: "Please select a well to continue."
+  error_no_wells_selected: "Please select a time series to continue."
   error_no_series_data: "No time series data available for the selected well."
   error_no_locations: "No monitoring locations found."
   error_qc_analysis_failed: "Quality control analysis failed."

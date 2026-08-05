@@ -4,7 +4,7 @@ from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
 
 
-def render(data, selected_data: list[int] | None) -> html.Div:
+def render(data, selected_data: list[int] | None = None) -> html.Div:
     """Renders a dropdown component for selecting a time series.
 
     Parameters
