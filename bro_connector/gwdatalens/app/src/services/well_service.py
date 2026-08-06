@@ -9,7 +9,6 @@ from typing import Any
 
 import geopandas as gpd
 import pandas as pd
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.exceptions import EmptyResultError, QueryError
 from gwdatalens.app.validators import validate_not_empty
@@ -314,7 +313,7 @@ class WellService:
         try:
             pts = pd.DataFrame(selected_data.get("points", []))
             validate_not_empty(pts, context="map selection points")
-            mask = pts["curveNumber"] == 1  # wells with data
+            mask = pts["curveNumber"] == 0
             names = pts.loc[mask, "text"].tolist()
             wids = pts.loc[mask, "pointNumber"].tolist()
             return names, wids
@@ -341,8 +340,7 @@ class WellService:
 
             dfm = self.db.gmw_gdf.loc[valid_wids].copy()
             # Assign correct trace index:
-            # trace 0 for wells without data, trace 1 for wells with data
-            dfm["curveNumber"] = (dfm["metingen"] > 0).astype(int)
+            dfm["curveNumber"] = 0
 
             selected_data = {
                 "points": [

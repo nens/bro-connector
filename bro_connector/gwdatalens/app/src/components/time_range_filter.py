@@ -27,7 +27,6 @@ from __future__ import annotations
 import dash_bootstrap_components as dbc  # noqa: I001
 import pandas as pd
 from dash import dcc, html
-
 from gwdatalens.app.constants import TimeRangeDefaults
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids

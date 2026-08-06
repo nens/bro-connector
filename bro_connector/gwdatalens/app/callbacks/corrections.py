@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from dash import Dash, Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.constants import UI, ColumnNames, ConfigDefaults, UnitConversion
 from gwdatalens.app.exceptions import (
     EmptyResultError,

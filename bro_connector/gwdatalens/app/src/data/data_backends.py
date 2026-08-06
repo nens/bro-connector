@@ -11,16 +11,35 @@ to specialized modules.
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from collections.abc import Sequence
+from datetime import UTC, datetime
 from functools import cached_property
 from pathlib import Path
 from time import perf_counter
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pastastore as pst
+import requests
+from gwdatalens.app.constants import (
+    ColumnNames,
+    DatabaseFields,
+    QCFlags,
+    TimeRangeDefaults,
+    UnitConversion,
+)
+from gwdatalens.app.messages import t_
+from gwdatalens.app.src.data import api, datamodel, sql
+from gwdatalens.app.src.data.database_connector import DatabaseConnector
+from gwdatalens.app.src.data.metadata_builder import (
+    TUBE_NUMBER_FORMAT,
+    GMWMetadataBuilder,
+)
+from gwdatalens.app.src.data.spatial_transformer import SpatialTransformer
+from gwdatalens.app.src.data.util import EPSG_28992, WGS84, conditional_cachedmethod
+from gwdatalens.app.validators import validate_not_empty, validate_single_result
 from pastastore import PastaStore
 from pyproj import Transformer
 from sqlalchemy import (
@@ -38,24 +57,6 @@ from sqlalchemy import (
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from gwdatalens.app.constants import (
-    ColumnNames,
-    DatabaseFields,
-    QCFlags,
-    TimeRangeDefaults,
-    UnitConversion,
-)
-from gwdatalens.app.messages import t_
-from gwdatalens.app.src.data import datamodel, sql
-from gwdatalens.app.src.data.database_connector import DatabaseConnector
-from gwdatalens.app.src.data.metadata_builder import (
-    TUBE_NUMBER_FORMAT,
-    GMWMetadataBuilder,
-)
-from gwdatalens.app.src.data.spatial_transformer import SpatialTransformer
-from gwdatalens.app.src.data.util import EPSG_28992, WGS84, conditional_cachedmethod
-from gwdatalens.app.validators import validate_not_empty, validate_single_result
-
 try:
     from cachetools import TTLCache
 
@@ -64,8 +65,6 @@ except (ModuleNotFoundError, ImportError):
     CACHETOOLS_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
-
-UTC = timezone.utc
 
 GMW_METADATA_COLUMNS = [
     ColumnNames.WELL_STATIC_ID,
@@ -137,8 +136,8 @@ class DataSourceTemplate(ABC):
     @abstractmethod
     def get_tube_numbers(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
         return_ids: bool = False,
     ):
         """Get tube names/ids for a selected well."""
@@ -148,7 +147,7 @@ class DataSourceTemplate(ABC):
         self,
         query: str | None = None,
         operator: str = "==",
-        columns: Optional[List[str] | str] = None,
+        columns: list[str] | str | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
         """Query the metadata GeoDataFrame."""
@@ -177,12 +176,12 @@ class DataSourceTemplate(ABC):
     @abstractmethod
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        columns: Optional[Union[List[str], str]] = None,
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        columns: list[str] | str | None = None,
+        tmin: str | None = None,
+        tmax: str | None = None,
         deduplicate: bool = True,
     ) -> pd.DataFrame:
         """Get time series.
@@ -225,6 +224,10 @@ class DataSourceTemplate(ABC):
         df : pd.DataFrame
             dataframe containig error detection results after manual review.
         """
+
+    @abstractmethod
+    def save_qualifier_api(self, df: pd.DataFrame) -> None:
+        """Save qualifier information to the BRO-connector API."""
 
     @abstractmethod
     def count_measurements_per_tube(self) -> pd.DataFrame:
@@ -275,8 +278,8 @@ class PostgreSQLDataSource(DataSourceTemplate):
         self,
         config: dict,
         use_cache: bool = False,
-        max_cache_size: Optional[int] = None,
-        cache_timeout: Optional[int] = None,
+        max_cache_size: int | None = None,
+        cache_timeout: int | None = None,
     ):
         """Initialize PostgreSQL data source.
 
@@ -308,7 +311,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
         # TTL-expiring cache is wrong here.  Using a plain attribute avoids
         # re-executing two database queries on every get_timeseries() call
         # when USE_LRU_CACHE is false.
-        self._gmw_gdf_store: Optional[gpd.GeoDataFrame] = None
+        self._gmw_gdf_store: gpd.GeoDataFrame | None = None
 
     @property
     def engine(self):
@@ -388,7 +391,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
 
     def get_timeseries_date_range_per_tube(
         self,
-        observation_type: Optional[Union[str, Sequence[str]]] = None,
+        observation_type: str | Sequence[str] | None = None,
     ) -> pd.DataFrame:
         """Get first and last observation timestamp per tube from database.
 
@@ -647,14 +650,14 @@ class PostgreSQLDataSource(DataSourceTemplate):
     @conditional_cachedmethod(lambda self: self._cache)
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        columns: Optional[Union[List[str], str]] = None,
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        columns: list[str] | str | None = None,
+        tmin: str | None = None,
+        tmax: str | None = None,
         deduplicate: bool = True,
-        column: Optional[Union[List[str], str]] = None,
+        column: list[str] | str | None = None,
     ) -> pd.Series | pd.DataFrame:
         """Return a Pandas Series for the measurements for given bro-id and tube-id.
 
@@ -809,10 +812,15 @@ class PostgreSQLDataSource(DataSourceTemplate):
 
         # mark None status quality control as "unknown" when not labeled
         if pd.isnull(df[ColumnNames.STATUS_QUALITY_CONTROL]).any():
+            nqcnan = df[ColumnNames.STATUS_QUALITY_CONTROL].isna().sum()
+            nmetaidnan = df["measurement_point_metadata_id"].isna().sum()
             logger.warning(
-                "Timeseries %s contains measurements with NULL quality control "
-                "status — treating as 'unknown'.",
+                "Timeseries %s contains %d measurements with NULL quality control "
+                "status — treating as 'unknown'. "
+                "(null measurement_point_metadata_id: %d)",
                 display_name,
+                nqcnan,
+                nmetaidnan,
             )
             # use Dutch flag, as database uses Dutch values
             df[ColumnNames.STATUS_QUALITY_CONTROL] = df[
@@ -945,7 +953,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
     def _execute_db_write(
         self,
         stmt,
-        params: Optional[Sequence[dict[str, Any]]] = None,
+        params: Sequence[dict[str, Any]] | None = None,
         *,
         operation_name: str,
         lock_timeout: str = "5s",
@@ -1179,6 +1187,95 @@ class PostgreSQLDataSource(DataSourceTemplate):
             result.rowcount,
             len(stage_rows),
         )
+
+    def save_qualifier_api(self, df: pd.DataFrame) -> None:
+        """Save qualifier information to the BRO-connector API.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The DataFrame containing the qualifier data to be saved. It must include
+            the following columns:
+            - DatabaseFields.FIELD_MEASUREMENT_POINT_METADATA_ID
+            - DatabaseFields.FIELD_MEASUREMENT_TVP_ID
+            - DatabaseFields.FIELD_STATUS_QUALITY_CONTROL
+            - DatabaseFields.FIELD_CENSOR_REASON_DATALENS
+            - DatabaseFields.FIELD_CENSOR_REASON
+            - DatabaseFields.VALUE_LIMIT
+        """
+        if df is None or df.empty:
+            logger.warning("No data to save to API")
+            return
+
+        if "gld_id" not in df.columns:
+            raise KeyError("Missing required column 'gld_id' in API export.")
+
+        null_gld_count = int(df["gld_id"].isna().sum())
+        if null_gld_count > 0:
+            logger.warning(
+                "Skipping %s row(s) with NULL/NaN gld_id for API export.",
+                null_gld_count,
+            )
+
+        df = df.dropna(subset=["gld_id"])
+        if df.empty:
+            logger.warning("No valid rows to save to API after dropping null gld_id.")
+            return
+
+        # Resolve the GroundwaterLevelDossier primary key expected by the API.
+        gld_ids = df["gld_id"].unique().tolist()
+        logger.info("Unique GroundwaterLevelDossier IDs in DataFrame: %s", gld_ids)
+
+        # Make the API request
+        api_url = api.resolve_bro_connector_api_url()
+        base_request_kwargs = {
+            "timeout": api.resolve_bro_connector_api_timeout_seconds(),
+        }
+        base_request_kwargs.update(api.build_api_auth_kwargs())
+
+        grouped = df.groupby("gld_id", sort=True)
+        for gld_id, gld_df in grouped:
+            # Prepare the measurements for this GroundwaterLevelDossier.
+            measurements = []
+            for idx, row in gld_df.iterrows():
+                measurements.append(
+                    {
+                        "measurement_time": api.serialize_measurement_time_for_api(idx),
+                        "status_quality_control": row[
+                            DatabaseFields.FIELD_STATUS_QUALITY_CONTROL
+                        ],
+                        "status_quality_control_reason_datalens": row[
+                            DatabaseFields.FIELD_CENSOR_REASON_DATALENS
+                        ],
+                        "value_limit": row[DatabaseFields.FIELD_VALUE_LIMIT],
+                    }
+                )
+
+            payload = {
+                "gld_id": int(gld_id),
+                "observation_type": "reguliereMeting",
+                "measurements": measurements,
+            }
+
+            request_kwargs = dict(base_request_kwargs)
+            request_kwargs["json"] = payload
+
+            try:
+                response = requests.post(api_url, **request_kwargs)
+                response.raise_for_status()
+                logger.info(
+                    "Successfully saved %s qualifier(s) to API for gld_id=%s: %s",
+                    len(measurements),
+                    int(gld_id),
+                    response.json(),
+                )
+            except requests.exceptions.RequestException as e:
+                logger.error(
+                    "Failed to save qualifiers to API for gld_id=%s: %s",
+                    int(gld_id),
+                    e,
+                )
+                raise
 
     def save_correction(self, df):
         """Save correction information to the database.
@@ -1553,7 +1650,7 @@ class PastaStoreDataSource(DataSourceTemplate):
         self,
         query: str | None = None,
         operator: str = "==",
-        columns: Optional[List[str] | str] = None,
+        columns: list[str] | str | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
         """Query the gmw_gdf with a pandas query string.
@@ -1632,14 +1729,14 @@ class PastaStoreDataSource(DataSourceTemplate):
 
     def get_timeseries(
         self,
-        wid: Optional[int] = None,
-        query: Optional[dict[str, Any]] = None,
-        observation_type: Optional[Union[str, Sequence[str]]] = "reguliereMeting",
-        columns: Optional[Union[List[str], str]] = None,
-        tmin: Optional[str] = None,
-        tmax: Optional[str] = None,
+        wid: int | None = None,
+        query: dict[str, Any] | None = None,
+        observation_type: str | Sequence[str] | None = "reguliereMeting",
+        columns: list[str] | str | None = None,
+        tmin: str | None = None,
+        tmax: str | None = None,
         deduplicate: bool = True,
-        column: Optional[Union[List[str], str]] = None,
+        column: list[str] | str | None = None,
     ) -> pd.DataFrame:
         """Return a Pandas Series for the measurements for given location name.
 

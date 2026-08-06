@@ -21,12 +21,13 @@ en:
   # tab-qc
   show_parameters: Show parameters
   hide_parameters: Hide parameters
-  select_series: Select time series ...
-  select_series2: Select additional time series ...
+  select_series_qc: Select time series for quality control ...
+  select_series_qc_extra: Select additional time series for visualization ...
   select_rule: Select a rule to add
   add_rule_button: Add rule
   load: Load
-  export: Export
+  load_ruleset: Load RuleSet (pickle)
+  export: Export RuleSet (pickle)
   export_params: Export Parameters
   # tab-result
   datetime: Datetime
@@ -111,7 +112,7 @@ en:
   time_range_active: "Showing data from %{tmin} to %{tmax}"
   # error messages
   error_data_load_failed: "Unable to load data."
-  error_no_wells_selected: "Please select a well to continue."
+  error_no_wells_selected: "Please select a time series to continue."
   error_no_series_data: "No time series data available for the selected well."
   error_no_locations: "No monitoring locations found."
   error_qc_analysis_failed: "Quality control analysis failed."
@@ -135,3 +136,8 @@ en:
   success_pastastore_loaded: "Loaded PastaStore from '%{source}'."
   no_corrections_to_commit: "No corrections to commit. Please edit corrected values before committing."
   no_corrections_to_reset: "No corrections to reset. All observations are showing original values."
+  historic_data_available: "Data available"
+  recent_data_available: "Data in last 2 years"
+  period: "Period"
+  number_of_observations: "Observations"
+  number_of_control_observations: "Control Observations"

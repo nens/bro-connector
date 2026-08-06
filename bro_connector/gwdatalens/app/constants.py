@@ -6,7 +6,6 @@ Centralizes magic strings and numbers used throughout the application.
 from pathlib import Path
 
 import plotly.express as px
-
 from gwdatalens.app.src.components import ids
 
 
@@ -20,7 +19,7 @@ class ConfigDefaults:
     CALLBACK_LOGGING = False  # Enable/disable callback logging globally
     CALLBACK_LOG_TIME = False  # show computation time, for debug purposes
     CALLBACK_LOG_INPUTS = True  # show inputs, for debug purposes
-    CALLBACK_LOG_OUTPUTS = True  # show outputs, for debug purposes
+    CALLBACK_LOG_OUTPUTS = False  # show outputs, for debug purposes
     CALLBACK_LOG_TRIGGER = True  # show trigger, for debug purposes
 
     # Series constraints
@@ -244,7 +243,14 @@ class UI:
 
 
 class PlotConstants:
-    """Plot color constants."""
+    """Plot configuration constants."""
+
+    # Colors
+    STATUS_RELIABLE = "lightgreen"
+    STATUS_UNDECIDED = "lightsalmon"
+    STATUS_UNRELIABLE = "lightcoral"
+    STATUS_NO_QUALIFIER = "lightsteelblue"
+    STATUS_UNKNOWN = "silver"
 
     # overview map colors
     OVERVIEW_MAP_MARKER_COLOR = "black"
@@ -263,13 +269,6 @@ class PlotConstants:
     OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_COLOR = "red"
     OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_SIZE = 12
 
-    # status colors
-    STATUS_RELIABLE = "green"  # goedgekeurd
-    STATUS_UNDECIDED = "orange"  # onbeslist
-    STATUS_UNRELIABLE = "red"  # afgekeurd
-    STATUS_UNKNOWN = "gray"  # onbekend
-    STATUS_NO_QUALIFIER = "#636EFA"
-
     # table cell background colors (translucent)
     STATUS_RELIABLE_BG = "#d4edda"  # light green
     STATUS_UNRELIABLE_BG = "#f8d7da"  # light red
@@ -277,8 +276,10 @@ class PlotConstants:
     STATUS_UNKNOWN_BG = "#e2e3e5"  # light grey
 
     # control observations
-    CONTROL_OBS_COLOR = "red"
-    CONTROL_OBS_SIZE = 7
+    CONTROL_OBS_SYMBOL = "x-thin"
+    CONTROL_OBS_COLOR = "black"
+    CONTROL_OBS_SIZE = 8
+    CONTROL_OBS_LINE_WIDTH = 2
 
     # pastas ci
     CI_FILL_COLOR = "rgba(100,149,237,0.1)"

@@ -2,15 +2,25 @@
 
 # %%
 import logging
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
+from datetime import datetime
 from urllib.parse import quote
 
 import pandas as pd
-from sqlalchemy import case, column, create_engine, func, select, table
-from sqlalchemy.dialects import postgresql
-
 from gwdatalens.app.config import config
 from gwdatalens.app.src.data import datamodel
+from sqlalchemy import (
+    case,
+    column,
+    create_engine,
+    func,
+    select,
+    table,
+    update,
+)
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -27,18 +37,12 @@ def sql_get_gmws():
 
     Notes
     -----
-    - Rank wells per nitg_code (or well_static_id when nitg_code is NULL); keep
-      most recent construction_date (well_rank = 1).
-    - Wells with nitg_code = NULL each receive their own partition so none are
-      silently dropped by the well_rank == 1 filter.
+    - Rank wells per nitg_code; keep most recent construction_date (well_rank = 1).
     - Rank tube_dynamic per tube_static by date_created, keeping newest.
     - Return one tube_dynamic per well/tube combination with metadata fields.
 
     """
-    # Rank wells per nitg_code (or well_static_id when nitg_code is NULL),
-    # newest construction_date first.
-    # Using COALESCE ensures each NULL-nitg_code well forms its own partition
-    # so none are dropped by the well_rank == 1 filter below.
+    # Rank wells per nitg_code, newest construction_date first
     active_well_base = select(
         datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
             "well_static_id"
@@ -49,13 +53,7 @@ def sql_get_gmws():
         datamodel.WellStatic.construction_date,
         func.row_number()
         .over(
-            partition_by=func.coalesce(
-                datamodel.WellStatic.nitg_code,
-                func.cast(
-                    datamodel.WellStatic.groundwater_monitoring_well_static_id,
-                    postgresql.VARCHAR,
-                ),
-            ),
+            partition_by=datamodel.WellStatic.nitg_code,
             order_by=[
                 datamodel.WellStatic.construction_date.desc().nullslast(),
                 datamodel.WellStatic.bro_id.desc(),
@@ -331,7 +329,7 @@ def sql_count_measurements():
 
 
 def sql_get_timeseries_date_range(
-    observation_type: Optional[Union[str, Sequence[str]]] = None,
+    observation_type: str | Sequence[str] | None = None,
 ):
     """Return first/last observation timestamp per well/tube time series.
 
@@ -551,6 +549,78 @@ def sql_count_measurements_deduplicated():
     return stmt
 
 
+def sql_observations_for_well_and_tube_id(well_static_id: int, tube_static_id: int):
+    """Return observations for a specific well_static_id and tube_static_id.
+
+    Useful for exploring why there are multiple counts for certain tubes.
+    Shows all tube_static records (even duplicates) linked to observations
+    for the given well and tube_static_id.
+
+    Parameters
+    ----------
+    well_static_id : int
+        The groundwater_monitoring_well_static_id to filter by.
+    tube_static_id : int
+        The tube_static_id to filter by.
+
+    Returns
+    -------
+    sqlalchemy.sql.Select
+        A statement that returns observation_id, tube_static_id, and measurement count.
+    """
+    stmt = (
+        select(
+            datamodel.Observation.observation_id,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id.label(
+                "tube_static_id"
+            ),
+            func.count(func.distinct(datamodel.MeasurementTvp.measurement_time)).label(
+                "number_of_measurements"
+            ),
+        )
+        .select_from(datamodel.MeasurementTvp)
+        .join(
+            datamodel.Observation,
+            datamodel.Observation.observation_id
+            == datamodel.MeasurementTvp.observation_id,
+        )
+        .join(
+            datamodel.GroundwaterLevelDossier,
+            datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id
+            == datamodel.Observation.groundwater_level_dossier_id,
+        )
+        .join(
+            datamodel.TubeStatic,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id
+            == datamodel.GroundwaterLevelDossier.groundwater_monitoring_tube_id,
+        )
+        .join(
+            datamodel.WellStatic,
+            datamodel.WellStatic.groundwater_monitoring_well_static_id
+            == datamodel.TubeStatic.groundwater_monitoring_well_static_id,
+        )
+        .where(
+            (
+                datamodel.WellStatic.groundwater_monitoring_well_static_id
+                == well_static_id
+            )
+            & (
+                datamodel.TubeStatic.groundwater_monitoring_tube_static_id
+                == tube_static_id
+            )
+        )
+        .group_by(
+            datamodel.Observation.observation_id,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+        )
+        .order_by(
+            datamodel.Observation.observation_id,
+            datamodel.TubeStatic.groundwater_monitoring_tube_static_id,
+        )
+    )
+    return stmt
+
+
 def sql_observations_for_well_and_tube(well_static_id: int, tube_number: int):
     """Return observations for a specific well_static_id and tube_number.
 
@@ -710,9 +780,9 @@ def sql_measurements_for_observation_id(observation_id: int):
 def sql_get_timeseries(
     well_static_id: int,
     tube_static_id: int,
-    observation_type: Optional[Union[str, Sequence[str]]] = None,
-    tmin: Optional[str] = None,
-    tmax: Optional[str] = None,
+    observation_type: str | Sequence[str] | None = None,
+    tmin: str | None = None,
+    tmax: str | None = None,
     deduplicate: bool = True,
 ):
     """Return all measurements for a specific well and tube.
@@ -773,6 +843,7 @@ def sql_get_timeseries(
         datamodel.MeasurementPointMetadata.value_limit,
         datamodel.ObservationMetadata.observation_type,
         datamodel.Observation.observation_id,
+        datamodel.GroundwaterLevelDossier.groundwater_level_dossier_id.label("gld_id"),
         datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
             "well_static_id"
         ),
@@ -885,6 +956,7 @@ def sql_get_timeseries(
             ranked.c.value_limit,
             ranked.c.observation_type,
             ranked.c.observation_id,
+            ranked.c.gld_id,
             ranked.c.well_static_id,
             ranked.c.tube_static_id,
             ranked.c.bro_id,
@@ -1267,7 +1339,161 @@ def sql_count_measurements_per_observation():
     return stmt
 
 
-def run_sql(stmt, print_sql: bool = False):
+def sql_measurements_for_observation_id_with_metadata(observation_id: int):
+    """Return all measurements for a specific observation.
+
+    Useful for inspecting which measurements have or lack metadata references.
+
+    Parameters
+    ----------
+    observation_id : int
+        The observation_id to retrieve measurements for.
+
+    Returns
+    -------
+    sqlalchemy.sql.Select
+        A statement that returns all measurement details including metadata_id.
+    """
+    stmt = (
+        select(
+            datamodel.MeasurementTvp.measurement_tvp_id,
+            datamodel.MeasurementTvp.measurement_time,
+            datamodel.MeasurementTvp.field_value,
+            datamodel.MeasurementTvp.field_value_unit,
+            datamodel.MeasurementTvp.calculated_value,
+            datamodel.MeasurementTvp.measurement_point_metadata_id,
+            datamodel.MeasurementPointMetadata.status_quality_control,
+        )
+        .select_from(datamodel.MeasurementTvp)
+        .outerjoin(
+            datamodel.MeasurementPointMetadata,
+            datamodel.MeasurementTvp.measurement_point_metadata_id
+            == datamodel.MeasurementPointMetadata.measurement_point_metadata_id,
+        )
+        .where(datamodel.MeasurementTvp.observation_id == observation_id)
+        .order_by(datamodel.MeasurementTvp.measurement_time)
+    )
+    return stmt
+
+
+def sql_measurements_missing_metadata_for_observation_id(observation_id: int):
+    """Return measurements for an observation that lack measurement_point_metadata_id.
+
+    Useful for identifying orphaned measurements missing QC metadata.
+
+    Parameters
+    ----------
+    observation_id : int
+        The observation_id to filter by.
+
+    Returns
+    -------
+    sqlalchemy.sql.Select
+        A statement that returns measurements where
+        measurement_point_metadata_id IS NULL.
+    """
+    stmt = (
+        select(
+            datamodel.MeasurementTvp.measurement_tvp_id,
+            datamodel.MeasurementTvp.measurement_time,
+            datamodel.MeasurementTvp.field_value,
+            datamodel.MeasurementTvp.field_value_unit,
+            datamodel.MeasurementTvp.calculated_value,
+            datamodel.MeasurementTvp.initial_calculated_value,
+            datamodel.MeasurementTvp.correction_reason,
+            datamodel.MeasurementTvp.correction_time,
+        )
+        .select_from(datamodel.MeasurementTvp)
+        .where(
+            datamodel.MeasurementTvp.observation_id == observation_id,
+            datamodel.MeasurementTvp.measurement_point_metadata_id.is_(None),
+        )
+        .order_by(datamodel.MeasurementTvp.measurement_time)
+    )
+    return stmt
+
+
+def sql_find_duplicate_metadata_ids():
+    """Find measurement_point_metadata_id values shared by multiple measurement_tvp.
+
+    Returns
+    -------
+    sqlalchemy.sql.Select
+        Columns: measurement_point_metadata_id, count
+        Only rows where the same metadata_id appears more than once.
+    """
+    stmt = (
+        select(
+            datamodel.MeasurementTvp.measurement_point_metadata_id,
+            func.count(datamodel.MeasurementTvp.measurement_tvp_id).label("count"),
+        )
+        .where(datamodel.MeasurementTvp.measurement_point_metadata_id.is_not(None))
+        .group_by(datamodel.MeasurementTvp.measurement_point_metadata_id)
+        .having(func.count(datamodel.MeasurementTvp.measurement_tvp_id) > 1)
+        .order_by(func.count(datamodel.MeasurementTvp.measurement_tvp_id).desc())
+    )
+    return stmt
+
+
+# %%
+def create_missing_metadata(observation_ids: list[int], engine):
+    """Simplified version - no bindparam, auto-primary-key matching."""
+    with Session(engine) as session:
+        # Step 1: Find measurements needing metadata
+        query = select(datamodel.MeasurementTvp.measurement_tvp_id).where(
+            datamodel.MeasurementTvp.measurement_point_metadata_id.is_(None)
+        )
+        if observation_ids:
+            query = query.where(
+                datamodel.MeasurementTvp.observation_id.in_(observation_ids)
+            )
+
+        measurements = session.execute(query).scalars().all()
+
+        if not measurements:
+            return 0
+
+        # Step 2: Bulk insert metadata
+        insert_stmt = (
+            pg_insert(datamodel.MeasurementPointMetadata)
+            .values(
+                [
+                    {
+                        "status_quality_control": "onbekend",
+                        "censor_reason": "onbekend",
+                        "status_quality_control_reason_datalens": "none",
+                        "value_limit": "none",
+                        "date_created": datetime.now(),
+                        "date_modified": datetime.now(),
+                    }
+                    for _ in measurements
+                ]
+            )
+            .returning(datamodel.MeasurementPointMetadata)
+        )
+
+        new_metadata = session.execute(insert_stmt).scalars().all()
+
+        # Step 3: Bulk update - SIMPLIFIED ⬇
+        updates = [
+            {
+                "measurement_tvp_id": mtv_id,
+                "measurement_point_metadata_id": meta.measurement_point_metadata_id,
+            }
+            for mtv_id, meta in zip(measurements, new_metadata, strict=True)
+        ]
+
+        session.execute(
+            update(datamodel.MeasurementTvp),
+            updates,
+            execution_options={"synchronize_session": False},
+        )
+
+        session.commit()
+        return len(measurements)
+
+
+def get_engine():
     dbconfig = config.get_database_config()
     user = dbconfig.get("user")
     password = dbconfig.get("password")
@@ -1284,6 +1510,14 @@ def run_sql(stmt, print_sql: bool = False):
         connection_string,
         connect_args={"options": "-csearch_path=gmw,gld,public,django_admin"},
     )
+    return engine
+
+
+# %%
+
+
+def run_sql(stmt, print_sql: bool = False):
+    engine = get_engine()
     if print_sql:
         compiled = stmt.compile(
             dialect=postgresql.dialect(), compile_kwargs={"literal_binds": False}

@@ -1,14 +1,13 @@
 import dash_bootstrap_components as dbc
 from dash import __version__ as DASH_VERSION
 from dash import dcc, html
-from packaging.version import parse as parse_version
-
-from gwdatalens.app.constants import UI
+from gwdatalens.app.constants import UI, PlotConstants
 from gwdatalens.app.messages import ErrorMessages, t_
 from gwdatalens.app.src.components import ids, qc_results_table
 from gwdatalens.app.src.data.data_manager import DataManager
 from gwdatalens.app.src.data.qc_definitions import qc_categories
 from gwdatalens.app.src.utils.callback_helpers import EmptyFigure
+from packaging.version import parse as parse_version
 
 
 def render() -> dcc.Tab:
@@ -118,6 +117,8 @@ def render_mark_selection_reliable_button():
             style={
                 "margin-top": UI.MARGIN_TOP,
                 "margin-bottom": UI.MARGIN_BOTTOM,
+                "background-color": PlotConstants.STATUS_RELIABLE_BG + " !important",
+                "color": "black !important",
             },
             disabled=True,
             id={"type": ids.QC_RESULT_MARK_OBS_BUTTONS, "index": "reliable"},
@@ -146,6 +147,8 @@ def render_mark_selection_unreliable_button():
             style={
                 "margin-top": UI.MARGIN_TOP,
                 "margin-bottom": UI.MARGIN_BOTTOM,
+                "background-color": PlotConstants.STATUS_UNRELIABLE_BG + " !important",
+                "color": "black !important",
             },
             disabled=True,
             id={"type": ids.QC_RESULT_MARK_OBS_BUTTONS, "index": "unreliable"},
@@ -174,6 +177,8 @@ def render_mark_selection_unknown_button():
             style={
                 "margin-top": UI.MARGIN_TOP,
                 "margin-bottom": UI.MARGIN_BOTTOM,
+                "background-color": PlotConstants.STATUS_UNKNOWN_BG + " !important",
+                "color": "black !important",
             },
             disabled=True,
             id={"type": ids.QC_RESULT_MARK_OBS_BUTTONS, "index": "unknown"},
@@ -202,6 +207,8 @@ def render_mark_selection_undecided_button():
             style={
                 "margin-top": UI.MARGIN_TOP,
                 "margin-bottom": UI.MARGIN_BOTTOM,
+                "background-color": PlotConstants.STATUS_UNDECIDED_BG + " !important",
+                "color": "black !important",
             },
             disabled=True,
             id={"type": ids.QC_RESULT_MARK_OBS_BUTTONS, "index": "undecided"},

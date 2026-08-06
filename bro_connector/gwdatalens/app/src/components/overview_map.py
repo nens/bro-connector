@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 from dash import dcc
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import UI, ConfigDefaults, PlotConstants
 from gwdatalens.app.messages import t_
@@ -148,101 +147,142 @@ def draw_map(
     dict
         dictionary containing plotly maplayout and mapdata
     """
-    mask = df["metingen"] > 0
+    # Determine data availability categories
+    now = pd.Timestamp.now()
+    two_years_ago = now - pd.Timedelta(days=2 * 365)
+
+    # Create color mapping based on data availability
+    colors = []
+    hover_texts = []
+
+    for _, row in df.iterrows():
+        # Format dates for hover text
+        first_obs = row.get("first_observation_date", "N/A")
+        last_obs = row.get("last_observation_date", "N/A")
+
+        if pd.notna(first_obs) and isinstance(first_obs, pd.Timestamp):
+            first_obs = first_obs.strftime("%Y-%m-%d")
+
+        if pd.notna(last_obs) and isinstance(last_obs, pd.Timestamp):
+            last_obs = last_obs.strftime("%Y-%m-%d")
+
+        # Get observation counts
+        metingen = row.get("metingen", 0)
+        controlemetingen = row.get("controlemetingen", 0)
+
+        if metingen == 0 and controlemetingen == 0:
+            hover_text = t_("general.no_data")
+        else:
+            # Create hover text
+            hover_text = (
+                f"{t_('general.period')}: {first_obs} - {last_obs}<br>"
+                f"{t_('general.number_of_observations')}: {metingen}<br>"
+                f"{t_('general.number_of_control_observations')}: {controlemetingen}"
+            )
+        hover_texts.append(hover_text)
+
+        # Determine color based on data availability
+        if metingen == 0:
+            colors.append("gray")  # No data
+        elif pd.notna(last_obs) and pd.to_datetime(last_obs) >= two_years_ago:
+            colors.append("green")  # Data in last 2 years
+        else:
+            colors.append("blue")  # Data but not in last 2 years
+
+    # Create a single trace for all data
     if selected_data is not None:
-        pts_data = selected_data
-        pts_nodata = np.nonzero(df.loc[~mask].index.isin(selected_data))[0].tolist()
+        selected_points = selected_data
     else:
-        pts_data = None
-        pts_nodata = None
-
-    # NOTE: this does not work as map and table have to be similarly ordered for
-    # synchronized selection to work.
-    # df = df.sort_values([ColumnNames.WELL_NITG_CODE, "tube_number"],
-    # ascending=[False, False])
-
-    # oseries data for map
-    pb_data = {
-        "lat": df.loc[:, "lat"],
-        "lon": df.loc[:, "lon"],
-        "name": t_("general.monitoring_wells"),
-        "customdata": df.loc[:, "well_static_id"].astype(str)
-        + "."
-        + df.loc[:, "tube_static_id"].astype(str),
-        "type": "scattermap",
-        "text": df.loc[:, "display_name"].tolist(),
-        "textposition": "top center",
-        "textfont": {"size": 12, "color": "black"},
-        "mode": "markers",
-        "marker": go.scattermap.Marker(
-            size=PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
-            opacity=PlotConstants.OVERVIEW_MAP_MARKER_OPACITY,
-            color=PlotConstants.OVERVIEW_MAP_MARKER_COLOR,
-            symbol=PlotConstants.OVERVIEW_MAP_MARKER_SYMBOL,
-        ),
-        "hovertemplate": ("<b>%{text}</b><br>"),
-        "showlegend": True,
-        "legendgroup": "DATA",
-        "selectedpoints": pts_data,
-        "unselected": {
-            "marker": {
-                "opacity": PlotConstants.OVERVIEW_MAP_UNSELECTED_MARKER_OPACITY,
-                "color": PlotConstants.OVERVIEW_MAP_MARKER_COLOR,
-                "size": PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
-            }
-        },
-        "selected": {
-            "marker": {
-                "opacity": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_OPACITY,
-                "color": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_COLOR,
-                "size": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_SIZE,
-            }
-        },
-    }
-
-    pb_nodata = {
-        "lat": df.loc[~mask, "lat"],
-        "lon": df.loc[~mask, "lon"],
-        "name": t_("general.no_data"),
-        # customdata=df.loc[~mask, "z"],
-        "type": "scattermap",
-        "text": df.loc[~mask, "display_name"].tolist(),
-        "textposition": "top center",
-        "textfont": {"size": 12, "color": "black"},
-        "mode": "markers",
-        "marker": go.scattermap.Marker(
-            size=PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_SIZE,
-            opacity=PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_OPACITY,
-            color=PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_COLOR,
-        ),
-        "hovertemplate": (
-            "<b>%{text}</b><br>"
-            # + "<b>z:</b> NAP%{marker.color:.2f} m"
-            # + "<extra></extra> "
-        ),
-        "showlegend": True,
-        "legendgroup": "NODATA",
-        "selectedpoints": pts_nodata,
-        "unselected": {
-            "marker": {
-                "opacity": PlotConstants.OVERVIEW_MAP_UNSELECTED_MARKER_OPACITY,
-                "color": PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_COLOR,
-                "size": PlotConstants.OVERVIEW_MAP_NO_DATA_MARKER_SIZE,
-            }
-        },
-        "selected": {
-            "marker": {
-                "opacity": PlotConstants.OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_OPACITY,
-                "color": PlotConstants.OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_COLOR,
-                "size": PlotConstants.OVERVIEW_MAP_SELECTED_NO_DATA_MARKER_SIZE,
-            }
-        },
-    }
+        selected_points = None
 
     mapdata = [
-        pb_nodata,
-        pb_data,
+        {
+            "lat": df.loc[:, "lat"],
+            "lon": df.loc[:, "lon"],
+            "name": t_("general.monitoring_wells"),
+            "customdata": df.loc[:, "well_static_id"].astype(str)
+            + "."
+            + df.loc[:, "tube_static_id"].astype(str),
+            "type": "scattermap",
+            "text": df.loc[:, "display_name"].tolist(),
+            "textposition": "top center",
+            "textfont": {"size": 12, "color": "black"},
+            "mode": "markers",
+            "marker": go.scattermap.Marker(
+                size=PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
+                opacity=PlotConstants.OVERVIEW_MAP_MARKER_OPACITY,
+                color=colors,
+                symbol=PlotConstants.OVERVIEW_MAP_MARKER_SYMBOL,
+                showscale=False,
+            ),
+            "hovertemplate": ("<b>%{text}</b><br>%{hovertext}<extra></extra>"),
+            "hovertext": hover_texts,
+            "showlegend": False,
+            "selectedpoints": selected_points,
+            "unselected": {
+                "marker": {
+                    "opacity": PlotConstants.OVERVIEW_MAP_UNSELECTED_MARKER_OPACITY,
+                    "size": PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
+                }
+            },
+            "selected": {
+                "marker": {
+                    "opacity": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_OPACITY,
+                    "color": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_COLOR,
+                    "size": PlotConstants.OVERVIEW_MAP_SELECTED_MARKER_SIZE,
+                }
+            },
+        }
     ]
+
+    # Add legend items for each category - these are dummy traces that only appear
+    # in the legend
+    legend_items = [
+        {
+            "name": t_("general.no_data"),
+            "type": "scattermap",
+            "mode": "markers",
+            "marker": {
+                "size": PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
+                "color": "gray",
+                "symbol": PlotConstants.OVERVIEW_MAP_MARKER_SYMBOL,
+            },
+            "showlegend": True,
+            "legendgroup": "data_availability",
+            "lat": [None],  # No actual data points
+            "lon": [None],  # No actual data points
+        },
+        {
+            "name": t_("general.historic_data_available"),
+            "type": "scattermap",
+            "mode": "markers",
+            "marker": {
+                "size": PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
+                "color": "blue",
+                "symbol": PlotConstants.OVERVIEW_MAP_MARKER_SYMBOL,
+            },
+            "showlegend": True,
+            "legendgroup": "data_availability",
+            "lat": [None],  # No actual data points
+            "lon": [None],  # No actual data points
+        },
+        {
+            "name": t_("general.recent_data_available"),
+            "type": "scattermap",
+            "mode": "markers",
+            "marker": {
+                "size": PlotConstants.OVERVIEW_MAP_MARKER_SIZE,
+                "color": "green",
+                "symbol": PlotConstants.OVERVIEW_MAP_MARKER_SYMBOL,
+            },
+            "showlegend": True,
+            "legendgroup": "data_availability",
+            "lat": [None],  # No actual data points
+            "lon": [None],  # No actual data points
+        },
+    ]
+
+    mapdata.extend(legend_items)
 
     # if selected_rows is None:
     zoom, center = get_plotting_zoom_level_and_center_coordinates(

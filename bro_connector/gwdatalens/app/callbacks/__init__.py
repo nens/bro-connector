@@ -1,5 +1,4 @@
 from dash import Dash
-
 from gwdatalens.app.callbacks.corrections import register_correction_callbacks
 from gwdatalens.app.callbacks.general import register_general_callbacks
 from gwdatalens.app.callbacks.models import register_model_callbacks

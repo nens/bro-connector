@@ -1,11 +1,10 @@
 from dash import dcc, html
-from traval import rulelib
-
 from gwdatalens.app.constants import ColumnNames
 from gwdatalens.app.messages import t_
 from gwdatalens.app.src.components import ids
 from gwdatalens.app.src.data.data_manager import DataManager
 from gwdatalens.app.src.data.qc_custom_rules import CUSTOM_RULE_NAMES
+from traval import rulelib
 
 
 def render_selection_series_dropdown(
@@ -45,7 +44,7 @@ def render_selection_series_dropdown(
                 value=wid,
                 clearable=True,
                 searchable=True,
-                placeholder=t_("general.select_series"),
+                placeholder=t_("general.select_series_qc"),
                 id=ids.QC_DROPDOWN_SELECTION,
                 disabled=False,
             )
@@ -93,7 +92,7 @@ def render_additional_series_dropdown(
                 options=options,
                 clearable=True,
                 searchable=True,
-                placeholder=t_("general.select_series2"),
+                placeholder=t_("general.select_series_qc_extra"),
                 id=ids.QC_DROPDOWN_ADDITIONAL,
                 disabled=selected_data is None,
                 multi=True,

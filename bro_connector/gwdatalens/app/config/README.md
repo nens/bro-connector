@@ -151,6 +151,7 @@ Check the logs for configuration loading messages:
 
 ```python
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 ```
 

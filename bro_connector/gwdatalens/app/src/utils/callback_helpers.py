@@ -11,7 +11,6 @@ from typing import Any
 
 import pandas as pd
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.config import config
 from gwdatalens.app.messages import ErrorMessages, t_
 

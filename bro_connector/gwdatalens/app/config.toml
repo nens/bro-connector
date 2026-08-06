@@ -17,4 +17,13 @@ LOG_LEVEL = "WARNING"          # set logging level: DEBUG, INFO, WARNING, ERROR,
 connector = "pas"               # database connector pas|dict|arctic
 name = "zeeland_bro"            # name of the pastas database
 path = "./gwdatalens/pastasdb/" # path to pastas model database
-update_knmi = false 
+update_knmi = true              # update knmi data in pastas database on startup
+
+[bro_connector]
+use_api = false  # whether to use API to send QC results to database
+api_endpoint = "/api/gld/observation/measurements/"
+api_url = "http://127.0.0.1:8000/api/gld/observation/measurements/"
+api_timeout_seconds = 120  # timeout for API post requests, in seconds
+auth_mode = "auto"         # auth mode for API calls: auto|session|basic
+username = ""              # username for basic auth, only used if auth_mode is set to basic
+password = ""              # password for basic auth, only used if auth_mode is set to basic

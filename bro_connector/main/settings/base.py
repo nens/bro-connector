@@ -11,11 +11,11 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import os
-import pytz
 import platform
 from pathlib import Path
 
 import django.db.models.options as options
+import pytz
 from main.localsecret import ENV, GDAL_DLL_VERSION
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
@@ -48,6 +48,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = "django-insecure-1b2-79o0!+@%9d6gt@7k5-8=8(r@&x-(15!o7+zo-zgwg4)gbv"
 
 ALLOWED_HOSTS = ["*"]
+
+# Optional canonical external origin used by embedded services (e.g. GWDatalens)
+# to construct absolute callback/API URLs.
+BRO_CONNECTOR_BASE_URL = None
 
 INSTALLED_APPS = [
     "jazzmin",
@@ -574,7 +578,7 @@ GRAPH_MODELS = {
     "group_models": True,
 }
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10_485_760  # (10MB) needed for DASH APP
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10_485_760 * 1.5  # (15MB) needed for DASH APP
 
 if platform.system() == "Windows":
     GDAL_LIBRARY_PATH = rf"C:\OSGeo4W\bin\gdal{GDAL_DLL_VERSION}.dll"

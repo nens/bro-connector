@@ -1,5 +1,6 @@
 /* ROOT LAYOUT - Ensure full viewport height */
-html, body {
+html,
+body {
     height: 100vh;
     margin: 0;
     padding: 0;
@@ -55,7 +56,7 @@ html, body {
 }
 
 .gwdatalens-main button[id*="-button"] {
-    background-color: #006f92 !important;
+    background-color: #006f92;
     font-size: medium;
 }
 
@@ -73,6 +74,27 @@ html, body {
     background-color: darkred !important;
 }
 
+/* QC Mark Buttons - override default button styling */
+.gwdatalens-main button[id*='\"index\":\"reliable\"'] {
+    background-color: #d4edda !important;
+    color: black !important;
+}
+
+.gwdatalens-main button[id*='\"index\":\"unreliable\"'] {
+    background-color: #f8d7da !important;
+    color: black !important;
+}
+
+.gwdatalens-main button[id*='\"index\":\"undecided\"'] {
+    background-color: #fff3cd !important;
+    color: black !important;
+}
+
+.gwdatalens-main button[id*='\"index\":\"unknown\"'] {
+    background-color: #e2e3e5 !important;
+    color: black !important;
+}
+
 .loading-wrapper-qc-result>div {
     visibility: visible !important;
 
@@ -82,7 +104,7 @@ html, body {
 /* TABS */
 
 /* The dcc.Tabs component wrapper needs flex growth */
-.gwdatalens-main > .tabs {
+.gwdatalens-main>.tabs {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -99,19 +121,19 @@ html, body {
 }
 
 /* Ensure all intermediary divs and dcc.Tabs content fill the tab-content */
-#tab-content > * {
+#tab-content>* {
     height: 100%;
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
-#tab-content > .tab-content {
+#tab-content>.tab-content {
     height: 100%;
 }
 
 /* Dash-generated tab wrapper */
-.tab-content > * {
+.tab-content>* {
     height: 100%;
 }
 
@@ -125,7 +147,7 @@ html, body {
 }
 
 /* Make rows inside container-fluid expand to fill space */
-.container-fluid > .row {
+.container-fluid>.row {
     flex: 1;
     min-height: 0;
 }
@@ -473,7 +495,7 @@ Defines the .dbc class
 
 
 /* .Select-menu-outer {
-    border: var(--bs-border-width) solid var(--bs-border-color);
+    border: var(--bs-border-width) solid var(--bs-border-color); 
     background-color: transparent;
 } */
 

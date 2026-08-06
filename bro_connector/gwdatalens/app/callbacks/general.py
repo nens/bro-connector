@@ -9,7 +9,6 @@ import dash_bootstrap_components as dbc
 import pastastore as pst
 from dash import Input, Output, State, html, no_update
 from dash.exceptions import PreventUpdate
-
 from gwdatalens.app.constants import ConfigDefaults
 from gwdatalens.app.messages import ErrorMessages, SuccessMessages, t_
 from gwdatalens.app.src.components import (
@@ -69,6 +68,7 @@ def register_general_callbacks(app, data):
     @app.callback(
         Output(ids.TAB_CONTENT, "children"),
         Output(ids.ALERT_TAB_RENDER, "data"),
+        Output(ids.OVERVIEW_TAB_RENDER_STORE, "data"),
         Input(ids.TAB_CONTAINER, "value"),
         Input(ids.PASTASTORE_REFRESH_STORE, "data"),
         State(ids.SELECTED_OSERIES_STORE, "data"),
@@ -85,7 +85,7 @@ def register_general_callbacks(app, data):
         _pastastore_refresh: tuple | None,
         selected_data: list[int] | None,
         figure: tuple | None,
-    ) -> tuple[Any, tuple]:
+    ) -> tuple[Any, tuple, tuple | Any]:
         """Render tab content with appropriate alerts for selection limits.
 
         Parameters
@@ -100,8 +100,10 @@ def register_general_callbacks(app, data):
         Returns
         -------
         tuple
-            (tab_content, alert_data)
+            (tab_content, alert_data, overview_render_signal)
         """
+        overview_render_signal = no_update
+
         # Check selection limit and handle oversized selections
         if selected_data is not None and validate_selection_limit(
             selected_data, ConfigDefaults.MAX_WELLS_SELECTION
@@ -111,29 +113,57 @@ def register_general_callbacks(app, data):
                 alert = AlertBuilder.warning(
                     t_("general.multiple_series_model_warning")
                 )
-                return tab_model.render_content(data, selected_data), alert
+                return (
+                    tab_model.render_content(data, selected_data),
+                    alert,
+                    overview_render_signal,
+                )
             # For overview tab, clear selection to avoid performance issues
             elif tab == ids.TAB_OVERVIEW:
                 alert = AlertBuilder.warning(
                     f"Selection limited to {ConfigDefaults.MAX_WELLS_SELECTION} "
                     "wells for performance"
                 )
-                return tab_overview.render_content(data, None), alert
+                return (
+                    tab_overview.render_content(data, None),
+                    alert,
+                    TimestampStore.create(success=False),
+                )
 
         # No alert for most tabs
         no_alert = AlertBuilder.no_alert()
 
         if tab == ids.TAB_OVERVIEW:
-            return tab_overview.render_content(data, selected_data), no_alert
+            return (
+                tab_overview.render_content(data, selected_data),
+                no_alert,
+                TimestampStore.create(success=True),
+            )
         elif tab == ids.TAB_MODEL:
-            return tab_model.render_content(data, selected_data), no_alert
+            return (
+                tab_model.render_content(data, selected_data),
+                no_alert,
+                overview_render_signal,
+            )
         elif tab == ids.TAB_QC:
-            return tab_qc.render_content(data, selected_data), no_alert
+            return (
+                tab_qc.render_content(data, selected_data),
+                no_alert,
+                overview_render_signal,
+            )
         elif tab == ids.TAB_QC_RESULT:
             figure_data = figure[1] if figure is not None else None
-            return tab_qc_result.render_content(data, figure_data), no_alert
+            return (
+                tab_qc_result.render_content(data, figure_data),
+                no_alert,
+                overview_render_signal,
+            )
         elif tab == ids.TAB_CORRECTIONS:
-            return tab_corrections.render_content(data, selected_data), no_alert
+            return (
+                tab_corrections.render_content(data, selected_data),
+                no_alert,
+                overview_render_signal,
+            )
         else:
             raise PreventUpdate
 

@@ -4,7 +4,6 @@ from inspect import signature
 import dash_bootstrap_components as dbc
 import numpy as np
 from dash import dcc, html
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import UI, ColumnNames
 from gwdatalens.app.src.components import ids
@@ -214,7 +213,12 @@ def generate_traval_rule_components(
         if name == "pastas_obswell" and k == "other" and well_service is not None:
             try:
                 # Get all wells and format as dropdown options
-                wids = well_service.get_all_well_ids()
+                if series_name is not None:
+                    wids = well_service.get_wells_with_data_sorted_by_distance(
+                        series_name
+                    )
+                else:
+                    wids = well_service.get_all_well_ids()
                 wells_df = well_service.get_well_metadata_for_display(wids)
                 wells_df = wells_df.loc[
                     wells_df[ColumnNames.NUMBER_OF_OBSERVATIONS] > 0
@@ -225,7 +229,7 @@ def generate_traval_rule_components(
                             [wells_df.loc[wid, "display_name"]],
                             style={"font-size": "10px"},
                         ),
-                        "value": wells_df.loc[wid, "display_name"],
+                        "value": wid,
                         "search": wells_df.loc[wid, "display_name"],
                     }
                     for wid in wells_df[ColumnNames.ID]

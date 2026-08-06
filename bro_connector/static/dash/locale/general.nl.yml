@@ -21,12 +21,13 @@ nl:
   # tab-qc
   show_parameters: Toon parameters
   hide_parameters: Verberg parameters
-  select_series: Selecteer een tijdreeks ...
-  select_series2: Selecteer extra tijdreeksen ...
+  select_series_qc: Selecteer een tijdreeks voor kwaliteitscontrole ...
+  select_series_qc_extra: Selecteer extra tijdreeks voor visualisatie ...
   select_rule: Selecteer een regel om toe te voegen
   add_rule_button: Toevoegen regel
   load: Open
-  export: Exporteer
+  load_ruleset: Open RuleSet (pickle)
+  export: Exporteer RuleSet (pickle)
   export_params: Exporteer Parameters
   # tab-result
   datetime: Datum
@@ -111,12 +112,12 @@ nl:
   time_range_active: "Data van %{tmin} tot %{tmax}"
   # error messages
   error_data_load_failed: "Geen data geladen."
-  error_no_wells_selected: "Selecteer een put om verder te gaan."
+  error_no_wells_selected: "Selecteer een tijdreeks om verder te gaan."
   error_no_series_data: "Geen tijdreeksdata beschikbaar voor de geselecteerde put."
   error_no_locations: "Geen meetlocaties gevonden."
   error_qc_analysis_failed: "Kwaliteitscontrole mislukt."
   error_no_model: "Geen model beschikbaar voor geselecteerde tijdreeks '%{name}'. Maak eerst een model aan."
-  error_export_failed: "Export naar database mislukt voor %{well}."
+  error_export_failed: "Export naar database mislukt voor %{well}: %{error}."
   error_database_error: "Databaseverbinding mislukt. Probeer later opnieuw."
   error_ruleset_load_error: "QC ruleset laden mislukt."
   error_no_qc_result: "Geen QC-resultaat beschikbaar."
@@ -135,3 +136,8 @@ nl:
   success_pastastore_loaded: "PastaStore geladen vanuit '%{source}'."
   no_corrections_to_commit: "Geen correcties om op te slaan. Bewerk eerst de gecorrigeerde waarden voordat u opslaat."
   no_corrections_to_reset: "Geen correcties om terug te zetten. Alle waarnemingen tonen de originele waarden."
+  historic_data_available: "Data beschikbaar"
+  recent_data_available: "Data in afgelopen 2 jaar"
+  period: "Periode"
+  number_of_observations: "Metingen"
+  number_of_control_observations: "Controlemetingen"

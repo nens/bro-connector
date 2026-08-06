@@ -1,6 +1,5 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-
 from gwdatalens.app.config import config
 from gwdatalens.app.constants import UI, ConfigDefaults
 from gwdatalens.app.messages import t_
@@ -63,6 +62,41 @@ def render_cancel_button() -> html.Div:
     )
 
 
+def render_clear_selection_button() -> html.Div:
+    """Renders a clear selection button for the overview tab.
+
+    Returns
+    -------
+    html.Div
+        A Div containing a clear selection button with absolute positioning
+        to overlay on the map.
+    """
+    return html.Div(
+        dbc.Button(
+            html.Span(
+                [
+                    html.I(className="fa-solid fa-ban"),
+                    " " + t_("general.clear_selection_button"),
+                ],
+                id="span-clear-selection-button",
+                n_clicks=0,
+            ),
+            style={
+                "margin-top": UI.MARGIN_TOP,
+                "margin-bottom": UI.MARGIN_BOTTOM,
+            },
+            disabled=True,
+            id=ids.OVERVIEW_CLEAR_SELECTION_BUTTON,
+        ),
+        style={
+            "position": "absolute",
+            "bottom": "10px",
+            "left": "10px",
+            "zIndex": 1000,
+        },
+    )
+
+
 @conditional_cache(
     cache.memoize,
     (not config.get("DJANGO_APP") and config.get("CACHING")),
@@ -90,7 +124,13 @@ def render_content(data: DataManager, selected_data: str):
                 [
                     dbc.Col(
                         [
-                            overview_map.render(data, selected_data),
+                            html.Div(
+                                [
+                                    overview_map.render(data, selected_data),
+                                    render_clear_selection_button(),
+                                ],
+                                style={"position": "relative"},
+                            ),
                         ],
                         width=6,
                     ),
