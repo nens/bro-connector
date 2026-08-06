@@ -45,7 +45,7 @@ numpy==2.0.1
 packaging==24.0
 pandas==2.2.2
 paramiko==3.4.0
-pastas
+pastas<2.0.0
 pastastore>=1.11.0
 plotly==6.0.1
 polars
