@@ -67,9 +67,10 @@ def register_overview_callbacks(app, data):
         selected_data: dict | None,
         clear_clicks: int | None,
         current_value: list[int] | None,
+        **kwargs,
     ) -> list[int] | None:
         """Store selected well IDs from map selection or clear selection."""
-        ctx_obj = get_callback_context()
+        ctx_obj = get_callback_context(**kwargs)
         triggered_id = ctx_obj.triggered_id
 
         # Handle clear button click
@@ -378,14 +379,16 @@ def register_overview_callbacks(app, data):
         log_outputs=ConfigDefaults.CALLBACK_LOG_OUTPUTS,
         log_trigger=ConfigDefaults.CALLBACK_LOG_TRIGGER,
     )
-    def highlight_point_on_map_from_table(selected_cells, clear_clicks, table):
+    def highlight_point_on_map_from_table(
+        selected_cells, clear_clicks, table, **kwargs
+    ):
         """Sync map selection from table row selection or clear selection.
 
         When user selects rows in overview table, this updates the map
         to highlight the corresponding wells and returns selectedData
         to trigger chart update. Also handles clearing selection via button.
         """
-        ctx_obj = get_callback_context()
+        ctx_obj = get_callback_context(**kwargs)
         triggered_id = ctx_obj.triggered_id
 
         # Handle clear button click
