@@ -12,7 +12,7 @@ to specialized modules.
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from functools import cached_property
 from pathlib import Path
 from time import perf_counter
@@ -1317,7 +1317,7 @@ class PostgreSQLDataSource(DataSourceTemplate):
                 ColumnNames.INITIAL_CALCULATED_VALUE: original_calc_value,
                 ColumnNames.CALCULATED_VALUE: corrected_value,
                 ColumnNames.CORRECTION_REASON: row.get("comment", ""),
-                ColumnNames.CORRECTION_TIME: datetime.now(UTC),
+                ColumnNames.CORRECTION_TIME: datetime.now(timezone.utc),
             }
             # include PK with actual column name for ORM bulk update
             param[DatabaseFields.FIELD_MEASUREMENT_TVP_ID] = measurement_tvp_id

@@ -110,8 +110,8 @@ def get_timeseries_tvp_for_observation_id(observation):
             
         measurement_data = {
             "time": measurement.measurement_time.astimezone(TZINFO).isoformat(),
-            "value": float(measurement.calculated_value)
-            if measurement.calculated_value
+            "value": float(measurement.calculated_value) 
+            if measurement.calculated_value is not None
             else None,
             "metadata": metadata,
         }

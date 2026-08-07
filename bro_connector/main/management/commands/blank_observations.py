@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 # use the metadata id and process id from the previous observation
                 new_observation = Observation(
                     observation_starttime=datetime.datetime.utcnow().replace(
-                        tzinfo=datetime.UTC
+                        tzinfo=datetime.timezone.utc
                     ),
                     observation_metadata_id=previous_observation_metadata_id,
                     observation_process_id=previous_observation_process_id,

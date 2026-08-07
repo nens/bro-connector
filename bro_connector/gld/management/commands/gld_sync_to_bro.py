@@ -214,6 +214,13 @@ def get_observation_gld_source_document_data(observation: models.Observation):
     return source_document_data, addition_type
 
 
+def _temporary_fix__source_doc_contains_nan_value(source_doc_file: str) -> bool:
+    """Temp workaround: BRO validation API accepts nan values but the API rejects them on delivery."""
+    with open(source_doc_file) as f:
+        content = f.read()
+    return ">nan</wml2:value>" in content
+
+
 def form_addition_type(observation: models.Observation) -> str:
     if observation.observation_type == "controlemeting":
         return "controlemeting"
@@ -261,7 +268,7 @@ def create_new_observations():
             # use the metadata id and process id from the previous observation
             new_observation = models.Observation(
                 observation_starttime=datetime.datetime.utcnow().replace(
-                    tzinfo=datetime.UTC
+                    tzinfo=datetime.timezone.utc
                 ),
                 observation_metadata_id=previous_observation_metadata_id,
                 observation_process_id=previous_observation_process_id,
@@ -877,6 +884,7 @@ class GldSyncHandler:
         Validate the generated GLD addition sourcedoc
         """
         source_doc_file = os.path.join(ADDITION_DIR, addition.file)
+
         payload = open(source_doc_file)
         try:
             validation_info = brx.validate_sourcedoc(
@@ -888,15 +896,19 @@ class GldSyncHandler:
 
             if "errors" in validation_info:
                 comments = f"Validated sourcedocument, found errors: {validation_info['errors']}"
-                addition.process_status = "source_document_validation_failed"
-
+                process_status = "source_document_validation_failed"
+            elif _temporary_fix__source_doc_contains_nan_value(source_doc_file):
+                comments = "Source document contains nan measurement value(s); delivery would be rejected by BRO API"
+                process_status = "source_document_validation_failed"
+                validation_status = "NIET_VALIDE"
             else:
                 comments = "Succesfully validated sourcedocument, no errors"
+                process_status = "source_document_validation_succeeded"
 
             addition.date_modified = datetime.datetime.now()
             addition.comments = comments[0:20000]
             addition.validation_status = validation_status
-            addition.process_status = "source_document_validation_succeeded"
+            addition.process_status = process_status
 
         except Exception as e:
             addition.date_modified = datetime.datetime.now()

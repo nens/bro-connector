@@ -1,7 +1,7 @@
 asgiref==3.8.1
 bcrypt==4.2.0
 blinker==1.7.0
-bro_exchange @git+https://github.com/nens/bro-exchange@7948005c9f15a9ca383a7c50d44b10b93dba57be
+bro_exchange @git+https://github.com/nens/bro-exchange@ad6fe1eecd42cca32f425e020d4db0ad16c106ee
 certifi==2024.7.4
 cffi==1.17.0
 channels==4.0.0
