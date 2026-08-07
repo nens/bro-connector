@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objs as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
+from dash.exceptions import PreventUpdate
 from django.shortcuts import get_object_or_404
 from django_plotly_dash import DjangoDash
 from gmw.models import (
@@ -756,6 +757,8 @@ def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
     ],
 )
 def get_event(groundwater_monitoring_well_static_id, eventlist, event):
+    if not eventlist or event is None:
+        raise PreventUpdate
     eventframe = pd.DataFrame(eventlist)
     event_id = eventframe["event"][eventframe["value"] == event].values[0]["event_id"]
     if str(groundwater_monitoring_well_static_id).isdigit():
@@ -788,12 +791,16 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
     filters = GroundwaterMonitoringTubeStatic.objects.filter(
         groundwater_monitoring_well_static=monitoring_well
     )
+    print("filters: ", filters)
     for filtr in filters:
         filtr_history = (
             filtr.state.filter(date_from__lte=datetime_event).last()
             if event.event_name.lower() != "constructie"
             else filtr.state.first()
         )
+        if filtr_history is None:
+            logger.warning(f"No tube dynamic history found for tube {filtr.tube_number} at {datetime_event}, skipping")
+            continue
         filt_dict = (
             {
                 "nummer": filtr.tube_number,
@@ -846,6 +853,11 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
 
     electrodedataframe = transform_electrodedata_to_df(elektrode_data)
     print(electrodedataframe)
+
+    if putdataframe.empty or "datum" not in putdataframe.columns:
+        logger.warning("putdataframe is empty or missing 'datum' column, returning empty stores")
+        return ([], [])
+
     event_dates = list(putdataframe["datum"].unique())
 
     event = event_dates[0]

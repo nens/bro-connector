@@ -156,6 +156,9 @@ class MeasurementTvpInline(admin.TabularInline):
         "measurement_time",
         "field_value",
         "field_value_unit",
+        "calculated_value",
+        "initial_calculated_value",
+        "correction_reason",
         "comment",
     )
 
@@ -163,6 +166,9 @@ class MeasurementTvpInline(admin.TabularInline):
         "measurement_time",
         "field_value",
         "field_value_unit",
+        "calculated_value",
+        "initial_calculated_value",
+        "correction_reason",
         "comment",
     ]
 
@@ -1024,7 +1030,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     )
                 )
             else:
-                gld.deliver_gld_addition_source_document(addition_log)
+                gld.deliver_gld_addition_source_document(addition_log, addition_log.file)
                 pending_messages.append(
                     ("Succesfully attemped document delivery", messages.INFO)
                 )

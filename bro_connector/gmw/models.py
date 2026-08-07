@@ -291,8 +291,7 @@ class GroundwaterMonitoringWellStatic(BaseModel):
     def project_number(self):
         if self.project:
             return self.project.project_number
-        else:
-            None
+        return None
 
     def get_bro_info(self):
         return {
