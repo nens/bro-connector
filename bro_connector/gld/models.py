@@ -18,7 +18,7 @@ from bro.models import Organisation
 from django.apps import apps
 from django.db import models
 from django.db.models import Manager
-from django.utils import timezone
+from datetime import timezone
 from gmn.models import GroundwaterMonitoringNet
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.localsecret import DEMO
