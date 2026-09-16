@@ -102,6 +102,7 @@ def handle_start_registrations(
                 quality_regime=dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
             )
 
+
     for log in gld_registration_logs:
         logger.info(f"Checking existing start registration: {log}")
         gld.check_existing_startregistrations(log)
@@ -330,6 +331,19 @@ def gen_val_and_deliver_additions(dossier: GroundwaterLevelDossier) -> None:
     time.sleep(1)
 
 
+def check_addition_logs(dossier: GroundwaterLevelDossier) -> None:
+    gld = gld_sync_to_bro.GldSyncHandler()
+    gld_addition_logs = gld_addition_log.objects.filter(
+        broid_registration=dossier.gld_bro_id
+    ).exclude(delivery_status="OPGENOMEN_LVBRO")
+
+    for addition_log in gld_addition_logs:
+        logger.info(
+            f"Check addition log; Log status: {addition_log.process_status}, Delivery status: {addition_log.delivery_status}"
+        )
+        gld.check_status_gld_addition(addition_log)
+
+
 def check_status(dossier: GroundwaterLevelDossier) -> None:
     tube = dossier.groundwater_monitoring_tube
     # Ignore filters that should not be delivered to BRO
@@ -340,4 +354,4 @@ def check_status(dossier: GroundwaterLevelDossier) -> None:
     logger.info(f"Check status for dossier {dossier.groundwater_level_dossier_id}")
     handle_start_registrations(dossier, deliver=False)
 
-    handle_additions(dossier, deliver=False)
+    check_addition_logs(dossier)
