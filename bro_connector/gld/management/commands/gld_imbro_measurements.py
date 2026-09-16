@@ -1,14 +1,13 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from django.core.management.base import BaseCommand
-from django.utils.timezone import make_aware, utc
 from gld.models import (
     GroundwaterLevelDossier,
     MeasurementTvp,
     Observation,
 )
 
-cutoff = make_aware(datetime(2021, 1, 1), utc)
+cutoff = datetime(2021, 1, 1, tzinfo=UTC)
 
 
 class Command(BaseCommand):

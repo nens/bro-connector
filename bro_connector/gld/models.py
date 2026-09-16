@@ -18,7 +18,7 @@ from bro.models import Organisation
 from django.apps import apps
 from django.db import models
 from django.db.models import Manager
-from django.utils import timezone
+from datetime import timezone
 from gmn.models import GroundwaterMonitoringNet
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.localsecret import DEMO
@@ -699,13 +699,13 @@ class MeasurementTvp(BaseModel):
         indexes = [
             models.Index(fields=["observation", "-measurement_time"]),
         ]
-        ## IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=["observation", "measurement_time"],  # composite uniqueness
-        #         name="unique_observation_measurement_time"
-        #     )
-        # ]
+        # IMPORTANT: Temporarily turned off the unique constraint of mtvps due to complications with Zeeland DB.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["observation", "measurement_time"],  # composite uniqueness
+                name="unique_observation_measurement_time"
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.observation} {self.measurement_time} {self.calculated_value}"

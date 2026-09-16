@@ -15,5 +15,6 @@
   - Integration of GW DataLens
   - Added GLD-Correction requests
   - Added GMW-Correction requests
+  - Enfore unique measurement time within observation
 
 - Initial development and integration of GWDataLens
