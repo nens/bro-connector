@@ -55,7 +55,7 @@ class DjangoTableToDict:
             "tubeType": tube.tube_type,
             "artesianWellCapPresent": tube.artesian_well_cap_present,
             "sedimentSumpPresent": tube.sediment_sump_present,
-            "numberOfGeoOhmCables": tube.number_of_geo_ohm_cables,
+            "numberOfGeoOhmCables": tube.geo_ohm_cable_count,
             "tubeMaterial": tube.tube_material,
             "screen": {
                 "screenLength": tube.screen_length,
@@ -70,7 +70,7 @@ class DjangoTableToDict:
 
         static_tube_data["geoOhmCables"] = {}
 
-        if tube.number_of_geo_ohm_cables > 0:
+        if tube.geo_ohm_cable_count > 0:
             geo_ohm_cable_number = 0
             for geo_ohm_cable in tube.geo_ohm_cable.all():
                 geo_ohm_cable_data = self.update_static_geo_ohm_cable(geo_ohm_cable)

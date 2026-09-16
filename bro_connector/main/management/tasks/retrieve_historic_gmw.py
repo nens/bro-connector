@@ -69,7 +69,7 @@ def handle_individual_bro_id(gmw_id: str, gmw: GMWHandler, last_import_date=None
                 ini.tube_static()
                 ini.tube_dynamic()
 
-                for geo_ohm_cable in range(int(ini.gmts.number_of_geo_ohm_cables)):
+                for geo_ohm_cable in range(int(ini.gmts.geo_ohm_cable_count)):
                     ini.increment_geo_ohm_number()
                     ini.geo_ohm()
 

@@ -251,7 +251,7 @@ class FieldFormGenerator:
                 groundwater_monitoring_well_static=well
             )
             for tube in tubes:
-                if tube.number_of_geo_ohm_cables > 0:
+                if tube.geo_ohm_cable_count > 0:
                     sublocation = create_sublocation_dict(tube)
 
                     if hasattr(self, "group_name"):
