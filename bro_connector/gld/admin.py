@@ -1,8 +1,8 @@
 import csv
-import datetime
 import logging
 import os
 from collections import Counter, defaultdict
+from datetime import datetime
 
 import reversion
 from django.contrib import admin, messages
@@ -49,7 +49,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
 
     model_name = str(modeladmin.model._meta).replace(".", "_")
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
 
@@ -425,7 +425,7 @@ class ObservationAdmin(admin.ModelAdmin):
             logger.info(f"Closing observation {item.observation_id} with manual action.")
             with reversion.create_revision():
                 item.observation_endtime = (
-                    datetime.datetime.now().astimezone() - datetime.timedelta(seconds=1)
+                    datetime.now().astimezone() - datetime.timedelta(seconds=1)
                 )
                 item.result_time = item.timestamp_last_measurement
                 item.save(update_fields=["observation_endtime", "result_time"])

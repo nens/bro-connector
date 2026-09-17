@@ -369,12 +369,13 @@ class ElectrodeInline(admin.TabularInline):
     fields = (
         "electrode_number",
         "electrode_status",
+        "electrode_packing_material",
+        "electrode_position",
         "bro_actions",
     )
     show_change_link = True
 
     readonly_fields = [
-        "electrode_number",
         "electrode_status",
         "bro_actions",
     ]

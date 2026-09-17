@@ -1,13 +1,12 @@
-import datetime
 import logging
+from datetime import UTC, datetime, timedelta
 
 import requests
-from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
 
-def get_last_import_date(bro_type: str, default_days: int = 3650) -> datetime.datetime:
+def get_last_import_date(bro_type: str, default_days: int = 3650) -> datetime:
     """
     Returns the created_date of the last successfully executed BroImport for the given
     bro_type, or now() - default_days if no such import exists.
@@ -26,11 +25,11 @@ def get_last_import_date(bro_type: str, default_days: int = 3650) -> datetime.da
     except Exception as e:
         logger.warning(f"Could not query BroImport for last import date: {e}")
 
-    return timezone.now() - datetime.timedelta(days=default_days)
+    return datetime.now() - timedelta(days=default_days)
 
 
 def should_import(
-    bro_id: str, bro_type: str, last_import_date: datetime.datetime | None
+    bro_id: str, bro_type: str, last_import_date: datetime | None
 ) -> bool:
     """
     Checks whether the BRO object should be (re-)imported.
@@ -69,9 +68,9 @@ def should_import(
             for d in date_candidates:
                 if d:
                     try:
-                        dt = datetime.datetime.fromisoformat(d)
+                        dt = datetime.fromisoformat(d)
                         if dt.tzinfo is None:
-                            dt = dt.replace(tzinfo=datetime.timezone.utc)
+                            dt = dt.replace(tzinfo=UTC)
                         dates.append(dt)
                     except (ValueError, TypeError):
                         pass
@@ -81,7 +80,7 @@ def should_import(
 
             if last_import_date.tzinfo is None:
                 last_import_date = last_import_date.replace(
-                    tzinfo=datetime.timezone.utc
+                    tzinfo=UTC
                 )
 
             logger.info(

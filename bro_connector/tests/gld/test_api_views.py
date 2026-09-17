@@ -1,12 +1,14 @@
+from datetime import datetime
+
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 from gld.models import (
     MeasurementPointMetadata,
     MeasurementTvp,
     Observation,
     ObservationMetadata,
 )
+from main.settings.base import PYTZ_TIMEZONE
 from rest_framework.test import APIClient
 
 
@@ -97,7 +99,7 @@ def test_post_with_invalid_payload_returns_400(
 
 @pytest.mark.django_db
 def test_post_with_unknown_gld_id_returns_400(api_client, default_observation):
-    payload = _payload(default_observation.groundwater_level_dossier, timezone.now())
+    payload = _payload(default_observation.groundwater_level_dossier, datetime.now(PYTZ_TIMEZONE))
     payload["gld_id"] = 999_999
     response = api_client.post(_url(), payload, format="json")
     assert response.status_code == 400
@@ -113,7 +115,7 @@ def test_post_with_no_matching_observation_returns_400(
     # never requested.
     payload = _payload(
         default_groundwater_level_dossier,
-        timezone.now(),
+        datetime.now(PYTZ_TIMEZONE),
         observation_type="controlemeting",
     )
     payload["observation_type"] = "controlemeting"
@@ -194,7 +196,7 @@ def test_post_prefers_measurement_with_metadata_for_duplicate_timestamp(
         observation_metadata=metadata,
     )
 
-    measurement_time = timezone.now()
+    measurement_time = datetime.now(PYTZ_TIMEZONE)
 
     tvp_with_metadata = MeasurementTvp.objects.create(
         observation=observation_with_metadata,
@@ -233,7 +235,7 @@ def test_post_prefers_measurement_with_metadata_for_duplicate_timestamp(
 def test_post_reports_measurement_times_not_found(
     api_client, default_groundwater_level_dossier, default_observation
 ):
-    payload = _payload(default_groundwater_level_dossier, timezone.now())
+    payload = _payload(default_groundwater_level_dossier, datetime.now(PYTZ_TIMEZONE))
     response = api_client.post(_url(), payload, format="json")
 
     assert response.status_code == 200
@@ -256,7 +258,7 @@ def test_post_matches_null_validatie_status_to_null_metadata_status(
     )
     tvp = MeasurementTvp.objects.create(
         observation=observation,
-        measurement_time=timezone.now(),
+        measurement_time=datetime.now(PYTZ_TIMEZONE),
         calculated_value=1.0,
         field_value_unit="m",
     )
@@ -288,7 +290,7 @@ def test_post_without_validatie_status_matches_any_metadata_status(
     )
     tvp = MeasurementTvp.objects.create(
         observation=observation,
-        measurement_time=timezone.now(),
+        measurement_time=datetime.now(PYTZ_TIMEZONE),
         calculated_value=1.0,
         field_value_unit="m",
     )

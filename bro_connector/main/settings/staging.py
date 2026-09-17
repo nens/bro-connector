@@ -16,7 +16,10 @@ from main.settings.base import *  # noqa: F403
 DEBUG = True
 ROOT_URLCONF = "main.urls"
 SECRET_KEY = "django-insecure-3%@hi=c5i_&u!13p33w4kymt40zht9zhqa8*dty$8gp%ph#7@!"
-
+STATIC_ROOT = BASE_DIR / "staticfiles"  # noqa: F405
+if not STATIC_ROOT.exists():
+    STATIC_ROOT.mkdir(parents=True, exist_ok=True)
+    
 CSRF_TRUSTED_ORIGINS = [
     "https://bro-test.zeeland.nl/",
     "https://bro-test.zeeland.nl/admin",

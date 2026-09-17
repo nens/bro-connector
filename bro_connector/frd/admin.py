@@ -1,5 +1,5 @@
 import csv
-import datetime
+from datetime import datetime
 
 from django.contrib import admin
 from django.db.models import Model, fields
@@ -40,7 +40,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
 
     model_name = str(modeladmin.model._meta).replace(".", "_")
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
 

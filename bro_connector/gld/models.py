@@ -6,10 +6,9 @@
 #   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 import bisect
-import datetime
 import os
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
 from logging import getLogger
 from xml.etree import ElementTree as ET
 
@@ -18,12 +17,11 @@ from bro.models import Organisation
 from django.apps import apps
 from django.db import models
 from django.db.models import Manager
-from datetime import timezone
 from gmn.models import GroundwaterMonitoringNet
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.localsecret import DEMO
 from main.models import BaseModel
-from main.settings.base import TZINFO
+from main.settings.base import PYTZ_TIMEZONE
 
 from .choices import (
     AIRPRESSURECOMPENSATIONTYPE,
@@ -109,7 +107,7 @@ def get_timeseries_tvp_for_observation_id(observation):
                 continue
             
         measurement_data = {
-            "time": measurement.measurement_time.astimezone(TZINFO).isoformat(),
+            "time": measurement.measurement_time.astimezone(PYTZ_TIMEZONE).isoformat(),
             "value": float(measurement.calculated_value) 
             if measurement.calculated_value is not None
             else None,
@@ -426,7 +424,7 @@ class Observation(BaseModel):
 
     @property
     def active_measurement(self):
-        one_week_ago = timezone.now() - timedelta(weeks=1)
+        one_week_ago = datetime.now(PYTZ_TIMEZONE) - timedelta(weeks=1)
         return MeasurementTvp.objects.filter(
             observation=self, measurement_time__gte=one_week_ago
         ).exists()
@@ -932,7 +930,7 @@ class gld_registration_log(BaseModel):
         )
         process_status = "succesfully_generated_startregistration_request"
         self.comments = ("Succesfully generated startregistration request",)
-        self.date_modified = datetime.datetime.now()
+        self.date_modified = datetime.now(PYTZ_TIMEZONE)
         self.validation_status = None
         self.process_status = process_status
         self.file = filename
@@ -971,14 +969,14 @@ class gld_registration_log(BaseModel):
             else:
                 comments = "Succesfully validated sourcedocument, no errors"
 
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = comments[0:20000]
             self.validation_status = validation_status
             self.process_status = "source_document_validation_succeeded"
 
         except Exception as e:
             validation_status = "ERROR"
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = f"Failed to validate source document: {e}"
             self.process_status = "source_document_validation_failed"
 
@@ -1019,13 +1017,13 @@ class gld_registration_log(BaseModel):
             )
             if upload_info == "Error":
                 comments = "Error occurred during delivery of sourcedocument"
-                self.date_modified = datetime.datetime.now()
+                self.date_modified = datetime.now(PYTZ_TIMEZONE)
                 self.comments = comments
                 self.delivery_status = delivery_status_update
                 self.process_status = "failed_to_deliver_sourcedocuments"
             else:
                 upload_data = upload_info.json()
-                self.date_modified = datetime.datetime.now()
+                self.date_modified = datetime.now(PYTZ_TIMEZONE)
                 self.comments = "Successfully delivered startself sourcedocument"
                 self.delivery_status = upload_data["status"]
                 self.last_changed = upload_data["lastChanged"]
@@ -1036,7 +1034,7 @@ class gld_registration_log(BaseModel):
             comments = (
                 f"Exception occured during delivery of startself sourcedocument: {e}"
             )
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = comments
             self.delivery_status = delivery_status_update
             self.process_status = "failed_to_deliver_sourcedocuments"
@@ -1068,7 +1066,7 @@ class gld_registration_log(BaseModel):
             delivery_status = delivery_info.json()["brondocuments"][0]["status"]
             bro_id = delivery_info.json()["brondocuments"][0]["broId"]
             self.gld_bro_id = bro_id
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = f"Delivery status: {delivery_status}"
             self.delivery_status = delivery_status
             self.last_changed = delivery_info.json()["lastChanged"]
@@ -1086,7 +1084,7 @@ class gld_registration_log(BaseModel):
             logger.info(f"Failed to check delivery status: {e}")
             delivery_status = "failed_to_deliver"
             comments = f"Failed to check delivery status: {e}"
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = comments
             self.process_status = "failed_to_check_delivery_status"
 
@@ -1169,7 +1167,7 @@ class gld_addition_log(BaseModel):
         print(observation_source_document_data)
         if len(observation_source_document_data["result"]) < 1:
             logger.warning("No results in observation")
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = "No results in observation"
             self.process_status = "failed_to_create_source_document"
             self.save()
@@ -1218,7 +1216,7 @@ class gld_addition_log(BaseModel):
 
             # Set or update the record fields
             self.observation_identifier = observation_id
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.start_date = first_timestamp_datetime
             self.end_date = final_timestamp_datetime
             self.comments = "Successfully generated XML sourcedocument"
@@ -1229,7 +1227,7 @@ class gld_addition_log(BaseModel):
 
         except Exception as e:
             print(e)
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = f"Failed to generate XML source document, {e}"
             self.process_status = "failed_to_create_source_document"
 
@@ -1271,14 +1269,14 @@ class gld_addition_log(BaseModel):
             else:
                 comments = "Succesfully validated sourcedocument, no errors"
 
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = comments[0:20000]
             self.validation_status = validation_status
             self.process_status = "source_document_validation_succeeded"
 
         except Exception as e:
             validation_status = "ERROR"
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = f"Failed to validate source document: {e}"
             self.process_status = "source_document_validation_failed"
 
@@ -1318,12 +1316,12 @@ class gld_addition_log(BaseModel):
             if upload_info == "Error":
                 comments = "Error occured during delivery of sourcedocument"
 
-                self.date_modified = datetime.datetime.now()
+                self.date_modified = datetime.now(PYTZ_TIMEZONE)
                 self.comments = comments
                 self.delivery_status = delivery_status_update
 
             else:
-                self.date_modified = datetime.datetime.now()
+                self.date_modified = datetime.now(PYTZ_TIMEZONE)
                 self.comments = "Succesfully delivered sourcedocument"
                 self.delivery_status = upload_info.json()["status"]
                 self.last_changed = upload_info.json()["lastChanged"]
@@ -1333,7 +1331,7 @@ class gld_addition_log(BaseModel):
         except Exception as e:
             comments = f"Error occured in attempting to deliver sourcedocument, {e}"
 
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = comments
             self.delivery_status = delivery_status_update
             self.process_status = "source_document_delivery_failed"
@@ -1361,7 +1359,7 @@ class gld_addition_log(BaseModel):
                 demo=DEMO,
             )
             delivery_status = delivery_info.json()["status"]
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = f"Delivery status: {delivery_status}"
             self.delivery_status = delivery_status
             self.last_changed = delivery_info.json()["lastChanged"]
@@ -1370,7 +1368,7 @@ class gld_addition_log(BaseModel):
         except Exception as e:
             delivery_status = "Failed"
             comments = f"Failed to check delivery status: {e}"
-            self.date_modified = datetime.datetime.now()
+            self.date_modified = datetime.now(PYTZ_TIMEZONE)
             self.comments = comments
             self.process_status = "failed_to_check_delivery_status"
 
@@ -1381,7 +1379,7 @@ class gld_addition_log(BaseModel):
 ### Helper functions
 def _order_measurements_list(measurement_list: list):
     datetime_values = [
-        datetime.datetime.fromisoformat(tvp["time"]) for tvp in measurement_list
+        datetime.fromisoformat(tvp["time"]) for tvp in measurement_list
     ]
     datetime_ordered = sorted(datetime_values)
     indices = [
