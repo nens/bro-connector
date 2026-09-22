@@ -42,7 +42,7 @@ def sql_get_gmws():
     - Return one tube_dynamic per well/tube combination with metadata fields.
 
     """
-    # Rank wells per nitg_code, newest construction_date first
+    # Rank wells static id, newest construction_date first
     active_well_base = select(
         datamodel.WellStatic.groundwater_monitoring_well_static_id.label(
             "well_static_id"
@@ -53,7 +53,7 @@ def sql_get_gmws():
         datamodel.WellStatic.construction_date,
         func.row_number()
         .over(
-            partition_by=datamodel.WellStatic.nitg_code,
+            partition_by=datamodel.WellStatic.groundwater_monitoring_well_static_id,
             order_by=[
                 datamodel.WellStatic.construction_date.desc().nullslast(),
                 datamodel.WellStatic.bro_id.desc(),
