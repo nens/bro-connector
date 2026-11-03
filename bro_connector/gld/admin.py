@@ -99,7 +99,7 @@ def send_pending_messages(self, request, message_counter):
         if count > 1:
             self.message_user(
                 request,
-                f"{msg_text} (Occurred {count} times)",
+                f"{msg_text} ({count} keer voorgekomen)",
                 msg_level,
             )
         else:
@@ -455,7 +455,7 @@ class ObservationAdmin(admin.ModelAdmin):
             ):
                 self.message_user(
                     request,
-                    f"Observation {item} is not a regular measurement or is not in 'voorlopig' status. Skipping.",
+                    f"Observatie {item} is geen reguliere meting of heeft niet de status 'voorlopig'. Overgeslagen.",
                     level=messages.WARNING,
                 )
                 continue
@@ -463,7 +463,7 @@ class ObservationAdmin(admin.ModelAdmin):
             if not item.all_measurements_validated:
                 self.message_user(
                     request,
-                    f"Observation {item} does not have all measurements validated. Skipping.",
+                    f"Observatie {item} heeft niet alle gevalideerde metingen. Overgeslagen.",
                     level=messages.WARNING,
                 )
                 continue
@@ -471,7 +471,7 @@ class ObservationAdmin(admin.ModelAdmin):
             if not item.measurement.all().exists():
                 self.message_user(
                     request,
-                    f"Observation {item} does not have any measurements. Skipping.",
+                    f"Observatie {item} heeft geen metingen. Overgeslagen.",
                     level=messages.WARNING,
                 )
                 continue
@@ -572,7 +572,7 @@ class ObservationAdmin(admin.ModelAdmin):
                 error_count += 1
                 self.message_user(
                     request,
-                    f"Observation {item.observation_id}: existing 'volledigBeoordeeld' measurements don't match the source. Skipping, no action taken.",
+                    f"Observatie {item.observation_id}: er bestaat al een reeks met status 'volledigBeoordeeld' die niet overeenkomt. Deze wordt overgeslagen. Verwijder de bestaande reeks en probeer het opnieuw als deze gegevens correct zijn.",
                     level=messages.ERROR,
                 )
 
@@ -603,8 +603,8 @@ class ObservationAdmin(admin.ModelAdmin):
 
         self.message_user(
             request,
-            f"{len(to_create_observations)} observation(s) created, "
-            f"{len(to_update_observations)} updated, {error_count} skipped with mismatch.",
+            f"{len(to_create_observations)} observatie(s) aangemaakt, "
+            f"{len(to_update_observations)} bijgewerkt, {error_count} overgeslagen vanwege mismatch.",
             level=messages.SUCCESS,
         )
 
@@ -728,7 +728,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             if registration_log.delivery_id is not None:
                 pending_messages.append(
                     (
-                        "Can't generate startregistration sourcedocuments for an existing registration",
+                        "Kan geen startregistratiebrondocumenten genereren voor een bestaande registratie.",
                         messages.ERROR,
                     )
                 )
@@ -736,7 +736,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 gld.create_start_registration_sourcedocs(dossier)
                 pending_messages.append(
                     (
-                        "Attempted startregistration sourcedocument regeneration",
+                        "Poging gedaan om het startregistratiebrondocument opnieuw te genereren.",
                         messages.INFO,
                     )
                 )
@@ -762,21 +762,21 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             if registration_log.process_status == "failed_to_generate_source_documents":
                 pending_messages.append(
                     (
-                        "Can't validate a startregistration that failed to generate",
+                        "Een startregistratie kan niet worden gevalideerd omdat het genereren is mislukt.",
                         messages.ERROR,
                     )
                 )
             elif registration_log.file is None or not os.path.exists(sourcedoc_file):
                 pending_messages.append(
                     (
-                        "There is no sourcedocument file for this startregistration",
+                        "Er is geen brondocumentbestand voor deze startregistratie.",
                         messages.ERROR,
                     )
                 )
             elif registration_log.delivery_id is not None:
                 pending_messages.append(
                     (
-                        "Can't validate a document that has already been delivered",
+                        "Een document dat al is aangeleverd kan niet worden gevalideerd.",
                         messages.ERROR,
                     )
                 )
@@ -786,7 +786,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 )
                 pending_messages.append(
                     (
-                        "Succesfully validated startregistration sourcedocument",
+                        "Het startregistratiebrondocument is gevalideerd.",
                         messages.INFO,
                     )
                 )
@@ -807,14 +807,14 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             if registration_log.delivery_id is not None:
                 pending_messages.append(
                     (
-                        "Can't deliver a registration that has already been delivered",
+                        "Een registratie die al is aangeleverd kan niet opnieuw worden aangeleverd.",
                         messages.ERROR,
                     )
                 )
             elif registration_log.validation_status == "NIET_VALIDE":
                 pending_messages.append(
                     (
-                        "Can't deliver an invalid document or not yet validated document",
+                        "Een ongeldig of nog niet gevalideerd document kan niet worden aangeleverd.",
                         messages.ERROR,
                     )
                 )
@@ -824,7 +824,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             ]:
                 pending_messages.append(
                     (
-                        "Can't deliver a document that has been already been delivered",
+                        "Een document dat al is aangeleverd kan niet opnieuw worden aangeleverd.",
                         messages.ERROR,
                     )
                 )
@@ -832,7 +832,7 @@ class gld_registration_logAdmin(admin.ModelAdmin):
                 gld.deliver_startregistration_sourcedocuments(registration_log)
                 pending_messages.append(
                     (
-                        "Attempted registration sourcedocument delivery",
+                        "Poging gedaan om het registratiebrondocument aan te leveren.",
                         messages.INFO,
                     )
                 )
@@ -854,14 +854,14 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             if delivery_id is None:
                 pending_messages.append(
                     (
-                        "Can't check status of a delivery with no 'delivery_id'",
+                        "De status van een levering zonder 'delivery_id' kan niet worden gecontroleerd.",
                         messages.ERROR,
                     )
                 )
             else:
                 gld.check_delivery_status_levering(registration_log)
                 pending_messages.append(
-                    ("Attempted registration status check", messages.INFO)
+                    ("Poging gedaan om de registratiestatus te controleren.", messages.INFO)
                 )
 
         # Deduplicate and display
@@ -938,7 +938,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             if addition_log.delivery_id is not None:
                 pending_messages.append(
                     (
-                        "Can't create new sourcedocuments for an observation that has already been delivered",
+                        "Er kunnen geen nieuwe brondocumenten worden aangemaakt voor een observatie die al is aangeleverd.",
                         messages.ERROR,
                     )
                 )
@@ -951,7 +951,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
 
                 pending_messages.append(
                     (
-                        "Succesfully attempted sourcedocument regeneration",
+                        "Poging gedaan om het brondocument opnieuw te genereren.",
                         messages.INFO,
                     )
                 )
@@ -981,14 +981,14 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             if addition_log.delivery_id is not None:
                 pending_messages.append(
                     (
-                        "Can't revalidate document for an observation that has already been delivered",
+                        "Een document voor een observatie die al is aangeleverd kan niet opnieuw worden gevalideerd.",
                         messages.ERROR,
                     )
                 )
             elif not os.path.exists(addition_file_path):
                 pending_messages.append(
                     (
-                        "Source document file does not exists in the file system",
+                        "Het brondocumentbestand bestaat niet in het bestandssysteem.",
                         messages.ERROR,
                     )
                 )
@@ -996,7 +996,7 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             else:
                 gld.validate_gld_addition_source_document(addition_log)
                 pending_messages.append(
-                    ("Succesfully attemped document validation", messages.INFO)
+                    ("Poging gedaan om het document te valideren.", messages.INFO)
                 )
 
         # Deduplicate and display
@@ -1018,21 +1018,21 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             if addition_log.validation_status is None:
                 pending_messages.append(
                     (
-                        "Can't deliver an invalid document or not yet validated document",
+                        "Een ongeldig of nog niet gevalideerd document kan niet worden aangeleverd.",
                         messages.ERROR,
                     )
                 )
             elif addition_log.delivery_status in ["AANGELEVERD", "OPGENOM EN_LVBRO"]:
                 pending_messages.append(
                     (
-                        "Can't deliver a document that has been already been delivered",
+                        "Een document dat al is aangeleverd kan niet opnieuw worden aangeleverd.",
                         messages.ERROR,
                     )
                 )
             else:
                 gld.deliver_gld_addition_source_document(addition_log, addition_log.file)
                 pending_messages.append(
-                    ("Succesfully attemped document delivery", messages.INFO)
+                    ("Poging gedaan om het document aan te leveren.", messages.INFO)
                 )
 
         # Deduplicate and display
@@ -1054,14 +1054,14 @@ class gld_addition_log_Admin(admin.ModelAdmin):
             if addition_log.delivery_id is None or addition_log.observation is None:
                 pending_messages.append(
                     (
-                        "Can't check status of a delivery with no 'delivery_id'",
+                        "De status van een levering zonder 'delivery_id' kan niet worden gecontroleerd.",
                         messages.ERROR,
                     )
                 )
             else:
                 gld.check_status_gld_addition(addition_log)
                 pending_messages.append(
-                    ("Succesfully attemped status check", messages.INFO)
+                    ("Poging gedaan om de status te controleren.", messages.INFO)
                 )
 
         # Deduplicate and display

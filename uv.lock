@@ -156,7 +156,7 @@ requires-dist = [
     { name = "django-bootstrap4" },
     { name = "django-extensions", specifier = "==3.2.3" },
     { name = "django-image-uploader-widget" },
-    { name = "django-jazzmin", specifier = ">=3.0.5" },
+    { name = "django-jazzmin", specifier = "==3.0.5" },
     { name = "django-modeladmin-reorder", specifier = "==0.3.1" },
     { name = "django-plotly-dash" },
     { name = "django-reversion", specifier = "==5.0.12" },
