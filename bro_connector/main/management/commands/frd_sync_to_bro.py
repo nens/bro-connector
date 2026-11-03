@@ -24,7 +24,7 @@ from frd.models import (
     MeasurementConfiguration,
 )
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
-from main.settings.base import ENV
+from main.settings.base import ENV, PYTZ_TIMEZONE
 
 
 def get_xml_payload(xml_filepath):
@@ -536,7 +536,7 @@ class GEMConfigurationRegistration(Registration):
         self.filename = f"configuration_registration_{naming}_{date.today()}.xml"
 
     def format_request_reference(self):
-        return f"registration_mc_{self.formation_resistance_dossier.frd_bro_id}_{datetime.now().date()}"
+        return f"registration_mc_{self.formation_resistance_dossier.frd_bro_id}_{datetime.now(PYTZ_TIMEZONE).date()}"
 
     def format_electrode_reference(self, electrode):
         return {

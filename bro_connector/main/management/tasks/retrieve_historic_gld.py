@@ -8,6 +8,7 @@ from bro.models import Organisation
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models.signals import post_save
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gld.models import (
     GroundwaterLevelDossier,
     MeasurementPointMetadata,
@@ -404,7 +405,7 @@ class InitializeData:
                 )
 
                 reversion.set_comment(
-                    f"Updated from BRO-database({datetime.datetime.now().astimezone()})"
+                    f"Updated from BRO-database({datetime.datetime.now(PYTZ_TIMEZONE)})"
                 )
 
             self.gld.save()

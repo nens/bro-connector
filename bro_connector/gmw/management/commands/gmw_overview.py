@@ -3,6 +3,7 @@ import os
 
 import pandas as pd
 from django.core.management.base import BaseCommand
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.models import MeasuringPoint
 from gmw.models import GroundwaterMonitoringWellStatic
 
@@ -51,7 +52,7 @@ class Command(BaseCommand):
             df = pd.concat([df, pd.DataFrame(well_data)], ignore_index=True)
 
         # Save the DataFrame as a CSV file
-        date_string = datetime.datetime.now().strftime("%Y%m%d")
+        date_string = datetime.datetime.now(PYTZ_TIMEZONE).strftime("%Y%m%d")
         save_path = os.path.join(output_path, f"putten_overzicht_{date_string}.csv")
         df.to_csv(save_path, index=False)
         self.stdout.write(f"File saved at {save_path}")

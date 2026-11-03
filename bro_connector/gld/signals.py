@@ -10,6 +10,7 @@ from django.db.models.signals import (
     pre_save,
 )
 from django.dispatch import receiver
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmw.models import GroundwaterMonitoringTubeStatic
 
 from .models import (
@@ -197,8 +198,8 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
             instance.result_time = (
                 instance.observation_endtime + timedelta(weeks=1)
                 if instance.observation_endtime + timedelta(weeks=1)
-                < datetime.now().astimezone()
-                else datetime.now().astimezone()
+                < datetime.now(PYTZ_TIMEZONE).astimezone()
+                else datetime.now(PYTZ_TIMEZONE).astimezone()
             )
 
     old_instance = Observation.objects.filter(pk=instance.pk).first()

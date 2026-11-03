@@ -3,6 +3,8 @@ from datetime import UTC, datetime, timedelta
 
 import requests
 
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +27,7 @@ def get_last_import_date(bro_type: str, default_days: int = 3650) -> datetime:
     except Exception as e:
         logger.warning(f"Could not query BroImport for last import date: {e}")
 
-    return datetime.now() - timedelta(days=default_days)
+    return datetime.now(PYTZ_TIMEZONE) - timedelta(days=default_days)
 
 
 def should_import(

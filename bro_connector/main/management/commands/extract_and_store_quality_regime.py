@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 
 import requests
 from django.core.management.base import BaseCommand
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gld.models import GroundwaterLevelDossier
 
 
@@ -31,7 +32,7 @@ class Command(BaseCommand):
 
 def extract_quality_regime(gld: GroundwaterLevelDossier, filtered):
     basis_url = "https://publiek.broservices.nl/gm/gld/v1/objects/"
-    now = datetime.datetime.now().date()
+    now = datetime.datetime.now(PYTZ_TIMEZONE).date()
 
     if filtered:
         f = "JA"

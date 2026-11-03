@@ -1,6 +1,7 @@
 import datetime
 
 import django.contrib.gis.db.models as geo_models
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 import main.utils.validators_models as validators_models
 from bro.models import BROProject, Organisation
 from django.db import models
@@ -1298,7 +1299,7 @@ class gmw_registration_log(BaseModel):
 
             if self.has_changed():
                 # If there is any change
-                self.last_changed = datetime.datetime.now().strftime(
+                self.last_changed = datetime.datetime.now(PYTZ_TIMEZONE).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
 
@@ -1381,7 +1382,7 @@ class Picture(BaseModel):
                                 pass
 
                 if not timestamp:
-                    timestamp = datetime.datetime.now()
+                    timestamp = datetime.datetime.now(PYTZ_TIMEZONE)
 
                 self.recording_datetime = timestamp
 

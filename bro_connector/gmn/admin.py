@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.management.tasks.gmn_sync import sync_gmn
 from main.utils.frd_fieldform import FieldFormGenerator as FRD_FieldFormGenerator
 from main.utils.gld_fieldform import FieldFormGenerator as GLD_FieldFormGenerator
@@ -35,7 +36,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
 
     model_name = str(modeladmin.model._meta).replace(".", "_")
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.datetime.now(PYTZ_TIMEZONE).strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
 

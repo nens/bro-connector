@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 import requests
 import requests.auth
 
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
+
 DB_NAME = "grondwatermeetnet"
 DB_USER = "postgres"
 DB_PASS = "!StNS!2023"
@@ -141,7 +143,7 @@ class GLDHandler(BROHandler):
         print("ID: ", id)
         basis_url = "https://publiek.broservices.nl/gm/gld/v1/objects/"
 
-        now = datetime.datetime.now().date()
+        now = datetime.datetime.now(PYTZ_TIMEZONE).date()
 
         if filtered:
             f = "JA"

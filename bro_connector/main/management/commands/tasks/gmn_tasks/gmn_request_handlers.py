@@ -10,7 +10,7 @@ from gmn.models import (
     MeasuringPoint,
     gmn_bro_sync_log,
 )
-from main.settings.base import gmn_SETTINGS
+from main.settings.base import PYTZ_TIMEZONE, gmn_SETTINGS
 
 
 class StartRegistrationGMN:
@@ -205,7 +205,7 @@ class StartRegistrationGMN:
                 event_type="GMN_StartRegistration",
                 defaults={
                     "comments": "Succesfully generated startregistration request",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "validation_status": None,
                     "process_status": "succesfully_generated_startregistration_request",
                     "file": xml_filename,
@@ -223,7 +223,7 @@ class StartRegistrationGMN:
                 event_type="GMN_StartRegistration",
                 defaults={
                     "comments": f"Failed to create startregistration source document: {e}",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "process_status": "failed_to_generate_source_documents",
                 },
             )
@@ -323,7 +323,7 @@ class StartRegistrationGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": "Error occured during delivery of sourcedocument",
                         "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
@@ -338,7 +338,7 @@ class StartRegistrationGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_register_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": "Succesfully delivered startregistration sourcedocument",
                         "delivery_status": "4",
                         "delivery_status_info": upload_info.json()["status"],
@@ -361,7 +361,7 @@ class StartRegistrationGMN:
             ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_register_log_obj.id,
                 defaults={
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "comments": f"Exception occured during delivery of startregistration sourcedocument: {e}",
                     "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
@@ -647,7 +647,7 @@ class MeasuringPointAddition:
                 event_type="GMN_MeasuringPoint",
                 defaults={
                     "comments": "Succesfully generated addition request",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "validation_status": None,
                     "process_status": "succesfully_generated_addition_request",
                     "file": xml_filename,
@@ -666,7 +666,7 @@ class MeasuringPointAddition:
                 measuringpoint=self.measuringpoint,
                 defaults={
                     "comments": f"Failed to create addition source document: {e}",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "process_status": "failed_to_generate_source_documents",
                 },
             )
@@ -763,7 +763,7 @@ class MeasuringPointAddition:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": "Error occured during delivery of sourcedocument",
                         "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
@@ -780,7 +780,7 @@ class MeasuringPointAddition:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_addition_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": f"Succesfully delivered addition of {self.measuringpoint} to {self.monitoring_network} sourcedocument",
                         "delivery_status": "4",
                         "delivery_status_info": upload_info.json()["status"],
@@ -803,7 +803,7 @@ class MeasuringPointAddition:
             ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_addition_log_obj.id,
                 defaults={
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "comments": f"Exception occured during delivery of addition sourcedocument: {e}",
                     "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
@@ -1068,7 +1068,7 @@ class MeasuringPointRemoval:
                 event_type="GMN_MeasuringPointEndDate",
                 defaults={
                     "comments": "Succesfully generated removal request",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "validation_status": None,
                     "process_status": "succesfully_generated_removal_request",
                     "file": xml_filename,
@@ -1087,7 +1087,7 @@ class MeasuringPointRemoval:
                 measuringpoint=self.measuringpoint,
                 defaults={
                     "comments": f"Failed to create removal source document: {e}",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "process_status": "failed_to_generate_source_documents",
                 },
             )
@@ -1184,7 +1184,7 @@ class MeasuringPointRemoval:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": "Error occured during delivery of sourcedocument",
                         "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
@@ -1201,7 +1201,7 @@ class MeasuringPointRemoval:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_removal_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": f"Succesfully delivered removal of {self.measuringpoint} from {self.monitoring_network} sourcedocument",
                         "delivery_status": "4",
                         "delivery_status_info": upload_info.json()["status"],
@@ -1224,7 +1224,7 @@ class MeasuringPointRemoval:
             ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_removal_log_obj.id,
                 defaults={
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "comments": f"Exception occured during delivery of removal sourcedocument: {e}",
                     "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
@@ -1471,7 +1471,7 @@ class ClosureGMN:
                 event_type="GMN_Closure",
                 defaults={
                     "comments": "Succesfully generated closure request",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "validation_status": None,
                     "process_status": "succesfully_generated_closure_request",
                     "file": xml_filename,
@@ -1489,7 +1489,7 @@ class ClosureGMN:
                 event_type="GMN_Closure",
                 defaults={
                     "comments": f"Failed to create closure source document: {e}",
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "process_status": "failed_to_generate_source_documents",
                 },
             )
@@ -1586,7 +1586,7 @@ class ClosureGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": "Error occured during delivery of sourcedocument",
                         "delivery_status": delivery_status,
                         "process_status": "failed_to_deliver_sourcedocuments",
@@ -1601,7 +1601,7 @@ class ClosureGMN:
                 ) = gmn_bro_sync_log.objects.update_or_create(
                     id=self.gmn_bro_closure_log_obj.id,
                     defaults={
-                        "date_modified": datetime.now(),
+                        "date_modified": datetime.now(PYTZ_TIMEZONE),
                         "comments": "Succesfully delivered closure sourcedocument",
                         "delivery_status": "4",
                         "delivery_status_info": upload_info.json()["status"],
@@ -1624,7 +1624,7 @@ class ClosureGMN:
             ) = gmn_bro_sync_log.objects.update_or_create(
                 id=self.gmn_bro_closure_log_obj.id,
                 defaults={
-                    "date_modified": datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "comments": f"Exception occured during delivery of closure sourcedocument: {e}",
                     "delivery_status": delivery_status,
                     "process_status": "failed_to_deliver_sourcedocuments",
