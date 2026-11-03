@@ -427,23 +427,14 @@ JAZZMIN_SETTINGS = {
     "site_logo": "img/broconnector.png",
     "welcome_sign": welcome_sign,
     "custom_css": "css/jazzmin_custom.css",
-    # Links to put along the top menu
     "topmenu_links": [
-        # model admin to link to (Permissions checked against model)
         {"name": "Kaart", "url": "/map", "permissions": ["auth.view_user"]},
-        # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "bro"},
-        # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmw"},
-        # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gmn"},
-        # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gld"},
-        # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "frd"},
-        # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "gar"},
-        # gwdatalens app
         {"name": "GWDataLens", "url": "/gwdatalens", "permissions": ["auth.view_user"]},
     ],
     "usermenu_links": [

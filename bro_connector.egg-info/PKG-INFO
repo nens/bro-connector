@@ -39,7 +39,7 @@ Requires-Dist: django-admin-autocomplete-filter==0.7.1
 Requires-Dist: django-admin-generator==2.2.1
 Requires-Dist: django-bootstrap4
 Requires-Dist: django-extensions==3.2.3
-Requires-Dist: django-jazzmin>=3.0.5
+Requires-Dist: django-jazzmin==3.0.5
 Requires-Dist: django-modeladmin-reorder==0.3.1
 Requires-Dist: django-plotly-dash
 Requires-Dist: django-reversion==5.0.12
