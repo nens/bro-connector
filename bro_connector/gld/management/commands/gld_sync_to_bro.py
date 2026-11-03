@@ -1,9 +1,9 @@
 import bisect
-import datetime
 import logging
 import os
 import uuid
 from copy import deepcopy
+from datetime import datetime
 from xml.etree import ElementTree as ET
 
 import bro_exchange as brx
@@ -12,7 +12,7 @@ from django.apps import apps
 from django.core.management.base import BaseCommand
 from gld import models
 from gmw.models import GroundwaterMonitoringWellStatic
-from main.settings.base import ENV
+from main.settings.base import ENV, PYTZ_TIMEZONE
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def convert_value_to_meter(measurement: models.MeasurementTvp) -> models.Measure
 
 def order_measurements_list(measurement_list: list):
     datetime_values = [
-        datetime.datetime.fromisoformat(tvp["time"]) for tvp in measurement_list
+        datetime.fromisoformat(tvp["time"]) for tvp in measurement_list
     ]
     datetime_ordered = sorted(datetime_values)
     indices = [
@@ -267,9 +267,7 @@ def create_new_observations():
                 continue
             # use the metadata id and process id from the previous observation
             new_observation = models.Observation(
-                observation_starttime=datetime.datetime.utcnow().replace(
-                    tzinfo=datetime.timezone.utc
-                ),
+                observation_starttime=datetime.now(PYTZ_TIMEZONE),
                 observation_metadata_id=previous_observation_metadata_id,
                 observation_process_id=previous_observation_process_id,
                 groundwater_level_dossier_id=gld_id,
@@ -378,7 +376,7 @@ class GldSyncHandler:
                 quality_regime=quality_regime,
                 defaults={
                     "comments": "Succesfully generated startregistration request",
-                    "date_modified": datetime.datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "validation_status": None,
                     "process_status": process_status,
                     "file": filename,
@@ -393,7 +391,7 @@ class GldSyncHandler:
                 quality_regime=quality_regime,
                 defaults={
                     "comments": f"Failed to create startregistration source document: {e}",
-                    "date_modified": datetime.datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "process_status": process_status,
                 },
             )[0]
@@ -463,14 +461,14 @@ class GldSyncHandler:
 
             if upload_info == "Error":
                 comments = "Error occurred during delivery of sourcedocument"
-                registration.date_modified = datetime.datetime.now()
+                registration.date_modified = datetime.now(PYTZ_TIMEZONE)
                 registration.comments = comments
                 registration.delivery_status = delivery_status_update
                 registration.process_status = "failed_to_deliver_sourcedocuments"
                 registration.save()
             else:
                 upload_data = upload_info.json()
-                registration.date_modified = datetime.datetime.now()
+                registration.date_modified = datetime.now(PYTZ_TIMEZONE)
                 registration.comments = (
                     "Successfully delivered startregistration sourcedocument"
                 )
@@ -482,7 +480,7 @@ class GldSyncHandler:
 
         except Exception as e:
             comments = f"Exception occured during delivery of startregistration sourcedocument: {e}"
-            registration.date_modified = datetime.datetime.now()
+            registration.date_modified = datetime.now(PYTZ_TIMEZONE)
             registration.comments = comments
             registration.delivery_status = delivery_status_update
             registration.process_status = "failed_to_deliver_sourcedocuments"
@@ -804,7 +802,7 @@ class GldSyncHandler:
                 addition_type=form_addition_type(observation),
                 defaults={
                     "observation_identifier": observation_id,
-                    "date_modified": datetime.datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "start_date": first_timestamp_datetime,
                     "end_date": final_timestamp_datetime,
                     "broid_registration": gld_bro_id,
@@ -822,7 +820,7 @@ class GldSyncHandler:
             record, created = models.gld_addition_log.objects.update_or_create(
                 observation_id=observation.observation_id,
                 defaults={
-                    "date_modified": datetime.datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "broid_registration": gld_bro_id,
                     "comments": f"Failed to generate XML source document, {e}",
                     "process_status": "failed_to_create_source_document",
@@ -905,13 +903,13 @@ class GldSyncHandler:
                 comments = "Succesfully validated sourcedocument, no errors"
                 process_status = "source_document_validation_succeeded"
 
-            addition.date_modified = datetime.datetime.now()
+            addition.date_modified = datetime.now(PYTZ_TIMEZONE)
             addition.comments = comments[0:20000]
             addition.validation_status = validation_status
             addition.process_status = process_status
 
         except Exception as e:
-            addition.date_modified = datetime.datetime.now()
+            addition.date_modified = datetime.now(PYTZ_TIMEZONE)
             addition.comments = f"Failed to validate source document: {e}"
             addition.process_status = "source_document_validation_failed"
 
@@ -949,12 +947,12 @@ class GldSyncHandler:
             if upload_info == "Error":
                 comments = "Error occured during delivery of sourcedocument"
 
-                gld_addition.date_modified = datetime.datetime.now()
+                gld_addition.date_modified = datetime.now(PYTZ_TIMEZONE)
                 gld_addition.comments = comments
                 gld_addition.delivery_status = delivery_status_update
 
             else:
-                gld_addition.date_modified = datetime.datetime.now()
+                gld_addition.date_modified = datetime.now(PYTZ_TIMEZONE)
                 gld_addition.comments = "Succesfully delivered sourcedocument"
                 gld_addition.delivery_status = upload_info.json()["status"]
                 gld_addition.last_changed = upload_info.json()["lastChanged"]
@@ -964,7 +962,7 @@ class GldSyncHandler:
         except Exception as e:
             comments = f"Error occured in attempting to deliver sourcedocument, {e}"
 
-            gld_addition.date_modified = datetime.datetime.now()
+            gld_addition.date_modified = datetime.now(PYTZ_TIMEZONE)
             gld_addition.comments = comments
             gld_addition.delivery_status = delivery_status_update
 
@@ -996,7 +994,7 @@ class GldSyncHandler:
 
         if delivery_status == "DOORGELEVERD":
             comments = "GLD addition is approved"
-            gld_addition.date_modified = datetime.datetime.now()
+            gld_addition.date_modified = datetime.now(PYTZ_TIMEZONE)
             gld_addition.comments = comments
             gld_addition.delivery_status = delivery_status
             gld_addition.process_status = "delivery_approved"
@@ -1004,7 +1002,7 @@ class GldSyncHandler:
 
         else:
             comments = "Status check succesful, not yet approved"
-            gld_addition.date_modified = datetime.datetime.now()
+            gld_addition.date_modified = datetime.now(PYTZ_TIMEZONE)
             gld_addition.comments = comments
             gld_addition.delivery_status = delivery_status
 

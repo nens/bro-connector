@@ -1,4 +1,5 @@
-import datetime
+import logging
+from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand, CommandParser
 from gld.models import (
@@ -8,8 +9,7 @@ from gld.models import (
     Organisation,
 )
 from gmw.models import GroundwaterMonitoringTubeDynamic
-from main.settings.base import KVK_USER
-import logging
+from main.settings.base import KVK_USER, PYTZ_TIMEZONE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -47,9 +47,9 @@ class Command(BaseCommand):
         # For all measurements within the last period, delta_t should be an argument of this command.
         delta_t = options["delta_t"]
 
-        window_end = datetime.datetime.now()
-        window_start = window_end - datetime.timedelta(hours=delta_t)
-        window_start = window_start.replace(tzinfo=datetime.timezone.utc)
+        window_end = datetime.now(PYTZ_TIMEZONE)
+        window_start = window_end - timedelta(hours=delta_t)
+        window_start = window_start.replace(tzinfo=PYTZ_TIMEZONE)  # Assuming naive datetime for comparison
 
         observations_with_new_measurements = Observation.objects.filter(
             measurement__measurement_time__gte=window_start,

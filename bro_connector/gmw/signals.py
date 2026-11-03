@@ -6,7 +6,7 @@ import reversion
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
-from main.settings.base import KVK_USER
+from main.settings.base import KVK_USER, PYTZ_TIMEZONE
 
 from .choices import config_schema, cross_cable_config_schema, elektrode_schema, pair_schema
 from .models import (
@@ -55,7 +55,7 @@ def on_save_groundwater_monitoring_well_static(
     if created and not instance.state.exists():
         GroundwaterMonitoringWellDynamic.objects.create(
             groundwater_monitoring_well_static=instance,
-            date_from=datetime.datetime.now(),
+            date_from=datetime.datetime.now(PYTZ_TIMEZONE),
         )
 
     if instance.event.filter(event_name="constructie").count() == 0:
@@ -86,7 +86,7 @@ def on_save_groundwater_monitoring_tube_static(
     if created and not instance.state.exists():
         GroundwaterMonitoringTubeDynamic.objects.create(
             groundwater_monitoring_tube_static=instance,
-            date_from=datetime.datetime.now(),
+            date_from=datetime.datetime.now(PYTZ_TIMEZONE),
         )
 
     if (

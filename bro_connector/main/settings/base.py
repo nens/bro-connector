@@ -197,7 +197,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Europe/Amsterdam"
-TZINFO = pytz.timezone(TIME_ZONE)
+PYTZ_TIMEZONE = pytz.timezone(TIME_ZONE)
 
 USE_I18N = True
 

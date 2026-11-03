@@ -1,5 +1,5 @@
 import csv
-import datetime
+from datetime import datetime
 
 from django.contrib import admin
 from django.db.models import Model, fields
@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from frd.custom_filters import TubeFilter
 from main.management.commands.frd_sync_to_bro import FRDSync
 from reversion_compare.helpers import patch_admin
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 from .models import (
     CalculatedFormationresistanceMethod,
@@ -40,7 +42,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
 
     model_name = str(modeladmin.model._meta).replace(".", "_")
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(PYTZ_TIMEZONE).strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
 

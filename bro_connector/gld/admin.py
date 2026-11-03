@@ -1,8 +1,8 @@
 import csv
-import datetime
 import logging
 import os
 from collections import Counter, defaultdict
+from datetime import datetime
 
 import reversion
 from django.contrib import admin, messages
@@ -18,7 +18,7 @@ from gld.management.commands.gld_sync_to_bro import (
 from gld.management.tasks import gld_actions
 from gld.models import GroundwaterLevelDossier
 from gmw.models import GroundwaterMonitoringWellStatic
-from main.settings.base import gld_SETTINGS
+from main.settings.base import PYTZ_TIMEZONE, gld_SETTINGS
 from reversion_compare.helpers import patch_admin
 
 from . import models
@@ -49,7 +49,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
 
     model_name = str(modeladmin.model._meta).replace(".", "_")
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(PYTZ_TIMEZONE).strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
 
@@ -425,7 +425,7 @@ class ObservationAdmin(admin.ModelAdmin):
             logger.info(f"Closing observation {item.observation_id} with manual action.")
             with reversion.create_revision():
                 item.observation_endtime = (
-                    datetime.datetime.now().astimezone() - datetime.timedelta(seconds=1)
+                    datetime.now(PYTZ_TIMEZONE).astimezone() - datetime.timedelta(seconds=1)
                 )
                 item.result_time = item.timestamp_last_measurement
                 item.save(update_fields=["observation_endtime", "result_time"])

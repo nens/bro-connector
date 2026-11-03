@@ -2,7 +2,6 @@ import logging
 import shutil
 import zipfile
 from datetime import datetime
-from datetime import timezone
 from io import BytesIO
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -10,8 +9,8 @@ from zoneinfo import ZoneInfo
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from django.db import transaction
 from django.contrib.auth.models import User
+from django.db import transaction
 from gld.choices import CENSORREASON, STATUSQUALITYCONTROL
 from gld.models import (
     GroundwaterLevelDossier,
@@ -23,11 +22,11 @@ from gld.models import (
 )
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.management.tasks import (
-    retrieve_historic_gld,
-    retrieve_historic_gmw,
-    retrieve_historic_gmn,
     retrieve_historic_frd,
     retrieve_historic_gar,
+    retrieve_historic_gld,
+    retrieve_historic_gmn,
+    retrieve_historic_gmw,
 )
 
 from .models import BroImport, GLDImport
@@ -90,6 +89,7 @@ def format_message(  # noqa C901
     handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int,
     conflicting_gld_ids: list | None = None,
 ) -> dict:
+    """Build the user-facing result message for a BRO import operation."""
     if type in ["gar", "gmn", "frd"]:
         result = {
             "message": f"BRO type {type} is nog niet geimplementeerd.",
@@ -198,6 +198,7 @@ def has_necessary_helper_files(filenames):
 
 
 def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
+    """Import historic BRO data for the type selected on ``instance``."""
     from main.management.tasks.import_checker import get_last_import_date
 
     import_info = {"ids_found": 0, "imported": 0}
@@ -275,6 +276,7 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
 
 
 def process_zip_bro_file(instance: BroImport):
+    """Validate and process the shapefile archive attached to a BRO import."""
     # Read ZIP file
     zip_buffer = BytesIO(instance.file.read())
     try:
@@ -373,6 +375,7 @@ def validate_shp(file_path, instance: BroImport):
 
 
 def process_zip_file(instance: GLDImport):
+    """Validate each CSV contained in a GLD ZIP upload."""
     # Read ZIP file
     zip_buffer = BytesIO(instance.file.read())
     try:
@@ -406,22 +409,48 @@ def process_zip_file(instance: GLDImport):
         zip_buffer.close()
 
 def _get_user_permission(user: User, status: str):
+    """Return whether ``user`` may update measurements for ``status``."""
     if not user:
         return False
 
     return user.is_superuser and status == "volledigBeoordeeld"
 
-def _get_measurement_data(instance: GLDImport, reader: pd.DataFrame, time_col: str, value_col: str, obs: Observation):
-    header_rows = 1
-    # Detect duplicates
+def _deduplicate_measurements(
+    reader: pd.DataFrame,
+    time_col: str,
+    value_col: str,
+    header_rows: int = 1,
+) -> tuple[pd.DataFrame, str]:
+    """Keep the first row per timestamp and describe discarded rows."""
     duplicate_mask = reader.duplicated(subset=[time_col], keep="first")
-    if duplicate_mask.any():
-        instance.report += (
-            "Duplicaten gevonden in de tijd waardes. "
-            "Alleen de eerste voorgekomen waardes gebruikt.\n\n"
+    log_lines = []
+    for duplicate_index in reader.index[duplicate_mask]:
+        timestamp = reader.loc[duplicate_index, time_col]
+        value = reader.loc[duplicate_index, value_col]
+        first_index = reader.index[reader[time_col].eq(timestamp)][0]
+        log_lines.append(
+            f"Rij {duplicate_index + header_rows + 1} verwijderd: dubbele tijd "
+            f"'{timestamp}' met waarde '{value}'. "
+            f"Eerste waarde op rij {first_index + header_rows + 1} behouden.\n"
         )
-    # Keep only the first occurrence per timestamp
-    reader_clean = reader.drop_duplicates(subset=[time_col], keep="first")
+    return reader.drop_duplicates(subset=[time_col], keep="first"), "".join(log_lines)
+
+
+def _get_measurement_data(
+    instance: GLDImport,
+    reader: pd.DataFrame,
+    time_col: str,
+    value_col: str,
+    obs: Observation,
+):
+    """Build GLD measurement objects after filtering duplicate timestamps."""
+    header_rows = 1
+    instance.report = instance.report or ""
+
+    reader_clean, duplicate_report = _deduplicate_measurements(
+        reader, time_col, value_col, header_rows
+    )
+    instance.report += duplicate_report
         
     mms = []
     mtvps = []
@@ -493,7 +522,7 @@ def _get_measurement_data(instance: GLDImport, reader: pd.DataFrame, time_col: s
     non_duplicate_data = {"measurement_tvps": [], "measurement_metadatas": [], "rows": []} 
 
     if measurement_duplicates:
-        duplicate_data["measurement_tvps"] = [m for m in measurement_duplicates]
+        duplicate_data["measurement_tvps"] = measurement_duplicates
         duplicate_data["measurement_metadatas"] = [mms[i] for i in indices_duplicates]
         duplicate_data["rows"] = rows_duplicates
     if measurement_no_duplicates:
@@ -504,6 +533,7 @@ def _get_measurement_data(instance: GLDImport, reader: pd.DataFrame, time_col: s
     return all_data, duplicate_data, non_duplicate_data
 
 def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C901
+    """Validate a GLD CSV and import its measurements into the matching observation."""
     # Validate CSV file
     if file is None:
         file = instance.file
@@ -620,7 +650,7 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                         batch_size=5000
                     )
                     ## maybe split into bulk_update and bulk_create
-                    mtvps_created = MeasurementTvp.objects.bulk_create(
+                    MeasurementTvp.objects.bulk_create(
                         mtvps_to_send,
                         update_conflicts=True,
                         update_fields=[
@@ -671,6 +701,7 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
 
 
 def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
+    """Validate GLD CSV columns, timestamps, values, and optional metadata."""
     time_col = None
     seperator = ","  # detect_csv_separator(file)
     reader = pd.read_csv(file, header=0, index_col=False, sep=seperator)

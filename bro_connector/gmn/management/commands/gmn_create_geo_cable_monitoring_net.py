@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.models import GroundwaterMonitoringNet, MeasuringPoint
 from gmw.models import GeoOhmCable, GroundwaterMonitoringTubeStatic
 
@@ -69,7 +70,7 @@ def create_monitoring_net(name, tubes):
         groundwater_aspect="kwaliteit",
     )
     if created:
-        gmn.start_date_monitoring = datetime.now()
+        gmn.start_date_monitoring = datetime.now(PYTZ_TIMEZONE)
         gmn.save()
 
     for tube in tubes:
@@ -78,5 +79,5 @@ def create_monitoring_net(name, tubes):
             groundwater_monitoring_tube=tube,
         )
         if created:
-            measuring_point.added_to_gmn_date = datetime.now()
+            measuring_point.added_to_gmn_date = datetime.now(PYTZ_TIMEZONE)
             measuring_point.save()

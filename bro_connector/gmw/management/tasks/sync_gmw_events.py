@@ -1,7 +1,7 @@
 import bisect
-import datetime
 import logging
 import os
+from datetime import datetime
 
 import bro_exchange as brx
 import reversion
@@ -12,7 +12,7 @@ from main.management.tasks.django_tools_bro import (
     getAllIntermediateEvents,
     getConstruction,
 )
-from main.settings.base import BASE_DIR, ENV
+from main.settings.base import BASE_DIR, ENV, PYTZ_TIMEZONE
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +44,8 @@ def records_in_registrations(bro_id) -> int:
     return len(models.gmw_registration_log.objects.filter(bro_id=bro_id))
 
 
-def fix_datetime_string(datetime: str):
-    new_datetime = datetime.replace(" ", "T", 1)
+def fix_datetime_string(datetime_str: str):
+    new_datetime = datetime_str.replace(" ", "T", 1)
     return new_datetime
 
 
@@ -244,7 +244,7 @@ class GetSourceDocData:
             well = event.groundwater_monitoring_well_static
             self.datafile.update(
                 {
-                    "requestReference": f"{well.internal_id}_Removal_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                    "requestReference": f"{well.internal_id}_Removal_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
                 }
             )
             self.datafile.update({"broId": well.bro_id})
@@ -264,7 +264,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_Construction_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_Construction_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -318,7 +318,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_Shortening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_Shortening_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -359,7 +359,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_Lengthening_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_Lengthening_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -456,7 +456,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_Measuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_Measuring_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -487,7 +487,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_WellHeadProtector_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_WellHeadProtector_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -512,7 +512,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_Positions_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_Positions_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -537,7 +537,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_GroundLevelMeasuring_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_GroundLevelMeasuring_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -565,7 +565,7 @@ class GetSourceDocData:
         static_well_data = self.get_data.update_static_well(well)
         static_well_data.update(
             {
-                "requestReference": f"{well.internal_id}_GroundLevel_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                "requestReference": f"{well.internal_id}_GroundLevel_{datetime.now(PYTZ_TIMEZONE).strftime('%Y%m%d%H%M%S')}"
             }
         )
         self.datafile.update(static_well_data)
@@ -686,7 +686,7 @@ def create_sourcedocs(
             quality_regime=quality_regime,
             defaults={
                 "comments": f"succesfully generated {source_doc_type} request",
-                "date_modified": datetime.datetime.now(),
+                "date_modified": datetime.now(PYTZ_TIMEZONE),
                 "validation_status": None,
                 "process_status": process_status,
                 "file": filename,
@@ -703,7 +703,7 @@ def create_sourcedocs(
             quality_regime=quality_regime,
             defaults={
                 "comments": f"Failed to create {source_doc_type} source document: {e}",
-                "date_modified": datetime.datetime.now(),
+                "date_modified": datetime.now(PYTZ_TIMEZONE),
                 "process_status": process_status,
             },
         )
@@ -779,7 +779,7 @@ def create_construction_sourcedocs(
             "quality_regime": well.quality_regime,
             "bro_id": srcdocdata.get("broId", None),
             "comments": "succesfully generated Construction request",
-            "date_modified": datetime.datetime.now(),
+            "date_modified": datetime.now(PYTZ_TIMEZONE),
             "validation_status": None,
             "process_status": process_status,
             "file": filename,
@@ -840,7 +840,7 @@ def validate_gmw_registration_request(
         models.gmw_registration_log.objects.update_or_create(
             id=registration.pk,
             defaults={
-                "date_modified": datetime.datetime.now(),
+                "date_modified": datetime.now(PYTZ_TIMEZONE),
                 "comments": comments,
                 "validation_status": validation_status,
                 "process_status": "source_document_validation_succesful",
@@ -884,15 +884,13 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
             project_id=bro_info["projectnummer"],
             demo=demo,
         )
-        logger.debug(upload_info)
-
-        if upload_info == "Error":
-            comments = "Error occured during delivery of sourcedocument"
+        if isinstance(upload_info, dict):
+            message = upload_info.get("message")
             models.gmw_registration_log.objects.update_or_create(
                 id=registration.id,
                 defaults={
-                    "date_modified": datetime.datetime.now(),
-                    "comments": comments,
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
+                    "comments": message,
                     "delivery_status": delivery_status_update,
                     "process_status": "failed_to_deliver_sourcedocuments",
                 },
@@ -906,7 +904,7 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
             models.gmw_registration_log.objects.update_or_create(
                 id=registration.id,
                 defaults={
-                    "date_modified": datetime.datetime.now(),
+                    "date_modified": datetime.now(PYTZ_TIMEZONE),
                     "comments": comments,
                     "delivery_status": delivery_status,
                     "lastchanged": lastchanged,
@@ -923,7 +921,7 @@ def deliver_sourcedocuments(registration: models.gmw_registration_log, bro_info)
         models.gmw_registration_log.objects.update_or_create(
             id=registration.id,
             defaults={
-                "date_modified": datetime.datetime.now(),
+                "date_modified": datetime.now(PYTZ_TIMEZONE),
                 "comments": comments,
                 "delivery_status": delivery_status_update,
                 "process_status": "failed_to_deliver_sourcedocuments",

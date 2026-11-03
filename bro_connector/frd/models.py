@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import logging
 import math
 
@@ -6,6 +6,7 @@ import reversion
 from bro.models import Organisation
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.models import GroundwaterMonitoringNet
 from gmw.models import Electrode, GeoOhmCable, GroundwaterMonitoringTubeStatic
 from main.models import BaseModel
@@ -179,7 +180,7 @@ class FormationResistanceDossier(BaseModel):
 
     def save(self, *args, **kwargs):
         if self.closed_in_bro is True and self.closure_date is None:
-            self.closure_date = datetime.datetime.now().date()
+            self.closure_date = datetime.now(PYTZ_TIMEZONE).date()
         elif self.closed_in_bro is False and self.closure_date is not None:
             self.closure_date = None
 

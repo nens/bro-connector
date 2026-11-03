@@ -7,6 +7,8 @@ from gld.models import (
     Observation,
 )
 
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
+
 logger = getLogger(__name__)
 
 
@@ -48,7 +50,7 @@ class Command(BaseCommand):
                     continue
                 # use the metadata id and process id from the previous observation
                 new_observation = Observation(
-                    observation_starttime=datetime.datetime.utcnow().replace(
+                    observation_starttime=datetime.datetime.now(PYTZ_TIMEZONE).replace(
                         tzinfo=datetime.timezone.utc
                     ),
                     observation_metadata_id=previous_observation_metadata_id,

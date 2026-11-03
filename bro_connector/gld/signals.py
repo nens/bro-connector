@@ -1,15 +1,16 @@
-import datetime
 import logging
+from datetime import datetime, timedelta
+
 import reversion
 from django.core.cache import cache
 from django.db.models.signals import (
     post_delete,
-    pre_delete,
     post_save,
-    pre_save,
     pre_delete,
+    pre_save,
 )
 from django.dispatch import receiver
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmw.models import GroundwaterMonitoringTubeStatic
 
 from .models import (
@@ -195,10 +196,10 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
             instance.result_time = instance.timestamp_last_measurement
         else:
             instance.result_time = (
-                instance.observation_endtime + datetime.timedelta(weeks=1)
-                if instance.observation_endtime + datetime.timedelta(weeks=1)
-                < datetime.datetime.now().astimezone()
-                else datetime.datetime.now().astimezone()
+                instance.observation_endtime + timedelta(weeks=1)
+                if instance.observation_endtime + timedelta(weeks=1)
+                < datetime.now(PYTZ_TIMEZONE).astimezone()
+                else datetime.now(PYTZ_TIMEZONE).astimezone()
             )
 
     old_instance = Observation.objects.filter(pk=instance.pk).first()

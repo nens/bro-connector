@@ -4,6 +4,8 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
+
 from ...utils.duplicate_checks import (
     rank_based_on_bro_id,
     rank_based_on_dates,
@@ -100,7 +102,7 @@ class GMWDuplicatesHandler:
 
         # Prepare the CSV file
         downloads_folder = Path.home() / "Downloads"
-        date_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+        date_time = datetime.now(PYTZ_TIMEZONE).strftime("%Y%m%d_%H%M%S")
         duplicates_folder = downloads_folder / f"duplicates_bro_{date_time}"
         duplicates_folder.mkdir(parents=True, exist_ok=True)
 

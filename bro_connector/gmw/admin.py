@@ -3,6 +3,7 @@ import datetime
 import logging
 from urllib.parse import urlencode
 
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 import gmw.management.tasks.gmw_actions as gmw_actions
 import main.utils.validators_admin as validators_admin
 import reversion
@@ -87,7 +88,7 @@ def export_selected_items_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
 
     model_name = str(modeladmin.model._meta).replace(".", "_")
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.datetime.now(PYTZ_TIMEZONE).strftime("%Y%m%d_%H%M%S")
     filename = f"{model_name}_{timestamp}.csv"
     response["Content-Disposition"] = f"attachment; filename={filename}"
 
@@ -369,12 +370,13 @@ class ElectrodeInline(admin.TabularInline):
     fields = (
         "electrode_number",
         "electrode_status",
+        "electrode_packing_material",
+        "electrode_position",
         "bro_actions",
     )
     show_change_link = True
 
     readonly_fields = [
-        "electrode_number",
         "electrode_status",
         "bro_actions",
     ]
