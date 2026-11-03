@@ -185,11 +185,11 @@ class GLDImportAdmin(admin.ModelAdmin):
         if not obj.validated:
             messages.warning(
                 request,
-                f'The GLD Import "{obj}" was added, but it has not been validated. Please review the report in the model.',
+                f'De GLD-import "{obj}" is aangemaakt, maar niet gevalideerd. Bekijk het rapport bij dit model.',
             )
 
         else:
-            messages.success(request, f'The GLD Import "{obj}" was added successfully.')
+            messages.success(request, f'De GLD-import "{obj}" is succesvol aangemaakt.')
 
 
 class GMNImportAdmin(admin.ModelAdmin):
@@ -212,11 +212,11 @@ class GMNImportAdmin(admin.ModelAdmin):
         if not obj.validated:
             messages.warning(
                 request,
-                f'The GMN Import "{obj}" was added, but an error occured. Please review the report in the model.',
+                f'De GMN-import "{obj}" is aangemaakt, maar er is een fout opgetreden. Bekijk het rapport bij dit model.',
             )
 
         else:
-            messages.success(request, f'The GMN Import "{obj}" was added successfully.')
+            messages.success(request, f'De GMN-import "{obj}" is succesvol aangemaakt.')
 
 
 _register(tools_models.BroImport, BroImportAdmin)
