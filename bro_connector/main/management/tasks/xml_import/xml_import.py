@@ -257,6 +257,7 @@ class InitializeData:
                 ),
                 well_code=self.gmw_dict.get("wellCode", None),
                 vertical_datum=self.gmw_dict.get("verticalDatum", "NAP"),
+                construction_date=construction_date,
                 last_horizontal_positioning_date=construction_date,
                 construction_coordinates=self.get_coordinates(),
                 deliver_gmw_to_bro=True,
@@ -275,7 +276,7 @@ class InitializeData:
             event_name="constructie",
             groundwater_monitoring_well_static=self.meetpunt_instance,
             groundwater_monitoring_well_dynamic=self.meetpuntgeschiedenis_instance,
-            event_date=self.meetpunt_instance.last_horizontal_positioning_date,
+            event_date=self.meetpunt_instance.construction_date,
             delivered_to_bro=False,
         )
 
@@ -290,7 +291,7 @@ class InitializeData:
         self.meetpuntgeschiedenis_instance = (
             gmw_models.GroundwaterMonitoringWellDynamic.objects.create(
                 groundwater_monitoring_well_static=self.meetpunt_instance,
-                date_from=self.meetpunt_instance.last_horizontal_positioning_date,
+                date_from=self.meetpunt_instance.construction_date,
                 owner=self.gmw_dict.get("owner", None),
                 ground_level_stable=ground_stability,
                 well_stability=well_stability,
@@ -330,7 +331,7 @@ class InitializeData:
         self.filtergeschiedenis_instance = (
             gmw_models.GroundwaterMonitoringTubeDynamic.objects.create(
                 groundwater_monitoring_tube_static=self.filter_instance,
-                date_from=self.meetpunt_instance.last_horizontal_positioning_date,
+                date_from=self.meetpunt_instance.construction_date,
                 tube_packing_material=self.gmw_dict.get(
                     self.prefix + "tubePackingMaterial", "onbekend"
                 ),

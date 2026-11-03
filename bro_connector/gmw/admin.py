@@ -204,6 +204,7 @@ class WellDynamicInline(admin.TabularInline):
         "well_head_protector",
         "ground_level_position",
         "ground_level_positioning_method",
+        "owner",
         "comment",
         "comment_processed",
     )
