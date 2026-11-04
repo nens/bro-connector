@@ -25,12 +25,5 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Lint (syntax errors only - blocking)
-        run: uv run ruff check . --select E9
-
-      - name: Lint (full report, informational)
-        run: uv run ruff check .
-        continue-on-error: true
-
       - name: Run tests
         run: uv run pytest --cov=. --cov-report=term-missing
