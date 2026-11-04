@@ -432,7 +432,11 @@ class TypeParameterlijsten(models.Model):
 
     def __str__(self):
         if self.aquocode:
-            return f"{self.aquocode} – {self.omschrijving}" if self.omschrijving else self.aquocode
+            return (
+                f"{self.aquocode} – {self.omschrijving}"
+                if self.omschrijving
+                else self.aquocode
+            )
         return str(self.parameter_id)
 
     class Meta:

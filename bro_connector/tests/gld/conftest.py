@@ -6,7 +6,6 @@ from bro.models import Organisation
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.utils import timezone
-from rest_framework.test import APIClient
 from gld.models import (
     GroundwaterLevelDossier,
     MeasurementPointMetadata,
@@ -21,6 +20,7 @@ from gmw.models import (
     GroundwaterMonitoringTubeStatic,
     GroundwaterMonitoringWellStatic,
 )
+from rest_framework.test import APIClient
 
 
 @pytest.fixture
@@ -97,7 +97,9 @@ def default_groundwater_level_dossier(default_groundwater_monitoring_tube):
     This prevents the auto-Observation creation, giving model tests full control
     over what observations exist.
     """
-    post_save.disconnect(on_save_groundwater_level_dossier, sender=GroundwaterLevelDossier)
+    post_save.disconnect(
+        on_save_groundwater_level_dossier, sender=GroundwaterLevelDossier
+    )
     try:
         gld = GroundwaterLevelDossier.objects.create(
             groundwater_monitoring_tube=default_groundwater_monitoring_tube,
@@ -105,7 +107,9 @@ def default_groundwater_level_dossier(default_groundwater_monitoring_tube):
             gld_bro_id="GLD000000000012",
         )
     finally:
-        post_save.connect(on_save_groundwater_level_dossier, sender=GroundwaterLevelDossier)
+        post_save.connect(
+            on_save_groundwater_level_dossier, sender=GroundwaterLevelDossier
+        )
     return gld
 
 

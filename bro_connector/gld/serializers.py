@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from gld.choices import OBSERVATIONTYPE, STATUSCODE
+from rest_framework import serializers
 
 
 class MeasurementUpdateItemSerializer(serializers.Serializer):

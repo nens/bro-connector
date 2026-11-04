@@ -657,7 +657,7 @@ def register_correction_callbacks(app: Dash, data: DataManager):
                 "global_tmax": global_tmax,
                 "well1_id": well1_id,
                 "well2_id": well2_id,
-                "timestamp": pd.Timestamp.now(PYTZ_TIMEZONE).isoformat(),
+                "timestamp": pd.Timestamp.now().isoformat(),
             }
 
             # Re-apply persisted edits to create the display version (edited)

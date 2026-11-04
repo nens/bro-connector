@@ -50,9 +50,7 @@ def convert_value_to_meter(measurement: models.MeasurementTvp) -> models.Measure
 
 
 def order_measurements_list(measurement_list: list):
-    datetime_values = [
-        datetime.fromisoformat(tvp["time"]) for tvp in measurement_list
-    ]
+    datetime_values = [datetime.fromisoformat(tvp["time"]) for tvp in measurement_list]
     datetime_ordered = sorted(datetime_values)
     indices = [
         datetime_values.index(datetime_value) for datetime_value in datetime_ordered

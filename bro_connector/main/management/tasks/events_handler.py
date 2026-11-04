@@ -2,7 +2,6 @@ import datetime
 import logging
 
 import pytz
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmw.models import (
     Electrode,
     Event,
@@ -13,6 +12,8 @@ from gmw.models import (
     GroundwaterMonitoringWellStatic,
     gmw_registration_log,
 )
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 logger = logging.getLogger(__name__)
 

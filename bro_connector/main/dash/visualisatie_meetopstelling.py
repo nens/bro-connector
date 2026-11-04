@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import dash_bootstrap_components as dbc
 import numpy as np
@@ -736,12 +736,21 @@ def get_well_dynamic(event: Event) -> GroundwaterMonitoringWellDynamic:
     if event.groundwater_monitoring_well_dynamic:
         return event.groundwater_monitoring_well_dynamic
 
-    datetime_event = event.event_date
+    if event.event_date is None:
+        return (
+            GroundwaterMonitoringWellDynamic.objects.filter(
+                groundwater_monitoring_well_static=event.groundwater_monitoring_well_static,
+            )
+            .order_by("date_from")
+            .first()
+        )
+
+    datetime_event = event.event_date + timedelta(days=1)
 
     return (
         GroundwaterMonitoringWellDynamic.objects.filter(
             groundwater_monitoring_well_static=event.groundwater_monitoring_well_static,
-            date_from__lte=datetime_event,
+            date_from__lt=datetime_event,
         )
         .order_by("date_from")
         .last()
@@ -799,7 +808,9 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
             else filtr.state.first()
         )
         if filtr_history is None:
-            logger.warning(f"No tube dynamic history found for tube {filtr.tube_number} at {datetime_event}, skipping")
+            logger.warning(
+                f"No tube dynamic history found for tube {filtr.tube_number} at {datetime_event}, skipping"
+            )
             continue
         filt_dict = (
             {
@@ -855,7 +866,9 @@ def get_event(groundwater_monitoring_well_static_id, eventlist, event):
     print(electrodedataframe)
 
     if putdataframe.empty or "datum" not in putdataframe.columns:
-        logger.warning("putdataframe is empty or missing 'datum' column, returning empty stores")
+        logger.warning(
+            "putdataframe is empty or missing 'datum' column, returning empty stores"
+        )
         return ([], [])
 
     event_dates = list(putdataframe["datum"].unique())

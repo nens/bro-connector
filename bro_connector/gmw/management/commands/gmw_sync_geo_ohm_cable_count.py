@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Count
-
-from gmw.models import GeoOhmCable, GroundwaterMonitoringTubeStatic
+from gmw.models import GroundwaterMonitoringTubeStatic
 
 
 class Command(BaseCommand):
@@ -39,9 +38,9 @@ class Command(BaseCommand):
                 )
                 if not dry_run:
                     # Use update_fields to skip the reconciliation logic in save().
-                    GroundwaterMonitoringTubeStatic.objects.filter(
-                        pk=tube.pk
-                    ).update(geo_ohm_cable_count=actual)
+                    GroundwaterMonitoringTubeStatic.objects.filter(pk=tube.pk).update(
+                        geo_ohm_cable_count=actual
+                    )
                 updated += 1
             else:
                 skipped += 1

@@ -6,7 +6,6 @@ from bro.models import Organisation
 from django.conf import settings
 from django.db import transaction
 from django.db.models.signals import post_save
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmw.models import (
     Electrode,
     GeoOhmCable,
@@ -20,6 +19,8 @@ from gmw.signals import (
     on_save_groundwater_monitoring_well_static,
 )
 from main.utils.bbox_extractor import BBOX_EXTRACTOR
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 from ..tasks import events_handler
 from ..tasks.bro_handlers import GMWHandler

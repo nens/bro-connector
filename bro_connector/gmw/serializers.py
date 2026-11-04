@@ -151,7 +151,7 @@ class GMWSerializer(serializers.ModelSerializer):
             return list(set(obs_ids))
 
         return []
-    
+
     def get_is_active(self, obj: gmw_models.GroundwaterMonitoringWellStatic):
         return None
 

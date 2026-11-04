@@ -120,9 +120,7 @@ class ObservationMeasurementsUpdateView(APIView):
             gld = GroundwaterLevelDossier.objects.get(pk=gld_id)
         except GroundwaterLevelDossier.DoesNotExist:
             return Response(
-                {
-                    "detail": f"GroundwaterLevelDossier met id '{gld_id}' bestaat niet."
-                },
+                {"detail": f"GroundwaterLevelDossier met id '{gld_id}' bestaat niet."},
                 status=status.HTTP_410_GONE,
             )
 
@@ -159,11 +157,21 @@ class ObservationMeasurementsUpdateView(APIView):
             )
 
             if tvp is None:
-                not_found.append({"observation_pk": None, "measurement_time": _isoformat(measurement_time)})
+                not_found.append(
+                    {
+                        "observation_pk": None,
+                        "measurement_time": _isoformat(measurement_time),
+                    }
+                )
                 continue
 
             _apply_measurement_update(tvp, item)
-            updated.append({"observation_pk": tvp.observation_id, "measurement_time": _isoformat(measurement_time)})
+            updated.append(
+                {
+                    "observation_pk": tvp.observation_id,
+                    "measurement_time": _isoformat(measurement_time),
+                }
+            )
 
         if updated:
             _flag_observations_for_correction(observations)

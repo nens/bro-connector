@@ -397,7 +397,7 @@ class ObservationAdmin(admin.ModelAdmin):
         export_selected_items_to_csv,
         "close_observation",
         "change_up_to_date_status",
-        "convert_to_validated"
+        "convert_to_validated",
     ]
 
     ordering = ["-observation_starttime"]
@@ -422,11 +422,13 @@ class ObservationAdmin(admin.ModelAdmin):
     @admin.action(description="Sluit Observatie")
     def close_observation(self, request, queryset):
         for item in queryset.filter(observation_endtime__isnull=True):
-            logger.info(f"Closing observation {item.observation_id} with manual action.")
+            logger.info(
+                f"Closing observation {item.observation_id} with manual action."
+            )
             with reversion.create_revision():
-                item.observation_endtime = (
-                    datetime.now(PYTZ_TIMEZONE).astimezone() - datetime.timedelta(seconds=1)
-                )
+                item.observation_endtime = datetime.now(
+                    PYTZ_TIMEZONE
+                ).astimezone() - datetime.timedelta(seconds=1)
                 item.result_time = item.timestamp_last_measurement
                 item.save(update_fields=["observation_endtime", "result_time"])
                 reversion.set_comment("Closed the observation with a manual action.")
@@ -442,7 +444,6 @@ class ObservationAdmin(admin.ModelAdmin):
 
                 item.save(update_fields=["up_to_date_in_bro"])
                 reversion.set_comment("Changed up_to_date_in_bro with a manual action.")
-
 
     @admin.action(description="Converteer metingen naar volledigBeoordeeld")
     def convert_to_validated(self, request, queryset):
@@ -498,7 +499,8 @@ class ObservationAdmin(admin.ModelAdmin):
             defaults = {
                 f.name: getattr(src_meta, f.name)
                 for f in src_meta._meta.fields
-                if f.name not in ("id", "status", "observation_type", "responsible_party")
+                if f.name
+                not in ("id", "status", "observation_type", "responsible_party")
             }
 
             new_meta, _ = models.ObservationMetadata.objects.get_or_create(
@@ -519,7 +521,11 @@ class ObservationAdmin(admin.ModelAdmin):
         ).prefetch_related("measurement")
 
         existing_by_key = {
-            (o.groundwater_level_dossier_id, o.observation_metadata_id, o.observation_process_id): o
+            (
+                o.groundwater_level_dossier_id,
+                o.observation_metadata_id,
+                o.observation_process_id,
+            ): o
             for o in candidates
         }
 
@@ -539,7 +545,11 @@ class ObservationAdmin(admin.ModelAdmin):
 
         for item in valid_items:
             new_meta = metadata_cache[item.observation_metadata_id]
-            key = (item.groundwater_level_dossier_id, new_meta.pk, item.observation_process_id)
+            key = (
+                item.groundwater_level_dossier_id,
+                new_meta.pk,
+                item.observation_process_id,
+            )
             existing = existing_by_key.get(key)
             source_tvps = source_tvps_by_item.get(item.pk, [])
 
@@ -563,7 +573,9 @@ class ObservationAdmin(admin.ModelAdmin):
                 tvp_sources.append((existing, source_tvps))
                 continue
 
-            if {signature(t) for t in existing_tvps} == {signature(t) for t in source_tvps}:
+            if {signature(t) for t in existing_tvps} == {
+                signature(t) for t in source_tvps
+            }:
                 existing.observation_starttime = item.observation_starttime
                 existing.observation_endtime = item.observation_endtime
                 existing.result_time = item.result_time
@@ -578,7 +590,9 @@ class ObservationAdmin(admin.ModelAdmin):
 
         with transaction.atomic():
             if to_create_observations:
-                models.Observation.objects.bulk_create(to_create_observations)  # pks populated (Postgres)
+                models.Observation.objects.bulk_create(
+                    to_create_observations
+                )  # pks populated (Postgres)
 
             if to_update_observations:
                 models.Observation.objects.bulk_update(
@@ -861,7 +875,10 @@ class gld_registration_logAdmin(admin.ModelAdmin):
             else:
                 gld.check_delivery_status_levering(registration_log)
                 pending_messages.append(
-                    ("Poging gedaan om de registratiestatus te controleren.", messages.INFO)
+                    (
+                        "Poging gedaan om de registratiestatus te controleren.",
+                        messages.INFO,
+                    )
                 )
 
         # Deduplicate and display
@@ -1030,7 +1047,9 @@ class gld_addition_log_Admin(admin.ModelAdmin):
                     )
                 )
             else:
-                gld.deliver_gld_addition_source_document(addition_log, addition_log.file)
+                gld.deliver_gld_addition_source_document(
+                    addition_log, addition_log.file
+                )
                 pending_messages.append(
                     ("Poging gedaan om het document aan te leveren.", messages.INFO)
                 )

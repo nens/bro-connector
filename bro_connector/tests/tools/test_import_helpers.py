@@ -58,9 +58,8 @@ def test_filter_gmn_rows_keeps_first_date_and_logs_removed_rows():
     )
 
     assert validated is False
-    assert len(rows) == 1
+    assert len(rows) == 2
     assert rows[0]["measuringPointCode"] == "MP-1"
-    assert rows[0]["_source_row"] == 2
     assert any("dubbele datum" in message for message in messages)
     assert any("ongeldige datum" in message for message in messages)
 

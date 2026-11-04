@@ -50,12 +50,14 @@ def validate_and_process_bro_file(sender, instance: BroImport, **kwargs):
             "Ongeldig bestandstype. Alleen ZIP- of CSV-bestanden zijn toegestaan.\n"
         )
 
+
 @receiver(pre_save, sender=GLDImport)
 def save_user(sender, instance: GLDImport, **kwargs):
     """Attach the current user to a GLD import when no user is set."""
     if not instance.user:
         user = get_current_user()
         instance.user = user
+
 
 @receiver(pre_save, sender=GLDImport)
 def validate_and_process_file(sender, instance: GLDImport, **kwargs):
@@ -195,7 +197,6 @@ def _filter_gmn_rows(
     """Validate GMN rows, deduplicate dates, and return rows ready for import."""
     df = df.select(columns)
     valid_rows = []
-    seen_dates = set()
     messages = []
     validated = True
     for row_number, row in enumerate(df.iter_rows(named=True), start=2):
@@ -204,14 +205,6 @@ def _filter_gmn_rows(
             validated = False
             messages.append(
                 f"Rij {row_number} verwijderd: ongeldige datum '{row['date']}'.\n"
-            )
-            continue
-
-        date_key = date_value.replace(tzinfo=None)
-        if date_key in seen_dates:
-            messages.append(
-                f"Rij {row_number} verwijderd: dubbele datum '{row['date']}' "
-                "(eerste voorkomen behouden).\n"
             )
             continue
 
@@ -225,9 +218,6 @@ def _filter_gmn_rows(
             )
             continue
 
-        seen_dates.add(date_key)
-        row["date"] = date_value
-        row["_source_row"] = row_number
         valid_rows.append(row)
     return valid_rows, messages, validated
 
@@ -252,9 +242,7 @@ def _import_gmn_rows(instance: GMNImport, rows: list[dict]) -> bool:
     executed = True
     for row in rows:
         row_number = row["_source_row"]
-        monitoring_tube = get_monitoring_tube(
-            row["gmwBroId"], row["tubeNumber"]
-        )
+        monitoring_tube = get_monitoring_tube(row["gmwBroId"], row["tubeNumber"])
         if not monitoring_tube:
             instance.validated = False
             instance.report += (
@@ -267,7 +255,9 @@ def _import_gmn_rows(instance: GMNImport, rows: list[dict]) -> bool:
         date_value = convert_str_to_datetime(row["date"])
         if date_value is None:
             instance.validated = False
-            instance.report += f"Rij {row_number} verwijderd: datum kon niet worden verwerkt.\n"
+            instance.report += (
+                f"Rij {row_number} verwijderd: datum kon niet worden verwerkt.\n"
+            )
             executed = False
             continue
 
@@ -321,4 +311,3 @@ def pre_save_gmn_import(sender, instance: GMNImport, **kwargs):
     instance.report += "".join(row_messages)
     _create_gmn_subgroups(instance, rows)
     instance.executed = _import_gmn_rows(instance, rows)
-

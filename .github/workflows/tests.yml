@@ -1,0 +1,36 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Lint (syntax errors only - blocking)
+        run: uv run ruff check . --select E9
+
+      - name: Lint (full report, informational)
+        run: uv run ruff check .
+        continue-on-error: true
+
+      - name: Run tests
+        run: uv run pytest --cov=. --cov-report=term-missing

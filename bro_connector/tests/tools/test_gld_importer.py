@@ -4,10 +4,9 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import pytest
+from bro.models import Organisation
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-
-from bro.models import Organisation
 from gld.models import Observation
 from gmw.models import (
     GroundwaterMonitoringTubeStatic,
@@ -18,7 +17,7 @@ from tools.models import GLDImport
 
 logger = logging.getLogger(__name__)
 
-TEST_MEASUREMENTS =[
+TEST_MEASUREMENTS = [
     ("17/12/2014 11:00", -1926, "nogNietBeoordeeld"),
     ("17/12/2014 12:00", -1928, "nogNietBeoordeeld"),
     ("17/12/2014 13:00", -1930, "nogNietBeoordeeld"),
@@ -32,13 +31,15 @@ TEST_MEASUREMENTS =[
     ("17/12/2014 20:55", -1000, "nogNietBeoordeeld"),
 ]
 
+
 def _create_test_csv(measurements):
     header = "time,value,status_quality_control"
     lines = [header]
-    for (time, value, status) in measurements:
+    for time, value, status in measurements:
         line = f"{time},{value},{status}"
         lines.append(line)
     return "\n".join(lines).encode("utf-8")
+
 
 TEST_CSV = _create_test_csv(TEST_MEASUREMENTS)
 
@@ -46,6 +47,7 @@ SAMPLE_MEASUREMENTS = TEST_MEASUREMENTS[:5]
 SAMPLE_CSV = _create_test_csv(SAMPLE_MEASUREMENTS)
 
 User = get_user_model()
+
 
 def _get_observation(importer: GLDImport) -> Observation:
     """
@@ -69,6 +71,7 @@ def _get_observation(importer: GLDImport) -> Observation:
     except Observation.DoesNotExist:
         return None
 
+
 @pytest.fixture
 @pytest.mark.django_db
 def default_organisation():
@@ -77,18 +80,21 @@ def default_organisation():
         company_number=int(KVK_USER),
     )
 
+
 @pytest.fixture
 @pytest.mark.django_db
 def default_groundwater_monitoring_well():
     return GroundwaterMonitoringWellStatic.objects.create()
+
 
 @pytest.fixture
 @pytest.mark.django_db
 def default_groundwater_monitoring_tube(default_groundwater_monitoring_well):
     return GroundwaterMonitoringTubeStatic.objects.create(
         groundwater_monitoring_well_static=default_groundwater_monitoring_well,
-        tube_number=1
+        tube_number=1,
     )
+
 
 @pytest.fixture
 @pytest.mark.django_db
@@ -100,6 +106,7 @@ def super_user():
         is_staff=True,
     )
 
+
 @pytest.fixture
 @pytest.mark.django_db
 def normal_user():
@@ -110,11 +117,14 @@ def normal_user():
         is_staff=True,
     )
 
+
 def _read_mtvps_from_database(observation: Observation = None, measurements: list = []):
     mtvps = []
     if observation:
-        for (measurement_time, _, _) in measurements:
-            mtvp_time = datetime.strptime(measurement_time, "%d/%m/%Y %H:%M").replace(tzinfo=ZoneInfo(TIME_ZONE))
+        for measurement_time, _, _ in measurements:
+            mtvp_time = datetime.strptime(measurement_time, "%d/%m/%Y %H:%M").replace(
+                tzinfo=ZoneInfo(TIME_ZONE)
+            )
             mtvps.append((observation.observation_id, mtvp_time))
     return mtvps
 
@@ -231,7 +241,7 @@ def test_gld_importer_creates_multiple_measurements_and_permissions(
     print(f"MTVPs in second import: {len(mtvps_in_second_import)}")
 
     permission_check = has_user_permission(importer.report)
-    assert permission_check == False
+    assert permission_check is False
 
     n_unique_measurements = extract_total_unique_measurements(importer.report)
     assert n_unique_measurements == len(SAMPLE_MEASUREMENTS)
@@ -240,7 +250,7 @@ def test_gld_importer_creates_multiple_measurements_and_permissions(
     assert n_duplicate_measurements == len(SAMPLE_MEASUREMENTS)
 
     ## ---------- TEST RUN WITH NORMAL USER, VOLLEDIGBEOORDEELD ----------
-    #     
+    #
     test_file = SimpleUploadedFile(
         "test.csv",
         SAMPLE_CSV,
@@ -271,7 +281,7 @@ def test_gld_importer_creates_multiple_measurements_and_permissions(
     assert len(mtvps_in_second_import) == len(mtvps_in_third_import)
 
     permission_check = has_user_permission(importer.report)
-    assert permission_check == True
+    assert permission_check is True
 
     n_unique_measurements = extract_total_unique_measurements(importer.report)
     assert n_unique_measurements == len(SAMPLE_MEASUREMENTS)
