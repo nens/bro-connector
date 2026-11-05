@@ -339,7 +339,7 @@ ADMIN_REORDER = (
 )
 
 
-LOG_DIR = "/var/logs"
+LOG_DIR = os.getenv("LOG_DIR", str(BASE_DIR / "logs"))
 os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
