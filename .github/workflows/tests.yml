@@ -13,8 +13,28 @@ jobs:
       matrix:
         python-version: ["3.12"]
 
+    services:
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: grondwatermeetnet
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v7
+
+      - name: Install GDAL/GEOS (required by django.contrib.gis)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gdal-bin libgdal-dev libgeos-dev
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -25,5 +45,37 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
+      # main/localsecret.py is gitignored, so CI generates a throwaway one.
+      - name: Generate localsecret.py
+        run: |
+          cat > bro_connector/main/localsecret.py <<'EOF'
+          FERNET_ENCRYPTION_KEY = "ci-fernet-encryption-key"
+          SALT_STRING = "ci-salt"
+
+          GDAL_DLL_VERSION = "309"
+
+          ENV = "development"
+          DEMO = ENV != "production"
+
+          ftp_ip = "ftp.example.com"
+          ftp_username = "ci"
+          ftp_password = "ci"
+
+          ftp_frd_path = "/FRD"
+          ftp_gld_pmg_path = "/GLD_PMG"
+          ftp_gld_hmn_path = "/GLD_HMN"
+          ftp_gld_path = "/GLD"
+          ftp_gmw_path = "/ONDERHOUD"
+          ftp_gar_path = "/GAR"
+
+          database = "grondwatermeetnet"
+          user = "postgres"
+          password = "postgres"
+          host = "localhost"
+          port = "5432"
+
+          validation_key = "ci-validation-key"
+          EOF
+
       - name: Run tests
-        run: uv run pytest --cov=. --cov-report=term-missing
+        run: uv run pytest --cov --cov-report=term-missing

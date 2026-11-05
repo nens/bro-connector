@@ -56,6 +56,7 @@ def django_db_setup(django_test_environment, django_db_blocker):
     )
     conn.autocommit = True
     with conn.cursor() as cur:
+        cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
         with open(sql_path) as f:
             cur.execute(f.read())
     conn.close()
