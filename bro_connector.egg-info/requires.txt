@@ -63,6 +63,7 @@ xmltodict>=1.0.4
 numba>=0.63.1
 paramiko==3.4.0
 ruff>=0.17.3
+gdal
 
 [test]
 pytest

@@ -20,6 +20,7 @@ from gmw.models import (
     GroundwaterMonitoringTubeStatic,
     GroundwaterMonitoringWellStatic,
 )
+from gmw.signals import on_save_groundwater_monitoring_tube_static
 from rest_framework.test import APIClient
 
 
@@ -45,10 +46,20 @@ def default_groundwater_monitoring_well(default_organisation, db):
 
 @pytest.fixture
 def default_groundwater_monitoring_tube(default_groundwater_monitoring_well, db):
-    return GroundwaterMonitoringTubeStatic.objects.create(
-        groundwater_monitoring_well_static=default_groundwater_monitoring_well,
-        tube_number=1,
+    post_save.disconnect(
+        on_save_groundwater_monitoring_tube_static,
+        sender=GroundwaterMonitoringTubeStatic,
     )
+    try:
+        return GroundwaterMonitoringTubeStatic.objects.create(
+            groundwater_monitoring_well_static=default_groundwater_monitoring_well,
+            tube_number=1,
+        )
+    finally:
+        post_save.connect(
+            on_save_groundwater_monitoring_tube_static,
+            sender=GroundwaterMonitoringTubeStatic,
+        )
 
 
 @pytest.fixture

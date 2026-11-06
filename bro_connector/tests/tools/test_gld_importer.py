@@ -7,6 +7,7 @@ import pytest
 from bro.models import Organisation
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from gld.models import Observation
 from gmw.models import (
     GroundwaterMonitoringTubeStatic,
@@ -80,9 +81,15 @@ def default_organisation(db):
     )
 
 
+@pytest.fixture(autouse=True)
+def temporary_media_root(tmp_path):
+    with override_settings(MEDIA_ROOT=tmp_path):
+        yield
+
+
 @pytest.fixture
 def default_groundwater_monitoring_well(db):
-    return GroundwaterMonitoringWellStatic.objects.create()
+    return GroundwaterMonitoringWellStatic.objects.create(in_management=False)
 
 
 @pytest.fixture

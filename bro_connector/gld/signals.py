@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 import reversion
 from django.core.cache import cache
@@ -48,7 +49,7 @@ def _calculate_value_tube(
     unit: str,
     tube_top_position: float | None,
     cable_length: float | None = None,
-) -> float | None:
+) -> Decimal | None:
     """
     For now only supports m tov bkb / cm tov bkb / mm tov bkb.
     Conversion to mNAP
@@ -57,20 +58,25 @@ def _calculate_value_tube(
         return None
 
     # Make sure the field value is always positive
-    field_value = abs(field_value)
+    field_value = abs(Decimal(str(field_value)))
+    tube_top_position = Decimal(str(tube_top_position))
 
     if unit == "m t.o.v. bkb":
         return tube_top_position - field_value
     elif unit == "cm t.o.v. bkb":
-        return tube_top_position - (field_value / 100)
+        return tube_top_position - (field_value / Decimal(100))
     elif unit == "mm t.o.v. bkb":
-        return tube_top_position - (field_value / 1000)
+        return tube_top_position - (field_value / Decimal(1000))
     elif unit == "bar" and cable_length is not None:
         # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
-        return (field_value * 10.1974) + (tube_top_position - cable_length)
+        return (field_value * Decimal("10.1974")) + (
+            tube_top_position - Decimal(str(cable_length))
+        )
     elif unit == "mbar" and cable_length is not None:
         # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
-        return (field_value * 0.0101974) + (tube_top_position - cable_length)
+        return (field_value * Decimal("0.0101974")) + (
+            tube_top_position - Decimal(str(cable_length))
+        )
     else:
         return None
 
@@ -98,10 +104,12 @@ def on_save_groundwater_level_dossier(
             if instance.groundwater_monitoring_tube
             else None,
         )[0]
-        has_sensor = instance.groundwater_monitoring_tube and (
-            instance.groundwater_monitoring_tube.state.last().sensor_id is not None
-            or instance.groundwater_monitoring_tube.state.last().sensor_id is not None
+        latest_state = (
+            instance.groundwater_monitoring_tube.state.order_by("-date_from").first()
+            if instance.groundwater_monitoring_tube
+            else None
         )
+        has_sensor = latest_state is not None and latest_state.sensor_id is not None
         measurement_type = "druksensor" if has_sensor else "analoogPeilklokje"
         observation_process = ObservationProcess.objects.get_or_create(
             evaluation_procedure="oordeelDeskundige",

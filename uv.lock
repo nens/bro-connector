@@ -129,6 +129,7 @@ dependencies = [
     { name = "dpd-static-support" },
     { name = "flask" },
     { name = "flask-caching" },
+    { name = "gdal" },
     { name = "geopandas" },
     { name = "hydropandas" },
     { name = "i18nice", extra = ["yaml"] },
@@ -204,6 +205,7 @@ requires-dist = [
     { name = "dpd-static-support", specifier = "==0.0.5" },
     { name = "flask", specifier = "==3.0.3" },
     { name = "flask-caching" },
+    { name = "gdal", path = "gdal_wheels/gdal-3.10.2-cp312-cp312-win_amd64.whl" },
     { name = "geopandas" },
     { name = "hydropandas", specifier = "==0.13.3" },
     { name = "i18nice", extras = ["yaml"] },
@@ -1137,6 +1139,17 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/8a/ee/fd08713d15bf0f6487a72e415e91ef4a6b52ca96fa8f879533107a41e18d/fonttools-4.68.0-cp315-cp315t-win_arm64.whl", hash = "sha256:b612613f0165f560571c4e372af0ebbb1c4b36067de409922dcea349beb8bb20", size = 2528487 },
     { url = "https://files.pythonhosted.org/packages/35/74/4ea331ecc65ba05a58b1e4e8ccd604c8a15565f876dfbf93fc2a2ea2e22b/fonttools-4.68.0-py3-none-any.whl", hash = "sha256:d76f8fdcb6936f5e1045a0c9dd721a4bf11112e60d1e243bfa1d39f06a8b3104", size = 1248357 },
 ]
+
+[[package]]
+name = "gdal"
+version = "3.10.2"
+source = { path = "gdal_wheels/gdal-3.10.2-cp312-cp312-win_amd64.whl" }
+wheels = [
+    { filename = "gdal-3.10.2-cp312-cp312-win_amd64.whl", hash = "sha256:720e9e45d057231d990aa536c41dd2bd96a97e93a3edde10fff5321b3496388b" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "numpy", marker = "extra == 'numpy'", specifier = ">1.0.0" }]
 
 [[package]]
 name = "geopandas"

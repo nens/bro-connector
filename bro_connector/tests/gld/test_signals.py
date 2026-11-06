@@ -197,6 +197,10 @@ def test_pre_save_observation_sets_starttime_from_first_measurement(
     When an Observation has no observation_starttime but has measurements,
     the pre_save signal populates observation_starttime from the first measurement.
     """
+    Observation.objects.filter(pk=default_observation.pk).update(
+        observation_starttime=None
+    )
+    default_observation.refresh_from_db()
     assert default_observation.observation_starttime is None
 
     # Re-save the observation to trigger the pre_save signal
