@@ -72,6 +72,12 @@ def django_db_setup(django_test_environment, django_db_blocker):
             "migrate",
             database="default",
             interactive=False,
+            verbosity=0,
+        )
+        call_command(
+            "migrate",
+            database="default",
+            interactive=False,
             run_syncdb=True,
             verbosity=0,
         )
