@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Count, Min
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gld.models import MeasurementTvp, Observation
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 
 def split_large_observations(max_measurements_per_observation=7000):
@@ -91,7 +92,8 @@ def split_observations_older_than_two_weeks_with_data():
     for observation in old_observations:
         if (
             observation.measurement_first_time
-            and observation.measurement_first_time < datetime.now(PYTZ_TIMEZONE) - timedelta(weeks=2)
+            and observation.measurement_first_time
+            < datetime.now(PYTZ_TIMEZONE) - timedelta(weeks=2)
         ):
             print(
                 f"Observation {observation.observation_id} is older than two weeks with first measurement at {observation.measurement_first_time} and current startdate {observation.observation_starttime}"

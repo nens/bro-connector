@@ -1,5 +1,6 @@
-import logging
 import datetime
+import logging
+
 import requests
 import xmltodict
 from django.conf import settings
@@ -98,9 +99,7 @@ def handle_individual_bro_id(gar_id: str, last_import_date=None) -> dict | None:
             GroundwaterMonitoringTubeStatic.DoesNotExist,
             GroundwaterMonitoringTubeStatic.MultipleObjectsReturned,
         ):
-            logger.warning(
-                f"Tube not found for GMW {gmw_bro_id}, tube {tube_number}."
-            )
+            logger.warning(f"Tube not found for GMW {gmw_bro_id}, tube {tube_number}.")
 
     # GroundwaterCompositionResearches – main GAR record (local_id stores BRO ID)
     try:
@@ -141,10 +140,12 @@ def _save_field_sample(
 
     sampling_device = field_research_data.get("garcommon:samplingDevice") or {}
     pump_type = _text_or_none(sampling_device.get("garcommon:pumpType"))
-    sampling_date_time_str = field_research_data.get(
-        "garcommon:samplingDateTime"
+    sampling_date_time_str = field_research_data.get("garcommon:samplingDateTime")
+    sampling_date_time = (
+        datetime.datetime.fromisoformat(sampling_date_time_str)
+        if sampling_date_time_str
+        else None
     )
-    sampling_date_time = datetime.datetime.fromisoformat(sampling_date_time_str) if sampling_date_time_str else None
     try:
         field_sample, _ = FieldSamples.objects.update_or_create(
             groundwater_composition_research_id=gcr.pk,
@@ -161,9 +162,7 @@ def _save_field_sample(
             },
         )
     except Exception as e:
-        logger.error(
-            f"Could not save FieldSamples for GAR {gcr.local_id}: {e}"
-        )
+        logger.error(f"Could not save FieldSamples for GAR {gcr.local_id}: {e}")
         return
 
     field_observation_data = field_research_data.get("garcommon:fieldObservation") or {}

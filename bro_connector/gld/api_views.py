@@ -98,8 +98,8 @@ class ObservationMeasurementsUpdateView(APIView):
 
     | Status | Cause |
     |---|---|
-    | 410 | `gld_id` does not match any `GroundwaterLevelDossier`. |
-    | 411 | No `Observation` matches the supplied `observation_type` / `validatie_status`. |
+    | 400 | `gld_id` does not match any `GroundwaterLevelDossier`. |
+    | 400 | No `Observation` matches the supplied `observation_type` / `validatie_status`. |
     | 400 | Request body fails validation — field-level error details are included. |
     | 401 | Missing or invalid Basic Authentication credentials. |
     """
@@ -114,23 +114,22 @@ class ObservationMeasurementsUpdateView(APIView):
 
         gld_id = data["gld_id"]
         observation_type = data["observation_type"]
-        validatie_status = data.get("validatie_status")
-
         try:
             gld = GroundwaterLevelDossier.objects.get(pk=gld_id)
         except GroundwaterLevelDossier.DoesNotExist:
             return Response(
-                {
-                    "detail": f"GroundwaterLevelDossier met id '{gld_id}' bestaat niet."
-                },
-                status=status.HTTP_410_GONE,
+                {"detail": f"GroundwaterLevelDossier met id '{gld_id}' bestaat niet."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         observations = Observation.objects.filter(
             groundwater_level_dossier=gld,
             observation_metadata__observation_type=observation_type,
-            observation_metadata__status=validatie_status,
         )
+        if "validatie_status" in data:
+            observations = observations.filter(
+                observation_metadata__status=data["validatie_status"]
+            )
 
         if not observations.exists():
             return Response(
@@ -138,10 +137,10 @@ class ObservationMeasurementsUpdateView(APIView):
                     "detail": (
                         "Geen observatie gevonden voor "
                         f"gld_id='{gld_id}', observation_type='{observation_type}', "
-                        f"validatie_status='{validatie_status}'."
+                        f"validatie_status='{data.get('validatie_status')}'."
                     )
                 },
-                status=status.HTTP_411_LENGTH_REQUIRED,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         updated = []
@@ -159,11 +158,21 @@ class ObservationMeasurementsUpdateView(APIView):
             )
 
             if tvp is None:
-                not_found.append({"observation_pk": None, "measurement_time": _isoformat(measurement_time)})
+                not_found.append(
+                    {
+                        "observation_pk": None,
+                        "measurement_time": _isoformat(measurement_time),
+                    }
+                )
                 continue
 
             _apply_measurement_update(tvp, item)
-            updated.append({"observation_pk": tvp.observation_id, "measurement_time": _isoformat(measurement_time)})
+            updated.append(
+                {
+                    "observation_pk": tvp.observation_id,
+                    "measurement_time": _isoformat(measurement_time),
+                }
+            )
 
         if updated:
             _flag_observations_for_correction(observations)

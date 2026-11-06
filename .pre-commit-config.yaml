@@ -11,6 +11,7 @@ repos:
         args: [--allow-multiple-documents]
       - id: check-toml
       - id: check-added-large-files
+        exclude: ^gdal_wheels/
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.15.8

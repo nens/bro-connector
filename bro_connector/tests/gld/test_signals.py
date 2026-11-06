@@ -5,29 +5,19 @@ Each test verifies side-effects triggered by Django signals defined in
 gld/signals.py. All tests use real database interaction (@pytest.mark.django_db)
 and leave signals connected so that actual signal behaviour is exercised.
 """
-import datetime
+
 from decimal import Decimal
 
 import pytest
-from django.db.models.signals import post_save
 from django.utils import timezone
 from gld.models import (
     GroundwaterLevelDossier,
     MeasurementPointMetadata,
     MeasurementTvp,
     Observation,
-    ObservationMetadata,
-    ObservationProcess,
     gld_addition_log,
     gld_registration_log,
 )
-from gld.signals import on_save_groundwater_level_dossier
-from gmw.models import (
-    GroundwaterMonitoringTubeDynamic,
-    GroundwaterMonitoringTubeStatic,
-    GroundwaterMonitoringWellStatic,
-)
-
 
 # ---------------------------------------------------------------------------
 # on_save_groundwater_level_dossier
@@ -81,11 +71,11 @@ def test_auto_creates_sensor_observation_and_controlemeting(
         quality_regime="IMBRO/A",
     )
     observations = Observation.objects.filter(groundwater_level_dossier=gld)
-    observation_types = set(
+    observation_types = {
         obs.observation_metadata.observation_type
         for obs in observations
         if obs.observation_metadata
-    )
+    }
     assert "reguliereMeting" in observation_types
     assert "controlemeting" in observation_types
 
@@ -103,13 +93,17 @@ def test_no_duplicate_observation_on_gld_update(
         groundwater_monitoring_tube=default_groundwater_monitoring_tube,
         quality_regime="IMBRO/A",
     )
-    count_after_create = Observation.objects.filter(groundwater_level_dossier=gld).count()
+    count_after_create = Observation.objects.filter(
+        groundwater_level_dossier=gld
+    ).count()
 
     # Trigger another post_save by updating the GLD
     gld.quality_regime = "IMBRO/A"
     gld.save()
 
-    count_after_update = Observation.objects.filter(groundwater_level_dossier=gld).count()
+    count_after_update = Observation.objects.filter(
+        groundwater_level_dossier=gld
+    ).count()
     assert count_after_update == count_after_create
 
 
@@ -173,7 +167,9 @@ def test_measurement_tvp_calculated_value_unit_mm(default_observation):
 
 
 @pytest.mark.django_db
-def test_measurement_tvp_calculated_value_unit_bkb(default_observation, default_tube_dynamic):
+def test_measurement_tvp_calculated_value_unit_bkb(
+    default_observation, default_tube_dynamic
+):
     """
     Unit 'm t.o.v. bkb' → calculated_value = tube_top_position - field_value.
     tube_top_position is -5.0 (from default_tube_dynamic), field_value=2.0
@@ -201,13 +197,20 @@ def test_pre_save_observation_sets_starttime_from_first_measurement(
     When an Observation has no observation_starttime but has measurements,
     the pre_save signal populates observation_starttime from the first measurement.
     """
+    Observation.objects.filter(pk=default_observation.pk).update(
+        observation_starttime=None
+    )
+    default_observation.refresh_from_db()
     assert default_observation.observation_starttime is None
 
     # Re-save the observation to trigger the pre_save signal
     default_observation.save()
     default_observation.refresh_from_db()
 
-    assert default_observation.observation_starttime == default_measurement_tvp.measurement_time
+    assert (
+        default_observation.observation_starttime
+        == default_measurement_tvp.measurement_time
+    )
 
 
 @pytest.mark.django_db
@@ -243,10 +246,14 @@ def test_pre_save_observation_creates_continuation_on_endtime_set(
     assert count_after == count_before + 1
 
     # The new observation should be open (no endtime)
-    new_obs = Observation.objects.filter(
-        groundwater_level_dossier=gld,
-        observation_endtime__isnull=True,
-    ).exclude(pk=default_observation.pk).first()
+    new_obs = (
+        Observation.objects.filter(
+            groundwater_level_dossier=gld,
+            observation_endtime__isnull=True,
+        )
+        .exclude(pk=default_observation.pk)
+        .first()
+    )
     assert new_obs is not None
 
 
@@ -292,7 +299,7 @@ def test_registration_log_syncs_bro_id_to_gld(
     When a gld_registration_log has a gld_bro_id set and is saved, the signal
     copies that BRO ID to the linked GroundwaterLevelDossier.
     """
-    reg_log = gld_registration_log.objects.create(
+    _ = gld_registration_log.objects.create(
         gmw_bro_id="GMW000000000001",
         filter_number=1,
         quality_regime="IMBRO",
@@ -315,7 +322,7 @@ def test_addition_log_sets_observation_id_bro(default_observation):
     Saving a gld_addition_log with an observation_identifier updates
     Observation.observation_id_bro via the post_save signal.
     """
-    log = gld_addition_log.objects.create(
+    _ = gld_addition_log.objects.create(
         broid_registration="GLD000000000001",
         observation=default_observation,
         observation_identifier="OBS-001",
@@ -332,7 +339,7 @@ def test_addition_log_sets_observation_up_to_date_on_doorgeleverd(default_observ
     When a gld_addition_log delivery_status transitions to 'DOORGELEVERD',
     Observation.up_to_date_in_bro is set to True.
     """
-    log = gld_addition_log.objects.create(
+    _ = gld_addition_log.objects.create(
         broid_registration="GLD000000000001",
         observation=default_observation,
         observation_identifier="OBS-002",

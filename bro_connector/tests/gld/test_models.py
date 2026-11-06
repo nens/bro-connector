@@ -5,7 +5,6 @@ import pytest
 from django.db import IntegrityError
 from django.utils import timezone
 from gld.models import (
-    GroundwaterLevelDossier,
     MeasurementPointMetadata,
     MeasurementTvp,
     Observation,
@@ -13,14 +12,15 @@ from gld.models import (
     ObservationProcess,
 )
 
-
 # ---------------------------------------------------------------------------
 # GroundwaterLevelDossier
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.django_db
-def test_gld_str(default_groundwater_level_dossier, default_groundwater_monitoring_tube):
+def test_gld_str(
+    default_groundwater_level_dossier, default_groundwater_monitoring_tube
+):
     expected = f"GLD_{default_groundwater_monitoring_tube.__str__()}_IMBRO"
     assert str(default_groundwater_level_dossier) == expected
 
@@ -36,27 +36,38 @@ def test_gld_gmw_bro_id_property(
 def test_gld_tube_number_property(
     default_groundwater_level_dossier, default_groundwater_monitoring_tube
 ):
-    assert default_groundwater_level_dossier.tube_number == default_groundwater_monitoring_tube.tube_number
+    assert (
+        default_groundwater_level_dossier.tube_number
+        == default_groundwater_monitoring_tube.tube_number
+    )
 
 
 @pytest.mark.django_db
-def test_gld_nr_measurements_zero_when_no_measurements(default_groundwater_level_dossier, default_observation):
+def test_gld_nr_measurements_zero_when_no_measurements(
+    default_groundwater_level_dossier, default_observation
+):
     assert default_groundwater_level_dossier.nr_measurements == 0
 
 
 @pytest.mark.django_db
-def test_gld_nr_measurements_counts_all_tvps(default_groundwater_level_dossier, default_measurement_tvp):
+def test_gld_nr_measurements_counts_all_tvps(
+    default_groundwater_level_dossier, default_measurement_tvp
+):
     assert default_groundwater_level_dossier.nr_measurements == 1
 
 
 @pytest.mark.django_db
-def test_gld_has_open_observation_true(default_groundwater_level_dossier, default_observation):
+def test_gld_has_open_observation_true(
+    default_groundwater_level_dossier, default_observation
+):
     # Observation with no endtime → open observation exists
     assert default_groundwater_level_dossier.has_open_observation is True
 
 
 @pytest.mark.django_db
-def test_gld_has_open_observation_false_when_all_closed(default_groundwater_level_dossier, default_observation):
+def test_gld_has_open_observation_false_when_all_closed(
+    default_groundwater_level_dossier, default_observation
+):
     Observation.objects.filter(pk=default_observation.pk).update(
         observation_endtime=timezone.now()
     )
@@ -116,7 +127,9 @@ def test_gld_last_measurement_returns_value_when_measurement_exists(
 
 
 @pytest.mark.django_db
-def test_observation_metadata_str_with_responsible_party(default_observation_metadata, default_organisation):
+def test_observation_metadata_str_with_responsible_party(
+    default_observation_metadata, default_organisation
+):
     result = str(default_observation_metadata)
     assert default_organisation.name in result
     assert "reguliereMeting" in result
@@ -177,7 +190,9 @@ def test_observation_process_str_without_air_pressure():
 
 
 @pytest.mark.django_db
-def test_get_sourcedocument_data_druksensor_includes_air_pressure(default_observation_process):
+def test_get_sourcedocument_data_druksensor_includes_air_pressure(
+    default_observation_process,
+):
     data = default_observation_process.get_sourcedocument_data()
     assert "airPressureCompensationType" in data
     assert data["airPressureCompensationType"] == "capillair"
@@ -271,24 +286,32 @@ def test_observation_str_with_times(default_observation):
 
 
 @pytest.mark.django_db
-def test_observation_timestamp_first_measurement_none_when_no_measurements(default_observation):
+def test_observation_timestamp_first_measurement_none_when_no_measurements(
+    default_observation,
+):
     assert default_observation.timestamp_first_measurement is None
 
 
 @pytest.mark.django_db
-def test_observation_timestamp_first_measurement_returns_time(default_observation, default_measurement_tvp):
+def test_observation_timestamp_first_measurement_returns_time(
+    default_observation, default_measurement_tvp
+):
     result = default_observation.timestamp_first_measurement
     assert result is not None
     assert result == default_measurement_tvp.measurement_time
 
 
 @pytest.mark.django_db
-def test_observation_timestamp_last_measurement_none_when_no_measurements(default_observation):
+def test_observation_timestamp_last_measurement_none_when_no_measurements(
+    default_observation,
+):
     assert default_observation.timestamp_last_measurement is None
 
 
 @pytest.mark.django_db
-def test_observation_timestamp_last_measurement_returns_time(default_observation, default_measurement_tvp):
+def test_observation_timestamp_last_measurement_returns_time(
+    default_observation, default_measurement_tvp
+):
     result = default_observation.timestamp_last_measurement
     assert result is not None
     assert result == default_measurement_tvp.measurement_time
@@ -300,7 +323,9 @@ def test_observation_nr_measurements_zero(default_observation):
 
 
 @pytest.mark.django_db
-def test_observation_nr_measurements_counts_tvps(default_observation, default_measurement_tvp):
+def test_observation_nr_measurements_counts_tvps(
+    default_observation, default_measurement_tvp
+):
     assert default_observation.nr_measurements == 1
 
 
@@ -318,12 +343,16 @@ def test_observation_date_stamp_returns_date(default_observation):
 
 
 @pytest.mark.django_db
-def test_observation_observation_type_from_metadata(default_observation, default_observation_metadata):
+def test_observation_observation_type_from_metadata(
+    default_observation, default_observation_metadata
+):
     assert default_observation.observation_type == "reguliereMeting"
 
 
 @pytest.mark.django_db
-def test_observation_observation_type_dash_when_no_metadata(default_groundwater_level_dossier):
+def test_observation_observation_type_dash_when_no_metadata(
+    default_groundwater_level_dossier,
+):
     obs = Observation.objects.create(
         groundwater_level_dossier=default_groundwater_level_dossier,
         observation_metadata=None,
@@ -333,12 +362,16 @@ def test_observation_observation_type_dash_when_no_metadata(default_groundwater_
 
 
 @pytest.mark.django_db
-def test_observation_status_from_metadata(default_observation, default_observation_metadata):
+def test_observation_status_from_metadata(
+    default_observation, default_observation_metadata
+):
     assert default_observation.status == "voorlopig"
 
 
 @pytest.mark.django_db
-def test_observation_measurement_type_from_process(default_observation, default_observation_process):
+def test_observation_measurement_type_from_process(
+    default_observation, default_observation_process
+):
     assert default_observation.measurement_type == "druksensor"
 
 
@@ -349,7 +382,9 @@ def test_observation_addition_type_regulier(default_observation):
 
 
 @pytest.mark.django_db
-def test_observation_addition_type_controlemeting(default_groundwater_level_dossier, default_organisation):
+def test_observation_addition_type_controlemeting(
+    default_groundwater_level_dossier, default_organisation
+):
     meta = ObservationMetadata.objects.create(
         observation_type="controlemeting",
         status=None,
@@ -376,7 +411,9 @@ def test_observation_all_measurements_validated_no_measurements(default_observat
 
 
 @pytest.mark.django_db
-def test_observation_all_measurements_validated_with_unvalidated(default_observation, default_measurement_tvp):
+def test_observation_all_measurements_validated_with_unvalidated(
+    default_observation, default_measurement_tvp
+):
     # default_measurement_tvp has status "nogNietBeoordeeld" (auto-created by signal)
     assert default_observation.all_measurements_validated == "voorlopig"
 

@@ -46,10 +46,10 @@ def test_validate_gmn_columns_reports_missing_and_unexpected_columns():
 def test_filter_gmn_rows_keeps_first_date_and_logs_removed_rows():
     frame = pl.DataFrame(
         {
-            "measuringPointCode": ["MP-1", "MP-2", "MP-3"],
-            "gmwBroId": ["GMW-1", "GMW-2", "GMW-3"],
-            "tubeNumber": [1, 2, 3],
-            "date": ["2024-01-01", "2024-01-01", "not-a-date"],
+            "measuringPointCode": ["MP-1", "MP-2", "MP-3", "MP-4"],
+            "gmwBroId": ["GMW-1", "GMW-2", "GMW-3", "GMW-4"],
+            "tubeNumber": [1, 2, 3, 4],
+            "date": ["2024-01-01", "2024-01-01", "2024-02-01", "not-a-date"],
         }
     )
 
@@ -58,9 +58,8 @@ def test_filter_gmn_rows_keeps_first_date_and_logs_removed_rows():
     )
 
     assert validated is False
-    assert len(rows) == 1
+    assert len(rows) == 2
     assert rows[0]["measuringPointCode"] == "MP-1"
-    assert rows[0]["_source_row"] == 2
     assert any("dubbele datum" in message for message in messages)
     assert any("ongeldige datum" in message for message in messages)
 

@@ -16,7 +16,7 @@ from pathlib import Path
 
 import django.db.models.options as options
 import pytz
-from main.localsecret import ENV, GDAL_DLL_VERSION
+from main.localsecret import ENV
 
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("schema",)
 
@@ -339,7 +339,7 @@ ADMIN_REORDER = (
 )
 
 
-LOG_DIR = "/var/logs"
+LOG_DIR = os.getenv("LOG_DIR", str(BASE_DIR / "logs"))
 os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
@@ -605,5 +605,27 @@ GRAPH_MODELS = {
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(10_485_760 * 1.5)  # (15MB) needed for DASH APP
 
 if platform.system() == "Windows":
-    GDAL_LIBRARY_PATH = rf"C:\OSGeo4W\bin\gdal{GDAL_DLL_VERSION}.dll"
-    GEOS_LIBRARY_PATH = r"C:\OSGeo4W\bin\geos_c.dll"
+    import osgeo  # importing this also registers its DLL directory
+
+    OSGEO_DIR = Path(osgeo.__file__).parent
+    os.add_dll_directory(str(OSGEO_DIR))
+    os.environ["PATH"] = f"{OSGEO_DIR}{os.pathsep}{os.environ['PATH']}"
+
+    GDAL_LIBRARY_PATH = str(next(OSGEO_DIR.glob("gdal*.dll")))
+    GEOS_LIBRARY_PATH = str(OSGEO_DIR / "geos_c.dll")
+
+    proj_dir = OSGEO_DIR / "data" / "proj"
+    os.environ["PROJ_DATA"] = os.environ["PROJ_LIB"] = str(proj_dir)
+
+if os.name == "nt":
+    import osgeo  # importing this also registers its DLL directory
+
+    OSGEO_DIR = Path(osgeo.__file__).parent
+    os.add_dll_directory(str(OSGEO_DIR))
+    os.environ["PATH"] = f"{OSGEO_DIR}{os.pathsep}{os.environ['PATH']}"
+
+    GDAL_LIBRARY_PATH = str(next(OSGEO_DIR.glob("gdal*.dll")))
+    GEOS_LIBRARY_PATH = str(OSGEO_DIR / "geos_c.dll")
+
+    proj_dir = OSGEO_DIR / "data" / "proj"
+    os.environ["PROJ_DATA"] = os.environ["PROJ_LIB"] = str(proj_dir)

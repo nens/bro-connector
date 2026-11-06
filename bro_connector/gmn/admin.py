@@ -6,11 +6,12 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.management.tasks.gmn_sync import sync_gmn
 from main.utils.frd_fieldform import FieldFormGenerator as FRD_FieldFormGenerator
 from main.utils.gld_fieldform import FieldFormGenerator as GLD_FieldFormGenerator
 from reversion_compare.helpers import patch_admin
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 from .forms import GroundwaterMonitoringNetForm, SubgroupForm
 from .models import (

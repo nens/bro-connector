@@ -13,16 +13,19 @@ from bro.models import Organisation
 from django.contrib.gis.geos import Point
 from frd.models import FormationResistanceDossier, MeasurementConfiguration
 from gmw.choices import config_schema, cross_cable_config_schema
-from gmw.models import GeoOhmCable, GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
+from gmw.models import (
+    GeoOhmCable,
+    GroundwaterMonitoringTubeStatic,
+    GroundwaterMonitoringWellStatic,
+)
 from main.settings.base import KVK_USER
 
-CONFIGS_PER_CABLE = len(config_schema)          # 30
+CONFIGS_PER_CABLE = len(config_schema)  # 30
 CROSS_CABLE_CONFIGS = len(cross_cable_config_schema)  # 6
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_organisation():
+def default_organisation(db):
     return Organisation.objects.create(
         name="Test Organisation",
         company_number=int(KVK_USER),
@@ -30,8 +33,7 @@ def default_organisation():
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def tube(default_organisation):
+def tube(default_organisation, db):
     gmw = GroundwaterMonitoringWellStatic.objects.create(
         delivery_accountable_party=default_organisation,
         coordinates=Point(0, 0),
@@ -42,7 +44,7 @@ def tube(default_organisation):
 @pytest.mark.django_db
 def test_single_cable_creates_all_configurations(tube: GroundwaterMonitoringTubeStatic):
     """A single 24-electrode cable should produce 30 MeasurementConfigurations."""
-    cable = GeoOhmCable.objects.create(
+    _ = GeoOhmCable.objects.create(
         groundwater_monitoring_tube_static=tube,
         cable_number=1,
         electrode_count=24,

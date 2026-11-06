@@ -8,7 +8,12 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from main.settings.base import KVK_USER, PYTZ_TIMEZONE
 
-from .choices import config_schema, cross_cable_config_schema, elektrode_schema, pair_schema
+from .choices import (
+    config_schema,
+    cross_cable_config_schema,
+    elektrode_schema,
+    pair_schema,
+)
 from .models import (
     Electrode,
     Event,
@@ -21,6 +26,7 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
 
 @receiver(pre_save, sender=GroundwaterMonitoringWellDynamic)
 def on_save_groundwater_monitoring_well_dynamic_pre(sender, **kwargs):
@@ -236,7 +242,9 @@ def create_elektrode_pairs_for_geo_ohmkabel(geo_ohm_cable: GeoOhmCable):
         )
 
 
-def get_or_create_frd(geo_ohm_kabel: GeoOhmCable) -> frd_models.FormationResistanceDossier:
+def get_or_create_frd(
+    geo_ohm_kabel: GeoOhmCable,
+) -> frd_models.FormationResistanceDossier:
     tube = geo_ohm_kabel.groundwater_monitoring_tube_static
     return frd_models.FormationResistanceDossier.objects.get_or_create(
         groundwater_monitoring_tube=tube,
@@ -294,7 +302,9 @@ def create_meetconfiguraties(geo_ohm_kabel: GeoOhmCable):
             )
             continue
 
-        config_code = f"EP{i + 1 + (geo_ohm_kabel.cable_number - 1) * len(config_schema)}"
+        config_code = (
+            f"EP{i + 1 + (geo_ohm_kabel.cable_number - 1) * len(config_schema)}"
+        )
 
         frd_models.MeasurementConfiguration.objects.update_or_create(
             formation_resistance_dossier=frd,

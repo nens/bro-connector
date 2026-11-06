@@ -16,10 +16,9 @@ def get_last_import_date(bro_type: str, default_days: int = 3650) -> datetime:
     try:
         from tools.models import BroImport
 
-        imports = (
-            BroImport.objects.filter(bro_type=bro_type.upper(), executed=True)
-            .order_by("-created_date")
-        )
+        imports = BroImport.objects.filter(
+            bro_type=bro_type.upper(), executed=True
+        ).order_by("-created_date")
         if len(imports) > 1:
             last = imports[1]
             if last and last.created_date:
@@ -81,9 +80,7 @@ def should_import(
                 return True  # no dates → always import
 
             if last_import_date.tzinfo is None:
-                last_import_date = last_import_date.replace(
-                    tzinfo=UTC
-                )
+                last_import_date = last_import_date.replace(tzinfo=UTC)
 
             logger.info(
                 f"Found registration history dates for {bro_type}/{bro_id}: "

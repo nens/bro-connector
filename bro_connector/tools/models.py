@@ -23,6 +23,7 @@ from tools.choices import BRO_HANDLERS, BRO_TYPES
 
 AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 
+
 class BroImport(BaseModel):
     handler = models.CharField(
         max_length=100,

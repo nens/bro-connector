@@ -3,9 +3,10 @@ import os
 
 import pandas as pd
 from django.core.management.base import BaseCommand
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.models import MeasuringPoint
 from gmw.models import GroundwaterMonitoringWellStatic
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 
 class Command(BaseCommand):

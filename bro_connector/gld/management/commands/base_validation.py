@@ -6,10 +6,9 @@ from gld.models import (
     MeasurementPointMetadata,
     MeasurementTvp,
     Observation,
-    Organisation,
 )
 from gmw.models import GroundwaterMonitoringTubeDynamic
-from main.settings.base import KVK_USER, PYTZ_TIMEZONE
+from main.settings.base import PYTZ_TIMEZONE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +27,6 @@ def _check_tube_bottom(value: float, tube_bottom: float, buffer: float) -> bool:
     return value < tube_bottom - buffer
 
 
-
 class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         # Add delta t as argument
@@ -43,25 +41,30 @@ class Command(BaseCommand):
         # Check if the measurements are higher then the tube_top for that period, or lower then the tube_bottom.
         # Could also add a check to see if measurements are below the sensor height when those are available.
 
-        user_organisation = Organisation.objects.get_or_create(company_number=KVK_USER)[0]
         # For all measurements within the last period, delta_t should be an argument of this command.
         delta_t = options["delta_t"]
 
         window_end = datetime.now(PYTZ_TIMEZONE)
         window_start = window_end - timedelta(hours=delta_t)
-        window_start = window_start.replace(tzinfo=PYTZ_TIMEZONE)  # Assuming naive datetime for comparison
+        window_start = window_start.replace(
+            tzinfo=PYTZ_TIMEZONE
+        )  # Assuming naive datetime for comparison
 
         observations_with_new_measurements = Observation.objects.filter(
             measurement__measurement_time__gte=window_start,
         ).distinct()
 
         for observation in observations_with_new_measurements:
-            logger.info(f"Checking observation {observation.observation_id} for measurements within tube top and tube bottom.")
+            logger.info(
+                f"Checking observation {observation.observation_id} for measurements within tube top and tube bottom."
+            )
             if observation.status == "volledigBeoordeeld":
                 continue
 
             # 1) Retrieve the tube_static linked to this observation
-            tube_static = observation.groundwater_level_dossier.groundwater_monitoring_tube
+            tube_static = (
+                observation.groundwater_level_dossier.groundwater_monitoring_tube
+            )
 
             # 2) Retrieve all TubeDynamic states whose date_from falls before the window end,
             #    ordered chronologically. date_till is a Python property, so overlap with
@@ -74,7 +77,9 @@ class Command(BaseCommand):
             )
 
             for dyn in tube_dynamics:
-                logger.info(f"Checking dynamic with date_from {dyn.date_from} and date_till {dyn.date_till} (None means still active) for tube top and tube bottom checks.")
+                logger.info(
+                    f"Checking dynamic with date_from {dyn.date_from} and date_till {dyn.date_till} (None means still active) for tube top and tube bottom checks."
+                )
                 dyn_end = dyn.date_till  # None means still active
 
                 # Skip dynamics that ended before the check window started
@@ -83,7 +88,9 @@ class Command(BaseCommand):
 
                 # Clamp the measurement window to this dynamic's validity period
                 dyn_start = max(dyn.date_from, window_start)
-                dyn_window_end = min(dyn_end, window_end) if dyn_end is not None else window_end
+                dyn_window_end = (
+                    min(dyn_end, window_end) if dyn_end is not None else window_end
+                )
 
                 tube_top = dyn.tube_top_position
                 tube_bottom = dyn.tube_bottom_position
@@ -93,7 +100,9 @@ class Command(BaseCommand):
                     measurement_time__gte=dyn_start,
                     measurement_time__lt=dyn_window_end,
                 )
-                logger.info(f"Found {measurements.count()} measurements for this dynamic. Checking if they lie within tube top and tube bottom.")
+                logger.info(
+                    f"Found {measurements.count()} measurements for this dynamic. Checking if they lie within tube top and tube bottom."
+                )
                 measurements_to_update = []
                 metadata_to_update = []
 
@@ -104,10 +113,14 @@ class Command(BaseCommand):
                     value = float(measurement.calculated_value)
                     rejected = False
 
-                    if tube_top is not None and _check_tube_top(value, tube_top, BUFFER):
+                    if tube_top is not None and _check_tube_top(
+                        value, tube_top, BUFFER
+                    ):
                         rejected = True
 
-                    if tube_bottom is not None and _check_tube_bottom(value, tube_bottom, BUFFER):
+                    if tube_bottom is not None and _check_tube_bottom(
+                        value, tube_bottom, BUFFER
+                    ):
                         rejected = True
 
                     if not rejected:
@@ -127,7 +140,9 @@ class Command(BaseCommand):
                         measurements_to_update.append(measurement)
 
                 # 5) Update all rejected measurements in bulk
-                logger.info(f"Updating {len(measurements_to_update)} measurements that were rejected based on tube top and tube bottom checks.")
+                logger.info(
+                    f"Updating {len(measurements_to_update)} measurements that were rejected based on tube top and tube bottom checks."
+                )
                 if measurements_to_update:
                     MeasurementTvp.objects.bulk_update(
                         measurements_to_update, ["measurement_point_metadata"]

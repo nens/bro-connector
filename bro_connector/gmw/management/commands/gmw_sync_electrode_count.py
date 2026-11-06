@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Count
-
 from gmw.models import GeoOhmCable
 
 
@@ -21,9 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
 
-        cables = GeoOhmCable.objects.annotate(
-            actual_electrode_count=Count("electrode")
-        )
+        cables = GeoOhmCable.objects.annotate(actual_electrode_count=Count("electrode"))
 
         updated = 0
         skipped = 0

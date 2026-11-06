@@ -105,10 +105,10 @@ def get_timeseries_tvp_for_observation_id(observation):
             if metadata.get("censoredReason") is None:
                 # We can't include a missing value without a censoring reason
                 continue
-            
+
         measurement_data = {
             "time": measurement.measurement_time.astimezone(PYTZ_TIMEZONE).isoformat(),
-            "value": float(measurement.calculated_value) 
+            "value": float(measurement.calculated_value)
             if measurement.calculated_value is not None
             else None,
             "metadata": metadata,
@@ -327,6 +327,9 @@ class Observation(BaseModel):
 
     @property
     def timestamp_first_measurement(self):
+        if self.pk is None:
+            return None
+
         mtvp = (
             MeasurementTvp.objects.filter(observation=self)
             .order_by("measurement_time")
@@ -341,6 +344,9 @@ class Observation(BaseModel):
 
     @property
     def timestamp_last_measurement(self):
+        if self.pk is None:
+            return None
+
         mtvp = (
             MeasurementTvp.objects.filter(observation=self)
             .order_by("measurement_time")
@@ -476,7 +482,9 @@ class Observation(BaseModel):
                 tz_seporator = "-"
 
             timezone = splited_time[-1]
-            logger.info(f"Observation result time: {observation_result_time}, timezone: {timezone}")
+            logger.info(
+                f"Observation result time: {observation_result_time}, timezone: {timezone}"
+            )
             observation_result_time = (
                 f"{splited_time[0]}{tz_seporator}{timezone[0:2]}:{timezone[2:4]}"
             )
@@ -701,7 +709,7 @@ class MeasurementTvp(BaseModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["observation", "measurement_time"],  # composite uniqueness
-                name="unique_observation_measurement_time"
+                name="unique_observation_measurement_time",
             )
         ]
 
@@ -1182,7 +1190,7 @@ class gld_addition_log(BaseModel):
 
         # filename should be unique"
         filename = f"GLD_Addition_Observation_{self.observation.observation_id}_{self.observation.groundwater_level_dossier.gld_bro_id}{'-replace' if self.delivery_type == 'replace' else ''}.xml"
-        
+
         if self.delivery_type == "register":
             # Create addition source document
             gld_addition_request = brx.gld_registration_request(
@@ -1201,7 +1209,7 @@ class gld_addition_log(BaseModel):
                 qualityRegime=self.observation.groundwater_level_dossier.quality_regime,
                 broId=self.observation.groundwater_level_dossier.gld_bro_id,
                 srcdocdata=gld_addition_sourcedocument,
-                correctionReason=self.observation.correction_reason
+                correctionReason=self.observation.correction_reason,
             )
         # try to create source document
         try:
@@ -1210,9 +1218,7 @@ class gld_addition_log(BaseModel):
                 output_dir=ADDITION_DIR, filename=filename
             )
 
-            observation_id = read_observation_id_from_xml(
-                gld_addition_request.request
-            )
+            observation_id = read_observation_id_from_xml(gld_addition_request.request)
 
             # Set or update the record fields
             self.observation_identifier = observation_id
@@ -1378,9 +1384,7 @@ class gld_addition_log(BaseModel):
 
 ### Helper functions
 def _order_measurements_list(measurement_list: list):
-    datetime_values = [
-        datetime.fromisoformat(tvp["time"]) for tvp in measurement_list
-    ]
+    datetime_values = [datetime.fromisoformat(tvp["time"]) for tvp in measurement_list]
     datetime_ordered = sorted(datetime_values)
     indices = [
         datetime_values.index(datetime_value) for datetime_value in datetime_ordered
