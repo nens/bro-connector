@@ -76,7 +76,7 @@ dependencies = [
     "numba>=0.63.1",
     "paramiko==3.4.0",
     "ruff>=0.17.3",
-    "gdal",
+    "gdal; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
@@ -114,4 +114,4 @@ ignore = ["C901", "UP008"]
 release = false
 
 [tool.uv.sources]
-gdal = { path = "gdal_wheels/gdal-3.10.2-cp312-cp312-win_amd64.whl" }
+gdal = { path = "gdal_wheels/gdal-3.10.2-cp312-cp312-win_amd64.whl", marker = "sys_platform == 'win32'" }
