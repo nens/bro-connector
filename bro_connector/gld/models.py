@@ -327,6 +327,9 @@ class Observation(BaseModel):
 
     @property
     def timestamp_first_measurement(self):
+        if self.pk is None:
+            return None
+
         mtvp = (
             MeasurementTvp.objects.filter(observation=self)
             .order_by("measurement_time")
@@ -341,6 +344,9 @@ class Observation(BaseModel):
 
     @property
     def timestamp_last_measurement(self):
+        if self.pk is None:
+            return None
+
         mtvp = (
             MeasurementTvp.objects.filter(observation=self)
             .order_by("measurement_time")

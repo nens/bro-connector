@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: bro-connector
-Version: 0.1.0.dev0
+Version: 0.2.0.dev0
 Summary: Complete groundwatermonitoring data management for BRO
 License: MIT License
 
@@ -24,7 +24,7 @@ License: MIT License
         OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
         SOFTWARE.
 
-Requires-Python: >=3.11
+Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 License-File: LICENSE.MD
 Requires-Dist: bro_exchange @ git+https://github.com/nens/bro-exchange@7948005c9f15a9ca383a7c50d44b10b93dba57be
@@ -43,7 +43,7 @@ Requires-Dist: django-jazzmin==3.0.5
 Requires-Dist: django-modeladmin-reorder==0.3.1
 Requires-Dist: django-plotly-dash
 Requires-Dist: django-reversion==5.0.12
-Requires-Dist: django-reversion-compare==0.17.0
+Requires-Dist: django-reversion-compare>=0.21
 Requires-Dist: django-static-jquery==2.1.4
 Requires-Dist: django-utils2==2.12.1
 Requires-Dist: djangorestframework==3.15.1

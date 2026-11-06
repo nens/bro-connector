@@ -73,8 +73,7 @@ def _get_observation(importer: GLDImport) -> Observation:
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_organisation():
+def default_organisation(db):
     return Organisation.objects.create(
         name="Test Organisation",
         company_number=int(KVK_USER),
@@ -82,14 +81,12 @@ def default_organisation():
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_groundwater_monitoring_well():
+def default_groundwater_monitoring_well(db):
     return GroundwaterMonitoringWellStatic.objects.create()
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_groundwater_monitoring_tube(default_groundwater_monitoring_well):
+def default_groundwater_monitoring_tube(default_groundwater_monitoring_well, db):
     return GroundwaterMonitoringTubeStatic.objects.create(
         groundwater_monitoring_well_static=default_groundwater_monitoring_well,
         tube_number=1,
@@ -97,8 +94,7 @@ def default_groundwater_monitoring_tube(default_groundwater_monitoring_well):
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def super_user():
+def super_user(db):
     return User.objects.create_user(
         username="superuser",
         password="secret",
@@ -108,8 +104,7 @@ def super_user():
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def normal_user():
+def normal_user(db):
     return User.objects.create_user(
         username="normaluser",
         password="secret",

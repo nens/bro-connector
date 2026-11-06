@@ -25,8 +25,7 @@ CROSS_CABLE_CONFIGS = len(cross_cable_config_schema)  # 6
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_organisation():
+def default_organisation(db):
     return Organisation.objects.create(
         name="Test Organisation",
         company_number=int(KVK_USER),
@@ -34,8 +33,7 @@ def default_organisation():
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def tube(default_organisation):
+def tube(default_organisation, db):
     gmw = GroundwaterMonitoringWellStatic.objects.create(
         delivery_accountable_party=default_organisation,
         coordinates=Point(0, 0),

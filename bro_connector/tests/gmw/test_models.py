@@ -6,8 +6,7 @@ from main.settings.base import KVK_USER
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_organisation():
+def default_organisation(db):
     return Organisation.objects.create(
         name="Test Organisation",
         company_number=int(KVK_USER),

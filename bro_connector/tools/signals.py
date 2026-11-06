@@ -199,12 +199,21 @@ def _filter_gmn_rows(
     valid_rows = []
     messages = []
     validated = True
+    first_row_by_date = {}
     for row_number, row in enumerate(df.iter_rows(named=True), start=2):
         date_value = convert_str_to_datetime(row["date"])
         if date_value is None:
             validated = False
             messages.append(
                 f"Rij {row_number} verwijderd: ongeldige datum '{row['date']}'.\n"
+            )
+            continue
+
+        if date_value in first_row_by_date:
+            validated = False
+            messages.append(
+                f"Rij {row_number} verwijderd: dubbele datum '{row['date']}'. "
+                f"Eerste waarde op rij {first_row_by_date[date_value]} behouden.\n"
             )
             continue
 
@@ -218,6 +227,8 @@ def _filter_gmn_rows(
             )
             continue
 
+        first_row_by_date[date_value] = row_number
+        row["_source_row"] = row_number
         valid_rows.append(row)
     return valid_rows, messages, validated
 

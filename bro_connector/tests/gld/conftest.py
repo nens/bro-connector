@@ -24,8 +24,7 @@ from rest_framework.test import APIClient
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_organisation():
+def default_organisation(db):
     return Organisation.objects.create(
         name="Test Organisation",
         company_number=20168636,
@@ -33,8 +32,7 @@ def default_organisation():
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_groundwater_monitoring_well(default_organisation):
+def default_groundwater_monitoring_well(default_organisation, db):
     return GroundwaterMonitoringWellStatic.objects.create(
         delivery_accountable_party=default_organisation,
         bro_id="GMW000000000001",
@@ -46,8 +44,7 @@ def default_groundwater_monitoring_well(default_organisation):
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_groundwater_monitoring_tube(default_groundwater_monitoring_well):
+def default_groundwater_monitoring_tube(default_groundwater_monitoring_well, db):
     return GroundwaterMonitoringTubeStatic.objects.create(
         groundwater_monitoring_well_static=default_groundwater_monitoring_well,
         tube_number=1,
@@ -55,8 +52,7 @@ def default_groundwater_monitoring_tube(default_groundwater_monitoring_well):
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_tube_dynamic(default_groundwater_monitoring_tube):
+def default_tube_dynamic(default_groundwater_monitoring_tube, db):
     """Tube dynamic state required for bar/bkb unit conversion signal tests."""
     return GroundwaterMonitoringTubeDynamic.objects.create(
         groundwater_monitoring_tube_static=default_groundwater_monitoring_tube,
@@ -68,8 +64,7 @@ def default_tube_dynamic(default_groundwater_monitoring_tube):
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_observation_metadata(default_organisation):
+def default_observation_metadata(default_organisation, db):
     return ObservationMetadata.objects.get_or_create(
         observation_type="reguliereMeting",
         status="voorlopig",
@@ -78,8 +73,7 @@ def default_observation_metadata(default_organisation):
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_observation_process():
+def default_observation_process(db):
     return ObservationProcess.objects.get_or_create(
         measurement_instrument_type="druksensor",
         evaluation_procedure="oordeelDeskundige",
@@ -90,8 +84,7 @@ def default_observation_process():
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_groundwater_level_dossier(default_groundwater_monitoring_tube):
+def default_groundwater_level_dossier(default_groundwater_monitoring_tube, db):
     """
     Creates a GLD with the on_save_groundwater_level_dossier signal disconnected.
     This prevents the auto-Observation creation, giving model tests full control
@@ -114,11 +107,11 @@ def default_groundwater_level_dossier(default_groundwater_monitoring_tube):
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def default_observation(
     default_groundwater_level_dossier,
     default_observation_metadata,
     default_observation_process,
+    db,
 ):
     return Observation.objects.get_or_create(
         groundwater_level_dossier=default_groundwater_level_dossier,
@@ -128,16 +121,14 @@ def default_observation(
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_measurement_point_metadata():
+def default_measurement_point_metadata(db):
     return MeasurementPointMetadata.objects.create(
         status_quality_control="nogNietBeoordeeld",
     )
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def default_measurement_tvp(default_observation):
+def default_measurement_tvp(default_observation, db):
     """
     Creates a MeasurementTvp with field_value in meters.
     The on_save_measurement_tvp pre_save signal will automatically:
@@ -153,8 +144,7 @@ def default_measurement_tvp(default_observation):
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def api_user():
+def api_user(db):
     """External partner credentials used for Basic Auth against the API."""
     return get_user_model().objects.create_user(
         username="external-partner", password="s3cret-pass"
