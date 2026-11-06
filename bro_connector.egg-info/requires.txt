@@ -13,7 +13,7 @@ django-extensions==3.2.3
 django-jazzmin==3.0.5
 django-modeladmin-reorder==0.3.1
 django-plotly-dash
-django-reversion==5.0.12
+django-reversion==5.1
 django-reversion-compare>=0.21
 django-static-jquery==2.1.4
 django-utils2==2.12.1
@@ -63,6 +63,8 @@ xmltodict>=1.0.4
 numba>=0.63.1
 paramiko==3.4.0
 ruff>=0.17.3
+
+[:sys_platform == "win32"]
 gdal
 
 [test]

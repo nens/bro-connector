@@ -42,7 +42,7 @@ Requires-Dist: django-extensions==3.2.3
 Requires-Dist: django-jazzmin==3.0.5
 Requires-Dist: django-modeladmin-reorder==0.3.1
 Requires-Dist: django-plotly-dash
-Requires-Dist: django-reversion==5.0.12
+Requires-Dist: django-reversion==5.1
 Requires-Dist: django-reversion-compare>=0.21
 Requires-Dist: django-static-jquery==2.1.4
 Requires-Dist: django-utils2==2.12.1
@@ -92,7 +92,7 @@ Requires-Dist: xmltodict>=1.0.4
 Requires-Dist: numba>=0.63.1
 Requires-Dist: paramiko==3.4.0
 Requires-Dist: ruff>=0.17.3
-Requires-Dist: gdal
+Requires-Dist: gdal; sys_platform == "win32"
 Provides-Extra: test
 Requires-Dist: pytest; extra == "test"
 Requires-Dist: pytest-cov; extra == "test"

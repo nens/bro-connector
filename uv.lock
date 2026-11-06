@@ -196,7 +196,7 @@ requires-dist = [
     { name = "django-jazzmin", specifier = "==3.0.5" },
     { name = "django-modeladmin-reorder", specifier = "==0.3.1" },
     { name = "django-plotly-dash" },
-    { name = "django-reversion", specifier = "==5.0.12" },
+    { name = "django-reversion", specifier = "==5.1" },
     { name = "django-reversion-compare", specifier = ">=0.21" },
     { name = "django-static-jquery", specifier = "==2.1.4" },
     { name = "django-utils2", specifier = "==2.12.1" },
@@ -969,14 +969,14 @@ wheels = [
 
 [[package]]
 name = "django-reversion"
-version = "5.0.12"
+version = "5.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/43/af/86948c11766fda6265db59994f467c5c7f2df5849b35ee40216180648fa6/django-reversion-5.0.12.tar.gz", hash = "sha256:c047cc99a9f1ba4aae6db89c3ac243478d6de98ec8a60c7073fcc875d89c5cdb", size = 73092 }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/aa/d7e9d98b23041b24d2b35cefcbbfa51e6e557e8e58c1c1bddabdb0baf13f/django_reversion-5.1.0.tar.gz", hash = "sha256:3309821e5b6fceedcce6b6975f1a9c7fab6ae7c7d0e1276a90e345946fa0dcb8", size = 73178 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/3e/b45a2d6e35e37aff95a0c79304a010c3e11eec6d59f5b092454768f336b5/django_reversion-5.0.12-py3-none-any.whl", hash = "sha256:5884e9f77f55c341b3f0a8d3b0af000f060530653776997267c8b1e5349d8fee", size = 84818 },
+    { url = "https://files.pythonhosted.org/packages/5a/84/898fec51294e6764ab5fdde5db079ca89d528cef039c05447ca41d6f4c74/django_reversion-5.1.0-py3-none-any.whl", hash = "sha256:084d4f117d9e2b4e8dfdfaad83ebb34410a03eed6071c96089e6811fdea82ad3", size = 84857 },
 ]
 
 [[package]]

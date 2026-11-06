@@ -26,7 +26,7 @@ dependencies = [
     "django-jazzmin==3.0.5",
     "django-modeladmin-reorder==0.3.1",
     "django-plotly-dash",
-    "django-reversion==5.0.12",
+    "django-reversion==5.1",
     "django-reversion-compare>=0.21",
     "django-static-jquery==2.1.4",
     "django-utils2==2.12.1",
