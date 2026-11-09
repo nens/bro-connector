@@ -1,0 +1,26 @@
+name: meta
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  meta:
+    name: meta
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+      - uses: pre-commit/action@v3.0.1
+
+### Extra lines below are preserved ###

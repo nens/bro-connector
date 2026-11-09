@@ -1,15 +1,16 @@
-from datetime import datetime
 import logging
 import math
+from datetime import datetime
 
 import reversion
 from bro.models import Organisation
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.models import GroundwaterMonitoringNet
-from gmw.models import Electrode, GeoOhmCable, GroundwaterMonitoringTubeStatic
+from gmw.models import Electrode, GroundwaterMonitoringTubeStatic
 from main.models import BaseModel
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 from .choices import (
     ASSESSMENT_PROCEDURE,
@@ -423,17 +424,23 @@ class MeasurementConfiguration(BaseModel):
         Returns the average electrode_position (m NAP) of the two measurement
         electrodes, or None if either position is missing.
         """
-        if not (self.measurement_pair and self.measurement_pair.elektrode1 and self.measurement_pair.elektrode2):
+        if not (
+            self.measurement_pair
+            and self.measurement_pair.elektrode1
+            and self.measurement_pair.elektrode2
+        ):
             return None
-        
+
         ref = self.measurement_pair.elektrode1
         ref2 = self.measurement_pair.elektrode2
 
         if ref.electrode_position is None or ref2.electrode_position is None:
             return None
-        
+
         # average height
-        return round((float(ref.electrode_position) + float(ref2.electrode_position)) / 2, 3)
+        return round(
+            (float(ref.electrode_position) + float(ref2.electrode_position)) / 2, 3
+        )
 
     measurement_position.fget.short_description = "Meetpositie"
 
@@ -480,7 +487,6 @@ class GeoOhmMeasurementValue(BaseModel):
     )
     datetime = models.DateTimeField(blank=False, null=False, verbose_name="Meetmoment")
     comment = models.TextField(blank=True, null=True, verbose_name="Opmerking")
-
 
     class Meta:
         managed = True
@@ -598,9 +604,12 @@ class FormationresistanceSeries(BaseModel):
         managed = True
         db_table = 'frd"."formationresistance_series'
         verbose_name_plural = "Formatieweerstand Series"
-    
+
     def __str__(self):
-        if self.calculated_formationresistance and self.calculated_formationresistance.geo_ohm_measurement_method:
+        if (
+            self.calculated_formationresistance
+            and self.calculated_formationresistance.geo_ohm_measurement_method
+        ):
             return f"{self.calculated_formationresistance.geo_ohm_measurement_method.formation_resistance_dossier}: {self.calculated_formationresistance.geo_ohm_measurement_method.measurement_date}"
         else:
             return str(self.pk)
@@ -640,14 +649,17 @@ class FormationresistanceRecord(BaseModel):
 
     comment = models.TextField(blank=True, null=True, verbose_name="Opmerking")
 
-
     class Meta:
         managed = True
         db_table = 'frd"."formationresistance_record'
         verbose_name_plural = "Formatieweerstand Waarden"
 
     def __str__(self):
-        if self.series and self.series.calculated_formationresistance and self.series.calculated_formationresistance.geo_ohm_measurement_method:
+        if (
+            self.series
+            and self.series.calculated_formationresistance
+            and self.series.calculated_formationresistance.geo_ohm_measurement_method
+        ):
             return f"{self.series.calculated_formationresistance.geo_ohm_measurement_method.formation_resistance_dossier}: {self.vertical_position} - {self.measurement_time}"
         else:
             return self.pk
@@ -658,12 +670,18 @@ class FormationresistanceRecord(BaseModel):
             return None
         if not self.series.calculated_formationresistance:
             return None
-        
-        if self.series.calculated_formationresistance.geo_ohm_measurement_method is not None:
+
+        if (
+            self.series.calculated_formationresistance.geo_ohm_measurement_method
+            is not None
+        ):
             return self.series.calculated_formationresistance.geo_ohm_measurement_method.measurement_date
-        elif self.series.calculated_formationresistance.electromagnetic_measurement_method is not None:
+        elif (
+            self.series.calculated_formationresistance.electromagnetic_measurement_method
+            is not None
+        ):
             return self.series.calculated_formationresistance.electromagnetic_measurement_method.measurement_date
-        
+
         return None
 
 

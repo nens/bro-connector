@@ -5,9 +5,9 @@ import xmltodict
 from bro.models import Organisation
 from django.conf import settings
 from frd.models import (
+    ElectromagneticMeasurementMethod,
     FormationResistanceDossier,
     GeoOhmMeasurementMethod,
-    ElectromagneticMeasurementMethod,
 )
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 
@@ -77,9 +77,8 @@ def handle_individual_bro_id(frd_id: str, last_import_date=None) -> dict | None:
 
     frd_data = dispatch["FRD_O"]
 
-    tube_data = (
-        frd_data.get("groundwaterMonitoringTube", {})
-        .get("frdcommon:MonitoringTube", {})
+    tube_data = frd_data.get("groundwaterMonitoringTube", {}).get(
+        "frdcommon:MonitoringTube", {}
     )
     gmw_bro_id = tube_data.get("frdcommon:broId")
     tube_number = tube_data.get("frdcommon:tubeNumber")

@@ -1,8 +1,7 @@
-
 from django.core.management.base import BaseCommand
-from django.db import transaction, models
-from gld.models import MeasurementTvp, Observation
+from django.db import models, transaction
 from django.db.models import OuterRef, Subquery
+from gld.models import MeasurementTvp, Observation
 
 
 class Command(BaseCommand):
@@ -12,15 +11,13 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Looking for observations..."))
 
         first_measurement_subquery = (
-            MeasurementTvp.objects
-            .filter(observation=OuterRef("pk"))
+            MeasurementTvp.objects.filter(observation=OuterRef("pk"))
             .order_by("measurement_time")
             .values("measurement_time")[:1]
         )
 
         open_observations = (
-            Observation.objects
-            .filter(
+            Observation.objects.filter(
                 groundwater_level_dossier__quality_regime="IMBRO",
                 observation_starttime__isnull=False,
                 observation_endtime__isnull=True,

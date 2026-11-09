@@ -3,7 +3,6 @@ import datetime
 import logging
 from urllib.parse import urlencode
 
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 import gmw.management.tasks.gmw_actions as gmw_actions
 import main.utils.validators_admin as validators_admin
 import reversion
@@ -23,6 +22,8 @@ from gmw.custom_filters import (
 )
 from main.utils.frd_fieldform import FieldFormGenerator
 from reversion_compare.helpers import patch_admin
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 from . import forms as gmw_forms
 from . import models as gmw_models
@@ -696,6 +697,7 @@ class GroundwaterMonitoringWellStaticAdmin(admin.ModelAdmin):
         generator.wells = queryset
         generator.generate()
 
+
 class RelatedSurveyAdmin(admin.ModelAdmin):
     search_fields = get_searchable_fields(gmw_models.RelatedSurvey)
     list_display = (
@@ -963,6 +965,7 @@ class GroundwaterMonitoringTubeDynamicAdmin(admin.ModelAdmin):
             )
         obj.save()
 
+
 class GeoOhmCableAdmin(admin.ModelAdmin):
     form = gmw_forms.GeoOhmCableForm
     search_fields = ("geo_ohm_cable_id",)
@@ -1170,9 +1173,7 @@ class GmwSyncLogAdmin(admin.ModelAdmin):
 _register(
     gmw_models.GroundwaterMonitoringWellStatic, GroundwaterMonitoringWellStaticAdmin
 )
-_register(
-    gmw_models.RelatedSurvey, RelatedSurveyAdmin
-)
+_register(gmw_models.RelatedSurvey, RelatedSurveyAdmin)
 _register(
     gmw_models.GroundwaterMonitoringWellDynamic, GroundwaterMonitoringWellDynamicAdmin
 )

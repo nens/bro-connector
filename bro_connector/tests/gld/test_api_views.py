@@ -99,7 +99,9 @@ def test_post_with_invalid_payload_returns_400(
 
 @pytest.mark.django_db
 def test_post_with_unknown_gld_id_returns_400(api_client, default_observation):
-    payload = _payload(default_observation.groundwater_level_dossier, datetime.now(PYTZ_TIMEZONE))
+    payload = _payload(
+        default_observation.groundwater_level_dossier, datetime.now(PYTZ_TIMEZONE)
+    )
     payload["gld_id"] = 999_999
     response = api_client.post(_url(), payload, format="json")
     assert response.status_code == 400

@@ -7,8 +7,6 @@ import reversion
 from bro.models import Organisation
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.db.models.signals import post_save
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gld.models import (
     GroundwaterLevelDossier,
     MeasurementPointMetadata,
@@ -20,8 +18,10 @@ from gld.models import (
 from gmw.models import GroundwaterMonitoringTubeStatic, GroundwaterMonitoringWellStatic
 from main.utils.bbox_extractor import BBOX_EXTRACTOR
 
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
+
 from ..tasks.bro_handlers import GLDHandler
-from ..tasks.import_checker import get_last_import_date, should_import
+from ..tasks.import_checker import should_import
 from ..tasks.kvk_handler import DataRetrieverKVK
 from ..tasks.progressor import Progress
 from .bbox_handler import DataRetrieverBBOX
@@ -57,22 +57,36 @@ def within_bbox(coordinates) -> bool:
     return False
 
 
-def handle_individual_bro_id(bro_id: str, gld: GLDHandler, last_import_date=None) -> dict:
+def handle_individual_bro_id(
+    bro_id: str, gld: GLDHandler, last_import_date=None
+) -> dict:
     print("BRO id: ", bro_id)
-
     if not should_import(bro_id, "gld", last_import_date):
         logger.info(f"Skipping {bro_id} – already up to date.")
-        return None
+        return {
+            "ids_found": 1,
+            "imported": 0,
+            "conflicting_gld_ids": [],
+        }
 
     gld.get_data(bro_id, False)
     if gld.root is None:
-        return
+        return {
+            "ids_found": 1,
+            "imported": 0,
+            "conflicting_gld_ids": [],
+        }
+
     gld.root_data_to_dictionary()
     gld_dict = gld.dict
 
     # For now don't handle deregistered GMWs
     if gld_dict.get("0_deregistered", None) == "ja":
-        return
+        return {
+            "ids_found": 1,
+            "imported": 0,
+            "conflicting_gld_ids": [],
+        }
 
     # Start at observation 1
     ini = InitializeData(gld_dict)
@@ -84,7 +98,9 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler, last_import_date=None
         return {
             "ids_found": 1,
             "imported": 0,
-            "conflicting_gld_ids": [ini.conflicting_gld_id] if ini.conflicting_gld_id is not None else [],
+            "conflicting_gld_ids": [ini.conflicting_gld_id]
+            if ini.conflicting_gld_id is not None
+            else [],
         }
 
     try:
@@ -128,12 +144,9 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler, last_import_date=None
                             "field_value",
                             "field_value_unit",
                             "calculated_value",
-                            "measurement_point_metadata"
+                            "measurement_point_metadata",
                         ],
-                        unique_fields=[
-                            "observation",
-                            "measurement_time"
-                        ],
+                        unique_fields=["observation", "measurement_time"],
                         batch_size=5000,
                     )
                     ini.reset_measurement_number()
@@ -145,8 +158,6 @@ def handle_individual_bro_id(bro_id: str, gld: GLDHandler, last_import_date=None
                     ini.reset_measurement_number()
 
     finally:
-        post_save.connect(on_save_observation, sender=Observation)
-
         with reversion.create_revision():
             print(len(ini.observations))
             for obs in Observation.objects.filter(
@@ -195,7 +206,11 @@ def run(  # noqa C901
 
     if gld_ids_ini_count == 0:
         print(f"No IDs found for kvk: {kvk_number}.")
-        return {"ids_found": gld_ids_ini_count, "imported": gld_ids_ini_count, "conflicting_gld_ids": []}
+        return {
+            "ids_found": gld_ids_ini_count,
+            "imported": gld_ids_ini_count,
+            "conflicting_gld_ids": [],
+        }
 
     print(f"{gld_ids_ini_count} bro ids found for organisation.")
 
@@ -203,8 +218,6 @@ def run(  # noqa C901
     conflicting_gld_ids = []
     gld_ids_count = len(gld_ids)
     progressor.calibrate(gld_ids, 25)
-
-    last_import_date = get_last_import_date("gld")
 
     # Import the well dat
     for id in range(gld_ids_count):
@@ -234,11 +247,13 @@ def run(  # noqa C901
 
 def get_delivery_accountable_party(gld_dict: dict) -> Organisation | None:
     # return
-    company_id: str = gld_dict.get("0_deliveryAccountableParty", None)   
+    company_id: str = gld_dict.get("0_deliveryAccountableParty", None)
     if company_id is None:
         return None
     if company_id.isdigit():
-        organisation = Organisation.objects.get_or_create(company_number=int(company_id))[0]
+        organisation = Organisation.objects.get_or_create(
+            company_number=int(company_id)
+        )[0]
         organisation.save()
         return organisation
     else:
@@ -399,7 +414,9 @@ class InitializeData:
                             self.gld_dict.get(self.prefix + "researchLastDate", None)
                         ),
                         "research_last_correction": str_to_datetime(
-                            self.gld_dict.get(self.prefix + "latestCorrectionTime", None)
+                            self.gld_dict.get(
+                                self.prefix + "latestCorrectionTime", None
+                            )
                         ),
                     },
                 )
@@ -410,7 +427,9 @@ class InitializeData:
 
             self.gld.save()
 
-            print(self.gld, self.gld.groundwater_monitoring_tube, " - created: ", created)
+            print(
+                self.gld, self.gld.groundwater_monitoring_tube, " - created: ", created
+            )
 
         except IntegrityError:
             existing = GroundwaterLevelDossier.objects.filter(
@@ -418,7 +437,9 @@ class InitializeData:
                 quality_regime=quality_regime,
             ).first()
             existing_bro_id = existing.gld_bro_id if existing else "unknown"
-            self.conflicting_gld_id = existing.groundwater_level_dossier_id if existing else None
+            self.conflicting_gld_id = (
+                existing.groundwater_level_dossier_id if existing else None
+            )
             logger.warning(
                 f"Could not import GLD '{self.gld_bro_id}': a GLD with tube "
                 f"'{self.gmts}' and quality regime '{quality_regime}' already exists "

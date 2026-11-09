@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 import reversion
 from django.core.cache import cache
@@ -10,8 +11,9 @@ from django.db.models.signals import (
     pre_save,
 )
 from django.dispatch import receiver
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmw.models import GroundwaterMonitoringTubeStatic
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 from .models import (
     GroundwaterLevelDossier,
@@ -47,7 +49,7 @@ def _calculate_value_tube(
     unit: str,
     tube_top_position: float | None,
     cable_length: float | None = None,
-) -> float | None:
+) -> Decimal | None:
     """
     For now only supports m tov bkb / cm tov bkb / mm tov bkb.
     Conversion to mNAP
@@ -56,20 +58,25 @@ def _calculate_value_tube(
         return None
 
     # Make sure the field value is always positive
-    field_value = abs(field_value)
+    field_value = abs(Decimal(str(field_value)))
+    tube_top_position = Decimal(str(tube_top_position))
 
     if unit == "m t.o.v. bkb":
         return tube_top_position - field_value
     elif unit == "cm t.o.v. bkb":
-        return tube_top_position - (field_value / 100)
+        return tube_top_position - (field_value / Decimal(100))
     elif unit == "mm t.o.v. bkb":
-        return tube_top_position - (field_value / 1000)
+        return tube_top_position - (field_value / Decimal(1000))
     elif unit == "bar" and cable_length is not None:
         # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
-        return (field_value * 10.1974) + (tube_top_position - cable_length)
+        return (field_value * Decimal("10.1974")) + (
+            tube_top_position - Decimal(str(cable_length))
+        )
     elif unit == "mbar" and cable_length is not None:
         # Using the constants 9.81 for gravity and 1000 for water density to convert bar to m
-        return (field_value * 0.0101974) + (tube_top_position - cable_length)
+        return (field_value * Decimal("0.0101974")) + (
+            tube_top_position - Decimal(str(cable_length))
+        )
     else:
         return None
 
@@ -97,10 +104,12 @@ def on_save_groundwater_level_dossier(
             if instance.groundwater_monitoring_tube
             else None,
         )[0]
-        has_sensor = instance.groundwater_monitoring_tube and (
-            instance.groundwater_monitoring_tube.state.last().sensor_id is not None
-            or instance.groundwater_monitoring_tube.state.last().sensor_id is not None
+        latest_state = (
+            instance.groundwater_monitoring_tube.state.order_by("-date_from").first()
+            if instance.groundwater_monitoring_tube
+            else None
         )
+        has_sensor = latest_state is not None and latest_state.sensor_id is not None
         measurement_type = "druksensor" if has_sensor else "analoogPeilklokje"
         observation_process = ObservationProcess.objects.get_or_create(
             evaluation_procedure="oordeelDeskundige",
@@ -183,11 +192,6 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
     if not instance.observation_starttime and instance.timestamp_first_measurement:
         instance.observation_starttime = instance.timestamp_first_measurement
 
-    if instance.pk:
-        old_instance = Observation.objects.get(pk=instance.pk)
-        if instance.correction_reason is not None and instance.correction_reason != old_instance.correction_reason and instance.observation_id is not None:
-            instance.up_to_date_in_bro = False
-
     if instance.observation_endtime and instance.observation_metadata:
         if (
             instance.observation_metadata.status == "voorlopig"
@@ -202,21 +206,35 @@ def pre_save_observation(sender, instance: Observation, **kwargs):
                 else datetime.now(PYTZ_TIMEZONE).astimezone()
             )
 
-    old_instance = Observation.objects.filter(pk=instance.pk).first()
-    if old_instance and old_instance.observation_endtime is None and instance.observation_endtime is not None:
-        if Observation.objects.filter(
-            observation_metadata=instance.observation_metadata,
-            groundwater_level_dossier=instance.groundwater_level_dossier,
-            observation_process=instance.observation_process,
-            observation_endtime__isnull=True,
-        ).count() <= 1:
-            Observation.objects.create(
-                observation_starttime=instance.observation_endtime,
-                groundwater_level_dossier=instance.groundwater_level_dossier,
-                observation_metadata=instance.observation_metadata,
-                observation_process=instance.observation_process,
-            )
+    if instance.pk:
+        old_instance = Observation.objects.get(pk=instance.pk)
+        if (
+            instance.correction_reason is not None
+            and instance.correction_reason != old_instance.correction_reason
+            and instance.observation_id is not None
+        ):
+            instance.up_to_date_in_bro = False
 
+        if (
+            old_instance
+            and old_instance.observation_endtime is None
+            and instance.observation_endtime is not None
+        ):
+            if (
+                Observation.objects.filter(
+                    observation_metadata=instance.observation_metadata,
+                    groundwater_level_dossier=instance.groundwater_level_dossier,
+                    observation_process=instance.observation_process,
+                    observation_endtime__isnull=True,
+                ).count()
+                <= 1
+            ):
+                Observation.objects.create(
+                    observation_starttime=instance.observation_endtime,
+                    groundwater_level_dossier=instance.groundwater_level_dossier,
+                    observation_metadata=instance.observation_metadata,
+                    observation_process=instance.observation_process,
+                )
 
 
 @receiver(pre_save, sender=MeasurementTvp)
@@ -255,6 +273,7 @@ def on_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):
                 tube_top_position,
                 cable_length,
             )
+
 
 @receiver(post_save, sender=MeasurementTvp)
 def post_save_measurement_tvp(sender, instance: MeasurementTvp, **kwargs):

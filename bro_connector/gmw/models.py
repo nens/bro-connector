@@ -1,7 +1,6 @@
 import datetime
 
 import django.contrib.gis.db.models as geo_models
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 import main.utils.validators_models as validators_models
 from bro.models import BROProject, Organisation
 from django.db import models
@@ -48,6 +47,8 @@ from gmw.utils import generate_put_code
 from main.models import BaseModel
 from PIL import Image
 from PIL.ExifTags import TAGS
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 
 def _get_token(owner: Organisation):
@@ -203,8 +204,12 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         verbose_name="Zoutgehalte",
     )
 
-    is_abroad = models.BooleanField(null=True, blank=True, verbose_name="Buitenlandse put")
-    is_publicly_available = models.BooleanField(null=True, blank=True, verbose_name="Publiek beschikbaar")
+    is_abroad = models.BooleanField(
+        null=True, blank=True, verbose_name="Buitenlandse put"
+    )
+    is_publicly_available = models.BooleanField(
+        null=True, blank=True, verbose_name="Publiek beschikbaar"
+    )
 
     # Added for additional wells that are not owned by the user
     in_management = models.BooleanField(
@@ -428,10 +433,9 @@ class GroundwaterMonitoringWellStatic(BaseModel):
         verbose_name = "Grondwatermonitoring Put - Statisch"
         verbose_name_plural = "Grondwatermonitoring Putten - Statisch"
 
+
 class RelatedSurvey(BaseModel):
-    related_survey_id = models.AutoField(
-        primary_key=True, verbose_name="DB ID"
-    )
+    related_survey_id = models.AutoField(primary_key=True, verbose_name="DB ID")
     groundwater_monitoring_well_static = models.ForeignKey(
         GroundwaterMonitoringWellStatic,
         on_delete=models.CASCADE,
@@ -439,7 +443,11 @@ class RelatedSurvey(BaseModel):
         verbose_name="Putcode",
     )
     survey_id = models.CharField(
-        max_length=50, blank=False, null=False, verbose_name="Gerelateerde peilbuis survey ID", help_text="Dit kan een BHR of CPT - ID zijn."
+        max_length=50,
+        blank=False,
+        null=False,
+        verbose_name="Gerelateerde peilbuis survey ID",
+        help_text="Dit kan een BHR of CPT - ID zijn.",
     )
 
     class Meta:
@@ -815,7 +823,9 @@ class GroundwaterMonitoringTubeStatic(BaseModel):
 
             elif desired_count < current_count:
                 cables_to_delete = list(
-                    current_cables.order_by("-cable_number")[: current_count - desired_count]
+                    current_cables.order_by("-cable_number")[
+                        : current_count - desired_count
+                    ]
                 )
                 for cable in cables_to_delete:
                     cable.delete()
@@ -1056,9 +1066,9 @@ class GeoOhmCable(BaseModel):
 
         # Reconcile Electrode objects with the desired count.
         if self.electrode_count is not None:
-            current_electrodes = Electrode.objects.filter(
-                geo_ohm_cable=self
-            ).order_by("electrode_number")
+            current_electrodes = Electrode.objects.filter(geo_ohm_cable=self).order_by(
+                "electrode_number"
+            )
             current_count = current_electrodes.count()
             desired_count = self.electrode_count
 

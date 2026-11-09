@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gmn.models import GroundwaterMonitoringNet, MeasuringPoint
 from gmw.models import GeoOhmCable, GroundwaterMonitoringTubeStatic
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 
 class Command(BaseCommand):

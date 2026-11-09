@@ -3,7 +3,6 @@ import os
 import time
 
 from django.db import models
-
 from gld.management.commands import gld_sync_to_bro
 from gld.models import (
     GroundwaterLevelDossier,
@@ -103,7 +102,6 @@ def handle_start_registrations(
                 comments="Imported into BRO-Connector.",
                 quality_regime=dossier.groundwater_monitoring_tube.groundwater_monitoring_well_static.quality_regime,
             )
-
 
     for log in gld_registration_logs:
         logger.info(f"Checking existing start registration: {log}")
@@ -301,8 +299,9 @@ def gen_val_and_deliver_additions(
     for observation in dossier.observation.filter(
         up_to_date_in_bro=False, result_time__isnull=False
     ):
-        if observation.observation_endtime is not None and observation_measurements_incomplete(
-            observation
+        if (
+            observation.observation_endtime is not None
+            and observation_measurements_incomplete(observation)
         ):
             logger.warning(
                 f"Skipping delivery for observation ({observation}); "
@@ -311,7 +310,10 @@ def gen_val_and_deliver_additions(
             incomplete_observations.append(observation)
             continue
 
-        if observation.observation_id_bro is not None and observation.correction_reason is not None:
+        if (
+            observation.observation_id_bro is not None
+            and observation.correction_reason is not None
+        ):
             request_type = "replace"
         else:
             request_type = "register"

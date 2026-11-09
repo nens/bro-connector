@@ -84,9 +84,15 @@ def detect_csv_separator(file):
         print(f"Error reading file: {e}")
         return ","
 
+
 ### FUTURE: Refactor the following functions to be more modular and testable, and to reduce complexity
 def format_message(  # noqa C901
-    handler: str, type: str, kvk: int, shp: str | None, count: int, imported: int,
+    handler: str,
+    type: str,
+    kvk: int,
+    shp: str | None,
+    count: int,
+    imported: int,
     conflicting_gld_ids: list | None = None,
 ) -> dict:
     """Build the user-facing result message for a BRO import operation."""
@@ -245,7 +251,7 @@ def import_from_bro(instance: BroImport, shapefile_path: Path | None = None):
             import_info = retrieve_historic_frd.handle_individual_bro_id(
                 instance.bro_id
             ) or {"ids_found": 1, "imported": 0}
-        else: 
+        else:
             import_info = retrieve_historic_frd.run(
                 kvk_number=instance.kvk_number,
             )
@@ -408,12 +414,14 @@ def process_zip_file(instance: GLDImport):
     finally:
         zip_buffer.close()
 
+
 def _get_user_permission(user: User, status: str):
     """Return whether ``user`` may update measurements for ``status``."""
     if not user:
         return False
 
     return user.is_superuser and status == "volledigBeoordeeld"
+
 
 def _deduplicate_measurements(
     reader: pd.DataFrame,
@@ -451,7 +459,7 @@ def _get_measurement_data(
         reader, time_col, value_col, header_rows
     )
     instance.report += duplicate_report
-        
+
     mms = []
     mtvps = []
     rows = []
@@ -481,45 +489,61 @@ def _get_measurement_data(
         mtvps.append(mtvp)
         mtvps: list[MeasurementTvp]
 
-        rows.append(index+header_rows+1)
+        rows.append(index + header_rows + 1)
 
     measurement_details_csv = [
-        (m.observation.observation_id, m.measurement_time)
-        for m in mtvps
+        (m.observation.observation_id, m.measurement_time) for m in mtvps
     ]
     measurement_details_db = [
-        (m.observation.observation_id, m.measurement_time.astimezone(ZoneInfo("Europe/Amsterdam"))) for m in 
-        MeasurementTvp.objects.filter(
+        (
+            m.observation.observation_id,
+            m.measurement_time.astimezone(ZoneInfo("Europe/Amsterdam")),
+        )
+        for m in MeasurementTvp.objects.filter(
             observation_id__in=[o for o, _ in measurement_details_csv],
-            measurement_time__in=[t for _, t in measurement_details_csv]
+            measurement_time__in=[t for _, t in measurement_details_csv],
         ).all()
     ]
-    
-    measurement_duplicates = [m for m in mtvps if (m.observation.observation_id, m.measurement_time) in measurement_details_db]
+
+    measurement_duplicates = [
+        m
+        for m in mtvps
+        if (m.observation.observation_id, m.measurement_time) in measurement_details_db
+    ]
     indices_duplicates = [
-        i for i, unique_constraint in enumerate(measurement_duplicates)
+        i
+        for i, unique_constraint in enumerate(measurement_duplicates)
         if unique_constraint in measurement_details_db
     ]
     rows_duplicates = [
-        rows[i] for i, unique_constraint in enumerate(measurement_details_csv)
-        if unique_constraint in measurement_details_db 
+        rows[i]
+        for i, unique_constraint in enumerate(measurement_details_csv)
+        if unique_constraint in measurement_details_db
     ]
-    measurement_no_duplicates = [m for m in mtvps if (m.observation.observation_id, m.measurement_time) not in measurement_details_db]
+    measurement_no_duplicates = [
+        m
+        for m in mtvps
+        if (m.observation.observation_id, m.measurement_time)
+        not in measurement_details_db
+    ]
     indices_no_duplicates = [
-        i for i, unique_constraint in enumerate(measurement_details_csv)
+        i
+        for i, unique_constraint in enumerate(measurement_details_csv)
         if unique_constraint not in measurement_details_db
     ]
     rows_no_duplicates = [
-        rows[i] for i, unique_constraint in enumerate(measurement_details_csv)
-        if unique_constraint not in measurement_details_db 
+        rows[i]
+        for i, unique_constraint in enumerate(measurement_details_csv)
+        if unique_constraint not in measurement_details_db
     ]
 
-    all_data = {
-        "measurement_tvps": mtvps,
-        "measurement_metadatas": mms
-    }
+    all_data = {"measurement_tvps": mtvps, "measurement_metadatas": mms}
     duplicate_data = {"measurement_tvps": [], "measurement_metadatas": [], "rows": []}
-    non_duplicate_data = {"measurement_tvps": [], "measurement_metadatas": [], "rows": []} 
+    non_duplicate_data = {
+        "measurement_tvps": [],
+        "measurement_metadatas": [],
+        "rows": [],
+    }
 
     if measurement_duplicates:
         duplicate_data["measurement_tvps"] = measurement_duplicates
@@ -527,10 +551,13 @@ def _get_measurement_data(
         duplicate_data["rows"] = rows_duplicates
     if measurement_no_duplicates:
         non_duplicate_data["measurement_tvps"] = measurement_no_duplicates
-        non_duplicate_data["measurement_metadatas"] = [mms[i] for i in indices_no_duplicates]
+        non_duplicate_data["measurement_metadatas"] = [
+            mms[i] for i in indices_no_duplicates
+        ]
         duplicate_data["rows"] = rows_no_duplicates
 
     return all_data, duplicate_data, non_duplicate_data
+
 
 def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C901
     """Validate a GLD CSV and import its measurements into the matching observation."""
@@ -555,9 +582,11 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                 quality_regime=instance.quality_regime,
                 defaults={
                     "gld_bro_id": instance.gld_bro_id,
-                }
+                },
             )[0]
-            instance.report = f"{instance.report}GroundwaterLevelDossier aangemaakt: {gld}.\n"
+            instance.report = (
+                f"{instance.report}GroundwaterLevelDossier aangemaakt: {gld}.\n"
+            )
 
         # Create ObservationProces
         obs_process = ObservationProcess.objects.get_or_create(
@@ -588,29 +617,39 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
             obs = Observation.objects.create(
                 groundwater_level_dossier=gld,
                 observation_metadata=obs_metadata,
-                observation_process=obs_process,            
-                observation_starttime = first_datetime,
-                observation_endtime = last_datetime
+                observation_process=obs_process,
+                observation_starttime=first_datetime,
+                observation_endtime=last_datetime,
             )
         if obs_list:
             instance.report = f"{instance.report}Found {len(obs_list)} observations for this combination of gld, observation metadata and observation process\n"
             can_insert_data = False
             for obs in obs_list:
                 obs.save()
-                print(obs.observation_starttime, obs.observation_endtime, first_datetime, last_datetime)
+                print(
+                    obs.observation_starttime,
+                    obs.observation_endtime,
+                    first_datetime,
+                    last_datetime,
+                )
                 print(type(obs.observation_starttime), type(first_datetime))
-                
+
                 if None not in [obs.observation_starttime, obs.observation_endtime]:
-                    if obs.observation_starttime <= first_datetime and obs.observation_endtime >= last_datetime:
+                    if (
+                        obs.observation_starttime <= first_datetime
+                        and obs.observation_endtime >= last_datetime
+                    ):
                         can_insert_data = True
                         instance.report = f"{instance.report}Your csv start and end-data match or lie within start and end time of observation {obs.observation_id}. \n"
                         break
-            if not can_insert_data: 
+            if not can_insert_data:
                 instance.report = f"{instance.report}Your csv start and end-data lies outside the start and end time of the existing observation(s) {list(obs_list)}. Adjust the csv to continue\n"
                 instance.executed = False
-                return 
+                return
 
-        measurement_data, duplicate_data, non_duplicate_data = _get_measurement_data(instance, reader, time_col, value_col, obs)
+        measurement_data, duplicate_data, non_duplicate_data = _get_measurement_data(
+            instance, reader, time_col, value_col, obs
+        )
         if duplicate_data:
             permission_to_update = _get_user_permission(instance.user, instance.status)
             duplicate_rows = duplicate_data["rows"]
@@ -620,9 +659,9 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                 mms_to_send = non_duplicate_data["measurement_metadatas"]
                 duplicate_rows_skipped = duplicate_rows
                 duplicate_rows_updated = None
-                
+
                 instance.report = f"{instance.report}User does not have permission to update measurements with status {instance.status}\n"
-                instance.report = f"{instance.report}Skipping {len(duplicate_rows_skipped)} duplicate measurements, continueing with {len(mtvps_to_send)} new measurements, out of {len(mtvps_to_send)+len(duplicate_rows_skipped)} total unique measurements\n"
+                instance.report = f"{instance.report}Skipping {len(duplicate_rows_skipped)} duplicate measurements, continueing with {len(mtvps_to_send)} new measurements, out of {len(mtvps_to_send) + len(duplicate_rows_skipped)} total unique measurements\n"
             else:
                 mtvps_to_send = measurement_data["measurement_tvps"]
                 mms_to_send = measurement_data["measurement_metadatas"]
@@ -630,24 +669,26 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                 duplicate_rows_updated = duplicate_rows
 
                 instance.report = f"{instance.report}User has permission to update measurements with status {instance.status}\n\n"
-                instance.report = f"{instance.report}Updating {len(duplicate_rows_updated)} duplicate measurements, creating {len(mtvps_to_send)-len(duplicate_rows_updated)} new measurements, out of {len(mtvps_to_send)} total unique measurements\n"
+                instance.report = f"{instance.report}Updating {len(duplicate_rows_updated)} duplicate measurements, creating {len(mtvps_to_send) - len(duplicate_rows_updated)} new measurements, out of {len(mtvps_to_send)} total unique measurements\n"
         else:
             mtvps_to_send = measurement_data["measurement_tvps"]
             mms_to_send = measurement_data["measurement_metadatas"]
             duplicate_rows_skipped = None
             duplicate_rows_updated = None
 
-            instance.report = f"{instance.report}No duplicate measurements found in database\n"
-            instance.report = f"{instance.report}Creating {len(mtvps_to_send)} new measurements\n"
-        
+            instance.report = (
+                f"{instance.report}No duplicate measurements found in database\n"
+            )
+            instance.report = (
+                f"{instance.report}Creating {len(mtvps_to_send)} new measurements\n"
+            )
+
         if mtvps_to_send:
             with transaction.atomic():
                 try:
                     ## This should read the existing mtvps and update the mms for those mtvps with the data from the importer
                     MeasurementPointMetadata.objects.bulk_create(
-                        mms_to_send,
-                        update_conflicts=False,
-                        batch_size=5000
+                        mms_to_send, update_conflicts=False, batch_size=5000
                     )
                     ## maybe split into bulk_update and bulk_create
                     MeasurementTvp.objects.bulk_create(
@@ -657,13 +698,10 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                             "field_value",
                             "field_value_unit",
                             "calculated_value",
-                            "measurement_point_metadata"
+                            "measurement_point_metadata",
                         ],
-                        unique_fields=[
-                            "observation_id",
-                            "measurement_time"
-                        ],
-                        batch_size=5000
+                        unique_fields=["observation_id", "measurement_time"],
+                        batch_size=5000,
                     )
 
                 except Exception as e:
@@ -671,13 +709,13 @@ def process_csv_file(instance: GLDImport, file=None, filename=None):  # noqa C90
                     logger.info(f"Bulk updating/creating failed for observation: {obs}")
                     logger.exception(e)
                     instance.executed = False
-                    return    
+                    return
 
             # mtvps = MeasurementTvp.objects.filter(
             #     measurement_tvp_id__in=[m.measurement_tvp_id for m in mtvps_to_send]
             # )
             # for m in mtvps:
-            #     m.save() 
+            #     m.save()
 
         if instance.groundwater_monitoring_tube:
             glds = GroundwaterLevelDossier.objects.filter(
@@ -709,7 +747,9 @@ def validate_csv(file, filename: str, instance: GLDImport):  # noqa C901
     missing_columns = [col for col in required_columns if col not in reader.columns]
     if missing_columns:
         instance.validated = False
-        instance.report = f"{instance.report}Missende kolommen: {', '.join(missing_columns)}\n\n"
+        instance.report = (
+            f"{instance.report}Missende kolommen: {', '.join(missing_columns)}\n\n"
+        )
 
     # Check if CSV has any rows
     if reader.empty:

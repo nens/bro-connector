@@ -4,6 +4,8 @@ import os
 import psycopg2
 import pytest
 from django.conf import settings
+from django.core.management import call_command
+from django.db import connections
 
 
 @pytest.fixture(scope="session")
@@ -56,7 +58,41 @@ def django_db_setup(django_test_environment, django_db_blocker):
     )
     conn.autocommit = True
     with conn.cursor() as cur:
+        cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
         with open(sql_path) as f:
             cur.execute(f.read())
     conn.close()
     print("[conftest] Schemas created successfully.")
+
+    connection = connections["default"]
+    connection.close()
+    connection.settings_dict["NAME"] = test_db_name
+    with django_db_blocker.unblock():
+        call_command(
+            "migrate",
+            database="default",
+            interactive=False,
+            verbosity=0,
+        )
+        call_command(
+            "migrate",
+            database="default",
+            interactive=False,
+            run_syncdb=True,
+            verbosity=0,
+        )
+        from bro.models import BROProject, Organisation
+
+        organisation = Organisation.objects.filter(pk=1).first()
+        if organisation is None:
+            organisation = Organisation.objects.create(
+                name="Test Organisation",
+                company_number=1,
+            )
+
+        if not BROProject.objects.filter(pk=1).exists():
+            BROProject.objects.create(
+                name="Test Project",
+                project_number=1,
+                owner=organisation,
+            )

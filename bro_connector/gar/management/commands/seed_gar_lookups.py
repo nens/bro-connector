@@ -1,12 +1,12 @@
-import csv
 import os
-import polars as pl 
+
+import polars as pl
 from django.apps import apps
 from django.core.management.base import BaseCommand
 from gar.choices import KLEUR, KLEURSTERKTE
 from gar.models import (
-    TypeColourStrengths,
     TypeColours,
+    TypeColourStrengths,
     TypeParameterlijsten,
     TypeWaardebepalingsmethodes,
     TypeWaardebepalingstechnieken,
@@ -19,10 +19,11 @@ def _read_csv(filename: str):
     path = os.path.join(PARAMS_DIR, filename)
     df = pl.read_csv(path, separator=";", has_header=True)
 
-    # filter empty rows column 1 is empty 
+    # filter empty rows column 1 is empty
     df = df.filter(pl.col(df.columns[0]).is_not_null())
 
     return df
+
 
 class Command(BaseCommand):
     help = "Idempotently seed GAR lookup tables from CSV files and choices constants."
@@ -49,7 +50,9 @@ class Command(BaseCommand):
             for row in rows.iter_rows(named=True)
         ]
         TypeParameterlijsten.objects.bulk_create(objects, ignore_conflicts=True)
-        self.stdout.write(f"  Parameters: {len(objects)} rows processed (skipped existing).")
+        self.stdout.write(
+            f"  Parameters: {len(objects)} rows processed (skipped existing)."
+        )
 
     def _seed_waardebepalingsmethodes(self):
         rows = _read_csv("waardebepalingsprocedure.csv")
@@ -67,7 +70,9 @@ class Command(BaseCommand):
                 created += 1
             else:
                 updated += 1
-        self.stdout.write(f"  Waardebepalingsmethodes: {created} created, {updated} updated.")
+        self.stdout.write(
+            f"  Waardebepalingsmethodes: {created} created, {updated} updated."
+        )
 
     def _seed_waardebepalingstechnieken(self):
         rows = _read_csv("waardebepalingstechnieken.csv")
@@ -85,7 +90,9 @@ class Command(BaseCommand):
                 created += 1
             else:
                 updated += 1
-        self.stdout.write(f"  Waardebepalingstechnieken: {created} created, {updated} updated.")
+        self.stdout.write(
+            f"  Waardebepalingstechnieken: {created} created, {updated} updated."
+        )
 
     def _seed_colours(self):
         created = 0
@@ -107,4 +114,6 @@ class Command(BaseCommand):
             )
             if was_created:
                 created += 1
-        self.stdout.write(f"  TypeColourStrengths: {created} created (skipped existing).")
+        self.stdout.write(
+            f"  TypeColourStrengths: {created} created (skipped existing)."
+        )

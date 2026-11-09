@@ -86,6 +86,7 @@ def get_searchable_fields(model_class):
         if isinstance(f, (fields.CharField, fields.AutoField))
     ]
 
+
 class InlineMeasurementConfigurationAdmin(admin.TabularInline):
     model = MeasurementConfiguration
     extra = 1
@@ -294,6 +295,7 @@ class FormationresistanceRecordAdmin(admin.ModelAdmin):
 
     def measurement_time(self, obj):
         return obj.measurement_time
+
 
 class FrdSyncLogAdmin(admin.ModelAdmin):
     list_display = (

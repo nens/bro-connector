@@ -2,7 +2,6 @@ import datetime
 
 import pytest
 from django.utils import timezone
-
 from gld.management.tasks.gld_actions import (
     gen_val_and_deliver_additions,
     observation_measurements_incomplete,
@@ -53,6 +52,4 @@ def test_gen_val_and_deliver_additions_skips_incomplete_closed_observation(
     skipped = gen_val_and_deliver_additions(default_groundwater_level_dossier)
 
     assert skipped == [default_observation]
-    assert not gld_addition_log.objects.filter(
-        observation=default_observation
-    ).exists()
+    assert not gld_addition_log.objects.filter(observation=default_observation).exists()

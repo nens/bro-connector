@@ -3,8 +3,9 @@ import xml.etree.ElementTree as ET
 
 import requests
 from django.core.management.base import BaseCommand
-from bro_connector.main.settings.base import PYTZ_TIMEZONE
 from gld.models import GroundwaterLevelDossier
+
+from bro_connector.main.settings.base import PYTZ_TIMEZONE
 
 
 class Command(BaseCommand):
