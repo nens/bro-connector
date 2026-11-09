@@ -16,6 +16,7 @@ from gmw.signals import (
 from ..bro_handlers import GMWHandler as broGMWHandler
 from .bro_handlers import GMWHandler as xmlGMWHandler
 
+
 def import_xml(file: str, path: str) -> tuple:
     file_path = os.path.join(path, file)
 
