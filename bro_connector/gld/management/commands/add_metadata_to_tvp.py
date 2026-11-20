@@ -17,10 +17,8 @@ def get_organisation() -> Organisation:
 class Command(BaseCommand):
     def handle(self, *args, **options):
         user_organisation = get_organisation()
-
         measurements_qs = MeasurementTvp.objects.filter(
             measurement_point_metadata__isnull=True,
-            observation__groundwater_level_dossier__quality_regime="IMBRO",
             observation__groundwater_level_dossier__groundwater_monitoring_tube__groundwater_monitoring_well_static__delivery_accountable_party=user_organisation,
         ).only("measurement_tvp_id")
 
