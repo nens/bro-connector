@@ -6,8 +6,10 @@ from datetime import datetime
 
 import reversion
 from django.contrib import admin, messages
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import fields
+from django.db.utils import DatabaseError
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
@@ -30,6 +32,10 @@ from .custom_filters import (
     OrganisationFilter,
     QualityRegimeFilter,
     TubeFilter,
+)
+from .quality_validation import (
+    find_shared_metadata_ids,
+    validate_observation_quality,
 )
 
 logger = logging.getLogger(__name__)
@@ -398,6 +404,7 @@ class ObservationAdmin(admin.ModelAdmin):
         "close_observation",
         "change_up_to_date_status",
         "convert_to_validated",
+        "validate_measurement_quality",
     ]
 
     ordering = ["-observation_starttime"]
@@ -418,6 +425,64 @@ class ObservationAdmin(admin.ModelAdmin):
         if obj.status is not None:
             return obj.status
         return "-"
+
+    @admin.action(description="Controleer kwaliteitsstatus van metingen")
+    def validate_measurement_quality(self, request, queryset):
+        observation_ids = list(queryset.values_list("pk", flat=True))
+        shared_metadata_ids = find_shared_metadata_ids(observation_ids)
+        processed_count = 0
+        skipped_count = 0
+        failed_count = 0
+        status_count = 0
+        missing_metadata_count = 0
+        missing_value_count = 0
+
+        for observation in queryset:
+            try:
+                result = validate_observation_quality(
+                    observation, shared_metadata_ids=shared_metadata_ids
+                )
+            except (DatabaseError, ValidationError, TypeError, ValueError):
+                logger.exception(
+                    "Quality validation failed for observation %s",
+                    observation.pk,
+                )
+                failed_count += 1
+                self.message_user(
+                    request,
+                    f"Observatie {observation.pk}: kwaliteitscontrole mislukt; "
+                    "wijzigingen voor deze observatie zijn teruggedraaid. "
+                    "Raadpleeg de serverlog.",
+                    level=messages.ERROR,
+                )
+                continue
+
+            if result.skip_reason:
+                skipped_count += 1
+                self.message_user(
+                    request,
+                    f"Observatie {observation.pk} overgeslagen: {result.skip_reason}.",
+                    level=messages.WARNING,
+                )
+                continue
+
+            processed_count += 1
+            status_count += result.status_count
+            missing_metadata_count += result.missing_metadata_count
+            missing_value_count += result.missing_value_count
+
+        summary_level = messages.WARNING if failed_count else messages.SUCCESS
+        self.message_user(
+            request,
+            "Kwaliteitscontrole voltooid: "
+            f"{processed_count} observaties verwerkt, "
+            f"{status_count} meetwaarden bijgewerkt, "
+            f"{skipped_count} observaties overgeslagen, "
+            f"{failed_count} observaties mislukt, "
+            f"{missing_metadata_count} meetwaarden zonder metadata niet bijgewerkt, "
+            f"{missing_value_count} meetwaarden zonder berekende waarde behouden.",
+            level=summary_level,
+        )
 
     @admin.action(description="Sluit Observatie")
     def close_observation(self, request, queryset):
