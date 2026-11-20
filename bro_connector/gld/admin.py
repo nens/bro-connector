@@ -2,7 +2,7 @@ import csv
 import logging
 import os
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import reversion
 from django.contrib import admin, messages
@@ -493,7 +493,7 @@ class ObservationAdmin(admin.ModelAdmin):
             with reversion.create_revision():
                 item.observation_endtime = datetime.now(
                     PYTZ_TIMEZONE
-                ).astimezone() - datetime.timedelta(seconds=1)
+                ).astimezone() - timedelta(seconds=1)
                 item.result_time = item.timestamp_last_measurement
                 item.save(update_fields=["observation_endtime", "result_time"])
                 reversion.set_comment("Closed the observation with a manual action.")
@@ -543,6 +543,19 @@ class ObservationAdmin(admin.ModelAdmin):
                 continue
 
             valid_items.append(item)
+
+        ## State if Observation has any MeasurementTvp without metadata, if so log to user and skip
+        for item in valid_items:
+            missing_tvps = models.MeasurementTvp.objects.filter(
+                observation_id=item.pk, measurement_point_metadata__isnull=True
+            )
+            if missing_tvps.exists():
+                self.message_user(
+                    request,
+                    f"Observatie {item} heeft metingen zonder metadata. Overgeslagen.",
+                    level=messages.WARNING,
+                )
+                valid_items.remove(item)
 
         if not valid_items:
             return
@@ -665,14 +678,22 @@ class ObservationAdmin(admin.ModelAdmin):
                     ["observation_starttime", "observation_endtime", "result_time"],
                 )
 
+            # Make a copy with remove pk
+
+            new_metadata = tvp.measurement_point_metadata
+            if new_metadata is not None:
+                new_metadata.pk = None
+                new_metadata.save()
+
             new_tvps = [
                 models.MeasurementTvp(
                     observation=obs,
                     measurement_time=tvp.measurement_time,
                     field_value=tvp.field_value,
+                    calculated_value=tvp.calculated_value,
                     field_value_unit=tvp.field_value_unit,
                     comment=tvp.comment,
-                    measurement_point_metadata=tvp.measurement_point_metadata,
+                    measurement_point_metadata=new_metadata,
                 )
                 for obs, source_tvps in tvp_sources
                 for tvp in source_tvps
